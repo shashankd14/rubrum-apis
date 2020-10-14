@@ -11,7 +11,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 @Entity
-@Table(name = "product_tblcuttinginstruction")
+@Table(name = "product_cuts")
 public class CuttingInstruction {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

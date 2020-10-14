@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 //@CrossOrigin(origins = {"http://localhost:3001"})
 //@CrossOrigin(origins = {"http://rubrum-frontend.s3-website.ap-south-1.amazonaws.com"})
 @CrossOrigin
-@RequestMapping({"api/cuttingInstruction"})
+@RequestMapping({"api/cuts"})
 public class CuttingInstructionController {
   @Autowired
   private CuttingInstructionService cutInstrSvc;
