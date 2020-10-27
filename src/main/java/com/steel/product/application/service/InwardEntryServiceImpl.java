@@ -64,4 +64,17 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 		}
 		return isPresent;
 	}
+
+	@Override
+	public InwardEntry getByCoilNumber(String coilNumber) {
+		
+		Optional<InwardEntry> result = this.inwdEntryRepo.findByCoilNumber(coilNumber);
+		InwardEntry theEntry = null;
+		if (result.isPresent()) {
+			theEntry = result.get();
+		} else {
+			throw new RuntimeException("Did not find entry with coilNumber - " + coilNumber);
+		}
+		return theEntry;
+	}
 }

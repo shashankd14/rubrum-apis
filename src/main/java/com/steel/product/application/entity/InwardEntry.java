@@ -2,6 +2,7 @@ package com.steel.product.application.entity;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -16,6 +17,9 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -97,6 +101,7 @@ public class InwardEntry {
 	@Column(name = "grossweight")
 	private float grossWeight;
 
+	@JsonManagedReference
 	@ManyToOne(cascade = { CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH })
 	@JoinColumn(name = "vstatus")
 	private Status status;
@@ -141,6 +146,10 @@ public class InwardEntry {
 	@JsonBackReference
 	@OneToMany(mappedBy = "inwardEntry", fetch = FetchType.EAGER)
 	private List<InwardDoc> docs;
+	
+	@OneToMany(mappedBy = "inwardId", fetch = FetchType.EAGER)
+	private Set<Instruction> instruction;
+	
 
 	public int getInwardEntryId() {
 		return this.inwardEntryId;
@@ -425,19 +434,14 @@ public class InwardEntry {
 	public void setRemarks(String remarks) {
 		this.remarks = remarks;
 	}
-	
 
-//	public String toString() {
-//		return "InwardEntry [inwardEntryId=" + this.inwardEntryId + ", party=" + this.party + ", coilNumber="
-//				+ this.coilNumber + ", dReceivedDate=" + this.dReceivedDate + ", dBillDate=" + this.dBillDate
-//				+ ", vLorryNo=" + this.vLorryNo + ", dInvoiceDate=" + this.dInvoiceDate + ", vInvoiceNo="
-//				+ this.vInvoiceNo + ", material=" + this.material + ", fWidth=" + this.fWidth + ", fThickness="
-//				+ this.fThickness + ", fLength=" + this.fLength + ", fQuantity=" + this.fQuantity + ", status="
-//				+ this.status + ", vHeatnumber=" + this.vHeatnumber + ", vPlantname=" + this.vPlantname + ", vProcess="
-//				+ this.vProcess + ", fpresent=" + this.fpresent + ", billedweight=" + this.billedweight
-//				+ ", parentCoilNumber=" + this.parentCoilNumber + ", vParentBundleNumber=" + this.vParentBundleNumber
-//				+ ", vCast=" + this.vCast + ", vGrade="  + ", createdBy=" + this.createdBy
-//				+ ", updatedBy=" + this.updatedBy + ", createdOn=" + this.createdOn + ", updatedOn=" + this.updatedOn
-//				+ ", isDeleted=" + this.isDeleted + "]";
-//	}
+	public Set<Instruction> getInstruction() {
+		return instruction;
+	}
+
+	public void setInstruction(Set<Instruction> instruction) {
+		this.instruction = instruction;
+	}
+
+	
 }

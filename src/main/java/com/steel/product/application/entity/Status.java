@@ -1,5 +1,6 @@
 package com.steel.product.application.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.steel.product.application.entity.InwardEntry;
 import java.util.List;
 import javax.persistence.CascadeType;
@@ -22,9 +23,15 @@ public class Status {
 	@Column(name = "statusname")
 	private String statusName;
 
+	@JsonBackReference
 	@OneToMany(mappedBy = "status", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH,
 			CascadeType.REFRESH })
 	private List<InwardEntry> inwardEntry;
+	
+	@JsonBackReference
+	@OneToMany(mappedBy = "status", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH,
+			CascadeType.REFRESH })
+	private List<Instruction> instruction;
 
 	public int getStatusId() {
 		return this.statusId;
@@ -41,4 +48,21 @@ public class Status {
 	public void setStatusName(String statusName) {
 		this.statusName = statusName;
 	}
+
+	public List<InwardEntry> getInwardEntry() {
+		return inwardEntry;
+	}
+
+	public void setInwardEntry(List<InwardEntry> inwardEntry) {
+		this.inwardEntry = inwardEntry;
+	}
+
+	public List<Instruction> getInstruction() {
+		return instruction;
+	}
+
+	public void setInstruction(List<Instruction> instruction) {
+		this.instruction = instruction;
+	}
+	
 }

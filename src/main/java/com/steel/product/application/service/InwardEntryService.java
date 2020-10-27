@@ -9,7 +9,9 @@ public interface InwardEntryService {
   
   List<InwardEntry> getAllEntries();
   
-  InwardEntry getByEntryId(int paramInt);
+  InwardEntry getByEntryId(int inwardId);
+  
+  InwardEntry getByCoilNumber(String coilNumber);
   
   ResponseEntity<Object> getInwardEntriesByPartyId(int paramInt);
   
