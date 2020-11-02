@@ -69,84 +69,92 @@ public class InstructionController {
 	}
 	
 	@PostMapping("/save")
-	public ResponseEntity<Object> save(@RequestBody InstructionDto instructionDTO) {
+	public ResponseEntity<Object> save(@RequestBody List<InstructionDto>  instructionDTOs) {
 		
-		try {
+		for(InstructionDto instructionDTO : instructionDTOs) {
 			
-			Instruction instruction = new Instruction();
-			Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-			
-			instruction.setInstructionId(0);
-			
-			if(instructionDTO.getInwardId() != null) {
-				
-				InwardEntry inward = inwardService.getByEntryId(instructionDTO.getInwardId());
-				instruction.setInwardId(inward);
+			try {
+
+				Instruction instruction = new Instruction();
+				Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+
+				instruction.setInstructionId(0);
+
+				if (instructionDTO.getInwardId() != null) {
+
+					InwardEntry inward = inwardService.getByEntryId(instructionDTO.getInwardId());
+					instruction.setInwardId(inward);
+				}
+
+				if (instructionDTO.getProcessdId() == 1)
+					instruction.setProcessdId(Values.CUTTINGINSTRUCTION_PROCESS_ID);
+				else if (instructionDTO.getProcessdId() == 2)
+					instruction.setProcessdId(Values.SLITTINGINSTRUCTION_PROCESS_ID);
+
+				instruction.setInstructionDate(instructionDTO.getInstructionDate());
+
+				if (instructionDTO.getLength() != null)
+					instruction.setLength(instructionDTO.getLength());
+
+				if (instructionDTO.getWidth() != null)
+					instruction.setWidth(instructionDTO.getWidth());
+
+				if (instructionDTO.getWeight() != null)
+					instruction.setWeight(instructionDTO.getWeight());
+
+				if (instructionDTO.getNoOfPieces() != null)
+					instruction.setNoOfPieces(instructionDTO.getNoOfPieces());
+
+				instruction.setStatus(statusService.getStatusById(instructionDTO.getStatus()));
+
+				if (instructionDTO.getGroupId() != null)
+					instruction.setGroupId(instructionDTO.getGroupId());
+
+				if (instructionDTO.getParentInstructionId() != null) {
+
+					Instruction parentInstruction = instructionSerice.getById(instructionDTO.getParentInstructionId());
+
+					instruction.setParentInstruction(parentInstruction);
+				}
+
+				else
+					instruction.setParentInstruction(null);
+
+				if (instructionDTO.getWastage() != null)
+					instruction.setWastage(instructionDTO.getWastage());
+
+				if (instructionDTO.getDamage() != null)
+					instruction.setDamage(instructionDTO.getDamage());
+
+				if (instructionDTO.getPackingWeight() != null)
+					instruction.setPackingWeight(instructionDTO.getPackingWeight());
+
+				instruction.setCreatedBy(instructionDTO.getCreatedBy());
+				instruction.setUpdatedBy(instructionDTO.getUpdatedBy());
+				instruction.setCreatedOn(timestamp);
+				instruction.setUpdatedOn(timestamp);
+				instruction.setIsDeleted(false);
+
+				instructionSerice.save(instruction);
+
+				// return new ResponseEntity<Object>("instruction saved successfully!",
+				// HttpStatus.OK);
+			} catch (Exception e) {
+				e.printStackTrace();
+				return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 			}
 			
 			
-			if(instructionDTO.getProcessdId() == 1)
-				instruction.setProcessdId(Values.CUTTINGINSTRUCTION_PROCESS_ID);
-			else if(instructionDTO.getProcessdId() == 2)
-				instruction.setProcessdId(Values.SLITTINGINSTRUCTION_PROCESS_ID);
-			
-			instruction.setInstructionDate(instructionDTO.getInstructionDate());
-			
-			if(instructionDTO.getLength() != null)
-			instruction.setLength(instructionDTO.getLength());
-			
-			if(instructionDTO.getWidth() !=null)
-			instruction.setWidth(instructionDTO.getWidth());
-			
-			if(instructionDTO.getWeight() !=null)
-			instruction.setWeight(instructionDTO.getWeight());
-			
-			if(instructionDTO.getNoOfPieces() !=null)
-			instruction.setNoOfPieces(instructionDTO.getNoOfPieces());
-			
-			instruction.setStatus(statusService.getStatusById(instructionDTO.getStatus()));
-			
-			
-			if(instructionDTO.getGroupId() !=null)
-			instruction.setGroupId(instructionDTO.getGroupId());
-			
-			if(instructionDTO.getParentInstructionId() !=null) {
-				
-				Instruction parentInstruction = instructionSerice.getById(instructionDTO.getParentInstructionId());
-				
-				instruction.setParentInstruction(parentInstruction);
-			}
-				
-			else
-				instruction.setParentInstruction(null);
-			
-			if(instructionDTO.getWastage() !=null)
-			instruction.setWastage(instructionDTO.getWastage());
-			
-			if(instructionDTO.getDamage() !=null)
-			instruction.setDamage(instructionDTO.getDamage());
-			
-			if(instructionDTO.getPackingWeight() !=null)
-			instruction.setPackingWeight(instructionDTO.getPackingWeight());
-			
-			instruction.setCreatedBy(instructionDTO.getCreatedBy());
-			instruction.setUpdatedBy(instructionDTO.getUpdatedBy());
-			instruction.setCreatedOn(timestamp);
-			instruction.setUpdatedOn(timestamp);
-			instruction.setIsDeleted(false);
-			
-			instructionSerice.save(instruction);
-			
-			return new ResponseEntity<Object>("instruction saved successfully!", HttpStatus.OK);
-		}catch(Exception e) {
-			e.printStackTrace();
-			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+		
+		return new ResponseEntity<Object>("instruction saved successfully!", HttpStatus.OK);
+		
 	}
 	
 	@PutMapping("/update")
-	public ResponseEntity<Object> update(@RequestBody InstructionDto instructionDTO) {
+	public ResponseEntity<Object> update(@RequestBody List<InstructionDto>  instructionDTOs) {
 		
+		for(InstructionDto instructionDTO : instructionDTOs) {
 		try {
 			
 			Instruction instruction = instructionSerice.getById(instructionDTO.getInstructionId());
@@ -205,11 +213,14 @@ public class InstructionController {
 			
 			instructionSerice.save(instruction);
 			
-			return new ResponseEntity<Object>("update success!!", HttpStatus.OK);
+		//	return new ResponseEntity<Object>("update success!!", HttpStatus.OK);
 		}catch(Exception e) {
 			
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		  }
 		}
+		
+		return new ResponseEntity<Object>("update success!!", HttpStatus.OK);
 	}
 	
 	public ResponseEntity<Object> deleteById(int id) {
