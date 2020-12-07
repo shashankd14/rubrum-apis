@@ -29,7 +29,7 @@ import com.steel.product.application.service.StatusService;
 public class InstructionController {
 
 	@Autowired
-	private InstructionService instructionSerice;
+	private InstructionService instructionService;
 	
 	@Autowired
 	private InwardEntryService inwardService;
@@ -42,9 +42,9 @@ public class InstructionController {
 		
 		try {
 			
-			List<Instruction> instructioList = instructionSerice.getAll();
+			List<Instruction> instructionList = instructionService.getAll();
 			
-			return new ResponseEntity<Object>(instructioList, HttpStatus.OK);
+			return new ResponseEntity<Object>(instructionList, HttpStatus.OK);
 			
 		}catch(Exception e) {
 			
@@ -59,7 +59,7 @@ public class InstructionController {
 		
 		try {
 
-			Instruction instruction = instructionSerice.getById(theId);
+			Instruction instruction = instructionService.getById(theId);
 			return new ResponseEntity<Object>(instruction, HttpStatus.OK);
 			
 		}catch(Exception e) {
@@ -112,7 +112,7 @@ public class InstructionController {
 
 				if (instructionDTO.getParentInstructionId() != null) {
 
-					Instruction parentInstruction = instructionSerice.getById(instructionDTO.getParentInstructionId());
+					Instruction parentInstruction = instructionService.getById(instructionDTO.getParentInstructionId());
 
 					instruction.setParentInstruction(parentInstruction);
 				}
@@ -135,7 +135,7 @@ public class InstructionController {
 				instruction.setUpdatedOn(timestamp);
 				instruction.setIsDeleted(false);
 
-				instructionSerice.save(instruction);
+				instructionService.save(instruction);
 
 				// return new ResponseEntity<Object>("instruction saved successfully!",
 				// HttpStatus.OK);
@@ -157,7 +157,7 @@ public class InstructionController {
 		for(InstructionDto instructionDTO : instructionDTOs) {
 		try {
 			
-			Instruction instruction = instructionSerice.getById(instructionDTO.getInstructionId());
+			Instruction instruction = instructionService.getById(instructionDTO.getInstructionId());
 			Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 			
 			if(instructionDTO.getInwardId() != null) {
@@ -188,7 +188,7 @@ public class InstructionController {
 			
 			if(instructionDTO.getParentInstructionId() !=null) {
 				
-				Instruction parentInstruction = instructionSerice.getById(instructionDTO.getParentInstructionId());
+				Instruction parentInstruction = instructionService.getById(instructionDTO.getParentInstructionId());
 				
 				instruction.setParentInstruction(parentInstruction);
 			}
@@ -211,7 +211,7 @@ public class InstructionController {
 			instruction.setUpdatedOn(timestamp);
 			instruction.setIsDeleted(false);
 			
-			instructionSerice.save(instruction);
+			instructionService.save(instruction);
 			
 		//	return new ResponseEntity<Object>("update success!!", HttpStatus.OK);
 		}catch(Exception e) {
@@ -227,7 +227,7 @@ public class InstructionController {
 		
 		try {
 
-			instructionSerice.deleteById(id);
+			instructionService.deleteById(id);
 			return new ResponseEntity<Object>("delete success!", HttpStatus.OK);
 			
 		}catch(Exception e) {

@@ -48,4 +48,9 @@ public class InstructionServiceImpl implements InstructionService {
 		instructionRepository.deleteById(id);
 	}
 
+	@Override
+	public void updateInstructionWithDeliveryId(int instructionId, int deliveryId, String remarks) {
+		instructionRepository.updateInstructionWithDeliveryId(instructionId, deliveryId, remarks);
+	}
+
 }

@@ -79,6 +79,12 @@ public class Instruction {
 	
 	@Column(name = "packingweight")
 	private Float packingWeight;
+
+	@Column(name = "deliveryid")
+	private Integer deliveryId;
+
+	@Column(name = "remarks")
+	private String remarks;
 	
 	@Column(name = "createdby")
 	private Integer createdBy;
@@ -215,6 +221,22 @@ public class Instruction {
 
 	public void setPackingWeight(Float packingWeight) {
 		this.packingWeight = packingWeight;
+	}
+
+	public Integer getDeliveryId() {
+		return deliveryId;
+	}
+
+	public void setDeliveryId(Integer deliveryId) {
+		this.deliveryId = deliveryId;
+	}
+
+	public String getRemarks() {
+		return remarks;
+	}
+
+	public void setRemarks(String remarks) {
+		this.remarks = remarks;
 	}
 
 	public Integer getCreatedBy() {
