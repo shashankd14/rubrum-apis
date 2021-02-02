@@ -21,6 +21,11 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
     }
 
     @Override
+    public List<Instruction> getInstructionsByDeliveryId(int deliveryId) {
+        return deliveryDetailsRepo.deliveredItemsById(deliveryId);
+    }
+
+    @Override
     public DeliveryDetails getById(int theId) {
 
         Optional<DeliveryDetails> result = deliveryDetailsRepo.findById(theId);

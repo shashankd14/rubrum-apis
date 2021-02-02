@@ -1,34 +1,17 @@
 package com.steel.product.application.controller;
 
-import java.sql.Timestamp;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
 import com.steel.product.application.dto.InwardDto;
 import com.steel.product.application.entity.InwardDoc;
 import com.steel.product.application.entity.InwardEntry;
-import com.steel.product.application.service.AWSS3Service;
-import com.steel.product.application.service.InwardDocService;
-import com.steel.product.application.service.InwardEntryService;
-import com.steel.product.application.service.MaterialDescriptionService;
-import com.steel.product.application.service.MaterialGradeService;
-import com.steel.product.application.service.PartyDetailsService;
-import com.steel.product.application.service.StatusService;
-import com.steel.product.application.service.UserService;
+import com.steel.product.application.service.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.sql.Timestamp;
+import java.util.List;
 
 @RestController
 //@CrossOrigin(origins = {"http://rubrum-frontend.s3-website.ap-south-1.amazonaws.com"})
@@ -103,7 +86,8 @@ public class InwardEntryController {
 			inwardEntry.setfQuantity(inward.getPresentWeight());
 			inwardEntry.setGrossWeight(inward.getGrossWeight());
 
-			inwardEntry.setStatus(this.statusService.getStatusById(inward.getStatusId()));
+			//inwardEntry.setStatus(this.statusService.getStatusById(inward.getStatusId()));
+			inwardEntry.setStatus(this.statusService.getStatusById(1));
 			
 			inwardEntry.setvProcess(inward.getProcess());
 			inwardEntry.setFpresent(inward.getPresentWeight());

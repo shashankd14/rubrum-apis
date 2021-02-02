@@ -9,6 +9,8 @@ public interface DeliveryDetailsService {
 
     public List<Instruction> getAll();
 
+    public List<Instruction> getInstructionsByDeliveryId(int deliveryId);
+
     public DeliveryDetails getById(int theId);
 
     public DeliveryDetails save(DeliveryDetails delivery);

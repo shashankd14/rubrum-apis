@@ -1,20 +1,5 @@
 package com.steel.product.application.controller;
 
-import java.sql.Timestamp;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.steel.product.application.constants.Values;
 import com.steel.product.application.dto.InstructionDto;
 import com.steel.product.application.entity.Instruction;
@@ -22,6 +7,13 @@ import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.service.InstructionService;
 import com.steel.product.application.service.InwardEntryService;
 import com.steel.product.application.service.StatusService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.sql.Timestamp;
+import java.util.List;
 
 @RestController
 @CrossOrigin
@@ -105,7 +97,7 @@ public class InstructionController {
 				if (instructionDTO.getNoOfPieces() != null)
 					instruction.setNoOfPieces(instructionDTO.getNoOfPieces());
 
-				instruction.setStatus(statusService.getStatusById(instructionDTO.getStatus()));
+				instruction.setStatus(statusService.getStatusById(2));
 
 				if (instructionDTO.getGroupId() != null)
 					instruction.setGroupId(instructionDTO.getGroupId());

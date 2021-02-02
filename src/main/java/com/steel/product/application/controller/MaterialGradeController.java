@@ -2,15 +2,13 @@ package com.steel.product.application.controller;
 
 import com.steel.product.application.entity.MaterialGrade;
 import com.steel.product.application.service.MaterialGradeService;
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Controller
 //@CrossOrigin(origins = {"http://rubrum-frontend.s3-website.ap-south-1.amazonaws.com"})
@@ -20,8 +18,8 @@ public class MaterialGradeController {
 	@Autowired
 	private MaterialGradeService materialGradeService;
 
-	@GetMapping("/getById")
-	public ResponseEntity<Object> getById(int gradeId) {
+	@GetMapping("/getById/{gradeId}")
+	public ResponseEntity<Object> getById(@PathVariable int gradeId) {
 		try {
 			MaterialGrade materialGrade = this.materialGradeService.getById(gradeId);
 			return new ResponseEntity(materialGrade, HttpStatus.OK);
@@ -30,7 +28,7 @@ public class MaterialGradeController {
 		}
 	}
 
-	@GetMapping("/getAll")
+	@GetMapping("/list")
 	public ResponseEntity<Object> getAll() {
 		try {
 			List<MaterialGrade> matGradeList = this.materialGradeService.getAll();

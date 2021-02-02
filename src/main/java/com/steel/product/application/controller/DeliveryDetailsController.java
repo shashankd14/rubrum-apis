@@ -1,7 +1,6 @@
 package com.steel.product.application.controller;
 
 import com.steel.product.application.dto.DeliveryDto;
-import com.steel.product.application.dto.InstructionDto;
 import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.service.DeliveryDetailsService;
@@ -38,8 +37,8 @@ public class DeliveryDetailsController {
     @GetMapping("/getById/{deliveryId}")
     public ResponseEntity<Object> getById(@PathVariable("deliveryId") int deliveryId){
         try{
-            DeliveryDetails delivery = deliveryDetailsService.getById(deliveryId);
-            return new ResponseEntity<>(delivery, HttpStatus.OK);
+            List<Instruction> deliveredInstructionsById = deliveryDetailsService.getInstructionsByDeliveryId(deliveryId);
+            return new ResponseEntity<>(deliveredInstructionsById, HttpStatus.OK);
         }catch (Exception e){
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
