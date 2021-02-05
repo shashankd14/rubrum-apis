@@ -38,8 +38,8 @@ public class MaterialGradeController {
 		}
 	}
 	
-	@GetMapping("/getByMaterialId")
-	public ResponseEntity<Object> getByMaterialId(@RequestParam int materialId){
+	@GetMapping("/getByMaterialId/{materialId}")
+	public ResponseEntity<Object> getByMaterialId(@PathVariable int materialId){
 		
 		try {
 			
