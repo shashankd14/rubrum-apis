@@ -1,12 +1,9 @@
 package com.steel.product.application.dto;
 
 
-import java.util.Date;
-
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
+
+import java.util.Date;
 
 public class InstructionDto {
 
@@ -26,6 +23,14 @@ public class InstructionDto {
 	private Float weight;
 	
 	private Integer noOfPieces;
+
+	private Float actualLength;
+
+	private Float actualWidth;
+
+	private Float actualWeight;
+
+	private Integer actualNoOfPieces;
 	
 	private Integer status;
 	
@@ -200,6 +205,36 @@ public class InstructionDto {
 	public void setIsDeleted(Boolean isDeleted) {
 		this.isDeleted = isDeleted;
 	}
-	
-	
+
+	public Float getActualLength() {
+		return actualLength;
+	}
+
+	public void setActualLength(Float actualLength) {
+		this.actualLength = actualLength;
+	}
+
+	public Float getActualWidth() {
+		return actualWidth;
+	}
+
+	public void setActualWidth(Float actualWidth) {
+		this.actualWidth = actualWidth;
+	}
+
+	public Float getActualWeight() {
+		return actualWeight;
+	}
+
+	public void setActualWeight(Float actualWeight) {
+		this.actualWeight = actualWeight;
+	}
+
+	public Integer getActualNoOfPieces() {
+		return actualNoOfPieces;
+	}
+
+	public void setActualNoOfPieces(Integer actualNoOfPieces) {
+		this.actualNoOfPieces = actualNoOfPieces;
+	}
 }

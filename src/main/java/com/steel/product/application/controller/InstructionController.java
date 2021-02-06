@@ -121,6 +121,11 @@ public class InstructionController {
 				if (instructionDTO.getPackingWeight() != null)
 					instruction.setPackingWeight(instructionDTO.getPackingWeight());
 
+				instruction.setActualLength(null);
+				instruction.setActualWeight(null);
+				instruction.setActualWidth(null);
+				instruction.setActualNoOfPieces(0);
+
 				instruction.setCreatedBy(instructionDTO.getCreatedBy());
 				instruction.setUpdatedBy(instructionDTO.getUpdatedBy());
 				instruction.setCreatedOn(timestamp);
@@ -163,15 +168,24 @@ public class InstructionController {
 			
 			if(instructionDTO.getLength() != null)
 			instruction.setLength(instructionDTO.getLength());
+
+			if(instructionDTO.getActualLength() != null)
+				instruction.setActualLength(instructionDTO.getActualLength());
 			
 			if(instructionDTO.getWidth() !=null)
 			instruction.setWidth(instructionDTO.getWidth());
+
+			if(instructionDTO.getActualWidth() !=null)
+				instruction.setActualWidth(instructionDTO.getActualWidth());
 			
-			if(instructionDTO.getWeight() !=null)
-			instruction.setWeight(instructionDTO.getWeight());
+			if(instructionDTO.getActualWeight() !=null)
+			instruction.setActualWeight(instructionDTO.getActualWeight());
 			
 			if(instructionDTO.getNoOfPieces() !=null)
 			instruction.setNoOfPieces(instructionDTO.getNoOfPieces());
+
+			if(instructionDTO.getActualNoOfPieces() !=null)
+				instruction.setActualNoOfPieces(instructionDTO.getActualNoOfPieces());
 			
 			instruction.setStatus(statusService.getStatusById(instructionDTO.getStatus()));
 			

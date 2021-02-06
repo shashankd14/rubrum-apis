@@ -2,26 +2,12 @@ package com.steel.product.application.entity;
 
 
 
-import java.util.Date;
-import java.util.List;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
-
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+
+import javax.persistence.*;
+import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "product_instruction")
@@ -45,15 +31,27 @@ public class Instruction {
 	
 	@Column(name = "length")
 	private Float length;
+
+	@Column(name = "actuallength")
+	private Float actualLength;
 	
 	@Column(name = "width")
 	private Float width;
+
+	@Column(name = "actualwidth")
+	private Float actualWidth;
 	
 	@Column(name = "weight")
 	private Float weight;
+
+	@Column(name = "actualweight")
+	private Float actualWeight;
 	
 	@Column(name = "noofpieces")
 	private Integer noOfPieces;
+
+	@Column(name = "actualnoofpieces")
+	private Integer actualNoOfPieces;
 	
 	@JsonManagedReference
 	@ManyToOne(cascade = { CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH })
@@ -277,6 +275,38 @@ public class Instruction {
 
 	public void setIsDeleted(Boolean isDeleted) {
 		this.isDeleted = isDeleted;
+	}
+
+	public Float getActualLength() {
+		return actualLength;
+	}
+
+	public void setActualLength(Float actualLength) {
+		this.actualLength = actualLength;
+	}
+
+	public Float getActualWidth() {
+		return actualWidth;
+	}
+
+	public void setActualWidth(Float actualWidth) {
+		this.actualWidth = actualWidth;
+	}
+
+	public Float getActualWeight() {
+		return actualWeight;
+	}
+
+	public void setActualWeight(Float actualWeight) {
+		this.actualWeight = actualWeight;
+	}
+
+	public Integer getActualNoOfPieces() {
+		return actualNoOfPieces;
+	}
+
+	public void setActualNoOfPieces(Integer actualNoOfPieces) {
+		this.actualNoOfPieces = actualNoOfPieces;
 	}
 
 }
