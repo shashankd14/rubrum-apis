@@ -2,6 +2,7 @@ package com.steel.product.application.controller;
 
 import com.steel.product.application.constants.Values;
 import com.steel.product.application.dto.InstructionDto;
+import com.steel.product.application.dto.InstructionFinishDto;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.service.InstructionService;
@@ -61,8 +62,8 @@ public class InstructionController {
 	}
 	
 	@PostMapping("/save")
-	public ResponseEntity<Object> save(@RequestBody List<InstructionDto>  instructionDTOs) {
-		
+	public ResponseEntity<Object> save(@RequestBody List<InstructionDto> instructionDTOs ) {
+
 		for(InstructionDto instructionDTO : instructionDTOs) {
 			
 			try {
@@ -149,8 +150,9 @@ public class InstructionController {
 	}
 	
 	@PutMapping("/update")
-	public ResponseEntity<Object> update(@RequestBody List<InstructionDto>  instructionDTOs) {
-		
+	public ResponseEntity<Object> update(@RequestBody InstructionFinishDto instructionFinishDto) {
+
+		List<InstructionDto> instructionDTOs = instructionFinishDto.getInstructionDtos();
 		for(InstructionDto instructionDTO : instructionDTOs) {
 		try {
 			
@@ -186,8 +188,14 @@ public class InstructionController {
 
 			if(instructionDTO.getActualNoOfPieces() !=null)
 				instruction.setActualNoOfPieces(instructionDTO.getActualNoOfPieces());
-			
-			instruction.setStatus(statusService.getStatusById(instructionDTO.getStatus()));
+
+
+			if (instructionFinishDto.getIsFinishTask())
+				instruction.setStatus(statusService.getStatusById(3));
+
+			else
+				instruction.setStatus(statusService.getStatusById(2));
+			//instruction.setStatus(statusService.getStatusById(instructionDTO.getStatus()));
 			
 			if(instructionDTO.getGroupId() !=null)
 			instruction.setGroupId(instructionDTO.getGroupId());
@@ -210,7 +218,7 @@ public class InstructionController {
 			
 			if(instructionDTO.getPackingWeight() !=null)
 			instruction.setPackingWeight(instructionDTO.getPackingWeight());
-			
+
 			instruction.setCreatedBy(instructionDTO.getCreatedBy());
 			instruction.setUpdatedBy(instructionDTO.getUpdatedBy());
 			instruction.setCreatedOn(timestamp);
