@@ -1,9 +1,8 @@
-package com.steel.product.application.dto;
-
-import java.util.ArrayList;
-import java.util.List;
+package com.steel.product.application.dto.inward;
 
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.ArrayList;
 
 public class InwardDto {
 	

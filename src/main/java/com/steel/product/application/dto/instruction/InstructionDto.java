@@ -1,4 +1,4 @@
-package com.steel.product.application.dto;
+package com.steel.product.application.dto.instruction;
 
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -11,7 +11,7 @@ public class InstructionDto {
 	
 	private Integer inwardId;
 	
-	private Integer processdId;
+	private Integer processId;
 	
 	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
 	private Date  instructionDate;
@@ -70,12 +70,12 @@ public class InstructionDto {
 		this.inwardId = inwardId;
 	}
 
-	public Integer getProcessdId() {
-		return processdId;
+	public Integer getProcessId() {
+		return processId;
 	}
 
-	public void setProcessdId(Integer processdId) {
-		this.processdId = processdId;
+	public void setProcessId(Integer processId) {
+		this.processId = processId;
 	}
 
 	public Date getInstructionDate() {

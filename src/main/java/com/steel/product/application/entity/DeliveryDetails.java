@@ -12,6 +12,9 @@ public class DeliveryDetails {
     @Column(name = "deliveryid")
     private Integer deliveryId;
 
+    @Column(name = "vehicleno")
+    private String vehicleNo;
+
     @Column(name = "createdby")
     private Integer createdBy;
 
@@ -35,6 +38,14 @@ public class DeliveryDetails {
 
     public void setDeliveryId(Integer deliveryId) {
         this.deliveryId = deliveryId;
+    }
+
+    public String getVehicleNo() {
+        return vehicleNo;
+    }
+
+    public void setVehicleNo(String vehicleNo) {
+        this.vehicleNo = vehicleNo;
     }
 
     public Integer getCreatedBy() {

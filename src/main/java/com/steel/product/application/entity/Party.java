@@ -1,22 +1,10 @@
 package com.steel.product.application.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
+import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
-
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
 @Table(name = "product_tblpartydetails")
@@ -107,6 +95,10 @@ public class Party {
 	@JsonBackReference
 	@OneToMany(mappedBy = "party")
 	private List<InwardEntry> inwardEntry;
+
+	@JsonBackReference
+	@OneToMany(mappedBy = "partyRates")
+	private List<Rates> rates;
 
 	public int getnPartyId() {
 		return this.nPartyId;

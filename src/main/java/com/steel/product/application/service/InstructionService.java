@@ -1,9 +1,8 @@
 package com.steel.product.application.service;
 
-import java.util.List;
-
 import com.steel.product.application.entity.Instruction;
-import org.springframework.data.repository.query.Param;
+
+import java.util.List;
 
 public interface InstructionService {
 
@@ -15,6 +14,6 @@ public interface InstructionService {
 	
 	public void deleteById(int id);
 
-	public void updateInstructionWithDeliveryId(int instructionId, int deliveryId, String remarks);
+	public void updateInstructionWithDeliveryInfo(int instructionId, int deliveryId, String remarks, int rateId);
 
 }

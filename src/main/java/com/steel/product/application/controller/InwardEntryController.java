@@ -1,6 +1,6 @@
 package com.steel.product.application.controller;
 
-import com.steel.product.application.dto.InwardDto;
+import com.steel.product.application.dto.inward.InwardDto;
 import com.steel.product.application.entity.InwardDoc;
 import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.service.*;
@@ -112,8 +112,6 @@ public class InwardEntryController {
 			}
 			inwdEntrySvc.saveEntry(inwardEntry);
 
-			System.out.println("testCertificateFile "+inward.getTestCertificateFile());
-			System.out.println("inward Files "+inward.getInwardFiles());
 			if (inward.getInwardFiles() != null) {
 
 				for (MultipartFile file : inward.getInwardFiles()) {

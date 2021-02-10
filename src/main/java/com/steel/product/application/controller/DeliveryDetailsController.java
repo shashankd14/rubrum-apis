@@ -1,6 +1,7 @@
 package com.steel.product.application.controller;
 
-import com.steel.product.application.dto.DeliveryDto;
+import com.steel.product.application.dto.delivery.DeliveryDto;
+import com.steel.product.application.dto.delivery.DeliveryInfo;
 import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.service.DeliveryDetailsService;
@@ -45,7 +46,7 @@ public class DeliveryDetailsController {
     }
 
     @PostMapping("/save")
-    public ResponseEntity<Object> save(@RequestBody DeliveryDto[] deliveries) {
+    public ResponseEntity<Object> save(@RequestBody DeliveryDto deliveryDto) {
         ResponseEntity<Object> result = null;
 
 
@@ -59,11 +60,14 @@ public class DeliveryDetailsController {
                 delivery.setCreatedOn(timestamp);
                 delivery.setUpdatedOn(timestamp);
                 delivery.setDeleted(false);
+                delivery.setVehicleNo(deliveryDto.getVehicleNo());
 
                 DeliveryDetails savedDelivery = deliveryDetailsService.save(delivery);
-                for (DeliveryDto deliveryDetail : deliveries){
-                    instructionService.updateInstructionWithDeliveryId(
-                            deliveryDetail.getInstructionId(),savedDelivery.getDeliveryId(), deliveryDetail.getRemarks());
+                List<DeliveryInfo> deliveryInfos = deliveryDto.getDeliveryInfos();
+                for (DeliveryInfo deliveryInfo : deliveryInfos){
+                    instructionService.updateInstructionWithDeliveryInfo(
+                            deliveryInfo.getInstructionId(),savedDelivery.getDeliveryId(),
+                            deliveryInfo.getRemarks(), deliveryInfo.getRateId());
                 }
 
                 result = new ResponseEntity<>("Delivery details saved successfully!", HttpStatus.OK);

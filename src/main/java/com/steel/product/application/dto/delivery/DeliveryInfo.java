@@ -1,10 +1,12 @@
-package com.steel.product.application.dto;
+package com.steel.product.application.dto.delivery;
 
-public class DeliveryDto {
+public class DeliveryInfo {
 
     private Integer instructionId;
 
     private String remarks;
+
+    private int rateId;
 
     public Integer getInstructionId() {
         return instructionId;
@@ -20,5 +22,13 @@ public class DeliveryDto {
 
     public void setRemarks(String remarks) {
         this.remarks = remarks;
+    }
+
+    public int getRateId() {
+        return rateId;
+    }
+
+    public void setRateId(int rateId) {
+        this.rateId = rateId;
     }
 }

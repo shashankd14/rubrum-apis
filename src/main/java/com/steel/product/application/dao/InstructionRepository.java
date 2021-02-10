@@ -11,8 +11,11 @@ import javax.transaction.Transactional;
 public interface InstructionRepository extends JpaRepository<Instruction, Integer> {
     @Modifying
     @Transactional
-    @Query("update Instruction set deliveryId =:deliveryId, remarks =:remarks, status=4 where instructionId =:instructionId")
-    public void updateInstructionWithDeliveryId(@Param("instructionId") int instructionId,
-                                                @Param("deliveryId") int deliveryId,@Param("remarks") String remarks);
+    @Query("update Instruction set deliveryId =:deliveryId, remarks =:remarks, status=4, " +
+            "rateId =:rateId where instructionId =:instructionId")
+    public void updateInstructionWithDeliveryInfo(@Param("instructionId") int instructionId,
+                                                  @Param("deliveryId") int deliveryId,
+                                                  @Param("remarks") String remarks,
+                                                  @Param("rateId") int rateId);
 
 }

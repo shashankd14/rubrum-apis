@@ -1,4 +1,4 @@
-package com.steel.product.application.dto;
+package com.steel.product.application.dto.instruction;
 
 import java.util.List;
 

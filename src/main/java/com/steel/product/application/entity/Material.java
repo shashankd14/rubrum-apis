@@ -2,19 +2,10 @@ package com.steel.product.application.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.steel.product.application.entity.InwardEntry;
+
+import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 
 @Entity
 @Table(name = "product_tblmatdescription")
@@ -53,6 +44,10 @@ public class Material {
   @OneToMany(mappedBy = "parentMaterial", 
   		cascade = {CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH})
   private List<MaterialGrade> materialGrade;
+
+  @JsonBackReference
+  @OneToMany(mappedBy = "materialType")
+  private List<Rates> rates;
   
   public int getMatId() {
     return this.matId;

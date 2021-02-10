@@ -22,9 +22,11 @@ public class Instruction {
 	@ManyToOne
 	@JoinColumn(name = "inwardid")
 	private InwardEntry inwardId;
-	
-	@Column(name = "processdid")
-	private Integer processdId;
+
+	@JsonManagedReference
+	@ManyToOne(cascade = { CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH })
+	@JoinColumn(name = "processid")
+	private Process process;
 	 
 	@Column(name = "instructiondate")
 	private Date  instructionDate;
@@ -78,6 +80,12 @@ public class Instruction {
 	@Column(name = "packingweight")
 	private Float packingWeight;
 
+
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "rateid")
+	@JsonManagedReference
+	private Rates rates;
+
 	@Column(name = "deliveryid")
 	private Integer deliveryId;
 
@@ -117,12 +125,12 @@ public class Instruction {
 		this.inwardId = inwardId;
 	}
 
-	public Integer getProcessdId() {
-		return processdId;
+	public Process getProcess() {
+		return process;
 	}
 
-	public void setProcessdId(Integer processdId) {
-		this.processdId = processdId;
+	public void setProcess(Process process) {
+		this.process = process;
 	}
 
 	public Date getInstructionDate() {

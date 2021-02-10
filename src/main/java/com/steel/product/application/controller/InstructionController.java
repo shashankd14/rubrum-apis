@@ -1,12 +1,12 @@
 package com.steel.product.application.controller;
 
-import com.steel.product.application.constants.Values;
-import com.steel.product.application.dto.InstructionDto;
-import com.steel.product.application.dto.InstructionFinishDto;
+import com.steel.product.application.dto.instruction.InstructionDto;
+import com.steel.product.application.dto.instruction.InstructionFinishDto;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.service.InstructionService;
 import com.steel.product.application.service.InwardEntryService;
+import com.steel.product.application.service.ProcessService;
 import com.steel.product.application.service.StatusService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -29,6 +29,9 @@ public class InstructionController {
 	
 	@Autowired
 	private StatusService statusService;
+
+	@Autowired
+	private ProcessService processService;
 	
 	@GetMapping("/list")
 	public ResponseEntity<Object> getAll(){
@@ -79,11 +82,7 @@ public class InstructionController {
 					instruction.setInwardId(inward);
 				}
 
-				if (instructionDTO.getProcessdId() == 1)
-					instruction.setProcessdId(Values.CUTTINGINSTRUCTION_PROCESS_ID);
-				else if (instructionDTO.getProcessdId() == 2)
-					instruction.setProcessdId(Values.SLITTINGINSTRUCTION_PROCESS_ID);
-
+				instruction.setProcess(processService.getById(instructionDTO.getProcessId()));
 				instruction.setInstructionDate(instructionDTO.getInstructionDate());
 
 				if (instructionDTO.getLength() != null)
@@ -165,7 +164,7 @@ public class InstructionController {
 				instruction.setInwardId(inward);
 			}
 
-			instruction.setProcessdId(instructionDTO.getProcessdId());
+			instruction.setProcess(processService.getById(instructionDTO.getProcessId()));
 			instruction.setInstructionDate(instructionDTO.getInstructionDate());
 			
 			if(instructionDTO.getLength() != null)

@@ -1,13 +1,12 @@
 package com.steel.product.application.service;
 
-import java.util.List;
-import java.util.Optional;
-
+import com.steel.product.application.dao.InstructionRepository;
+import com.steel.product.application.entity.Instruction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.steel.product.application.dao.InstructionRepository;
-import com.steel.product.application.entity.Instruction;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class InstructionServiceImpl implements InstructionService {
@@ -49,8 +48,9 @@ public class InstructionServiceImpl implements InstructionService {
 	}
 
 	@Override
-	public void updateInstructionWithDeliveryId(int instructionId, int deliveryId, String remarks) {
-		instructionRepository.updateInstructionWithDeliveryId(instructionId, deliveryId, remarks);
+	public void updateInstructionWithDeliveryInfo(int instructionId, int deliveryId,
+												  String remarks, int rateId) {
+		instructionRepository.updateInstructionWithDeliveryInfo(instructionId, deliveryId, remarks, rateId);
 	}
 
 }
