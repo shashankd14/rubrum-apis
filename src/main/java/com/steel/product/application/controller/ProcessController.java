@@ -30,7 +30,7 @@ public class ProcessController {
 
     }
 
-    @GetMapping("/getAll")
+    @GetMapping("/list")
     public ResponseEntity<Object> getAll(){
         try {
             List<Process> processList = processService.getAll();

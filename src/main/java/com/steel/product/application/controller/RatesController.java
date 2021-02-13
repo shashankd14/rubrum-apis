@@ -28,7 +28,7 @@ public class RatesController {
             return new ResponseEntity(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    @GetMapping("/getAll")
+    @GetMapping("/list")
     public ResponseEntity<Object> getAll(){
         try {
             List<Rates> ratesList = ratesService.getAll();
