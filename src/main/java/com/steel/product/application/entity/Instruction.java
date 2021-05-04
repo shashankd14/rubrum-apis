@@ -31,26 +31,26 @@ public class Instruction {
 	@Column(name = "instructiondate")
 	private Date  instructionDate;
 	
-	@Column(name = "length")
-	private Float length;
+	@Column(name = "plannedlength")
+	private Float plannedLength;
 
 	@Column(name = "actuallength")
 	private Float actualLength;
 	
-	@Column(name = "width")
-	private Float width;
+	@Column(name = "plannedwidth")
+	private Float plannedWidth;
 
 	@Column(name = "actualwidth")
 	private Float actualWidth;
 	
-	@Column(name = "weight")
-	private Float weight;
+	@Column(name = "plannedweight")
+	private Float plannedWeight;
 
 	@Column(name = "actualweight")
 	private Float actualWeight;
 	
-	@Column(name = "noofpieces")
-	private Integer noOfPieces;
+	@Column(name = "plannednoofpieces")
+	private Integer plannedNoOfPieces;
 
 	@Column(name = "actualnoofpieces")
 	private Integer actualNoOfPieces;
@@ -59,6 +59,11 @@ public class Instruction {
 	@ManyToOne(cascade = { CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH })
 	@JoinColumn(name = "status")
 	private Status status;
+
+	@JsonManagedReference
+	@ManyToOne
+	@JoinColumn(name = "packetClassificationId")
+	private PacketClassification packetClassification;
 	
 	@Column(name = "groupid")
 	private Integer groupId ;
@@ -141,36 +146,36 @@ public class Instruction {
 		this.instructionDate = instructionDate;
 	}
 
-	public Float getLength() {
-		return length;
+	public Float getPlannedLength() {
+		return plannedLength;
 	}
 
-	public void setLength(Float length) {
-		this.length = length;
+	public void setPlannedLength(Float plannedLength) {
+		this.plannedLength = plannedLength;
 	}
 
-	public Float getWidth() {
-		return width;
+	public Float getPlannedWidth() {
+		return plannedWidth;
 	}
 
-	public void setWidth(Float width) {
-		this.width = width;
+	public void setPlannedWidth(Float plannedWidth) {
+		this.plannedWidth = plannedWidth;
 	}
 
-	public Float getWeight() {
-		return weight;
+	public Float getPlannedWeight() {
+		return plannedWeight;
 	}
 
-	public void setWeight(Float weight) {
-		this.weight = weight;
+	public void setPlannedWeight(Float plannedWeight) {
+		this.plannedWeight = plannedWeight;
 	}
 
-	public Integer getNoOfPieces() {
-		return noOfPieces;
+	public Integer getPlannedNoOfPieces() {
+		return plannedNoOfPieces;
 	}
 
-	public void setNoOfPieces(Integer noOfPieces) {
-		this.noOfPieces = noOfPieces;
+	public void setPlannedNoOfPieces(Integer plannedNoOfPieces) {
+		this.plannedNoOfPieces = plannedNoOfPieces;
 	}
 
 	public Status getStatus() {
@@ -317,4 +322,19 @@ public class Instruction {
 		this.actualNoOfPieces = actualNoOfPieces;
 	}
 
+	public Rates getRates() {
+		return rates;
+	}
+
+	public void setRates(Rates rates) {
+		this.rates = rates;
+	}
+
+	public PacketClassification getPacketClassification() {
+		return packetClassification;
+	}
+
+	public void setPacketClassification(PacketClassification packetClassification) {
+		this.packetClassification = packetClassification;
+	}
 }

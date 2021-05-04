@@ -16,13 +16,13 @@ public class InstructionDto {
 	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
 	private Date  instructionDate;
 	
-	private Float length;
+	private Float plannedLength;
 	
-	private Float width;
+	private Float plannedWidth;
 	
-	private Float weight;
+	private Float plannedWeight;
 	
-	private Integer noOfPieces;
+	private Integer plannedNoOfPieces;
 
 	private Float actualLength;
 
@@ -33,6 +33,8 @@ public class InstructionDto {
 	private Integer actualNoOfPieces;
 	
 	private Integer status;
+
+	private Integer packetClassificationId;
 	
 	private Integer groupId ;
 	
@@ -86,36 +88,36 @@ public class InstructionDto {
 		this.instructionDate = instructionDate;
 	}
 
-	public Float getLength() {
-		return length;
+	public Float getPlannedLength() {
+		return plannedLength;
 	}
 
-	public void setLength(Float length) {
-		this.length = length;
+	public void setPlannedLength(Float plannedLength) {
+		this.plannedLength = plannedLength;
 	}
 
-	public Float getWidth() {
-		return width;
+	public Float getPlannedWidth() {
+		return plannedWidth;
 	}
 
-	public void setWidth(Float width) {
-		this.width = width;
+	public void setPlannedWidth(Float plannedWidth) {
+		this.plannedWidth = plannedWidth;
 	}
 
-	public Float getWeight() {
-		return weight;
+	public Float getPlannedWeight() {
+		return plannedWeight;
 	}
 
-	public void setWeight(Float weight) {
-		this.weight = weight;
+	public void setPlannedWeight(Float plannedWeight) {
+		this.plannedWeight = plannedWeight;
 	}
 
-	public Integer getNoOfPieces() {
-		return noOfPieces;
+	public Integer getPlannedNoOfPieces() {
+		return plannedNoOfPieces;
 	}
 
-	public void setNoOfPieces(Integer noOfPieces) {
-		this.noOfPieces = noOfPieces;
+	public void setPlannedNoOfPieces(Integer plannedNoOfPieces) {
+		this.plannedNoOfPieces = plannedNoOfPieces;
 	}
 
 	public Integer getStatus() {
@@ -236,5 +238,13 @@ public class InstructionDto {
 
 	public void setActualNoOfPieces(Integer actualNoOfPieces) {
 		this.actualNoOfPieces = actualNoOfPieces;
+	}
+
+	public Integer getPacketClassificationId() {
+		return packetClassificationId;
+	}
+
+	public void setPacketClassificationId(Integer packetClassificationId) {
+		this.packetClassificationId = packetClassificationId;
 	}
 }

@@ -16,4 +16,6 @@ public interface DeliveryDetailsService {
     public DeliveryDetails save(DeliveryDetails delivery);
 
     public void deleteById(int id);
+
+    public List<DeliveryDetails> deliveryList();
 }

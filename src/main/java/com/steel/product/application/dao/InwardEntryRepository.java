@@ -1,15 +1,12 @@
 package com.steel.product.application.dao;
 
 import com.steel.product.application.entity.InwardEntry;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-
-import net.minidev.json.JSONObject;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import java.util.List;
+import java.util.Optional;
 
 public interface InwardEntryRepository extends JpaRepository<InwardEntry, Integer> {
   @Query(nativeQuery = true, value = "select * from aspen.product_tblinwardentry where nPartyId= :partyId order by dReceivedDate ")
@@ -19,4 +16,6 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
   String isCoilNumberPresent(@Param("coilNumber") String paramString);
   
   <T> Optional<InwardEntry> findByCoilNumber(String coilNumber);
+
+  //List<InwardEntry> findInstructionByStatus();
 }

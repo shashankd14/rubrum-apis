@@ -55,4 +55,9 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
     public void deleteById(int id) {
         deliveryDetailsRepo.deleteById(id);
     }
+
+    @Override
+    public List<DeliveryDetails> deliveryList() {
+        return deliveryDetailsRepo.findAll();
+    }
 }

@@ -15,6 +15,9 @@ public class DeliveryDetails {
     @Column(name = "vehicleno")
     private String vehicleNo;
 
+    @Column(name = "totalweight")
+    private String totalWeight;
+
     @Column(name = "createdby")
     private Integer createdBy;
 
@@ -46,6 +49,14 @@ public class DeliveryDetails {
 
     public void setVehicleNo(String vehicleNo) {
         this.vehicleNo = vehicleNo;
+    }
+
+    public String getTotalWeight() {
+        return totalWeight;
+    }
+
+    public void setTotalWeight(String totalWeight) {
+        this.totalWeight = totalWeight;
     }
 
     public Integer getCreatedBy() {

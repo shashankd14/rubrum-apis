@@ -7,6 +7,10 @@ import java.util.List;
 public interface InstructionService {
 
 	public List<Instruction> getAll();
+
+	public List<Instruction> getAllWIP();
+
+	public List<Instruction> getAllWIPList();
 	
 	public Instruction getById(int theId);
 	
@@ -14,6 +18,6 @@ public interface InstructionService {
 	
 	public void deleteById(int id);
 
-	public void updateInstructionWithDeliveryInfo(int instructionId, int deliveryId, String remarks, int rateId);
+	public void updateInstructionWithDeliveryRemarks(int deliveryId, String remarks,int instructionId);
 
 }

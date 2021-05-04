@@ -74,6 +74,9 @@ public class Party {
 	@Column(name = "nbillingupdates")
 	private String nBillingUpdates;
 
+	@Column(name = "handling_charges")
+	private String handlingCharges;
+
 	@Column(name = "createdby")
 	private int createdBy;
 
@@ -316,4 +319,19 @@ public class Party {
 		this.inwardEntry = inwardEntry;
 	}
 
+	public List<Rates> getRates() {
+		return rates;
+	}
+
+	public void setRates(List<Rates> rates) {
+		this.rates = rates;
+	}
+
+	public String getHandlingCharges() {
+		return handlingCharges;
+	}
+
+	public void setHandlingCharges(String handlingCharges) {
+		this.handlingCharges = handlingCharges;
+	}
 }

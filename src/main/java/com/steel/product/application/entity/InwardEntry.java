@@ -1,28 +1,12 @@
 package com.steel.product.application.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
+import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
-
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
-
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
 @Table(name = "product_tblinwardentry")
@@ -77,12 +61,12 @@ public class InwardEntry {
 	private String vInvoiceNo;
 
 	@JsonManagedReference
-	@ManyToOne(cascade = { CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH })
+	@ManyToOne
 	@JoinColumn(name = "nmatid")
 	private Material material;
 	
 	@JsonManagedReference
-	@ManyToOne(cascade = { CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH })
+	@ManyToOne
 	@JoinColumn(name = "materialgradeid")
 	private MaterialGrade materialGrade;
 
@@ -102,7 +86,7 @@ public class InwardEntry {
 	private float grossWeight;
 
 	@JsonManagedReference
-	@ManyToOne(cascade = { CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH })
+	@ManyToOne
 	@JoinColumn(name = "vstatus")
 	private Status status;
 
@@ -110,7 +94,7 @@ public class InwardEntry {
 	private String vProcess;
 
 	@Column(name = "fpresent")
-	private float fpresent;
+	private Float fpresent;
 
 	@Column(name = "billedweight")
 	private float billedweight;
@@ -124,11 +108,11 @@ public class InwardEntry {
 	@Column(name = "remarks")
 	private String remarks;
 
-	@ManyToOne(cascade = { CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH })
+	@ManyToOne
 	@JoinColumn(name = "createdby")
 	private User createdBy;
 
-	@ManyToOne(cascade = { CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH })
+	@ManyToOne
 	@JoinColumn(name = "updatedby")
 	private User updatedBy;
 
@@ -248,16 +232,18 @@ public class InwardEntry {
 		this.vProcess = vProcess;
 	}
 
-	public float getFpresent() {
-		return this.fpresent;
-	}
 
-	public void setFpresent(float fpresent) {
-		this.fpresent = fpresent;
-	}
 
 	public float getBilledweight() {
 		return this.billedweight;
+	}
+
+	public Float getFpresent() {
+		return fpresent;
+	}
+
+	public void setFpresent(Float fpresent) {
+		this.fpresent = fpresent;
 	}
 
 	public void setBilledweight(float billedweight) {

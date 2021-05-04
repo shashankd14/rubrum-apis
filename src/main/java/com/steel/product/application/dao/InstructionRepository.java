@@ -7,15 +7,21 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import javax.transaction.Transactional;
+import java.util.List;
 
 public interface InstructionRepository extends JpaRepository<Instruction, Integer> {
     @Modifying
     @Transactional
-    @Query("update Instruction set deliveryId =:deliveryId, remarks =:remarks, status=4, " +
-            "rateId =:rateId where instructionId =:instructionId")
-    public void updateInstructionWithDeliveryInfo(@Param("instructionId") int instructionId,
+    @Query("update Instruction set deliveryId =:deliveryId, remarks =:remarks, status=4 " +
+            " where instructionId =:instructionId")
+    public void updateInstructionWithDeliveryRemarks(@Param("instructionId") int instructionId,
                                                   @Param("deliveryId") int deliveryId,
-                                                  @Param("remarks") String remarks,
-                                                  @Param("rateId") int rateId);
+                                                  @Param("remarks") String remarks);
+
+    @Query(" from Instruction where processId !=7")
+    public List<Instruction> getAllWIP();
+
+    @Query(" from Instruction where status = 2")
+    public List<Instruction> getAllWIPList();
 
 }

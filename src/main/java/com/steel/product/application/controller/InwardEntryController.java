@@ -136,18 +136,19 @@ public class InwardEntryController {
 	}
   
   @PutMapping({"/update"})
-	public ResponseEntity<Object> updateEntry(@ModelAttribute InwardDto inward) {
+	public ResponseEntity<Object> updateEntry(@RequestBody InwardDto inward) {
 		InwardEntry inwardEntry = new InwardEntry();
 		System.out.println("DTO details " + inward);
 		try {
-			inwardEntry.setInwardEntryId(inward.getInwardId());
+			inwardEntry = inwdEntrySvc.getByEntryId(inward.getInwardId());
 
 			inwardEntry.setPurposeType(inward.getPurposeType());
 			inwardEntry.setParty(this.partyDetailsService.getPartyById(inward.getPartyId()));
 			inwardEntry.setCoilNumber(inward.getCoilNumber());
 			inwardEntry.setBatchNumber(inward.getBatchNumber());
 			inwardEntry.setdReceivedDate(Timestamp.valueOf(inward.getInwardDate()));
-			inwardEntry.setdBillDate(Timestamp.valueOf(inward.getBillDate()));
+			if(inward.getBillDate() !=null)
+				inwardEntry.setdBillDate(Timestamp.valueOf(inward.getBillDate()));
 
 			inwardEntry.setvLorryNo(inward.getVehicleNumber());
 			inwardEntry.setvInvoiceNo(inward.getInvoiceNumber());
