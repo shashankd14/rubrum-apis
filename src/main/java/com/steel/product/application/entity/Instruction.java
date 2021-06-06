@@ -67,6 +67,9 @@ public class Instruction {
 	
 	@Column(name = "groupid")
 	private Integer groupId ;
+
+	@Column(name = "parentgroupid")
+	private Integer parentGroupId ;
 	
 	@OneToMany(mappedBy = "parentInstruction", fetch = FetchType.EAGER)
 	private List<Instruction> childInstructions;
@@ -338,5 +341,13 @@ public class Instruction {
 
 	public void setPacketClassification(PacketClassification packetClassification) {
 		this.packetClassification = packetClassification;
+	}
+
+	public Integer getParentGroupId() {
+		return parentGroupId;
+	}
+
+	public void setParentGroupId(Integer parentGroupId) {
+		this.parentGroupId = parentGroupId;
 	}
 }

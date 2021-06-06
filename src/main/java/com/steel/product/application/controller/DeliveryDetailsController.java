@@ -39,6 +39,7 @@ public class DeliveryDetailsController {
             List<Instruction> deliveredInstructionsById = deliveryDetailsService.getInstructionsByDeliveryId(deliveryId);
             return new ResponseEntity<>(deliveredInstructionsById, HttpStatus.OK);
         }catch (Exception e){
+            e.getMessage();
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

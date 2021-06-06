@@ -13,6 +13,6 @@ public interface DeliveryDetailsRepository extends JpaRepository<DeliveryDetails
     @Query(" from Instruction where deliveryId != NULL AND status = 4")
     public List<Instruction> deliveredItems();
 
-    @Query(" from Instruction where deliveryId =:deliveryId and isDelivered=false")
+    @Query(" from Instruction where deliveryId =:deliveryId")
     public List<Instruction> deliveredItemsById(@Param("deliveryId") int deliveryId);
 }
