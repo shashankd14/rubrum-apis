@@ -1,10 +1,12 @@
 package com.steel.product.application.dto.delivery;
 
-public class DeliveryRemarks {
+public class DeliveryItemDetails {
 
     private int instructionId;
 
     private String remarks;
+
+    private Float weight;
 
     public int getInstructionId() {
         return instructionId;
@@ -22,4 +24,11 @@ public class DeliveryRemarks {
         this.remarks = remarks;
     }
 
+    public Float getWeight() {
+        return weight;
+    }
+
+    public void setWeight(Float weight) {
+        this.weight = weight;
+    }
 }

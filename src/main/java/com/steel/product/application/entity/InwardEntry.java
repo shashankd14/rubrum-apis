@@ -96,6 +96,9 @@ public class InwardEntry {
 	@Column(name = "fpresent")
 	private Float fpresent;
 
+	@Column(name = "valueofgoods")
+	private Float valueOfGoods;
+
 	@Column(name = "billedweight")
 	private float billedweight;
 
@@ -231,8 +234,6 @@ public class InwardEntry {
 	public void setvProcess(String vProcess) {
 		this.vProcess = vProcess;
 	}
-
-
 
 	public float getBilledweight() {
 		return this.billedweight;
@@ -429,5 +430,11 @@ public class InwardEntry {
 		this.instruction = instruction;
 	}
 
-	
+	public Float getValueOfGoods() {
+		return valueOfGoods;
+	}
+
+	public void setValueOfGoods(Float valueOfGoods) {
+		this.valueOfGoods = valueOfGoods;
+	}
 }

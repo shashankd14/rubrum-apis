@@ -4,16 +4,16 @@ import java.util.List;
 
 public class DeliveryDto {
 
-    private List<DeliveryRemarks> packetRemarks;
+    private List<DeliveryItemDetails> deliveryItemDetails;
 
     private String vehicleNo;
 
-    public List<DeliveryRemarks> getPacketRemarks() {
-        return packetRemarks;
+    public List<DeliveryItemDetails> getDeliveryItemDetails() {
+        return deliveryItemDetails;
     }
 
-    public void setPacketRemarks(List<DeliveryRemarks> packetRemarks) {
-        this.packetRemarks = packetRemarks;
+    public void setDeliveryItemDetails(List<DeliveryItemDetails> deliveryItemDetails) {
+        this.deliveryItemDetails = deliveryItemDetails;
     }
 
     public String getVehicleNo() {

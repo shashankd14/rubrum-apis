@@ -2,15 +2,14 @@ package com.steel.product.application.service;
 
 import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.entity.InwardEntry;
-import com.steel.product.application.service.InwardEntryService;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class InwardEntryServiceImpl implements InwardEntryService {
@@ -59,8 +58,16 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 		String value = this.inwdEntryRepo.isCoilNumberPresent(coilNumber);
 		if (value != null && value.length() != 0) {
 			isPresent = true;
-		} else {
-			isPresent = false;
+		}
+		return isPresent;
+	}
+
+	@Override
+	public boolean isCustomerBatchIdPresent(String customerBatchId) {
+		boolean isPresent = false;
+		String value = this.inwdEntryRepo.isCustomerBatchIdPresent(customerBatchId);
+		if (value != null && value.length() != 0) {
+			isPresent = true;
 		}
 		return isPresent;
 	}

@@ -50,6 +50,8 @@ public class InwardDto {
 
 	private float presentWeight;
 
+	private float valueOfGoods;
+
 	private int createdBy;
 
 	private int updatedBy;
@@ -287,14 +289,11 @@ public class InwardDto {
 		this.remarks = remarks;
 	}
 
-	public String toString() {
-		return "InwardDto [partyId=" + this.partyId + ", coilNumber=" + this.coilNumber + ", inwardDate="
-				+ this.inwardDate + ", vehicleNumber=" + this.vehicleNumber + ", invoiceDate=" + this.invoiceDate
-				+ ", invoiceNumber=" + this.invoiceNumber + ", materialId=" + this.materialId + ", width=" + this.width
-				+ ", thickness=" + this.thickness + ", length=" + this.length + ", statusId=" + this.statusId
-				+ ", heatnumber=" +  ", plantname=" +  ", process=" + this.process
-				+ ", presentWeight=" + this.presentWeight + ", cast="  + ", materialGradeId="
-				+ this.materialGradeId + ", createdBy=" + this.createdBy + ", updatedBy=" + this.updatedBy + "]";
+	public float getValueOfGoods() {
+		return valueOfGoods;
 	}
 
+	public void setValueOfGoods(float valueOfGoods) {
+		this.valueOfGoods = valueOfGoods;
+	}
 }

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -85,9 +86,9 @@ public class InstructionController {
     @PostMapping("/save")
     public ResponseEntity<Object> save(@RequestBody List<InstructionDto> instructionDTOs) {
 
+        List<Instruction> savedInstructionList = new ArrayList<Instruction>();
+        Instruction savedInstruction = new Instruction();
         for (InstructionDto instructionDTO : instructionDTOs) {
-
-            //InwardEntry inward = new InwardEntry();
             try {
 
                 Instruction instruction = new Instruction();
@@ -142,7 +143,7 @@ public class InstructionController {
                 instruction.setActualLength(null);
                 instruction.setActualWeight(null);
                 instruction.setActualWidth(null);
-                instruction.setActualNoOfPieces(0);
+                instruction.setActualNoOfPieces(null);
 
                 instruction.setCreatedBy(instructionDTO.getCreatedBy());
                 instruction.setUpdatedBy(instructionDTO.getUpdatedBy());
@@ -150,19 +151,16 @@ public class InstructionController {
                 instruction.setUpdatedOn(timestamp);
                 instruction.setIsDeleted(false);
 
-                instructionService.save(instruction);
-
-                // return new ResponseEntity<Object>("instruction saved successfully!",
-                // HttpStatus.OK);
+                savedInstruction = instructionService.save(instruction);
+                savedInstructionList.add(savedInstruction);
             } catch (Exception e) {
                 e.printStackTrace();
                 return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
             }
 
-
         }
 
-        return new ResponseEntity<Object>("instruction saved successfully!", HttpStatus.OK);
+        return new ResponseEntity<Object>(savedInstructionList, HttpStatus.OK);
 
     }
 
@@ -170,6 +168,8 @@ public class InstructionController {
     public ResponseEntity<Object> update(@RequestBody InstructionFinishDto instructionFinishDto) {
 
         List<InstructionDto> instructionDTOs = instructionFinishDto.getInstructionDtos();
+        List<Instruction> updatedInstructionList = new ArrayList<Instruction>();
+        Instruction updatedInstruction = new Instruction();
         for (InstructionDto instructionDTO : instructionDTOs) {
             try {
 
@@ -207,13 +207,8 @@ public class InstructionController {
                 if (instructionDTO.getActualNoOfPieces() != null)
                     instruction.setActualNoOfPieces(instructionDTO.getActualNoOfPieces());
 
-
-                if (instructionFinishDto.getIsFinishTask())
-                    instruction.setStatus(statusService.getStatusById(3));
-
-                else
-                    instruction.setStatus(statusService.getStatusById(2));
-                //instruction.setStatus(statusService.getStatusById(instructionDTO.getStatus()));
+                if (instructionDTO.getStatus() != null)
+                    instruction.setStatus(statusService.getStatusById(instructionDTO.getStatus()));
 
                 if (instructionDTO.getPacketClassificationId() != null)
                     instruction.setPacketClassification(packetClassificationService.getPacketClassificationById(instructionDTO.getPacketClassificationId()));
@@ -244,7 +239,8 @@ public class InstructionController {
                 instruction.setUpdatedOn(timestamp);
                 instruction.setIsDeleted(false);
 
-                instructionService.save(instruction);
+                updatedInstruction = instructionService.save(instruction);
+                updatedInstructionList.add(updatedInstruction);
 
                 //	return new ResponseEntity<Object>("update success!!", HttpStatus.OK);
             } catch (Exception e) {
@@ -253,14 +249,17 @@ public class InstructionController {
             }
         }
 
-        return new ResponseEntity<Object>("update success!!", HttpStatus.OK);
+        return new ResponseEntity<Object>(updatedInstructionList, HttpStatus.OK);
     }
 
-    public ResponseEntity<Object> deleteById(int id) {
+    @DeleteMapping("/deleteById/{instructionId}")
+    public ResponseEntity<Object> deleteById(@PathVariable int instructionId) {
 
         try {
 
-            instructionService.deleteById(id);
+            Instruction deleteInstruction = new Instruction();
+            deleteInstruction = instructionService.getById(instructionId);
+            instructionService.deleteById(deleteInstruction);
             return new ResponseEntity<Object>("delete success!", HttpStatus.OK);
 
         } catch (Exception e) {

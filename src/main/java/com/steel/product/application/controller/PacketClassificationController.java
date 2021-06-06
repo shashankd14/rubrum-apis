@@ -30,10 +30,10 @@ public class PacketClassificationController {
     }
 
     @GetMapping({"/getById/{packetClassificationId}"})
-    public ResponseEntity<Object> getAddressById(@PathVariable int packetClassificationId) {
+    public ResponseEntity<Object> getAddressById(@PathVariable("packetClassificationId") int theId) {
         try {
             PacketClassification packetClassification = new PacketClassification();
-            packetClassification = packetClassificationService.getPacketClassificationById(packetClassificationId);
+            packetClassification = packetClassificationService.getPacketClassificationById(theId);
             return new ResponseEntity(packetClassification, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);

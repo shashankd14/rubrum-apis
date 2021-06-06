@@ -1,7 +1,10 @@
 package com.steel.product.application.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "product_tbl_delivery_details")
@@ -16,7 +19,7 @@ public class DeliveryDetails {
     private String vehicleNo;
 
     @Column(name = "totalweight")
-    private String totalWeight;
+    private Float totalWeight;
 
     @Column(name = "createdby")
     private Integer createdBy;
@@ -35,6 +38,11 @@ public class DeliveryDetails {
     @Column(name = "isdeleted", columnDefinition = "BIT")
     private Boolean isDeleted;
 
+    @JsonBackReference
+    @OneToMany(mappedBy = "status", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH,
+            CascadeType.REFRESH })
+    private List<Instruction> instruction;
+
     public Integer getDeliveryId() {
         return deliveryId;
     }
@@ -51,11 +59,11 @@ public class DeliveryDetails {
         this.vehicleNo = vehicleNo;
     }
 
-    public String getTotalWeight() {
+    public Float getTotalWeight() {
         return totalWeight;
     }
 
-    public void setTotalWeight(String totalWeight) {
+    public void setTotalWeight(Float totalWeight) {
         this.totalWeight = totalWeight;
     }
 

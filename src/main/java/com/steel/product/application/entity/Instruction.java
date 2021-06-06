@@ -91,8 +91,10 @@ public class Instruction {
 	@JsonManagedReference
 	private Rates rates;
 
-	@Column(name = "deliveryid")
-	private Integer deliveryId;
+	@JsonManagedReference
+	@ManyToOne
+	@JoinColumn(name = "deliveryid")
+	private DeliveryDetails deliveryDetails;
 
 	@Column(name = "remarks")
 	private String remarks;
@@ -234,12 +236,12 @@ public class Instruction {
 		this.packingWeight = packingWeight;
 	}
 
-	public Integer getDeliveryId() {
-		return deliveryId;
+	public DeliveryDetails getDeliveryDetails() {
+		return deliveryDetails;
 	}
 
-	public void setDeliveryId(Integer deliveryId) {
-		this.deliveryId = deliveryId;
+	public void setDeliveryDetails(DeliveryDetails deliveryDetails) {
+		this.deliveryDetails = deliveryDetails;
 	}
 
 	public String getRemarks() {

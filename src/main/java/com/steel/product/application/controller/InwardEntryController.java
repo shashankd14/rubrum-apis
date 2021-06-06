@@ -91,6 +91,7 @@ public class InwardEntryController {
 			
 			inwardEntry.setvProcess(inward.getProcess());
 			inwardEntry.setFpresent(inward.getPresentWeight());
+			inwardEntry.setValueOfGoods(inward.getValueOfGoods());
 
 			inwardEntry.setBilledweight(0);
 			inwardEntry.setParentCoilNumber(null);
@@ -287,4 +288,14 @@ public class InwardEntryController {
       return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     } 
   }
+
+	@GetMapping({"/isCustomerBatchIdPresent"})
+	public ResponseEntity<Object> isCustomerBatchPresent(@RequestParam String customerBatchId) {
+		try {
+			boolean isPresent = this.inwdEntrySvc.isCustomerBatchIdPresent(customerBatchId);
+			return new ResponseEntity<Object>(Boolean.valueOf(isPresent), HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 }

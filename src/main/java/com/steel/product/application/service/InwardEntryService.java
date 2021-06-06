@@ -1,8 +1,9 @@
 package com.steel.product.application.service;
 
 import com.steel.product.application.entity.InwardEntry;
-import java.util.List;
 import org.springframework.http.ResponseEntity;
+
+import java.util.List;
 
 public interface InwardEntryService {
   InwardEntry saveEntry(InwardEntry paramInwardEntry);
@@ -20,4 +21,6 @@ public interface InwardEntryService {
   void deleteEntity(InwardEntry paramInwardEntry);
   
   boolean isCoilNumberPresent(String paramString);
+
+  boolean isCustomerBatchIdPresent(String customerBatchId);
 }

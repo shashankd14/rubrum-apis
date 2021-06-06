@@ -53,7 +53,8 @@ public class InstructionServiceImpl implements InstructionService {
 	}
 
 	@Override
-	public void save(Instruction instruction) {
+	public Instruction save(Instruction instruction) {
+		Instruction savedInstruction = new Instruction();
 		if (instruction.getInwardId()!=null){
 			InwardEntry inwardEntry = instruction.getInwardId();
 			if (instruction.getPlannedWeight()!=null && inwardEntry.getFpresent() != null)
@@ -61,12 +62,26 @@ public class InstructionServiceImpl implements InstructionService {
 			inwardEntryRepository.save(inwardEntry);
 		}
 
-		instructionRepository.save(instruction);
+		savedInstruction = instructionRepository.save(instruction);
+
+		return savedInstruction;
 	}
 
 	@Override
-	public void deleteById(int id) {
-		instructionRepository.deleteById(id);
+	public void deleteById(Instruction deleteInstruction) {
+		if(deleteInstruction.getInwardId()!=null){
+			InwardEntry inwardEntry = deleteInstruction.getInwardId();
+			if (deleteInstruction.getPlannedWeight()!=null && inwardEntry.getFpresent() != null)
+				inwardEntry.setFpresent((inwardEntry.getFpresent()+deleteInstruction.getPlannedWeight()));
+			inwardEntryRepository.save(inwardEntry);
+		}else{
+			Instruction parentInstruction = deleteInstruction.getParentInstruction();
+			if (deleteInstruction.getPlannedWeight()!=null && parentInstruction.getPlannedWeight() != null)
+				parentInstruction.setPlannedWeight((deleteInstruction.getPlannedWeight()+parentInstruction.getPlannedWeight()));
+			instructionRepository.save(parentInstruction);
+		}
+
+		instructionRepository.deleteById(deleteInstruction.getInstructionId());
 	}
 
 	@Override

@@ -12,7 +12,7 @@ public class PacketClassification {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "classification_id")
-    private String classificationId;
+    private Integer classificationId;
 
     @Column(name = "classification_name")
     private String classificationName;
@@ -21,11 +21,11 @@ public class PacketClassification {
     @OneToMany(mappedBy = "packetClassification")
     private List<Instruction> instructionClass;
 
-    public String getClassificationId() {
+    public Integer getClassificationId() {
         return classificationId;
     }
 
-    public void setClassificationId(String classificationId) {
+    public void setClassificationId(Integer classificationId) {
         this.classificationId = classificationId;
     }
 

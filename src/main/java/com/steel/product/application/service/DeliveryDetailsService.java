@@ -1,5 +1,6 @@
 package com.steel.product.application.service;
 
+import com.steel.product.application.dto.delivery.DeliveryDto;
 import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.Instruction;
 
@@ -13,7 +14,7 @@ public interface DeliveryDetailsService {
 
     public DeliveryDetails getById(int theId);
 
-    public DeliveryDetails save(DeliveryDetails delivery);
+    public DeliveryDetails save(DeliveryDto deliveryDto);
 
     public void deleteById(int id);
 

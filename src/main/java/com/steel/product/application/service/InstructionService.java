@@ -14,9 +14,9 @@ public interface InstructionService {
 	
 	public Instruction getById(int theId);
 	
-	public void save(Instruction instruction);
+	public Instruction save(Instruction instruction);
 	
-	public void deleteById(int id);
+	public void deleteById(Instruction deleteInstruction);
 
 	public void updateInstructionWithDeliveryRemarks(int deliveryId, String remarks,int instructionId);
 

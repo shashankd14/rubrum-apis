@@ -1,11 +1,14 @@
 package com.steel.product.application.service;
 
 import com.steel.product.application.dao.DeliveryDetailsRepository;
+import com.steel.product.application.dto.delivery.DeliveryDto;
+import com.steel.product.application.dto.delivery.DeliveryItemDetails;
 import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.Instruction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,6 +17,9 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 
     @Autowired
     private DeliveryDetailsRepository deliveryDetailsRepo;
+
+    @Autowired
+    private InstructionService instructionService;
 
     @Override
     public List<Instruction> getAll() {
@@ -44,10 +50,38 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
     }
 
     @Override
-    public DeliveryDetails save(DeliveryDetails delivery) {
+    public DeliveryDetails save(DeliveryDto deliveryDto) {
 
-        DeliveryDetails savedDelivery = deliveryDetailsRepo.save(delivery);
+        DeliveryDetails savedDelivery = new DeliveryDetails();
+        try {
 
+            DeliveryDetails delivery = new DeliveryDetails();
+            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+
+            delivery.setDeliveryId(0);
+            delivery.setCreatedBy(1);
+            delivery.setUpdatedBy(1);
+            delivery.setCreatedOn(timestamp);
+            delivery.setUpdatedOn(timestamp);
+            delivery.setDeleted(false);
+            delivery.setVehicleNo(deliveryDto.getVehicleNo());
+
+            float totalWeight = 0f;
+
+            savedDelivery = deliveryDetailsRepo.save(delivery);
+
+            List<DeliveryItemDetails> deliveryItemDetails = deliveryDto.getDeliveryItemDetails();
+            for (DeliveryItemDetails itemDetails : deliveryItemDetails) {
+                instructionService.updateInstructionWithDeliveryRemarks(savedDelivery.getDeliveryId(),
+                        itemDetails.getRemarks(), itemDetails.getInstructionId());
+                totalWeight = totalWeight + itemDetails.getWeight();
+
+            }
+            delivery.setTotalWeight(totalWeight);
+            deliveryDetailsRepo.save(delivery);
+        }catch (Exception e) {
+            return null;
+        }
         return savedDelivery;
     }
 
