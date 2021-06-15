@@ -123,6 +123,9 @@ public class InstructionController {
                 if (instructionDTO.getGroupId() != null)
                     instruction.setGroupId(instructionDTO.getGroupId());
 
+                if (instructionDTO.getParentGroupId() != null)
+                    instruction.setParentGroupId(instructionDTO.getParentGroupId());
+
                 if (instructionDTO.getParentInstructionId() != null) {
 
                     Instruction parentInstruction = instructionService.getById(instructionDTO.getParentInstructionId());
@@ -170,6 +173,13 @@ public class InstructionController {
         List<InstructionDto> instructionDTOs = instructionFinishDto.getInstructionDtos();
         List<Instruction> updatedInstructionList = new ArrayList<Instruction>();
         Instruction updatedInstruction = new Instruction();
+        InwardEntry inwardEntry = new InwardEntry();
+
+        if(instructionFinishDto.getIsCoilFinished() && instructionFinishDto.getCoilNumber()!=null){
+            inwardEntry = inwardService.getByCoilNumber(instructionFinishDto.getCoilNumber());
+            inwardEntry.setStatus(statusService.getStatusById(3));
+            inwardService.saveEntry(inwardEntry);
+        }
         for (InstructionDto instructionDTO : instructionDTOs) {
             try {
 

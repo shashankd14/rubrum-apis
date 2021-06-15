@@ -88,10 +88,9 @@ public class Instruction {
 	@Column(name = "packingweight")
 	private Float packingWeight;
 
-
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "rateid")
-	@JsonManagedReference
+	@JsonManagedReference(value = "instruction-rates")
 	private Rates rates;
 
 	@JsonManagedReference

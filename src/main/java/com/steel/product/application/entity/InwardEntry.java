@@ -18,7 +18,7 @@ public class InwardEntry {
 
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "npartyid")
-	@JsonManagedReference
+	@JsonManagedReference(value = "party-inward")
 	private Party party;
 
 	@Column(name = "coilnumber")

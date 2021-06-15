@@ -45,7 +45,7 @@ public class Material {
   		cascade = {CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH})
   private List<MaterialGrade> materialGrade;
 
-  @JsonBackReference
+  @JsonBackReference(value = "material-rates")
   @OneToMany(mappedBy = "materialType")
   private List<Rates> rates;
   

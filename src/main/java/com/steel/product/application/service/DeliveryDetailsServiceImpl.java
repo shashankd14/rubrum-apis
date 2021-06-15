@@ -77,8 +77,8 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
                 totalWeight = totalWeight + itemDetails.getWeight();
 
             }
-            delivery.setTotalWeight(totalWeight);
-            deliveryDetailsRepo.save(delivery);
+            savedDelivery.setTotalWeight(totalWeight);
+            deliveryDetailsRepo.save(savedDelivery);
         }catch (Exception e) {
             return null;
         }

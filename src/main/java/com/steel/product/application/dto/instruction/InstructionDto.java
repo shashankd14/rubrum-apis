@@ -37,6 +37,8 @@ public class InstructionDto {
 	private Integer packetClassificationId;
 	
 	private Integer groupId ;
+
+	private Integer parentGroupId ;
 	
 	private Integer parentInstructionId;
 	
@@ -62,6 +64,14 @@ public class InstructionDto {
 
 	public void setInstructionId(int instructionId) {
 		this.instructionId = instructionId;
+	}
+
+	public Integer getParentGroupId() {
+		return parentGroupId;
+	}
+
+	public void setParentGroupId(Integer parentGroupId) {
+		this.parentGroupId = parentGroupId;
 	}
 
 	public Integer getInwardId() {

@@ -1,16 +1,14 @@
 package com.steel.product.application.controller;
 
+import com.steel.product.application.dto.party.PartyDto;
 import com.steel.product.application.entity.Party;
 import com.steel.product.application.service.PartyDetailsService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import java.sql.Timestamp;
 import java.util.List;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 //@CrossOrigin(origins = {"http://localhost:3001"})
@@ -26,15 +24,25 @@ public class PartyController {
     this.partySvc = thePartySvc;
   }
   
-  @PostMapping({"/addNew"})
-  public Party saveParty(@RequestBody Party party) {
-    party.setnPartyId(0);
-    party.setCreatedBy(1);
-    party.setUpdatedBy(1);
-    party.setCreatedOn(this.timestamp);
-    party.setUpdatedOn(this.timestamp);
-    party.setIsDeleted(Boolean.valueOf(false));
-    return this.partySvc.saveParty(party);
+  @PostMapping({"/save"})
+  public ResponseEntity<Object> saveParty(@RequestBody PartyDto partyDto) {
+    try{
+      partyDto.setPartyId(0);
+      Party party = partySvc.saveParty(partyDto);
+      return new ResponseEntity<>("Party saved successfully!!!", HttpStatus.OK);
+    }catch (Exception e){
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @PutMapping({"/update"})
+  public ResponseEntity<Object> updateParty(@RequestBody PartyDto partyDto) {
+    try{
+      Party party = partySvc.saveParty(partyDto);
+      return new ResponseEntity<>("Party saved successfully!!!", HttpStatus.OK);
+    }catch (Exception e){
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
   
   @GetMapping({"/list"})

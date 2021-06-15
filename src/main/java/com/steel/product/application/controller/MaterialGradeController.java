@@ -40,14 +40,11 @@ public class MaterialGradeController {
 	
 	@GetMapping("/getByMaterialId/{materialId}")
 	public ResponseEntity<Object> getByMaterialId(@PathVariable int materialId){
-		
 		try {
-			
 			List<MaterialGrade> gradeList = materialGradeService.getByMaterialId(materialId);
 			return new ResponseEntity<Object>(gradeList, HttpStatus.OK);
 			
 		} catch(Exception e) {
-			
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		

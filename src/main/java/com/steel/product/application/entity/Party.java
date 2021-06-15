@@ -1,6 +1,7 @@
 package com.steel.product.application.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -14,68 +15,48 @@ public class Party {
 	@Column(name = "npartyid")
 	private int nPartyId;
 
-	@Column(name = "npartyname")
-	private String nPartyName;
+	@Column(name = "partyname")
+	private String partyName;
 
-	@Column(name = "identifier_receivable")
-	private String identifier_receivable;
+	@Column(name = "partynickname")
+	private String partyNickname;
 
-	@Column(name = "identifier_payable")
-	private String identifier_payable;
+	@Column(name = "contactname")
+	private String contactName;
 
-	@Column(name = "phoneno")
-	private String phoneNo;
+	@Column(name = "contactnumber")
+	private String contactNumber;
 
-	@Column(name = "head_address")
-	private int head_address;
+	@Column(name = "gstnumber")
+	private String gstNumber;
 
-	@Column(name = "branch_address")
-	private int branch_address;
+	@Column(name = "pannumber")
+	private String panNumber;
 
-	@Column(name = "vcity")
-	private String vCity;
+	@Column(name = "tannumber")
+	private String tanNumber;
 
-	@Column(name = "vstate")
-	private String vState;
+	@Column(name = "email1")
+	private String email1;
 
-	@Column(name = "vcountry")
-	private String vCountry;
+	@Column(name = "email2")
+	private String email2;
 
-	@Column(name = "npinid")
-	private int nPinId;
+	@Column(name = "phone1")
+	private String phone1;
 
-	@Column(name = "ntinnumber")
-	private String nTinNumber;
+	@Column(name = "phone2")
+	private String phone2;
 
-	@Column(name = "vcusrate")
-	private String vCusrate;
+	@JsonManagedReference
+	@ManyToOne(cascade = { CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH })
+	@JoinColumn(name = "address1")
+	private Address address1;
 
-	@Column(name = "vcusrateadd")
-	private int vCusrateadd;
-
-	@Column(name = "vcusraterm")
-	private int vCusraterm;
-
-	@Column(name = "vemailaddress")
-	private String vEmailAddress;
-
-	@Column(name = "ncstno")
-	private int nCstNo;
-
-	@Column(name = "ncgstnumber")
-	private String nCgstNumber;
-
-	@Column(name = "ninwardupdates")
-	private String nInwardUpdates;
-
-	@Column(name = "nprocessupdates")
-	private String nProcessUpdates;
-
-	@Column(name = "nbillingupdates")
-	private String nBillingUpdates;
-
-	@Column(name = "handling_charges")
-	private String handlingCharges;
+	@JsonManagedReference
+	@ManyToOne(cascade = { CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH })
+	@JoinColumn(name = "address2")
+	private Address address2;
 
 	@Column(name = "createdby")
 	private int createdBy;
@@ -94,185 +75,124 @@ public class Party {
 	@Column(name = "isdeleted", columnDefinition = "BIT")
 	private Boolean isDeleted;
 
-	
-	@JsonBackReference
+	@JsonBackReference(value = "party-inward")
 	@OneToMany(mappedBy = "party")
 	private List<InwardEntry> inwardEntry;
 
-	@JsonBackReference
 	@OneToMany(mappedBy = "partyRates")
+	@JsonBackReference(value = "party-rates")
 	private List<Rates> rates;
 
 	public int getnPartyId() {
-		return this.nPartyId;
+		return nPartyId;
 	}
 
 	public void setnPartyId(int nPartyId) {
 		this.nPartyId = nPartyId;
 	}
 
-	public String getnPartyName() {
-		return this.nPartyName;
+	public String getPartyName() {
+		return partyName;
 	}
 
-	public void setnPartyName(String nPartyName) {
-		this.nPartyName = nPartyName;
+	public void setPartyName(String partyName) {
+		this.partyName = partyName;
 	}
 
-	public String getIdentifier_receivable() {
-		return this.identifier_receivable;
+	public String getPartyNickname() {
+		return partyNickname;
 	}
 
-	public void setIdentifier_receivable(String identifier_receivable) {
-		this.identifier_receivable = identifier_receivable;
+	public void setPartyNickname(String partyNickname) {
+		this.partyNickname = partyNickname;
 	}
 
-	public String getIdentifier_payable() {
-		return this.identifier_payable;
+	public String getContactName() {
+		return contactName;
 	}
 
-	public void setIdentifier_payable(String identifier_payable) {
-		this.identifier_payable = identifier_payable;
+	public void setContactName(String contactName) {
+		this.contactName = contactName;
 	}
 
-	public String getPhoneNo() {
-		return this.phoneNo;
+	public String getContactNumber() {
+		return contactNumber;
 	}
 
-	public void setPhoneNo(String phoneNo) {
-		this.phoneNo = phoneNo;
+	public void setContactNumber(String contactNumber) {
+		this.contactNumber = contactNumber;
 	}
 
-	public int getHead_address() {
-		return this.head_address;
+	public String getGstNumber() {
+		return gstNumber;
 	}
 
-	public void setHead_address(int head_address) {
-		this.head_address = head_address;
+	public void setGstNumber(String gstNumber) {
+		this.gstNumber = gstNumber;
 	}
 
-	public int getBranch_address() {
-		return this.branch_address;
+	public String getPanNumber() {
+		return panNumber;
 	}
 
-	public void setBranch_address(int branch_address) {
-		this.branch_address = branch_address;
+	public void setPanNumber(String panNumber) {
+		this.panNumber = panNumber;
 	}
 
-	public String getvCity() {
-		return this.vCity;
+	public String getTanNumber() {
+		return tanNumber;
 	}
 
-	public void setvCity(String vCity) {
-		this.vCity = vCity;
+	public void setTanNumber(String tanNumber) {
+		this.tanNumber = tanNumber;
 	}
 
-	public String getvState() {
-		return this.vState;
+	public String getEmail1() {
+		return email1;
 	}
 
-	public void setvState(String vState) {
-		this.vState = vState;
+	public void setEmail1(String email1) {
+		this.email1 = email1;
 	}
 
-	public String getvCountry() {
-		return this.vCountry;
+	public String getEmail2() {
+		return email2;
 	}
 
-	public void setvCountry(String vCountry) {
-		this.vCountry = vCountry;
+	public void setEmail2(String email2) {
+		this.email2 = email2;
 	}
 
-	public int getnPinId() {
-		return this.nPinId;
+	public String getPhone1() {
+		return phone1;
 	}
 
-	public void setnPinId(int nPinId) {
-		this.nPinId = nPinId;
+	public void setPhone1(String phone1) {
+		this.phone1 = phone1;
 	}
 
-	public String getnTinNumber() {
-		return this.nTinNumber;
+	public String getPhone2() {
+		return phone2;
 	}
 
-	public void setnTinNumber(String nTinNumber) {
-		this.nTinNumber = nTinNumber;
+	public void setPhone2(String phone2) {
+		this.phone2 = phone2;
 	}
 
-	public String getvCusrate() {
-		return this.vCusrate;
+	public Address getAddress1() {
+		return address1;
 	}
 
-	public void setvCusrate(String vCusrate) {
-		this.vCusrate = vCusrate;
+	public void setAddress1(Address address1) {
+		this.address1 = address1;
 	}
 
-	public int getvCusrateadd() {
-		return this.vCusrateadd;
-	}
-
-	public void setvCusrateadd(int vCusrateadd) {
-		this.vCusrateadd = vCusrateadd;
-	}
-
-	public int getvCusraterm() {
-		return this.vCusraterm;
-	}
-
-	public void setvCusraterm(int vCusraterm) {
-		this.vCusraterm = vCusraterm;
-	}
-
-	public String getvEmailAddress() {
-		return this.vEmailAddress;
-	}
-
-	public void setvEmailAddress(String vEmailAddress) {
-		this.vEmailAddress = vEmailAddress;
-	}
-
-	public int getnCstNo() {
-		return this.nCstNo;
-	}
-
-	public void setnCstNo(int nCstNo) {
-		this.nCstNo = nCstNo;
-	}
-
-	public String getnCgstNumber() {
-		return this.nCgstNumber;
-	}
-
-	public void setnCgstNumber(String nCgstNumber) {
-		this.nCgstNumber = nCgstNumber;
-	}
-
-	public String getnInwardUpdates() {
-		return this.nInwardUpdates;
-	}
-
-	public void setnInwardUpdates(String nInwardUpdates) {
-		this.nInwardUpdates = nInwardUpdates;
-	}
-
-	public String getnProcessUpdates() {
-		return this.nProcessUpdates;
-	}
-
-	public void setnProcessUpdates(String nProcessUpdates) {
-		this.nProcessUpdates = nProcessUpdates;
-	}
-
-	public String getnBillingUpdates() {
-		return this.nBillingUpdates;
-	}
-
-	public void setnBillingUpdates(String nBillingUpdates) {
-		this.nBillingUpdates = nBillingUpdates;
+	public void setAddress2(Address address2) {
+		this.address2 = address2;
 	}
 
 	public int getCreatedBy() {
-		return this.createdBy;
+		return createdBy;
 	}
 
 	public void setCreatedBy(int createdBy) {
@@ -280,7 +200,7 @@ public class Party {
 	}
 
 	public int getUpdatedBy() {
-		return this.updatedBy;
+		return updatedBy;
 	}
 
 	public void setUpdatedBy(int updatedBy) {
@@ -288,7 +208,7 @@ public class Party {
 	}
 
 	public Date getCreatedOn() {
-		return this.createdOn;
+		return createdOn;
 	}
 
 	public void setCreatedOn(Date createdOn) {
@@ -296,19 +216,19 @@ public class Party {
 	}
 
 	public Date getUpdatedOn() {
-		return this.updatedOn;
+		return updatedOn;
 	}
 
 	public void setUpdatedOn(Date updatedOn) {
 		this.updatedOn = updatedOn;
 	}
 
-	public Boolean getIsDeleted() {
-		return this.isDeleted;
+	public Boolean getDeleted() {
+		return isDeleted;
 	}
 
-	public void setIsDeleted(Boolean isDeleted) {
-		this.isDeleted = isDeleted;
+	public void setDeleted(Boolean deleted) {
+		isDeleted = deleted;
 	}
 
 	public List<InwardEntry> getInwardEntry() {
@@ -325,13 +245,5 @@ public class Party {
 
 	public void setRates(List<Rates> rates) {
 		this.rates = rates;
-	}
-
-	public String getHandlingCharges() {
-		return handlingCharges;
-	}
-
-	public void setHandlingCharges(String handlingCharges) {
-		this.handlingCharges = handlingCharges;
 	}
 }

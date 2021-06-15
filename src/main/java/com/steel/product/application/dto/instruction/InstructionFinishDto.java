@@ -8,6 +8,10 @@ public class InstructionFinishDto {
 
     private boolean isFinishTask;
 
+    private boolean isCoilFinished;
+
+    private String coilNumber;
+
     public List<InstructionDto> getInstructionDtos() {
         return instructionDtos;
     }
@@ -22,5 +26,25 @@ public class InstructionFinishDto {
 
     public void setFinishTask(boolean finishTask) {
         isFinishTask = finishTask;
+    }
+
+    public boolean getIsCoilFinished() {
+        return isCoilFinished;
+    }
+
+    public void setCoilFinished(boolean coilFinished) {
+        isCoilFinished = coilFinished;
+    }
+
+    public boolean isFinishTask() {
+        return isFinishTask;
+    }
+
+    public String getCoilNumber() {
+        return coilNumber;
+    }
+
+    public void setCoilNumber(String coilNumber) {
+        this.coilNumber = coilNumber;
     }
 }

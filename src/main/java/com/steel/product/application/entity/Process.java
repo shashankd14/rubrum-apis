@@ -17,7 +17,7 @@ public class Process {
     @Column(name = "processname")
     private String processName;
 
-    @JsonBackReference
+    @JsonBackReference(value = "process-rates")
     @OneToMany(mappedBy = "process")
     private List<Rates> rates;
 

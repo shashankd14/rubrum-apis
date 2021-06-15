@@ -17,18 +17,22 @@ public class Rates {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "partyid")
-    @JsonManagedReference
+    @JsonManagedReference(value = "party-rates")
     private Party partyRates;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "processid")
-    @JsonManagedReference
+    @JsonManagedReference(value = "process-rates")
     private Process process;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "materialtype")
-    @JsonManagedReference
+    @JsonManagedReference(value = "material-rates")
     private Material materialType;
+
+    @OneToMany(mappedBy = "rates")
+    @JsonBackReference(value = "instruction-rates")
+    private List<Instruction> instructionRate;
 
     @Column(name = "thickness_min")
     private float minThickness;
@@ -45,10 +49,6 @@ public class Rates {
     @Column(name = "lamination_charges")
     private float laminationCharges;
 
-    @JsonBackReference
-    @OneToMany(mappedBy = "rates")
-    private List<Instruction> instructions;
-
     public int getRateId() {
         return rateId;
     }
@@ -63,22 +63,6 @@ public class Rates {
 
     public void setPartyRates(Party partyRates) {
         this.partyRates = partyRates;
-    }
-
-    public Process getProcess() {
-        return process;
-    }
-
-    public void setProcess(Process process) {
-        this.process = process;
-    }
-
-    public Material getMaterialType() {
-        return materialType;
-    }
-
-    public void setMaterialType(Material materialType) {
-        this.materialType = materialType;
     }
 
     public float getMinThickness() {
@@ -121,11 +105,27 @@ public class Rates {
         this.laminationCharges = laminationCharges;
     }
 
-    public List<Instruction> getInstructions() {
-        return instructions;
+    public List<Instruction> getInstructionRate() {
+        return instructionRate;
     }
 
-    public void setInstructions(List<Instruction> instructions) {
-        this.instructions = instructions;
+    public void setInstructionRate(List<Instruction> instructionRate) {
+        this.instructionRate = instructionRate;
+    }
+
+    public Process getProcess() {
+        return process;
+    }
+
+    public void setProcess(Process process) {
+        this.process = process;
+    }
+
+    public Material getMaterialType() {
+        return materialType;
+    }
+
+    public void setMaterialType(Material materialType) {
+        this.materialType = materialType;
     }
 }

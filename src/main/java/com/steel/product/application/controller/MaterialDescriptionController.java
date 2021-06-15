@@ -1,17 +1,14 @@
 package com.steel.product.application.controller;
 
+import com.steel.product.application.dto.material.MaterialDto;
 import com.steel.product.application.entity.Material;
 import com.steel.product.application.service.MaterialDescriptionService;
-import java.sql.Timestamp;
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 //@CrossOrigin(origins = {"http://localhost:3001"})
@@ -22,17 +19,29 @@ public class MaterialDescriptionController {
   @Autowired
   private MaterialDescriptionService matDescSvc;
   
-  Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+
   
-  @PostMapping({"/addNew"})
-  public Material saveMatDesc(@RequestBody Material matDesc) {
-    matDesc.setMatId(0);
-    matDesc.setCreatedBy(1);
-    matDesc.setUpdatedBy(1);
-    matDesc.setCreatedOn(this.timestamp);
-    matDesc.setUpdatedOn(this.timestamp);
-    matDesc.setIsDeleted(Boolean.valueOf(false));
-    return this.matDescSvc.saveMatDesc(matDesc);
+  @PostMapping({"/save"})
+  public ResponseEntity<Object> saveMatDesc(@RequestBody MaterialDto materialDto) {
+    try{
+      materialDto.setMaterialId(0);
+      matDescSvc.saveMatDesc(materialDto);
+      return new ResponseEntity<>("Material saved successfully", HttpStatus.OK);
+    }catch (Exception e){
+      e.printStackTrace();
+      return new ResponseEntity<>("Unknown error", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @PutMapping({"/update"})
+  public ResponseEntity<Object> updateMaterial(@RequestBody MaterialDto materialDto) {
+    try{
+      matDescSvc.saveMatDesc(materialDto);
+      return new ResponseEntity<>("Material saved successfully", HttpStatus.OK);
+    }catch (Exception e){
+      e.printStackTrace();
+      return new ResponseEntity<>("Unknown error", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
   
   @GetMapping({"/list"})

@@ -8,4 +8,5 @@ public interface RatesService {
 
     Rates getById (int ratesId);
     List<Rates> getAll();
+    Rates save(Rates rates);
 }
