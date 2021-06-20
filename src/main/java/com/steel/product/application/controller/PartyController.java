@@ -29,6 +29,8 @@ public class PartyController {
     try{
       partyDto.setPartyId(0);
       Party party = partySvc.saveParty(partyDto);
+      if(party==null)
+        return new ResponseEntity<>("Error in saving party!!!", HttpStatus.INTERNAL_SERVER_ERROR);
       return new ResponseEntity<>("Party saved successfully!!!", HttpStatus.OK);
     }catch (Exception e){
       return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);

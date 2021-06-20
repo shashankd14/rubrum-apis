@@ -45,19 +45,22 @@ public class PartyDetailsServiceImpl implements PartyDetailsService {
       Address address1 = new Address();
       Address address2 = new Address();
 
-      if(partyDto.getAddress1().getAddressId()==0) {
-        address1 = saveAddress(partyDto.getAddress1());
-      }else{
-        address1 = addressService.saveAddress(partyDto.getAddress1());
+      if(partyDto.getAddress1() != null) {
+        if (partyDto.getAddress1().getAddressId() == 0) {
+          address1 = saveAddress(partyDto.getAddress1());
+        } else {
+          address1 = addressService.saveAddress(partyDto.getAddress1());
+        }
+        party.setAddress1(address1);
       }
-      if(partyDto.getAddress2().getAddressId()==0) {
-        address2 = saveAddress(partyDto.getAddress2());
-      }else {
-        address2 = addressService.saveAddress(partyDto.getAddress2());
+      if(partyDto.getAddress2() != null) {
+        if (partyDto.getAddress2().getAddressId() == 0) {
+          address2 = saveAddress(partyDto.getAddress2());
+        } else {
+          address2 = addressService.saveAddress(partyDto.getAddress2());
+        }
+        party.setAddress2(address2);
       }
-
-      party.setAddress1(address1);
-      party.setAddress2(address2);
 
       party.setCreatedBy(1);
       party.setUpdatedBy(1);
@@ -68,6 +71,7 @@ public class PartyDetailsServiceImpl implements PartyDetailsService {
       return partyRepo.save(party);
 
     }catch (Exception e){
+      e.printStackTrace();
       return null;
     }
   }

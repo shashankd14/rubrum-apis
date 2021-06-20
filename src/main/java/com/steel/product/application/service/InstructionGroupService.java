@@ -13,4 +13,6 @@ public interface InstructionGroupService {
     List<InstructionGroup> getAllInstructionGroups();
 
     Address getInstructionGroupById(int instructionGroupId);
+
+    public void deleteGroupId(List<Integer> instructionIds);
 }

@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @CrossOrigin
 @RequestMapping("/api/instructionGroup")
@@ -21,14 +23,22 @@ public class InstructionGroupController {
     private InstructionService instructionService;
 
     @PostMapping({"/save"})
-    public ResponseEntity<Object> saveAddress(@RequestBody InstructionGroupDto instructionGroupDto) {
-
-
+    public ResponseEntity<Object> saveInstruction(@RequestBody InstructionGroupDto instructionGroupDto) {
         try {
 
             InstructionGroup savedInstructionGroup = instructionGroupService.saveInstructionGroup(instructionGroupDto);
 
             return new ResponseEntity(savedInstructionGroup, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PutMapping({"/undoBundle"})
+    public ResponseEntity<Object> saveAddress(@RequestBody List<Integer> instructions) {
+        try {
+            instructionGroupService.deleteGroupId(instructions);
+            return new ResponseEntity("Instructions updated successfully!!", HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }

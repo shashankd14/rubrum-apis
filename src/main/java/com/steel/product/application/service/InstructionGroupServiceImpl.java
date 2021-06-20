@@ -49,4 +49,14 @@ public class InstructionGroupServiceImpl implements InstructionGroupService{
     public Address getInstructionGroupById(int instructionGroupId) {
         return null;
     }
+
+    @Override
+    public void deleteGroupId(List<Integer> instructionIds) {
+        try {
+            for (Integer i : instructionIds)
+                instructionGroupRepository.deleteGroupId(i);
+        }catch (Exception e){
+            e.getMessage();
+        }
+    }
 }
