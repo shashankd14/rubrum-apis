@@ -51,10 +51,9 @@ public class InstructionGroupServiceImpl implements InstructionGroupService{
     }
 
     @Override
-    public void deleteGroupId(List<Integer> instructionIds) {
+    public void deleteGroupId(Integer groupId) {
         try {
-            for (Integer i : instructionIds)
-                instructionGroupRepository.deleteGroupId(i);
+                instructionGroupRepository.deleteGroupId(groupId);
         }catch (Exception e){
             e.getMessage();
         }

@@ -11,6 +11,6 @@ public interface InstructionGroupRepository extends JpaRepository<InstructionGro
 
     @Modifying
     @Transactional
-    @Query(" update Instruction set groupId=null where instructionId = :instructionId")
-    void deleteGroupId(Integer instructionId);
+    @Query(" update Instruction set groupId=null where groupId = :groupId")
+    void  deleteGroupId(Integer groupId);
 }
