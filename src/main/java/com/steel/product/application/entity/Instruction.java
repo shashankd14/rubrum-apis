@@ -4,6 +4,7 @@ package com.steel.product.application.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.steel.product.application.dto.instruction.InstructionDto;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -348,5 +349,36 @@ public class Instruction {
 
 	public void setParentGroupId(Integer parentGroupId) {
 		this.parentGroupId = parentGroupId;
+	}
+
+	public static InstructionDto valueOf(Instruction instruction){
+		InstructionDto instructionDto = new InstructionDto();
+		instructionDto.setStatus(instruction.getStatus().getStatusId());
+		instructionDto.setParentInstructionId(instruction.getParentInstruction() != null ?
+				instruction.getParentInstruction().getInstructionId() : null);
+		instructionDto.setPacketClassificationId(instruction.getPacketClassification() != null ?
+				instruction.getPacketClassification().getClassificationId(): null);
+		instructionDto.setInstructionDate(instruction.getInstructionDate());
+		instructionDto.setInstructionId(instruction.getInstructionId());
+		instructionDto.setProcessId(instruction.getProcess() != null ? instruction.getProcess().getProcessId() : null);
+		instructionDto.setPlannedWeight(instruction.getPlannedWeight());
+		instructionDto.setPlannedWidth(instruction.getPlannedWidth());
+		instructionDto.setPlannedLength(instruction.getPlannedLength());
+		instructionDto.setPlannedNoOfPieces(instruction.getPlannedNoOfPieces());
+		instructionDto.setActualWidth(instruction.getActualWidth());
+		instructionDto.setActualWeight(instruction.getActualWeight());
+		instructionDto.setActualLength(instruction.actualLength);
+		instructionDto.setActualNoOfPieces(instruction.getActualNoOfPieces());
+		instructionDto.setInwardId(instruction.getInwardId() != null ? instruction.getInwardId().getInwardEntryId() : null);
+		instructionDto.setIsDeleted(instruction.getIsDeleted());
+		instructionDto.setGroupId(instruction.getGroupId());
+		instructionDto.setDamage(instruction.getDamage());
+		instructionDto.setCreatedOn(instruction.getCreatedOn());
+		instructionDto.setUpdatedOn(instruction.getUpdatedOn());
+		instructionDto.setUpdatedBy(instruction.updatedBy);
+		instructionDto.setCreatedBy(instruction.getCreatedBy());
+		instructionDto.setPackingWeight(instruction.getPackingWeight());
+		instructionDto.setWastage(instruction.getWastage());
+		return instructionDto;
 	}
 }
