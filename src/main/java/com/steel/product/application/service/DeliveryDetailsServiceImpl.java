@@ -3,14 +3,16 @@ package com.steel.product.application.service;
 import com.steel.product.application.dao.DeliveryDetailsRepository;
 import com.steel.product.application.dto.delivery.DeliveryDto;
 import com.steel.product.application.dto.delivery.DeliveryItemDetails;
+import com.steel.product.application.dto.delivery.DeliveryPacketsDto;
 import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.Instruction;
+import com.steel.product.application.entity.InwardEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
@@ -91,7 +93,14 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
     }
 
     @Override
-    public List<DeliveryDetails> deliveryList() {
-        return deliveryDetailsRepo.findAll();
+    public List<DeliveryPacketsDto> deliveryList() {
+        Map<InwardEntry,Map<DeliveryDetails,List<Instruction>>> deliveryDetailsListMap = deliveryDetailsRepo.findAllDeliveries()
+                .stream()
+                .collect(Collectors.groupingBy(Instruction::getInwardId,Collectors.groupingBy(Instruction::getDeliveryDetails)));
+        List<DeliveryPacketsDto> deliveryPacketsDtos = new ArrayList<>();
+                deliveryDetailsListMap
+                .forEach((iw,map) -> map.forEach((dd,ins) -> deliveryPacketsDtos.add(new DeliveryPacketsDto(dd,ins))));
+
+        return deliveryPacketsDtos;
     }
 }

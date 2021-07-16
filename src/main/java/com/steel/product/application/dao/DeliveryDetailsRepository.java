@@ -15,4 +15,7 @@ public interface DeliveryDetailsRepository extends JpaRepository<DeliveryDetails
 
     @Query(" from Instruction where deliveryId =:deliveryId")
     public List<Instruction> deliveredItemsById(@Param("deliveryId") int deliveryId);
+
+    @Query("select ins from Instruction ins join ins.deliveryDetails dd where dd.deliveryId != 0")
+    public List<Instruction> findAllDeliveries();
 }
