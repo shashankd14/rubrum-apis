@@ -23,6 +23,9 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
     @Autowired
     private InstructionService instructionService;
 
+    @Autowired
+    private InwardEntryService inwardEntryService;
+
     @Override
     public List<Instruction> getAll() {
         return deliveryDetailsRepo.deliveredItems();
@@ -55,6 +58,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
     public DeliveryDetails save(DeliveryDto deliveryDto) {
 
         DeliveryDetails savedDelivery = new DeliveryDetails();
+        List<DeliveryItemDetails> deliveryItemDetails;
         try {
 
             DeliveryDetails delivery = new DeliveryDetails();
@@ -72,7 +76,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 
             savedDelivery = deliveryDetailsRepo.save(delivery);
 
-            List<DeliveryItemDetails> deliveryItemDetails = deliveryDto.getDeliveryItemDetails();
+            deliveryItemDetails= deliveryDto.getDeliveryItemDetails();
             for (DeliveryItemDetails itemDetails : deliveryItemDetails) {
                 instructionService.updateInstructionWithDeliveryRemarks(savedDelivery.getDeliveryId(),
                         itemDetails.getRemarks(), itemDetails.getInstructionId());
@@ -83,6 +87,13 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
             deliveryDetailsRepo.save(savedDelivery);
         }catch (Exception e) {
             return null;
+        }
+        for(DeliveryItemDetails itemDetails: deliveryItemDetails) {
+            InwardEntry inwardEntry = instructionService.getById(itemDetails.getInstructionId()).getInwardId();
+            List<Float> actualWeightInstructions = getActualWeightOfInstructionsGroupedByInwardIdAndDeliveryId(inwardEntry.getInwardEntryId()
+                    ,savedDelivery.getDeliveryId());
+            inwardEntry.setAvailableWeight(inwardEntry.getAvailableWeight() - actualWeightInstructions.get(0));
+            inwardEntryService.saveEntry(inwardEntry);
         }
         return savedDelivery;
     }
@@ -103,4 +114,11 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 
         return deliveryPacketsDtos;
     }
+
+    @Override
+    public List<Float> getActualWeightOfInstructionsGroupedByInwardIdAndDeliveryId(Integer inwardId, Integer deliveryId) {
+        return deliveryDetailsRepo.findAllInstructionsbyInwardIdAndDeliveryId(inwardId,deliveryId);
+    }
+
+
 }

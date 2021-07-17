@@ -18,4 +18,7 @@ public interface DeliveryDetailsRepository extends JpaRepository<DeliveryDetails
 
     @Query("select ins from Instruction ins join ins.deliveryDetails dd where dd.deliveryId != 0")
     public List<Instruction> findAllDeliveries();
+
+    @Query("select sum(ins.actualWeight) from Instruction ins where ins.inwardId.inwardEntryId = :inwardId and ins.deliveryDetails.deliveryId = :deliveryId group by ins.deliveryDetails, ins.inwardId")
+    public List<Float> findAllInstructionsbyInwardIdAndDeliveryId(Integer inwardId,Integer deliveryId);
 }

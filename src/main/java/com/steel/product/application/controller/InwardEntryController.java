@@ -62,6 +62,7 @@ public class InwardEntryController {
 			inwardEntry.setCoilNumber(inward.getCoilNumber());
 			inwardEntry.setBatchNumber(inward.getBatchNumber());
 			inwardEntry.setdReceivedDate(Timestamp.valueOf(inward.getInwardDate()));
+			inwardEntry.setAvailableWeight(inward.getPresentWeight());
 			
 			if(inward.getBillDate()!=null)
 			inwardEntry.setdBillDate(Timestamp.valueOf(inward.getBillDate()));

@@ -136,6 +136,9 @@ public class InwardEntry {
 	
 	@OneToMany(mappedBy = "inwardId", fetch = FetchType.EAGER)
 	private Set<Instruction> instruction;
+
+	@Column(name = "availableWeight")
+	private Float availableWeight;
 	
 
 	public int getInwardEntryId() {
@@ -436,5 +439,21 @@ public class InwardEntry {
 
 	public void setValueOfGoods(Float valueOfGoods) {
 		this.valueOfGoods = valueOfGoods;
+	}
+
+	public Boolean getDeleted() {
+		return isDeleted;
+	}
+
+	public void setDeleted(Boolean deleted) {
+		isDeleted = deleted;
+	}
+
+	public Float getAvailableWeight() {
+		return availableWeight;
+	}
+
+	public void setAvailableWeight(Float availableWeight) {
+		this.availableWeight = availableWeight;
 	}
 }

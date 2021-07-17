@@ -20,4 +20,6 @@ public interface DeliveryDetailsService {
     public void deleteById(int id);
 
     public List<DeliveryPacketsDto> deliveryList();
+
+    public List<Float> getActualWeightOfInstructionsGroupedByInwardIdAndDeliveryId(Integer inwardId,Integer deliveryId);
 }
