@@ -35,7 +35,7 @@ public class DeliveryPacketsDto {
         this.customerBatchId = instructions.size() > 0 ? instructions.get(0).getInwardId().getCustomerBatchId() : "";
         this.coilNumber = instructions.size() > 0 ? instructions.get(0).getInwardId().getCoilNumber(): "";
         this.fThickness = instructions.size() > 0 ? instructions.get(0).getInwardId().getfThickness(): null;
-        this.materialDto = instructions.size() > 0 ? Material.valueOf(instructions.get(0).getInwardId().getMaterial()):null;
+        this.materialDto = instructions.size() > 0 ? Material.valueOf(instructions.get(0).getInwardId().getMaterial(),instructions.get(0).getInwardId()):null;
     }
 
     public DeliveryDetails getDeliveryDetails() {

@@ -2,6 +2,7 @@ package com.steel.product.application.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.steel.product.application.dto.material.MaterialDto;
+import com.steel.product.application.dto.materialGradeDto.MaterialGradeDto;
 
 import javax.persistence.*;
 import java.util.List;
@@ -62,6 +63,12 @@ public class MaterialGrade {
 		this.inwardEntry = inwardEntry;
 	}
 
+	public static MaterialGradeDto valueOf(MaterialGrade materialGrade){
+		MaterialGradeDto materialGradeDto = new MaterialGradeDto();
+		materialGradeDto.setMaterialGradeId(materialGrade.getGradeId());
+		materialGradeDto.setGradeName(materialGrade.getGradeName());
+		return materialGradeDto;
+	}
 
 
 }
