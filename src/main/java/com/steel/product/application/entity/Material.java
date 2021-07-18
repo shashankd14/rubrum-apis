@@ -2,10 +2,12 @@ package com.steel.product.application.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.steel.product.application.dto.material.MaterialDto;
 
 import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "product_tblmatdescription")
@@ -120,6 +122,15 @@ public List<MaterialGrade> getMaterialGrade() {
 public void setMaterialGrade(List<MaterialGrade> materialGrade) {
 	this.materialGrade = materialGrade;
 }
+
+  public static MaterialDto valueOf(Material material,InwardEntry inwardEntry){
+    MaterialDto materialDto = new MaterialDto();
+    materialDto.setMaterialId(material.getMatId());
+    materialDto.setMaterial(material.getDescription());
+//    materialDto.setGrade(material.getMaterialGrade().stream().map(mg -> mg.getGradeName()).collect(Collectors.toList()));
+    materialDto.setMaterialGradeDto(MaterialGrade.valueOf(inwardEntry.getMaterialGrade()));
+    return materialDto;
+  }
   
   
 }
