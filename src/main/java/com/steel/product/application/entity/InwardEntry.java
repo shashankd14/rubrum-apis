@@ -134,7 +134,7 @@ public class InwardEntry {
 	@OneToMany(mappedBy = "inwardEntry", fetch = FetchType.EAGER)
 	private List<InwardDoc> docs;
 	
-	@OneToMany(mappedBy = "inwardId", fetch = FetchType.EAGER)
+	@OneToMany(mappedBy = "inwardId", fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST,CascadeType.MERGE})
 	private Set<Instruction> instruction;
 	
 

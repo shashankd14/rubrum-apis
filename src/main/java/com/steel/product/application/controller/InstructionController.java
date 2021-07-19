@@ -88,6 +88,7 @@ public class InstructionController {
 
         List<Instruction> savedInstructionList = new ArrayList<Instruction>();
         Instruction savedInstruction = new Instruction();
+        InwardEntry inward;
         for (InstructionDto instructionDTO : instructionDTOs) {
             try {
 
@@ -98,9 +99,11 @@ public class InstructionController {
 
                 if (instructionDTO.getInwardId() != null) {
 
-                    InwardEntry inward = inwardService.getByEntryId(instructionDTO.getInwardId());
+                    inward = inwardService.getByEntryId(instructionDTO.getInwardId());
                     inward.setStatus(statusService.getStatusById(2));
                     instruction.setInwardId(inward);
+                }else{
+                    inward = null;//throw exception if inward does not exist ?
                 }
 
                 instruction.setProcess(processService.getById(instructionDTO.getProcessId()));
@@ -154,8 +157,21 @@ public class InstructionController {
                 instruction.setUpdatedOn(timestamp);
                 instruction.setIsDeleted(false);
 
-                savedInstruction = instructionService.save(instruction);
-                savedInstructionList.add(savedInstruction);
+                if(inward != null) {
+                    Float fPresent = inward.getFpresent();
+                    if (fPresent != null && fPresent > instruction.getPlannedWeight()) {
+                        inward.setFpresent(fPresent - instruction.getPlannedWeight());
+                    }else{
+                        return new ResponseEntity<Object>("No available weight for processing.", HttpStatus.BAD_REQUEST);
+                    }
+                }
+                inward.getInstruction().add(instruction);
+                inwardService.saveEntry(inward);
+//                savedInstruction = instructionService.save(instruction);
+
+//                savedInstructionList.add(savedInstruction);
+                savedInstructionList.add(instruction);
+
             } catch (Exception e) {
                 e.printStackTrace();
                 return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
