@@ -88,13 +88,18 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
         }catch (Exception e) {
             return null;
         }
-        for(DeliveryItemDetails itemDetails: deliveryItemDetails) {
-            InwardEntry inwardEntry = instructionService.getById(itemDetails.getInstructionId()).getInwardId();
-            List<Float> actualWeightInstructions = getActualWeightOfInstructionsGroupedByInwardIdAndDeliveryId(inwardEntry.getInwardEntryId()
-                    ,savedDelivery.getDeliveryId());
-            inwardEntry.setAvailableWeight(inwardEntry.getAvailableWeight() - actualWeightInstructions.get(0));
-            inwardEntryService.saveEntry(inwardEntry);
-        }
+            Set<InwardEntry> inwardEntries = deliveryItemDetails.stream().map(d -> instructionService.getById(d.getInstructionId())
+            .getInwardId()).collect(Collectors.toSet());
+            for(InwardEntry inwardEntry: inwardEntries) {
+                List<Float> actualWeightInstructions = getActualWeightOfInstructionsGroupedByInwardIdAndDeliveryId(inwardEntry.getInwardEntryId()
+                        ,savedDelivery.getDeliveryId());
+                if (inwardEntry.getInStockWeight() > actualWeightInstructions.get(0)) {
+                    inwardEntry.setInStockWeight(inwardEntry.getInStockWeight() - actualWeightInstructions.get(0));
+                } else {
+                    inwardEntry.setInStockWeight(0f);
+                }
+                inwardEntryService.saveEntry(inwardEntry);
+            }
         return savedDelivery;
     }
 

@@ -137,8 +137,8 @@ public class InwardEntry {
 	@OneToMany(mappedBy = "inwardId", fetch = FetchType.EAGER)
 	private Set<Instruction> instruction;
 
-	@Column(name = "availableWeight")
-	private Float availableWeight;
+	@Column(name = "inStockWeight")
+	private Float inStockWeight;
 	
 
 	public int getInwardEntryId() {
@@ -449,11 +449,11 @@ public class InwardEntry {
 		isDeleted = deleted;
 	}
 
-	public Float getAvailableWeight() {
-		return availableWeight;
+	public Float getInStockWeight() {
+		return inStockWeight;
 	}
 
-	public void setAvailableWeight(Float availableWeight) {
-		this.availableWeight = availableWeight;
+	public void setInStockWeight(Float inStockWeight) {
+		this.inStockWeight = inStockWeight;
 	}
 }
