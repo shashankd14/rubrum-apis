@@ -31,6 +31,9 @@ public class Material {
   @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "updatedon")
   private Date updatedOn;
+
+  @Column(name = "hsnCode")
+  private String hsnCode;
   
   @Column(name = "isdeleted", columnDefinition = "BIT")
   private Boolean isDeleted;
@@ -120,6 +123,12 @@ public List<MaterialGrade> getMaterialGrade() {
 public void setMaterialGrade(List<MaterialGrade> materialGrade) {
 	this.materialGrade = materialGrade;
 }
-  
-  
+
+  public String getHsnCode() {
+    return hsnCode;
+  }
+
+  public void setHsnCode(String hsnCode) {
+    this.hsnCode = hsnCode;
+  }
 }

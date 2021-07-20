@@ -88,6 +88,7 @@ public class InstructionController {
 
         List<Instruction> savedInstructionList = new ArrayList<Instruction>();
         Instruction savedInstruction = new Instruction();
+        Instruction parentInstruction;
         InwardEntry inward;
         for (InstructionDto instructionDTO : instructionDTOs) {
             try {
@@ -98,12 +99,19 @@ public class InstructionController {
                 instruction.setInstructionId(0);
 
                 if (instructionDTO.getInwardId() != null) {
-
-                    inward = inwardService.getByEntryId(instructionDTO.getInwardId());
+                    inward = inwardService.getByEntryId(instructionDTO.getInwardId());//null check needed ?
                     inward.setStatus(statusService.getStatusById(2));
                     instruction.setInwardId(inward);
+                }else if(instructionDTO.getParentInstructionId() != null){
+                    parentInstruction = instructionService.getById(instructionDTO.getParentInstructionId());//null check needed ?
+                    inward = parentInstruction.getInwardId();
+                    instruction.setParentInstruction(parentInstruction);
                 }else{
                     inward = null;//throw exception if inward does not exist ?
+                }
+
+                if(inward.getFpresent() < instructionDTO.getPlannedWeight()){
+                    return new ResponseEntity<Object>("No available weight for processing.", HttpStatus.BAD_REQUEST);
                 }
 
                 instruction.setProcess(processService.getById(instructionDTO.getProcessId()));
@@ -129,13 +137,13 @@ public class InstructionController {
                 if (instructionDTO.getParentGroupId() != null)
                     instruction.setParentGroupId(instructionDTO.getParentGroupId());
 
-                if (instructionDTO.getParentInstructionId() != null) {
-
-                    Instruction parentInstruction = instructionService.getById(instructionDTO.getParentInstructionId());
-
-                    instruction.setParentInstruction(parentInstruction);
-                } else
-                    instruction.setParentInstruction(null);
+//                if (instructionDTO.getParentInstructionId() != null) {
+//
+//                    Instruction parentInstruction = instructionService.getById(instructionDTO.getParentInstructionId());
+//
+//                    instruction.setParentInstruction(parentInstruction);
+//                } else
+//                    instruction.setParentInstruction(null);
 
                 if (instructionDTO.getWastage() != null)
                     instruction.setWastage(instructionDTO.getWastage());
