@@ -6,6 +6,7 @@ import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.Material;
 
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -77,6 +78,7 @@ public class DeliveryPacketsDto {
     public void setCoilNumber(String coilNumber) {
         this.coilNumber = coilNumber;
     }
+
 
     public Float getfThickness() {
         return fThickness;
