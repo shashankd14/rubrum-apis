@@ -10,6 +10,8 @@ public class MaterialDto {
     private String material;
     private List<String> grade;
     private MaterialGradeDto materialGradeDto;
+    private String hsnCode;
+    private String materialCode;
 
     public int getMaterialId() {
         return materialId;
@@ -41,5 +43,21 @@ public class MaterialDto {
 
     public void setMaterialGradeDto(MaterialGradeDto materialGradeDto) {
         this.materialGradeDto = materialGradeDto;
+    }
+
+    public String getHsnCode() {
+        return hsnCode;
+    }
+
+    public void setHsnCode(String hsnCode) {
+        this.hsnCode = hsnCode;
+    }
+
+    public String getMaterialCode() {
+        return materialCode;
+    }
+
+    public void setMaterialCode(String materialCode) {
+        this.materialCode = materialCode;
     }
 }

@@ -50,6 +50,12 @@ public class Material {
   @JsonBackReference(value = "material-rates")
   @OneToMany(mappedBy = "materialType")
   private List<Rates> rates;
+
+  @Column(name = "hsnCode")
+  private String hsnCode;
+
+  @Column(name = "materialCode")
+  private String materialCode;
   
   public int getMatId() {
     return this.matId;
@@ -123,12 +129,30 @@ public void setMaterialGrade(List<MaterialGrade> materialGrade) {
 	this.materialGrade = materialGrade;
 }
 
-  public static MaterialDto valueOf(Material material,InwardEntry inwardEntry){
+  public String getHsnCode() {
+    return hsnCode;
+  }
+
+  public void setHsnCode(String hsnCode) {
+    this.hsnCode = hsnCode;
+  }
+
+  public String getMaterialCode() {
+    return materialCode;
+  }
+
+  public void setMaterialCode(String materialCode) {
+    this.materialCode = materialCode;
+  }
+
+  public static MaterialDto valueOf(Material material, InwardEntry inwardEntry){
     MaterialDto materialDto = new MaterialDto();
     materialDto.setMaterialId(material.getMatId());
     materialDto.setMaterial(material.getDescription());
 //    materialDto.setGrade(material.getMaterialGrade().stream().map(mg -> mg.getGradeName()).collect(Collectors.toList()));
     materialDto.setMaterialGradeDto(MaterialGrade.valueOf(inwardEntry.getMaterialGrade()));
+    materialDto.setHsnCode(material.getHsnCode());
+    materialDto.setMaterialCode(material.getMaterialCode());
     return materialDto;
   }
   
