@@ -1,8 +1,10 @@
 package com.steel.product.application.dto.delivery;
 
 import com.steel.product.application.dto.instruction.InstructionDto;
+import com.steel.product.application.dto.material.MaterialDto;
 import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.Instruction;
+import com.steel.product.application.entity.Material;
 
 import java.util.Date;
 import java.util.List;
@@ -20,6 +22,10 @@ public class DeliveryPacketsDto {
 
     private String coilNumber;
 
+    private Float fThickness;
+
+    private MaterialDto materialDto;
+
     private String customerInvoiceNo;
 
     private Date customerInvoiceDate;
@@ -35,6 +41,8 @@ public class DeliveryPacketsDto {
         this.coilNumber = instructions.size() > 0 ? instructions.get(0).getInwardId().getCoilNumber(): "";
         this.customerInvoiceNo = deliveryDetails.getCustomerInvoiceNo();
         this.customerInvoiceDate = deliveryDetails.getCustomerInvoiceDate();
+        this.fThickness = instructions.size() > 0 ? instructions.get(0).getInwardId().getfThickness(): null;
+        this.materialDto = instructions.size() > 0 ? Material.valueOf(instructions.get(0).getInwardId().getMaterial(),instructions.get(0).getInwardId()):null;
     }
 
     public DeliveryDetails getDeliveryDetails() {
@@ -91,5 +99,21 @@ public class DeliveryPacketsDto {
 
     public void setCustomerInvoiceDate(Date customerInvoiceDate) {
         this.customerInvoiceDate = customerInvoiceDate;
+    }
+
+    public Float getfThickness() {
+        return fThickness;
+    }
+
+    public void setfThickness(Float fThickness) {
+        this.fThickness = fThickness;
+    }
+
+    public MaterialDto getMaterialDto() {
+        return materialDto;
+    }
+
+    public void setMaterialDto(MaterialDto materialDto) {
+        this.materialDto = materialDto;
     }
 }
