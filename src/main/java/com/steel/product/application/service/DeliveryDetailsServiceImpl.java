@@ -57,8 +57,21 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
         DeliveryDetails savedDelivery = new DeliveryDetails();
         try {
 
-            DeliveryDetails delivery = new DeliveryDetails();
+            DeliveryDetails delivery;
             Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+
+            if(deliveryDto.getDeliveryId() != null){
+                delivery = getById(deliveryDto.getDeliveryId());
+                if(deliveryDto.getCustomerInvoiceNo() != null) {
+                    delivery.setCustomerInvoiceNo(deliveryDto.getCustomerInvoiceNo());
+                }
+                if(deliveryDto.getCustomerInvoiceDate() != null){
+                    delivery.setCustomerInvoiceDate(deliveryDto.getCustomerInvoiceDate());
+                }
+                deliveryDetailsRepo.save(delivery);
+                return delivery;
+            }
+            delivery = new DeliveryDetails();
 
             delivery.setDeliveryId(0);
             delivery.setCreatedBy(1);
@@ -67,6 +80,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
             delivery.setUpdatedOn(timestamp);
             delivery.setDeleted(false);
             delivery.setVehicleNo(deliveryDto.getVehicleNo());
+
 
             float totalWeight = 0f;
 

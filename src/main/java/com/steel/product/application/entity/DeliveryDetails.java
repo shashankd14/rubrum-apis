@@ -1,6 +1,7 @@
 package com.steel.product.application.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -37,6 +38,13 @@ public class DeliveryDetails {
 
     @Column(name = "isdeleted", columnDefinition = "BIT")
     private Boolean isDeleted;
+
+    @Column(name = "customerInvoiceNo")
+    private String customerInvoiceNo;
+
+    @Column(name = "customerInvoiceDate")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    private Date customerInvoiceDate;
 
     @JsonBackReference
     @OneToMany(mappedBy = "status", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH,
@@ -105,5 +113,21 @@ public class DeliveryDetails {
 
     public void setDeleted(Boolean deleted) {
         isDeleted = deleted;
+    }
+
+    public String getCustomerInvoiceNo() {
+        return customerInvoiceNo;
+    }
+
+    public void setCustomerInvoiceNo(String customerInvoiceNo) {
+        this.customerInvoiceNo = customerInvoiceNo;
+    }
+
+    public Date getCustomerInvoiceDate() {
+        return customerInvoiceDate;
+    }
+
+    public void setCustomerInvoiceDate(Date customerInvoiceDate) {
+        this.customerInvoiceDate = customerInvoiceDate;
     }
 }
