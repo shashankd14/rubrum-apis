@@ -26,10 +26,6 @@ public class DeliveryPacketsDto {
 
     private MaterialDto materialDto;
 
-    private String customerInvoiceNo;
-
-    private Date customerInvoiceDate;
-
     public DeliveryPacketsDto() {
     }
 
@@ -39,8 +35,6 @@ public class DeliveryPacketsDto {
         this.partyName = instructions.size() > 0 ? instructions.get(0).getInwardId().getParty().getPartyName() : "";
         this.customerBatchId = instructions.size() > 0 ? instructions.get(0).getInwardId().getCustomerBatchId() : "";
         this.coilNumber = instructions.size() > 0 ? instructions.get(0).getInwardId().getCoilNumber(): "";
-        this.customerInvoiceNo = deliveryDetails.getCustomerInvoiceNo();
-        this.customerInvoiceDate = deliveryDetails.getCustomerInvoiceDate();
         this.fThickness = instructions.size() > 0 ? instructions.get(0).getInwardId().getfThickness(): null;
         this.materialDto = instructions.size() > 0 ? Material.valueOf(instructions.get(0).getInwardId().getMaterial(),instructions.get(0).getInwardId()):null;
     }
@@ -85,21 +79,6 @@ public class DeliveryPacketsDto {
         this.coilNumber = coilNumber;
     }
 
-    public String getCustomerInvoiceNo() {
-        return customerInvoiceNo;
-    }
-
-    public void setCustomerInvoiceNo(String customerInvoiceNo) {
-        this.customerInvoiceNo = customerInvoiceNo;
-    }
-
-    public Date getCustomerInvoiceDate() {
-        return customerInvoiceDate;
-    }
-
-    public void setCustomerInvoiceDate(Date customerInvoiceDate) {
-        this.customerInvoiceDate = customerInvoiceDate;
-    }
 
     public Float getfThickness() {
         return fThickness;
