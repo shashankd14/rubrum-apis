@@ -14,6 +14,8 @@ import javax.annotation.Resource;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin
@@ -86,106 +88,109 @@ public class InstructionController {
     @PostMapping("/save")
     public ResponseEntity<Object> save(@RequestBody List<InstructionDto> instructionDTOs) {
 
+        Map<Integer,Double> weights = instructionDTOs.stream().filter(i -> i.getInwardId() != null)
+                .collect(Collectors.groupingBy(InstructionDto::getInwardId,Collectors.summingDouble(InstructionDto::getPlannedWeight)));
+        System.out.println(weights);
         List<Instruction> savedInstructionList = new ArrayList<Instruction>();
-        Instruction savedInstruction = new Instruction();
-        Instruction parentInstruction;
-        InwardEntry inward;
-        for (InstructionDto instructionDTO : instructionDTOs) {
-            try {
-
-                Instruction instruction = new Instruction();
-                Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-
-                instruction.setInstructionId(0);
-
-                if (instructionDTO.getInwardId() != null) {
-                    inward = inwardService.getByEntryId(instructionDTO.getInwardId());//null check needed ?
-                    inward.setStatus(statusService.getStatusById(2));
-                    instruction.setInwardId(inward);
-                }else if(instructionDTO.getParentInstructionId() != null){
-                    parentInstruction = instructionService.getById(instructionDTO.getParentInstructionId());//null check needed ?
-                    inward = parentInstruction.getInwardId();
-                    instruction.setParentInstruction(parentInstruction);
-                }else{
-                    inward = null;//throw exception if inward does not exist ?
-                }
-
-                if(inward.getFpresent() < instructionDTO.getPlannedWeight()){
-                    return new ResponseEntity<Object>("No available weight for processing.", HttpStatus.BAD_REQUEST);
-                }
-
-                instruction.setProcess(processService.getById(instructionDTO.getProcessId()));
-                instruction.setInstructionDate(instructionDTO.getInstructionDate());
-
-                if (instructionDTO.getPlannedLength() != null)
-                    instruction.setPlannedLength(instructionDTO.getPlannedLength());
-
-                if (instructionDTO.getPlannedWidth() != null)
-                    instruction.setPlannedWidth(instructionDTO.getPlannedWidth());
-
-                if (instructionDTO.getPlannedWeight() != null)
-                    instruction.setPlannedWeight(instructionDTO.getPlannedWeight());
-
-                if (instructionDTO.getPlannedNoOfPieces() != null)
-                    instruction.setPlannedNoOfPieces(instructionDTO.getPlannedNoOfPieces());
-
-                instruction.setStatus(statusService.getStatusById(2));
-
-                if (instructionDTO.getGroupId() != null)
-                    instruction.setGroupId(instructionDTO.getGroupId());
-
-                if (instructionDTO.getParentGroupId() != null)
-                    instruction.setParentGroupId(instructionDTO.getParentGroupId());
-
-//                if (instructionDTO.getParentInstructionId() != null) {
+//        Instruction parentInstruction;
+//        InwardEntry inward;
+//        try {
+//        for (InstructionDto instructionDTO : instructionDTOs) {
 //
-//                    Instruction parentInstruction = instructionService.getById(instructionDTO.getParentInstructionId());
+//                Instruction instruction = new Instruction();
+//                Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 //
+//                instruction.setInstructionId(0);
+//
+//                if (instructionDTO.getInwardId() != null) {
+//                    inward = inwardService.getByEntryId(instructionDTO.getInwardId());//null check needed ?
+//                    if(inward.getFpresent() < instructionDTO.getPlannedWeight()){
+//                        return new ResponseEntity<Object>("No available weight for processing.", HttpStatus.BAD_REQUEST);
+//                    }
+//                    inward.setStatus(statusService.getStatusById(2));
+//                }else if(instructionDTO.getParentInstructionId() != null){
+//                    parentInstruction = instructionService.getById(instructionDTO.getParentInstructionId());//null check needed ?
+//                    if(parentInstruction.getPlannedWeight() < instructionDTO.getPlannedWeight()){
+//                        return new ResponseEntity<Object>("No available weight for processing.", HttpStatus.BAD_REQUEST);
+//                    }
+//                    inward = parentInstruction.getInwardId();
 //                    instruction.setParentInstruction(parentInstruction);
-//                } else
-//                    instruction.setParentInstruction(null);
-
-                if (instructionDTO.getWastage() != null)
-                    instruction.setWastage(instructionDTO.getWastage());
-
-                if (instructionDTO.getDamage() != null)
-                    instruction.setDamage(instructionDTO.getDamage());
-
-                if (instructionDTO.getPackingWeight() != null)
-                    instruction.setPackingWeight(instructionDTO.getPackingWeight());
-
-                instruction.setActualLength(null);
-                instruction.setActualWeight(null);
-                instruction.setActualWidth(null);
-                instruction.setActualNoOfPieces(null);
-
-                instruction.setCreatedBy(instructionDTO.getCreatedBy());
-                instruction.setUpdatedBy(instructionDTO.getUpdatedBy());
-                instruction.setCreatedOn(timestamp);
-                instruction.setUpdatedOn(timestamp);
-                instruction.setIsDeleted(false);
-
-                if(inward != null) {
-                    Float fPresent = inward.getFpresent();
-                    if (fPresent != null && fPresent > instruction.getPlannedWeight()) {
-                        inward.setFpresent(fPresent - instruction.getPlannedWeight());
-                    }else{
-                        return new ResponseEntity<Object>("No available weight for processing.", HttpStatus.BAD_REQUEST);
-                    }
-                }
-                inward.getInstruction().add(instruction);
-                inwardService.saveEntry(inward);
-//                savedInstruction = instructionService.save(instruction);
-
-//                savedInstructionList.add(savedInstruction);
-                savedInstructionList.add(instruction);
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-
-        }
+//                }else{
+//                    return new ResponseEntity<Object>("No inward with id "+instructionDTO.getInwardId()+" found.", HttpStatus.BAD_REQUEST);
+//                }
+//                instruction.setInwardId(inward);
+//
+//
+//                instruction.setProcess(processService.getById(instructionDTO.getProcessId()));
+//                instruction.setInstructionDate(instructionDTO.getInstructionDate());
+//
+//                if (instructionDTO.getPlannedLength() != null)
+//                    instruction.setPlannedLength(instructionDTO.getPlannedLength());
+//
+//                if (instructionDTO.getPlannedWidth() != null)
+//                    instruction.setPlannedWidth(instructionDTO.getPlannedWidth());
+//
+//                if (instructionDTO.getPlannedWeight() != null)
+//                    instruction.setPlannedWeight(instructionDTO.getPlannedWeight());
+//
+//                if (instructionDTO.getPlannedNoOfPieces() != null)
+//                    instruction.setPlannedNoOfPieces(instructionDTO.getPlannedNoOfPieces());
+//
+//                instruction.setStatus(statusService.getStatusById(2));
+//
+//                if (instructionDTO.getGroupId() != null)
+//                    instruction.setGroupId(instructionDTO.getGroupId());
+//
+//                if (instructionDTO.getParentGroupId() != null)
+//                    instruction.setParentGroupId(instructionDTO.getParentGroupId());
+//
+////                if (instructionDTO.getParentInstructionId() != null) {
+////
+////                    Instruction parentInstruction = instructionService.getById(instructionDTO.getParentInstructionId());
+////
+////                    instruction.setParentInstruction(parentInstruction);
+////                } else
+////                    instruction.setParentInstruction(null);
+//
+//                if (instructionDTO.getWastage() != null)
+//                    instruction.setWastage(instructionDTO.getWastage());
+//
+//                if (instructionDTO.getDamage() != null)
+//                    instruction.setDamage(instructionDTO.getDamage());
+//
+//                if (instructionDTO.getPackingWeight() != null)
+//                    instruction.setPackingWeight(instructionDTO.getPackingWeight());
+//
+//                instruction.setActualLength(null);
+//                instruction.setActualWeight(null);
+//                instruction.setActualWidth(null);
+//                instruction.setActualNoOfPieces(null);
+//
+//                instruction.setCreatedBy(instructionDTO.getCreatedBy());
+//                instruction.setUpdatedBy(instructionDTO.getUpdatedBy());
+//                instruction.setCreatedOn(timestamp);
+//                instruction.setUpdatedOn(timestamp);
+//                instruction.setIsDeleted(false);
+//
+//                if(inward != null) {
+//                    Float fPresent = inward.getFpresent();
+//                    if (fPresent != null && fPresent > instruction.getPlannedWeight()) {
+//                        inward.setFpresent(fPresent - instruction.getPlannedWeight());
+//                    }else{
+//                        return new ResponseEntity<Object>("No available weight for processing.", HttpStatus.BAD_REQUEST);
+//                    }
+//                }
+//                inward.getInstruction().add(instruction);
+//                inwardService.saveEntry(inward);
+////                savedInstruction = instructionService.save(instruction);
+//
+////                savedInstructionList.add(savedInstruction);
+//                savedInstructionList.add(instruction);
+//        }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
 
         return new ResponseEntity<Object>(savedInstructionList, HttpStatus.OK);
 
