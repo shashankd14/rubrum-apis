@@ -72,7 +72,7 @@ public class Instruction {
 	@Column(name = "parentgroupid")
 	private Integer parentGroupId ;
 	
-	@OneToMany(mappedBy = "parentInstruction", fetch = FetchType.EAGER)
+	@OneToMany(mappedBy = "parentInstruction", fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST,CascadeType.MERGE})
 	private List<Instruction> childInstructions;
 
 	@JsonIgnore

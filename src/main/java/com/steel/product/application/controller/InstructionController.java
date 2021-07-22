@@ -88,109 +88,104 @@ public class InstructionController {
     @PostMapping("/save")
     public ResponseEntity<Object> save(@RequestBody List<InstructionDto> instructionDTOs) {
 
-        Map<Integer,Double> weights = instructionDTOs.stream().filter(i -> i.getInwardId() != null)
-                .collect(Collectors.groupingBy(InstructionDto::getInwardId,Collectors.summingDouble(InstructionDto::getPlannedWeight)));
-        System.out.println(weights);
+        float weight = 0f;
+        boolean fromInward = false, fromParentInstruction = false;
+        InwardEntry inwardEntry = null;
+        Instruction parentInstruction = null;
+        if(instructionDTOs.get(0).getInwardId() != null){
+            weight = (float) instructionDTOs.stream().mapToDouble(InstructionDto::getPlannedWeight).sum();
+            inwardEntry = inwardService.getByEntryId(instructionDTOs.get(0).getInwardId());
+            if(weight >= inwardEntry.getFpresent()){
+                return new ResponseEntity<Object>("No available weight for processing.", HttpStatus.BAD_REQUEST);
+            }
+            inwardEntry.setFpresent(inwardEntry.getFpresent() - weight);
+            fromInward = true;
+        }else if(instructionDTOs.get(0).getParentInstructionId() != null){
+            weight = (float)instructionDTOs.stream().
+                    mapToDouble(i -> i.getPlannedWeight() != null ? i.getPlannedWeight() : i.getActualWeight()).sum();
+            parentInstruction = instructionService.getById(instructionDTOs.get(0).getParentInstructionId());
+            if(weight >= parentInstruction.getPlannedWeight() || (parentInstruction.getActualWeight() != null && weight >= parentInstruction.getActualWeight())){
+                return new ResponseEntity<Object>("No available weight for processing.", HttpStatus.BAD_REQUEST);
+            }
+            fromParentInstruction = true;
+        }
+//        else{
+//            weight = (float)instructionDTOs.stream().
+//                    mapToDouble(i -> i.getPlannedWeight() != null ? i.getPlannedWeight() : i.getActualWeight()).sum();
+//        }
+
+
         List<Instruction> savedInstructionList = new ArrayList<Instruction>();
-//        Instruction parentInstruction;
-//        InwardEntry inward;
-//        try {
-//        for (InstructionDto instructionDTO : instructionDTOs) {
-//
-//                Instruction instruction = new Instruction();
-//                Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-//
-//                instruction.setInstructionId(0);
-//
-//                if (instructionDTO.getInwardId() != null) {
-//                    inward = inwardService.getByEntryId(instructionDTO.getInwardId());//null check needed ?
-//                    if(inward.getFpresent() < instructionDTO.getPlannedWeight()){
-//                        return new ResponseEntity<Object>("No available weight for processing.", HttpStatus.BAD_REQUEST);
-//                    }
-//                    inward.setStatus(statusService.getStatusById(2));
-//                }else if(instructionDTO.getParentInstructionId() != null){
-//                    parentInstruction = instructionService.getById(instructionDTO.getParentInstructionId());//null check needed ?
-//                    if(parentInstruction.getPlannedWeight() < instructionDTO.getPlannedWeight()){
-//                        return new ResponseEntity<Object>("No available weight for processing.", HttpStatus.BAD_REQUEST);
-//                    }
-//                    inward = parentInstruction.getInwardId();
-//                    instruction.setParentInstruction(parentInstruction);
-//                }else{
-//                    return new ResponseEntity<Object>("No inward with id "+instructionDTO.getInwardId()+" found.", HttpStatus.BAD_REQUEST);
-//                }
-//                instruction.setInwardId(inward);
-//
-//
-//                instruction.setProcess(processService.getById(instructionDTO.getProcessId()));
-//                instruction.setInstructionDate(instructionDTO.getInstructionDate());
-//
-//                if (instructionDTO.getPlannedLength() != null)
-//                    instruction.setPlannedLength(instructionDTO.getPlannedLength());
-//
-//                if (instructionDTO.getPlannedWidth() != null)
-//                    instruction.setPlannedWidth(instructionDTO.getPlannedWidth());
-//
-//                if (instructionDTO.getPlannedWeight() != null)
-//                    instruction.setPlannedWeight(instructionDTO.getPlannedWeight());
-//
-//                if (instructionDTO.getPlannedNoOfPieces() != null)
-//                    instruction.setPlannedNoOfPieces(instructionDTO.getPlannedNoOfPieces());
-//
-//                instruction.setStatus(statusService.getStatusById(2));
-//
-//                if (instructionDTO.getGroupId() != null)
-//                    instruction.setGroupId(instructionDTO.getGroupId());
-//
-//                if (instructionDTO.getParentGroupId() != null)
-//                    instruction.setParentGroupId(instructionDTO.getParentGroupId());
-//
-////                if (instructionDTO.getParentInstructionId() != null) {
-////
-////                    Instruction parentInstruction = instructionService.getById(instructionDTO.getParentInstructionId());
-////
-////                    instruction.setParentInstruction(parentInstruction);
-////                } else
-////                    instruction.setParentInstruction(null);
-//
-//                if (instructionDTO.getWastage() != null)
-//                    instruction.setWastage(instructionDTO.getWastage());
-//
-//                if (instructionDTO.getDamage() != null)
-//                    instruction.setDamage(instructionDTO.getDamage());
-//
-//                if (instructionDTO.getPackingWeight() != null)
-//                    instruction.setPackingWeight(instructionDTO.getPackingWeight());
-//
-//                instruction.setActualLength(null);
-//                instruction.setActualWeight(null);
-//                instruction.setActualWidth(null);
-//                instruction.setActualNoOfPieces(null);
-//
-//                instruction.setCreatedBy(instructionDTO.getCreatedBy());
-//                instruction.setUpdatedBy(instructionDTO.getUpdatedBy());
-//                instruction.setCreatedOn(timestamp);
-//                instruction.setUpdatedOn(timestamp);
-//                instruction.setIsDeleted(false);
-//
-//                if(inward != null) {
-//                    Float fPresent = inward.getFpresent();
-//                    if (fPresent != null && fPresent > instruction.getPlannedWeight()) {
-//                        inward.setFpresent(fPresent - instruction.getPlannedWeight());
-//                    }else{
-//                        return new ResponseEntity<Object>("No available weight for processing.", HttpStatus.BAD_REQUEST);
-//                    }
-//                }
-//                inward.getInstruction().add(instruction);
-//                inwardService.saveEntry(inward);
-////                savedInstruction = instructionService.save(instruction);
-//
-////                savedInstructionList.add(savedInstruction);
-//                savedInstructionList.add(instruction);
-//        }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-//        }
+        try {
+        for (InstructionDto instructionDTO : instructionDTOs) {
+
+                Instruction instruction = new Instruction();
+                Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+
+                instruction.setInstructionId(0);
+
+                instruction.setProcess(processService.getById(instructionDTO.getProcessId()));
+                instruction.setInstructionDate(instructionDTO.getInstructionDate());
+
+                if (instructionDTO.getPlannedLength() != null)
+                    instruction.setPlannedLength(instructionDTO.getPlannedLength());
+
+                if (instructionDTO.getPlannedWidth() != null)
+                    instruction.setPlannedWidth(instructionDTO.getPlannedWidth());
+
+                if (instructionDTO.getPlannedWeight() != null)
+                    instruction.setPlannedWeight(instructionDTO.getPlannedWeight());
+
+                if (instructionDTO.getPlannedNoOfPieces() != null)
+                    instruction.setPlannedNoOfPieces(instructionDTO.getPlannedNoOfPieces());
+
+                instruction.setStatus(statusService.getStatusById(2));
+
+                if (instructionDTO.getGroupId() != null)
+                    instruction.setGroupId(instructionDTO.getGroupId());
+
+                if (instructionDTO.getParentGroupId() != null)
+                    instruction.setParentGroupId(instructionDTO.getParentGroupId());
+
+
+                if (instructionDTO.getWastage() != null)
+                    instruction.setWastage(instructionDTO.getWastage());
+
+                if (instructionDTO.getDamage() != null)
+                    instruction.setDamage(instructionDTO.getDamage());
+
+                if (instructionDTO.getPackingWeight() != null)
+                    instruction.setPackingWeight(instructionDTO.getPackingWeight());
+
+                instruction.setActualLength(null);
+                instruction.setActualWeight(null);
+                instruction.setActualWidth(null);
+                instruction.setActualNoOfPieces(null);
+
+                instruction.setCreatedBy(instructionDTO.getCreatedBy());
+                instruction.setUpdatedBy(instructionDTO.getUpdatedBy());
+                instruction.setCreatedOn(timestamp);
+                instruction.setUpdatedOn(timestamp);
+                instruction.setIsDeleted(false);
+
+                if(fromParentInstruction){
+                    instruction.setParentInstruction(parentInstruction);
+                    parentInstruction.getChildInstructions().add(instruction);
+                }else if(fromInward){
+                    instruction.setInwardId(inwardEntry);
+                    inwardEntry.getInstruction().add(instruction);
+                }
+                savedInstructionList.add(instruction);
+        }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+            if(fromParentInstruction){
+                instructionService.save(parentInstruction);
+            }else if(fromInward){
+                inwardService.saveEntry(inwardEntry);
+            }
 
         return new ResponseEntity<Object>(savedInstructionList, HttpStatus.OK);
 
