@@ -85,9 +85,29 @@ public class InstructionServiceImpl implements InstructionService {
 	}
 
 	@Override
+	public List<Instruction> findAllByGroupId(Integer groupId) {
+		return instructionRepository.findByGroupId(groupId);
+	}
+
+	@Override
+	public List<Instruction> findAllByParentGroupId(Integer parentGroupId) {
+		return instructionRepository.findByParentGroupId(parentGroupId);
+	}
+
+	@Override
+	public List<Instruction> findAllByParentInstructionId(Integer parentInstructionId) {
+		return instructionRepository.findByParentInstructionId(parentInstructionId);
+	}
+
+	@Override
 	public void updateInstructionWithDeliveryRemarks( int deliveryId,
 												  String remarks, int instructionId) {
 		instructionRepository.updateInstructionWithDeliveryRemarks(instructionId,deliveryId, remarks);
+	}
+
+	@Override
+	public List<Instruction> saveAll(List<Instruction> instructions) {
+		return instructionRepository.saveAll(instructions);
 	}
 
 }
