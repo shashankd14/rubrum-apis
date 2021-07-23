@@ -90,8 +90,4 @@ public class DeliveryDetailsController {
         }
     }
 
-//    @GetMapping("/sum/{inwardId}/{deliveryId}")
-//    public List<Float> getSumActualWeight(@PathVariable("inwardId")Integer inwardId, @PathVariable("deliveryId")Integer deliveryId){
-//        return deliveryDetailsService.getActualWeightOfInstructionsGroupedByInwardIdAndDeliveryId(inwardId,deliveryId);
-//    }
 }

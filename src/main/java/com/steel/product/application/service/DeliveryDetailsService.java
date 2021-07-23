@@ -21,5 +21,5 @@ public interface DeliveryDetailsService {
 
     public List<DeliveryPacketsDto> deliveryList();
 
-    public List<Float> getActualWeightOfInstructionsGroupedByInwardIdAndDeliveryId(Integer inwardId,Integer deliveryId);
+    public Float findInstructionByInwardIdAndInstructionId(Integer inwardId,Integer instructionId);
 }

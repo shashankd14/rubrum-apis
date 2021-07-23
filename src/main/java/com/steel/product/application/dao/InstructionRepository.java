@@ -24,7 +24,4 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
     @Query(" from Instruction where status = 2")
     public List<Instruction> getAllWIPList();
 
-//    @Query("select ins from Instruction ins join ins.deliveryDetails dd")
-//    public List<Instruction> findAllInstructions();
-
 }
