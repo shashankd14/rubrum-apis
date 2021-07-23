@@ -136,6 +136,9 @@ public class InwardEntry {
 	
 	@OneToMany(mappedBy = "inwardId", fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST,CascadeType.MERGE})
 	private Set<Instruction> instruction;
+
+	@Column(name = "inStockWeight")
+	private Float inStockWeight;
 	
 
 	public int getInwardEntryId() {
@@ -436,5 +439,21 @@ public class InwardEntry {
 
 	public void setValueOfGoods(Float valueOfGoods) {
 		this.valueOfGoods = valueOfGoods;
+	}
+
+	public Boolean getDeleted() {
+		return isDeleted;
+	}
+
+	public void setDeleted(Boolean deleted) {
+		isDeleted = deleted;
+	}
+
+	public Float getInStockWeight() {
+		return inStockWeight;
+	}
+
+	public void setInStockWeight(Float inStockWeight) {
+		this.inStockWeight = inStockWeight;
 	}
 }
