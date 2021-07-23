@@ -7,7 +7,6 @@ import com.steel.product.application.dto.material.MaterialDto;
 import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "product_tblmatdescription")
@@ -33,7 +32,10 @@ public class Material {
   @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "updatedon")
   private Date updatedOn;
-  
+
+  @Column(name = "hsnCode")
+  private String hsnCode;
+
   @Column(name = "isdeleted", columnDefinition = "BIT")
   private Boolean isDeleted;
   
@@ -51,12 +53,9 @@ public class Material {
   @OneToMany(mappedBy = "materialType")
   private List<Rates> rates;
 
-  @Column(name = "hsnCode")
-  private String hsnCode;
-
   @Column(name = "materialCode")
   private String materialCode;
-  
+
   public int getMatId() {
     return this.matId;
   }
@@ -155,6 +154,6 @@ public void setMaterialGrade(List<MaterialGrade> materialGrade) {
     materialDto.setMaterialCode(material.getMaterialCode());
     return materialDto;
   }
-  
+
   
 }
