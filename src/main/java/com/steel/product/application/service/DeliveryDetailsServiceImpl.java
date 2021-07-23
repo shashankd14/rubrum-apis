@@ -8,6 +8,8 @@ import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -22,6 +24,9 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 
     @Autowired
     private InstructionService instructionService;
+
+    @Autowired
+    private InwardEntryService inwardEntryService;
 
     @Override
     public List<Instruction> getAll() {
@@ -55,6 +60,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
     public DeliveryDetails save(DeliveryDto deliveryDto) {
 
         DeliveryDetails savedDelivery = new DeliveryDetails();
+        List<DeliveryItemDetails> deliveryItemDetails;
         try {
 
             DeliveryDetails delivery;
@@ -85,13 +91,21 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
             float totalWeight = 0f;
 
             savedDelivery = deliveryDetailsRepo.save(delivery);
-
-            List<DeliveryItemDetails> deliveryItemDetails = deliveryDto.getDeliveryItemDetails();
+            InwardEntry inwardEntry;
+            Instruction instruction;
+            deliveryItemDetails= deliveryDto.getDeliveryItemDetails();
             for (DeliveryItemDetails itemDetails : deliveryItemDetails) {
                 instructionService.updateInstructionWithDeliveryRemarks(savedDelivery.getDeliveryId(),
                         itemDetails.getRemarks(), itemDetails.getInstructionId());
+                instruction = instructionService.getById(itemDetails.getInstructionId());
+                inwardEntry = instruction.getInwardId();
+                float actualWeightInstruction = deliveryDetailsRepo.findInstructionByInwardIdAndInstructionId(inwardEntry.getInwardEntryId(),instruction.getInstructionId());
+                if (inwardEntry.getInStockWeight() > actualWeightInstruction) {
+                    inwardEntry.setInStockWeight(inwardEntry.getInStockWeight() - actualWeightInstruction);
+                } else {
+                    return null;
+                }
                 totalWeight = totalWeight + itemDetails.getWeight();
-
             }
             savedDelivery.setTotalWeight(totalWeight);
             deliveryDetailsRepo.save(savedDelivery);
@@ -117,4 +131,11 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 
         return deliveryPacketsDtos;
     }
+
+    @Override
+    public Float findInstructionByInwardIdAndInstructionId(Integer inwardId,Integer instructionId) {
+        return deliveryDetailsRepo.findInstructionByInwardIdAndInstructionId(inwardId,instructionId);
+    }
+
+
 }

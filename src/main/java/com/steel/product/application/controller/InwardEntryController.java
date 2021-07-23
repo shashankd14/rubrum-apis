@@ -62,6 +62,10 @@ public class InwardEntryController {
 			inwardEntry.setCoilNumber(inward.getCoilNumber());
 			inwardEntry.setBatchNumber(inward.getBatchNumber());
 			inwardEntry.setdReceivedDate(Timestamp.valueOf(inward.getInwardDate()));
+			if(inward.getPresentWeight() <= 0){
+				return new ResponseEntity<Object>("Invalid present weight entered.",HttpStatus.BAD_REQUEST);
+			}
+			inwardEntry.setInStockWeight(inward.getPresentWeight());
 			
 			if(inward.getBillDate()!=null)
 			inwardEntry.setdBillDate(Timestamp.valueOf(inward.getBillDate()));
