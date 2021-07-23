@@ -1,9 +1,12 @@
 package com.steel.product.application.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.steel.product.application.dto.material.MaterialDto;
+import com.steel.product.application.dto.materialGradeDto.MaterialGradeDto;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "product_material_grades")
@@ -59,5 +62,13 @@ public class MaterialGrade {
 	public void setInwardEntry(List<InwardEntry> inwardEntry) {
 		this.inwardEntry = inwardEntry;
 	}
+
+	public static MaterialGradeDto valueOf(MaterialGrade materialGrade){
+		MaterialGradeDto materialGradeDto = new MaterialGradeDto();
+		materialGradeDto.setMaterialGradeId(materialGrade.getGradeId());
+		materialGradeDto.setGradeName(materialGrade.getGradeName());
+		return materialGradeDto;
+	}
+
 
 }

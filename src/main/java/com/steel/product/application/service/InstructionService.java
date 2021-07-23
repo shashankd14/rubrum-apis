@@ -18,8 +18,14 @@ public interface InstructionService {
 	
 	public void deleteById(Instruction deleteInstruction);
 
+	public List<Instruction> findAllByGroupId(Integer groupId);
 
+	public List<Instruction> findAllByParentGroupId(Integer parentGroupId);
+
+	public List<Instruction> findAllByParentInstructionId(Integer parentInstructionId);
 
 	public void updateInstructionWithDeliveryRemarks(int deliveryId, String remarks,int instructionId);
+
+	public List<Instruction> saveAll(List<Instruction> instructions);
 
 }

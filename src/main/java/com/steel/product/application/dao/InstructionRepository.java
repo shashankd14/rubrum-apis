@@ -24,4 +24,13 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
     @Query(" from Instruction where status = 2")
     public List<Instruction> getAllWIPList();
 
+    @Query("select i from Instruction i where i.groupId = :groupId")
+    public List<Instruction> findByGroupId(@Param("groupId")Integer groupId);
+
+    @Query("select i from Instruction i where i.parentGroupId = :parentGroupId")
+    public List<Instruction> findByParentGroupId(@Param("parentGroupId")Integer parentGroupId);
+
+    @Query("select i from Instruction i where i.parentInstruction.instructionId = :parentInstructionId")
+    public List<Instruction> findByParentInstructionId(@Param("parentInstructionId")Integer parentInstructionId);
+
 }

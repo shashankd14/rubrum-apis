@@ -58,6 +58,8 @@ public class InstructionDto {
 
 	private Boolean isDeleted;
 
+	private String remarks;
+
 	public int getInstructionId() {
 		return instructionId;
 	}
@@ -256,5 +258,21 @@ public class InstructionDto {
 
 	public void setPacketClassificationId(Integer packetClassificationId) {
 		this.packetClassificationId = packetClassificationId;
+	}
+
+	public Boolean getDeleted() {
+		return isDeleted;
+	}
+
+	public void setDeleted(Boolean deleted) {
+		isDeleted = deleted;
+	}
+
+	public String getRemarks() {
+		return remarks;
+	}
+
+	public void setRemarks(String remarks) {
+		this.remarks = remarks;
 	}
 }
