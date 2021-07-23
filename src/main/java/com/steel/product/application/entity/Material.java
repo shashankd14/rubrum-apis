@@ -2,6 +2,7 @@ package com.steel.product.application.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.steel.product.application.dto.material.MaterialDto;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -34,7 +35,7 @@ public class Material {
 
   @Column(name = "hsnCode")
   private String hsnCode;
-  
+
   @Column(name = "isdeleted", columnDefinition = "BIT")
   private Boolean isDeleted;
   
@@ -51,7 +52,10 @@ public class Material {
   @JsonBackReference(value = "material-rates")
   @OneToMany(mappedBy = "materialType")
   private List<Rates> rates;
-  
+
+  @Column(name = "materialCode")
+  private String materialCode;
+
   public int getMatId() {
     return this.matId;
   }
@@ -131,4 +135,25 @@ public void setMaterialGrade(List<MaterialGrade> materialGrade) {
   public void setHsnCode(String hsnCode) {
     this.hsnCode = hsnCode;
   }
+
+  public String getMaterialCode() {
+    return materialCode;
+  }
+
+  public void setMaterialCode(String materialCode) {
+    this.materialCode = materialCode;
+  }
+
+  public static MaterialDto valueOf(Material material, InwardEntry inwardEntry){
+    MaterialDto materialDto = new MaterialDto();
+    materialDto.setMaterialId(material.getMatId());
+    materialDto.setMaterial(material.getDescription());
+//    materialDto.setGrade(material.getMaterialGrade().stream().map(mg -> mg.getGradeName()).collect(Collectors.toList()));
+    materialDto.setMaterialGradeDto(MaterialGrade.valueOf(inwardEntry.getMaterialGrade()));
+    materialDto.setHsnCode(material.getHsnCode());
+    materialDto.setMaterialCode(material.getMaterialCode());
+    return materialDto;
+  }
+
+  
 }

@@ -44,6 +44,8 @@ public class MaterialDescriptionServiceImpl implements MaterialDescriptionServic
     material.setCreatedOn(timestamp);
     material.setUpdatedOn(timestamp);
     material.setIsDeleted(false);
+    material.setHsnCode(materialDto.getHsnCode());
+    material.setMaterialCode(materialDto.getMaterialCode());
 
     savedMaterial = matDescRepo.save(material);
 

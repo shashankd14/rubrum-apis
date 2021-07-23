@@ -379,6 +379,7 @@ public class Instruction {
 		instructionDto.setCreatedBy(instruction.getCreatedBy());
 		instructionDto.setPackingWeight(instruction.getPackingWeight());
 		instructionDto.setWastage(instruction.getWastage());
+		instructionDto.setRemarks(instruction.getRemarks());
 		return instructionDto;
 	}
 }

@@ -1,5 +1,7 @@
 package com.steel.product.application.dto.material;
 
+import com.steel.product.application.dto.materialGradeDto.MaterialGradeDto;
+
 import java.util.List;
 
 public class MaterialDto {
@@ -7,7 +9,9 @@ public class MaterialDto {
     private int materialId;
     private String material;
     private List<String> grade;
+    private MaterialGradeDto materialGradeDto;
     private String hsnCode;
+    private String materialCode;
 
     public int getMaterialId() {
         return materialId;
@@ -33,11 +37,27 @@ public class MaterialDto {
         this.grade = grade;
     }
 
+    public MaterialGradeDto getMaterialGradeDto() {
+        return materialGradeDto;
+    }
+
+    public void setMaterialGradeDto(MaterialGradeDto materialGradeDto) {
+        this.materialGradeDto = materialGradeDto;
+    }
+
     public String getHsnCode() {
         return hsnCode;
     }
 
     public void setHsnCode(String hsnCode) {
         this.hsnCode = hsnCode;
+    }
+
+    public String getMaterialCode() {
+        return materialCode;
+    }
+
+    public void setMaterialCode(String materialCode) {
+        this.materialCode = materialCode;
     }
 }
