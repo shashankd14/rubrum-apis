@@ -111,7 +111,7 @@ public class InstructionController {
             availableWeight = parentInstruction.getActualWeight() != null ? parentInstruction.getActualWeight() : parentInstruction.getPlannedWeight();
             fromParentInstruction = true;
         }
-        else{
+        else if(instructionDTOs.get(0).getGroupId() != null){
             List<Instruction> existingInstructions = instructionService.findAllByParentGroupId(instructionDTOs.get(0).getGroupId());
             if(existingInstructions.size() > 0){
                 return new ResponseEntity<Object>("Instructions with parent group id "+instructionDTOs.get(0).getGroupId()+" already exists.",HttpStatus.BAD_REQUEST);
@@ -121,6 +121,8 @@ public class InstructionController {
             availableWeight = (float)instructionService.findAllByGroupId(instructionDTOs.get(0).getGroupId()).stream()
                     .mapToDouble(i -> i.getActualWeight() != null ? i.getActualWeight() : i.getPlannedWeight()).sum();
             fromGroup = true;
+        }else{
+            return new ResponseEntity<>("Invalid request.",HttpStatus.BAD_REQUEST);
         }
 
         if(incomingWeight > availableWeight - existingWeight){
