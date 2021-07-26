@@ -72,7 +72,7 @@ public class Instruction {
 	@Column(name = "parentgroupid")
 	private Integer parentGroupId ;
 	
-	@OneToMany(mappedBy = "parentInstruction", fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST,CascadeType.MERGE})
+	@OneToMany(mappedBy = "parentInstruction", fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST,CascadeType.MERGE,CascadeType.REMOVE})
 	private List<Instruction> childInstructions;
 
 	@JsonIgnore
@@ -349,6 +349,16 @@ public class Instruction {
 
 	public void setParentGroupId(Integer parentGroupId) {
 		this.parentGroupId = parentGroupId;
+	}
+
+	public void addChildInstruction(Instruction instruction){
+		this.childInstructions.add(instruction);
+		instruction.setParentInstruction(this);
+	}
+
+	public void removeChildInstruction(Instruction instruction) {
+		this.getChildInstructions().remove(instruction);
+		instruction.setParentInstruction(null);
 	}
 
 	public static InstructionDto valueOf(Instruction instruction){

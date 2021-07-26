@@ -7,6 +7,7 @@ import com.steel.product.application.entity.InwardEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 
@@ -73,15 +74,23 @@ public class InstructionServiceImpl implements InstructionService {
 			InwardEntry inwardEntry = deleteInstruction.getInwardId();
 			if (deleteInstruction.getPlannedWeight()!=null && inwardEntry.getFpresent() != null)
 				inwardEntry.setFpresent((inwardEntry.getFpresent()+deleteInstruction.getPlannedWeight()));
-			inwardEntryRepository.save(inwardEntry);
-		}else{
+				inwardEntry.removeInstruction(deleteInstruction);
+				inwardEntryRepository.save(inwardEntry);
+		}else if(deleteInstruction.getParentInstruction() != null){
 			Instruction parentInstruction = deleteInstruction.getParentInstruction();
 			if (deleteInstruction.getPlannedWeight()!=null && parentInstruction.getPlannedWeight() != null)
 				parentInstruction.setPlannedWeight((deleteInstruction.getPlannedWeight()+parentInstruction.getPlannedWeight()));
-			instructionRepository.save(parentInstruction);
+				instructionRepository.save(parentInstruction);
+		}else if(deleteInstruction.getChildInstructions().size() > 0){
+			Float fPresentChildrenSum = (float)deleteInstruction.getChildInstructions().stream().mapToDouble(ci -> ci.getPlannedWeight()).sum();
+			fPresentChildrenSum +=
 		}
+		deleteInstruction.setPacketClassification(null);
+		deleteInstruction.setParentInstruction(null);
+		deleteInstruction.setDeliveryDetails(null);
+		deleteInstruction.getChildInstructions().clear();
 
-		instructionRepository.deleteById(deleteInstruction.getInstructionId());
+		instructionRepository.delete(deleteInstruction);
 	}
 
 	@Override
