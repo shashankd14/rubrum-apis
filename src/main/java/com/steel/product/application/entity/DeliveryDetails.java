@@ -51,6 +51,16 @@ public class DeliveryDetails {
             CascadeType.REFRESH })
     private List<Instruction> instruction;
 
+    public void addInstruction(Instruction instruction){
+        this.instruction.add(instruction);
+        instruction.setDeliveryDetails(this);
+    }
+
+    public void removeInstruction(Instruction instruction){
+        this.instruction.remove(instruction);
+        instruction.setDeliveryDetails(null);
+    }
+
     public Integer getDeliveryId() {
         return deliveryId;
     }
