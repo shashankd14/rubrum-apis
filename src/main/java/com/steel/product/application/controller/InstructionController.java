@@ -191,7 +191,8 @@ public class InstructionController {
 
         try {
 
-            Instruction deleteInstruction = instructionService.getById(instructionId);
+            Instruction deleteInstruction = new Instruction();
+            deleteInstruction = instructionService.getById(instructionId);
             instructionService.deleteById(deleteInstruction);
             return new ResponseEntity<Object>("delete success!", HttpStatus.OK);
 
