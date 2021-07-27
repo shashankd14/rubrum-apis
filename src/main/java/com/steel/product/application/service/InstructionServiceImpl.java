@@ -106,7 +106,7 @@ public class InstructionServiceImpl implements InstructionService {
 			availableWeight = parentInstruction.getActualWeight() != null ? parentInstruction.getActualWeight() : parentInstruction.getPlannedWeight();
 			fromParentInstruction = true;
 		}
-		else{
+		else if(instructionDTOs.get(0).getGroupId() != null){
 			List<Instruction> existingInstructions = findAllByParentGroupId(instructionDTOs.get(0).getGroupId());
 			if(existingInstructions.size() > 0){
 				return new ResponseEntity<Object>("Instructions with parent group id "+instructionDTOs.get(0).getGroupId()+" already exists.", HttpStatus.BAD_REQUEST);
@@ -116,13 +116,15 @@ public class InstructionServiceImpl implements InstructionService {
 			availableWeight = (float)findAllByGroupId(instructionDTOs.get(0).getGroupId()).stream()
 					.mapToDouble(i -> i.getActualWeight() != null ? i.getActualWeight() : i.getPlannedWeight()).sum();
 			fromGroup = true;
+		}else{
+			return new ResponseEntity<Object>("Invalid request.",HttpStatus.BAD_REQUEST);
 		}
 
 		if(incomingWeight > availableWeight - existingWeight){
 			return new ResponseEntity<Object>("No available weight for processing.", HttpStatus.BAD_REQUEST);
 		}
 		if(fromGroup && incomingWeight != availableWeight){
-			return new ResponseEntity<Object>("Input instructions incomingWeight must be same as instructions in group id "+instructionDTOs.get(0).getGroupId(),HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<Object>("Input instructions total weight must be equal to instructions in group id "+instructionDTOs.get(0).getGroupId(),HttpStatus.BAD_REQUEST);
 		}
 
 		List<Instruction> savedInstructionList = new ArrayList<Instruction>();
