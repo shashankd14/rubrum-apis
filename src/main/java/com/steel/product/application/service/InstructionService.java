@@ -1,6 +1,8 @@
 package com.steel.product.application.service;
 
+import com.steel.product.application.dto.instruction.InstructionDto;
 import com.steel.product.application.entity.Instruction;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
@@ -15,6 +17,8 @@ public interface InstructionService {
 	public Instruction getById(int theId);
 	
 	public Instruction save(Instruction instruction);
+
+	public ResponseEntity<Object> addInstruction(List<InstructionDto> instructionDTOs);
 	
 	public void deleteById(Instruction deleteInstruction);
 
