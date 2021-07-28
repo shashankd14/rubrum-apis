@@ -139,7 +139,16 @@ public class InwardEntry {
 
 	@Column(name = "inStockWeight")
 	private Float inStockWeight;
-	
+
+	public void addInstruction(Instruction instruction){
+		this.getInstruction().add(instruction);
+		instruction.setInwardId(this);
+	}
+
+	public void removeInstruction(Instruction instruction){
+		this.getInstruction().remove(instruction);
+		instruction.setInwardId(null);
+	}
 
 	public int getInwardEntryId() {
 		return this.inwardEntryId;

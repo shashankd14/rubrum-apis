@@ -228,6 +228,17 @@ public class InwardEntryController {
       return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     } 
   }
+
+	@GetMapping({"/pwr/list"})
+	public ResponseEntity<Object> findAllEntriesPwr() {
+		try {
+			List<InwardEntry> inwardEntries = inwdEntrySvc.getAllEntriesPwr();
+			return new ResponseEntity<Object>(inwardEntries, HttpStatus.OK);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
   
   @GetMapping({"/getById/{inwardEntryId}"})
   public ResponseEntity<Object> getById(@PathVariable int inwardEntryId) {

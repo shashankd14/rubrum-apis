@@ -23,4 +23,6 @@ public interface InwardEntryService {
   boolean isCoilNumberPresent(String paramString);
 
   boolean isCustomerBatchIdPresent(String customerBatchId);
+
+  List<InwardEntry> getAllEntriesPwr();
 }

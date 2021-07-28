@@ -44,4 +44,14 @@ public class PacketClassification {
     public void setInstructionClass(List<Instruction> instructionClass) {
         this.instructionClass = instructionClass;
     }
+
+    public void addInstruction(Instruction instruction){
+        this.getInstructionClass().add(instruction);
+        instruction.setPacketClassification(this);
+    }
+
+    public void removeInstruction(Instruction instruction){
+        this.getInstructionClass().remove(instruction);
+        instruction.setPacketClassification(null);
+    }
 }
