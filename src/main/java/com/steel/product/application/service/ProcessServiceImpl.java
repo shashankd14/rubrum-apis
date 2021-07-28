@@ -21,7 +21,7 @@ public class ProcessServiceImpl implements ProcessService{
         if (result.isPresent()) {
             process = result.get();
         } else {
-            throw new RuntimeException("Did not find status id - " + processId);
+            throw new RuntimeException("Did not find process id - " + processId);
         }
         return process;
     }

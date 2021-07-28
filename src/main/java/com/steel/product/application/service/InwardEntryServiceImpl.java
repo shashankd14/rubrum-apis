@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class InwardEntryServiceImpl implements InwardEntryService {
@@ -70,6 +71,14 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 			isPresent = true;
 		}
 		return isPresent;
+	}
+
+	@Override
+	public List<InwardEntry> getAllEntriesPwr() {
+		return inwdEntryRepo.findAll().stream()
+				.filter(inwardEntry -> inwardEntry.getStatus().getStatusId() != 4 && inwardEntry.getStatus().getStatusId() != 5)
+				.peek(inwardEntry -> inwardEntry.getInstruction().stream().filter(ins -> ins.getStatus().getStatusId() != 4 &&
+						ins.getStatus().getStatusId() != 5)).collect(Collectors.toList());
 	}
 
 	@Override
