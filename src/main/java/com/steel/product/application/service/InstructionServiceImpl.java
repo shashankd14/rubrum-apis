@@ -175,6 +175,7 @@ public class InstructionServiceImpl implements InstructionService {
 				if(fromParentInstruction){
 					parentInstruction.addChildInstruction(instruction);
 				}else if(fromInward){
+					inwardEntry.setStatus(statusService.getStatusById(2));
 					inwardEntry.addInstruction(instruction);
 				}else{
 					instruction.setParentGroupId(instructionDTO.getGroupId());
