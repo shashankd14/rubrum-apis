@@ -390,6 +390,7 @@ public class Instruction {
 		instructionDto.setPackingWeight(instruction.getPackingWeight());
 		instructionDto.setWastage(instruction.getWastage());
 		instructionDto.setRemarks(instruction.getRemarks());
+		instructionDto.setPacketClassificationName(instruction.getPacketClassification() != null ? instruction.getPacketClassification().getClassificationName() : "");
 		return instructionDto;
 	}
 }

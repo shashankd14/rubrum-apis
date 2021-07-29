@@ -2,11 +2,13 @@ package com.steel.product.application.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.steel.product.application.dto.pdf.InwardEntryPdfDto;
 
 import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "product_tblinwardentry")
@@ -464,5 +466,24 @@ public class InwardEntry {
 
 	public void setInStockWeight(Float inStockWeight) {
 		this.inStockWeight = inStockWeight;
+	}
+
+	public static InwardEntryPdfDto valueOf(InwardEntry inwardEntry){
+		InwardEntryPdfDto inwardEntryPdfDto = new InwardEntryPdfDto();
+		inwardEntryPdfDto.setInwardEntryId(inwardEntry.getInwardEntryId());
+		inwardEntryPdfDto.setPartyName(inwardEntry.getParty() != null ? inwardEntry.getParty().getPartyName() : "");
+		inwardEntryPdfDto.setCoilNumber(inwardEntry.getCoilNumber());
+		inwardEntryPdfDto.setBatchNumber(inwardEntry.getBatchNumber());
+		inwardEntryPdfDto.setCustomerBatchId(inwardEntry.getCustomerBatchId());
+		inwardEntryPdfDto.setfQuantity(inwardEntry.getfQuantity());
+		inwardEntryPdfDto.setMatDescription(inwardEntry.getMaterial() != null ? inwardEntry.getMaterial().getDescription() : "");
+		inwardEntryPdfDto.setMaterialGradeName(inwardEntry.getMaterialGrade() != null ? inwardEntry.getMaterialGrade().getGradeName() : "");
+		inwardEntryPdfDto.setfThickness(inwardEntry.getfThickness());
+		inwardEntryPdfDto.setfWidth(inwardEntry.getfWidth());
+		inwardEntryPdfDto.setGrossWeight(inwardEntry.getGrossWeight());
+		inwardEntryPdfDto.setCreatedOn(inwardEntry.getCreatedOn());
+		inwardEntryPdfDto.setInstruction(inwardEntry.getInstruction().stream().map(i -> Instruction.valueOf(i)).collect(Collectors.toSet()));
+		inwardEntryPdfDto.setTotalWeight((float)inwardEntry.getInstruction().stream().mapToDouble(Instruction::getPlannedWeight).sum());
+		return inwardEntryPdfDto;
 	}
 }

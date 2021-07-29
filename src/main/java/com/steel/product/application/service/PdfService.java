@@ -1,6 +1,7 @@
 package com.steel.product.application.service;
 
 import com.lowagie.text.DocumentException;
+import com.steel.product.application.dto.pdf.InwardEntryPdfDto;
 import com.steel.product.application.dto.pdf.PdfDto;
 import com.steel.product.application.entity.InwardEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class PdfService {
@@ -28,9 +31,9 @@ public class PdfService {
         this.templateEngine = templateEngine;
     }
 
-    public File generatePdf(PdfDto pdfDto, String process) throws IOException, DocumentException {
-        Context context = getContext(pdfDto.getInwardId());
-        String html = loadAndFillTemplate(context,process);
+    public File generatePdf(PdfDto pdfDto, Integer processId) throws IOException, DocumentException {
+        Context context = getContext(pdfDto.getInwardId(),processId);
+        String html = loadAndFillTemplate(context,processId);
         return renderPdf(html);
     }
 
@@ -47,18 +50,23 @@ public class PdfService {
         return file;
     }
 
-    private Context getContext(Integer inwardId) {
+    private Context getContext(Integer inwardId, Integer processId) {
         Context context = new Context();
         InwardEntry inwardEntry = inwardEntryService.getByEntryId(inwardId);
-        context.setVariable("inward", inwardEntry);
+        if(inwardEntry == null){
+            throw new RuntimeException(String.format("InwardEntry with id %d does not have instructions with process id %d",inwardId,processId));
+        }
+        inwardEntry.setInstruction(inwardEntry.getInstruction().stream().filter(ins -> ins.getProcess().getProcessId() == processId).collect(Collectors.toSet()));
+        InwardEntryPdfDto inwardEntryPdfDto = InwardEntry.valueOf(inwardEntry);
+        context.setVariable("inward", inwardEntryPdfDto);
         return context;
     }
 
-    private String loadAndFillTemplate(Context context, String process) {
-        if(process.equals("CUT")) {
+    private String loadAndFillTemplate(Context context, Integer processId) {
+        if(processId == 1) {
             return templateEngine.process("Cutting-slip", context);
         }
-        return templateEngine.process("Cutting-slip", context);
+        return templateEngine.process("Slitting-slip", context);
     }
 
 }

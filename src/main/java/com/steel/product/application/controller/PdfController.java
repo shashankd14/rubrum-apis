@@ -29,7 +29,7 @@ public class PdfController {
     public void downloadPDFResource(@RequestBody PdfDto pdfDto, HttpServletResponse response) {
         try {
 
-            Path file = Paths.get(pdfService.generatePdf(pdfDto, "CUT").getAbsolutePath());
+            Path file = Paths.get(pdfService.generatePdf(pdfDto, pdfDto.getProcessId()).getAbsolutePath());
             if (Files.exists(file)) {
                 response.setContentType("application/pdf");
                 response.addHeader("Content-Disposition",

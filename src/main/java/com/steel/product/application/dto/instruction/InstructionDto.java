@@ -35,6 +35,8 @@ public class InstructionDto {
 	private Integer status;
 
 	private Integer packetClassificationId;
+
+	private String packetClassificationName;
 	
 	private Integer groupId ;
 
@@ -258,6 +260,14 @@ public class InstructionDto {
 
 	public void setPacketClassificationId(Integer packetClassificationId) {
 		this.packetClassificationId = packetClassificationId;
+	}
+
+	public String getPacketClassificationName() {
+		return packetClassificationName;
+	}
+
+	public void setPacketClassificationName(String packetClassificationName) {
+		this.packetClassificationName = packetClassificationName;
 	}
 
 	public Boolean getDeleted() {

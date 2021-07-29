@@ -20,5 +20,4 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
   
   <T> Optional<InwardEntry> findByCoilNumber(String coilNumber);
 
-  //List<InwardEntry> findInstructionByStatus();
 }
