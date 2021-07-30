@@ -484,6 +484,12 @@ public class InwardEntry {
 		inwardEntryPdfDto.setCreatedOn(inwardEntry.getCreatedOn());
 		inwardEntryPdfDto.setInstruction(inwardEntry.getInstruction().stream().map(i -> Instruction.valueOf(i)).collect(Collectors.toSet()));
 		inwardEntryPdfDto.setTotalWeight((float)inwardEntry.getInstruction().stream().mapToDouble(Instruction::getPlannedWeight).sum());
+		inwardEntryPdfDto.setPurposeType(inwardEntry.getPurposeType());
+		inwardEntryPdfDto.setdReceivedDate(inwardEntry.getdReceivedDate());
+		inwardEntryPdfDto.setvLorryNo(inwardEntry.getvLorryNo());
+		inwardEntryPdfDto.setvInvoiceNo(inwardEntry.getvInvoiceNo());
+		inwardEntryPdfDto.setTestCertificateNumber(inwardEntry.getTestCertificateNumber());
+		inwardEntryPdfDto.setRemarks(inwardEntry.getRemarks());
 		return inwardEntryPdfDto;
 	}
 }
