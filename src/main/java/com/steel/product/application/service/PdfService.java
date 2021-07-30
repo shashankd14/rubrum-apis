@@ -63,10 +63,13 @@ public class PdfService {
     }
 
     private String loadAndFillTemplate(Context context, Integer processId) {
-        if(processId == 1) {
+        if(processId != null && processId == 1) {
             return templateEngine.process("Cutting-slip", context);
+        }else if(processId != null && processId == 2) {
+            return templateEngine.process("Slitting-slip", context);
+        }else{
+            return templateEngine.process("inward",context);
         }
-        return templateEngine.process("Slitting-slip", context);
     }
 
 }
