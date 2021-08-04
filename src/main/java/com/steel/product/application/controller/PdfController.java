@@ -1,6 +1,7 @@
 package com.steel.product.application.controller;
 
 import com.lowagie.text.DocumentException;
+import com.steel.product.application.dto.pdf.DeliveryPdfDto;
 import com.steel.product.application.dto.pdf.PdfDto;
 import com.steel.product.application.service.AddressService;
 import com.steel.product.application.service.PdfService;
@@ -25,11 +26,11 @@ public class PdfController {
         this.pdfService = pdfService;
     }
 
-    @PostMapping("/cut")
-    public void downloadPDFResource(@RequestBody PdfDto pdfDto, HttpServletResponse response) {
+    @PostMapping("/inward")
+    public void downloadInwardPDF(@RequestBody PdfDto pdfDto, HttpServletResponse response) {
         try {
 
-            Path file = Paths.get(pdfService.generatePdf(pdfDto, pdfDto.getProcessId()).getAbsolutePath());
+            Path file = Paths.get(pdfService.generatePdf(pdfDto).getAbsolutePath());
             if (Files.exists(file)) {
                 response.setContentType("application/pdf");
                 response.addHeader("Content-Disposition",
@@ -37,8 +38,27 @@ public class PdfController {
                 Files.copy(file, response.getOutputStream());
                 response.getOutputStream().flush();
             }
-        } catch (IOException | DocumentException ex) {
+        } catch (IOException | DocumentException | org.dom4j.DocumentException ex) {
             ex.printStackTrace();
         }
     }
+
+    @PostMapping("/delivery")
+    public void downloadDeliveryPDF(@RequestBody DeliveryPdfDto deliveryPdfDto, HttpServletResponse response) {
+        try {
+
+            Path file = Paths.get(pdfService.generateDeliveryPdf(deliveryPdfDto).getAbsolutePath());
+            if (Files.exists(file)) {
+                response.setContentType("application/pdf");
+                response.addHeader("Content-Disposition",
+                        "attachment; filename=" + file.getFileName());
+                Files.copy(file, response.getOutputStream());
+                response.getOutputStream().flush();
+            }
+        } catch (IOException | DocumentException | org.dom4j.DocumentException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+
 }

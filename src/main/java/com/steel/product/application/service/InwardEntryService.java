@@ -1,5 +1,6 @@
 package com.steel.product.application.service;
 
+import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
 import org.springframework.http.ResponseEntity;
 
@@ -26,5 +27,7 @@ public interface InwardEntryService {
   boolean isCustomerBatchIdPresent(String customerBatchId);
 
   List<InwardEntry> getAllEntriesPwr();
+
+  public List<InwardEntry> findDeliveryItemsByInstructionIds(List<Integer> instructionIds);
 
 }

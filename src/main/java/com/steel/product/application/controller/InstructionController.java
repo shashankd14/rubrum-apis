@@ -2,6 +2,8 @@ package com.steel.product.application.controller;
 
 import com.steel.product.application.dto.instruction.InstructionDto;
 import com.steel.product.application.dto.instruction.InstructionFinishDto;
+import com.steel.product.application.dto.pdf.DeliveryChallanPdfDto;
+import com.steel.product.application.dto.pdf.DeliveryPdfDto;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.service.*;
@@ -33,9 +35,16 @@ public class InstructionController {
 
     @Autowired
     private ProcessService processService;
+    @Autowired
+    private CompanyDetailsService companyDetailsService;
 
     @Resource
     private PacketClassificationService packetClassificationService;
+
+//    @GetMapping("/ids")
+//    public DeliveryChallanPdfDto getList(@RequestBody DeliveryPdfDto deliveryPdfDto){
+//        return new DeliveryChallanPdfDto(companyDetailsService.findById(1),inwardService.findDeliveryItemsByInstructionIds(deliveryPdfDto.getInstructionIds()));
+//    }
 
     @GetMapping("/list")
     public ResponseEntity<Object> getAll() {
@@ -201,6 +210,8 @@ public class InstructionController {
         }
     }
 
+
+
     @PostMapping("/saveUnprocessedForDelivery/{inwardId}")
     public ResponseEntity<Object> saveUnprocessedForDelivery(@PathVariable int inwardId) {
         try {
@@ -231,4 +242,6 @@ public class InstructionController {
             return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+
 }

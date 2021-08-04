@@ -246,4 +246,11 @@ public class InstructionServiceImpl implements InstructionService {
 		return instructionRepository.saveAll(instructions);
 	}
 
+	@Override
+	public List<Instruction> findByIdIn(List<Integer> ids) {
+		return instructionRepository.findByInstructionIdIn(ids);
+	}
+
+
+
 }

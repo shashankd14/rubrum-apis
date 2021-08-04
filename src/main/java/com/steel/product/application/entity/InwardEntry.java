@@ -2,6 +2,7 @@ package com.steel.product.application.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.steel.product.application.dto.pdf.DeliveryChallanPdfDto;
 import com.steel.product.application.dto.pdf.InwardEntryPdfDto;
 
 import javax.persistence.*;
@@ -490,6 +491,10 @@ public class InwardEntry {
 		inwardEntryPdfDto.setvInvoiceNo(inwardEntry.getvInvoiceNo());
 		inwardEntryPdfDto.setTestCertificateNumber(inwardEntry.getTestCertificateNumber());
 		inwardEntryPdfDto.setRemarks(inwardEntry.getRemarks());
+		inwardEntryPdfDto.setdInvoiceDate(inwardEntry.getdInvoiceDate());
+		inwardEntryPdfDto.setValueOfGoods(inwardEntry.getValueOfGoods());
+		inwardEntryPdfDto.setPartyCgst(inwardEntry.getParty().getGstNumber());
 		return inwardEntryPdfDto;
 	}
+
 }

@@ -82,6 +82,11 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 	}
 
 	@Override
+	public List<InwardEntry> findDeliveryItemsByInstructionIds(List<Integer> instructionIds) {
+		return inwdEntryRepo.findDeliveryItemsByInstructionIds(instructionIds);
+	}
+
+	@Override
 	public InwardEntry getByCoilNumber(String coilNumber) {
 		
 		Optional<InwardEntry> result = this.inwdEntryRepo.findByCoilNumber(coilNumber);

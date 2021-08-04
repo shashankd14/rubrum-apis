@@ -2,6 +2,7 @@ package com.steel.product.application.dto.instruction;
 
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.steel.product.application.entity.DeliveryDetails;
 
 import java.util.Date;
 
@@ -61,6 +62,8 @@ public class InstructionDto {
 	private Boolean isDeleted;
 
 	private String remarks;
+
+	private DeliveryDetails deliveryDetails;
 
 	public int getInstructionId() {
 		return instructionId;
@@ -284,5 +287,13 @@ public class InstructionDto {
 
 	public void setRemarks(String remarks) {
 		this.remarks = remarks;
+	}
+
+	public DeliveryDetails getDeliveryDetails() {
+		return deliveryDetails;
+	}
+
+	public void setDeliveryDetails(DeliveryDetails deliveryDetails) {
+		this.deliveryDetails = deliveryDetails;
 	}
 }

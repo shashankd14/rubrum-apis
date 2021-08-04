@@ -13,6 +13,8 @@ public class InwardEntryPdfDto {
         
         private String partyName;
 
+        private String partyCgst;
+
         private String coilNumber;
 
         private String batchNumber;
@@ -397,5 +399,13 @@ public class InwardEntryPdfDto {
 
     public void setInStockWeight(Float inStockWeight) {
         this.inStockWeight = inStockWeight;
+    }
+
+    public String getPartyCgst() {
+        return partyCgst;
+    }
+
+    public void setPartyCgst(String partyCgst) {
+        this.partyCgst = partyCgst;
     }
 }
