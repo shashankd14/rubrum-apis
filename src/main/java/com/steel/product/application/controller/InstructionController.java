@@ -142,12 +142,12 @@ public class InstructionController {
             instruction.setUpdatedOn(timestamp);
             instruction.setIsDeleted(false);
 
-            instructionService.save(instruction);
+            Instruction savedInstruction = instructionService.save(instruction);
 
             inward.setFpresent(0f);
             inwardService.saveEntry(inward);
 
-            return new ResponseEntity<Object>("Unprocessed Coil saved for delivery", HttpStatus.OK);
+            return new ResponseEntity<Object>(savedInstruction, HttpStatus.OK);
 
         } catch (Exception e) {
             return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
