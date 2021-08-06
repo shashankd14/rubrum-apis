@@ -66,4 +66,9 @@ public class Address {
   public void setPincode(int pincode) {
     this.pincode = pincode;
   }
+
+  @Override
+  public String toString() {
+    return this.details+", "+this.city+", "+", "+this.state+" - "+this.pincode;
+  }
 }

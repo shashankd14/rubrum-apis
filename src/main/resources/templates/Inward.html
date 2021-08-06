@@ -1,0 +1,65 @@
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+  <style>
+    .row {
+      display: flex;
+      justify-content: space-around;
+      margin: 20px;
+    }
+    .column {
+      margin: 10px;
+      padding: 20px;
+      border: 1px solid #e8e8e8;
+      width: 25%;
+    }
+    h3, h2 {
+      margin: 1.5em 0;
+    }
+  </style>
+</head>
+<body>
+<div id="inward-form" style="margin: auto; width: 75%;">
+  <h2 style="text-align:center;">INWARD DETAILS</h2>
+  <hr style="text-align:center;color:black; width: 100%;"/>
+
+  <div class="row">
+
+  <div class="customer-details column">
+    <h3>CUSTOMER DETAILS</h3>
+    <p>Customer Name : <span th:text="${inward.partyName}"></span></p>
+    <p>Customer Batch No : <span th:text="${inward.customerBatchId}"></span></p>
+    <p>Customer Invoice No : <span th:text="${inward.customerInvoiceNo}"></span></p>
+    <p>Purpose Type : <span th:text="${inward.purposeType}"></span></p>
+  </div>
+
+  <div class="coil-details column">
+    <h3>COIL DETAILS</h3>
+    <p>Coil Number : <span th:text="${inward.coilNumber}"></span></p>
+    <p>Material Description : <span th:text="${inward.matDescription}"></span></p>
+    <p>Dimensions : </p>
+    <p>Net Weight : </p>
+    <p>Gross Weight : <span th:text="${inward.grossWeight}"></span></p>
+  </div>
+</div>
+
+  <div class="row">
+  <div class="invoice-details column">
+    <h3>INVOICE DETAILS</h3>
+    <p>Received Date : <span th:text="${inward.dReceivedDate}"></span></p>
+    <p>Batch No : <span th:text="${inward.batchNumber}"></span></p>
+    <p>Vehicle Number : <span th:text="${inward.vLorryNo}"></span></p>
+    <p>Invoice Number : <span th:text="${inward.vInvoiceNo}"></span></p>
+  </div>
+
+  <div class="quality-details column">
+    <h3>QUALITY DETAILS</h3>
+    <p>Grade : <span th:text="${inward.materialGradeName}"></span></p>
+    <p>Test Certificate No : <span th:text="${inward.testCertificateNumber}"></span></p>
+    <p>Remarks : <span th:text="${inward.remarks}"></span></p>
+  </div>
+</div>
+</div>
+</body>
+</html>

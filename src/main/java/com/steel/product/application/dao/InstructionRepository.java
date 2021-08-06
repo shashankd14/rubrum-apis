@@ -1,6 +1,7 @@
 package com.steel.product.application.dao;
 
 import com.steel.product.application.entity.Instruction;
+import com.steel.product.application.entity.InwardEntry;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -32,5 +33,9 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
 
     @Query("select i from Instruction i where i.parentInstruction.instructionId = :parentInstructionId")
     public List<Instruction> findByParentInstructionId(@Param("parentInstructionId")Integer parentInstructionId);
+
+    public List<Instruction> findByInstructionIdIn(List<Integer> ids);
+
+
 
 }

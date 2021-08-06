@@ -2,6 +2,7 @@ package com.steel.product.application.entity;
 
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.steel.product.application.dto.instruction.InstructionDto;
@@ -18,7 +19,7 @@ public class Instruction {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "instructionid")
 	private Integer instructionId ;
-	
+
 	@JsonIgnore
 	@ManyToOne
 	@JoinColumn(name = "inwardid")
@@ -71,11 +72,12 @@ public class Instruction {
 
 	@Column(name = "parentgroupid")
 	private Integer parentGroupId ;
-	
-	@OneToMany(mappedBy = "parentInstruction", fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST,CascadeType.MERGE,CascadeType.REMOVE}, orphanRemoval = true)
+
+	@JsonBackReference
+	@OneToMany(mappedBy = "parentInstruction", cascade = {CascadeType.PERSIST,CascadeType.MERGE,CascadeType.REMOVE}, orphanRemoval = true)
 	private List<Instruction> childInstructions;
 
-	@JsonIgnore
+	@JsonManagedReference
 	@ManyToOne
 	@JoinColumn(name = "parentinstructionid", referencedColumnName = "instructionid")
 	private Instruction parentInstruction;
@@ -390,6 +392,8 @@ public class Instruction {
 		instructionDto.setPackingWeight(instruction.getPackingWeight());
 		instructionDto.setWastage(instruction.getWastage());
 		instructionDto.setRemarks(instruction.getRemarks());
+		instructionDto.setPacketClassificationName(instruction.getPacketClassification() != null ? instruction.getPacketClassification().getClassificationName() : "");
+		instructionDto.setDeliveryDetails(instruction.getDeliveryDetails());
 		return instructionDto;
 	}
 }

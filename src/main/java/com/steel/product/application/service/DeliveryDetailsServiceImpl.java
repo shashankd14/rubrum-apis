@@ -103,7 +103,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
                 if (inwardEntry.getInStockWeight() > actualWeightInstruction) {
                     inwardEntry.setInStockWeight(inwardEntry.getInStockWeight() - actualWeightInstruction);
                 } else {
-                    return null;
+                    throw new RuntimeException("actual instruction weight exceeding instock weight of inward with id "+inwardEntry.getInwardEntryId());
                 }
                 totalWeight = totalWeight + itemDetails.getWeight();
             }

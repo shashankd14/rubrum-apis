@@ -37,7 +37,7 @@ public class InstructionServiceImpl implements InstructionService {
 
 	@Autowired
 	private PacketClassificationService packetClassificationService;
-	
+
 	@Override
 	public List<Instruction> getAll() {
 		return instructionRepository.findAll();
@@ -343,5 +343,12 @@ public class InstructionServiceImpl implements InstructionService {
 
 		return new ResponseEntity<Object>(updatedInstructionList, HttpStatus.OK);
 	}
+
+	@Override
+	public List<Instruction> findByIdIn(List<Integer> ids) {
+		return instructionRepository.findByInstructionIdIn(ids);
+	}
+
+
 
 }

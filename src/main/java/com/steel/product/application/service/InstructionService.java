@@ -33,5 +33,8 @@ public interface InstructionService {
 
 	public List<Instruction> saveAll(List<Instruction> instructions);
 
+	public List<Instruction> findByIdIn(List<Integer> ids);
+
+
 	ResponseEntity<Object> updateInstruction(InstructionFinishDto instructionFinishDto);
 }
