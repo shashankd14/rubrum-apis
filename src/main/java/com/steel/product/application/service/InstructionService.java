@@ -1,6 +1,7 @@
 package com.steel.product.application.service;
 
 import com.steel.product.application.dto.instruction.InstructionDto;
+import com.steel.product.application.dto.instruction.InstructionFinishDto;
 import com.steel.product.application.entity.Instruction;
 import org.springframework.http.ResponseEntity;
 
@@ -35,4 +36,5 @@ public interface InstructionService {
 	public List<Instruction> findByIdIn(List<Integer> ids);
 
 
+	ResponseEntity<Object> updateInstruction(InstructionFinishDto instructionFinishDto);
 }

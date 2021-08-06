@@ -3,6 +3,7 @@ package com.steel.product.application.service;
 import com.steel.product.application.dao.InstructionRepository;
 import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.dto.instruction.InstructionDto;
+import com.steel.product.application.dto.instruction.InstructionFinishDto;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +34,10 @@ public class InstructionServiceImpl implements InstructionService {
 
 	@Autowired
 	private StatusService statusService;
-	
+
+	@Autowired
+	private PacketClassificationService packetClassificationService;
+
 	@Override
 	public List<Instruction> getAll() {
 		return instructionRepository.findAll();
@@ -244,6 +248,100 @@ public class InstructionServiceImpl implements InstructionService {
 	@Override
 	public List<Instruction> saveAll(List<Instruction> instructions) {
 		return instructionRepository.saveAll(instructions);
+	}
+
+	@Override
+	public ResponseEntity<Object> updateInstruction(InstructionFinishDto instructionFinishDto) {
+		List<InstructionDto> instructionDTOs = instructionFinishDto.getInstructionDtos();
+		List<Instruction> updatedInstructionList = new ArrayList<Instruction>();
+		Instruction updatedInstruction = new Instruction();
+		InwardEntry inwardEntry = new InwardEntry();
+		Instruction instruction;
+
+		if(instructionFinishDto.getIsCoilFinished() && instructionFinishDto.getCoilNumber()!=null){
+			inwardEntry = inwardService.getByCoilNumber(instructionFinishDto.getCoilNumber());
+			inwardEntry.setStatus(statusService.getStatusById(3));
+			inwardService.saveEntry(inwardEntry);
+		}
+		for (InstructionDto instructionDTO : instructionDTOs) {
+			try {
+
+				instruction = getById(instructionDTO.getInstructionId());
+				Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+
+				if (instructionDTO.getInwardId() != null) {
+
+					InwardEntry inward = inwardService.getByEntryId(instructionDTO.getInwardId());
+					instruction.setInwardId(inward);
+				}
+
+				instruction.setProcess(processService.getById(instructionDTO.getProcessId()));
+				instruction.setInstructionDate(instructionDTO.getInstructionDate());
+
+				if (instructionDTO.getPlannedLength() != null)
+					instruction.setPlannedLength(instructionDTO.getPlannedLength());
+
+				if (instructionDTO.getActualLength() != null)
+					instruction.setActualLength(instructionDTO.getActualLength());
+
+				if (instructionDTO.getPlannedWidth() != null)
+					instruction.setPlannedWidth(instructionDTO.getPlannedWidth());
+
+				if (instructionDTO.getActualWidth() != null)
+					instruction.setActualWidth(instructionDTO.getActualWidth());
+
+				if (instructionDTO.getActualWeight() != null)
+					instruction.setActualWeight(instructionDTO.getActualWeight());
+
+				if (instructionDTO.getPlannedNoOfPieces() != null)
+					instruction.setPlannedNoOfPieces(instructionDTO.getPlannedNoOfPieces());
+
+				if (instructionDTO.getActualNoOfPieces() != null)
+					instruction.setActualNoOfPieces(instructionDTO.getActualNoOfPieces());
+
+				if (instructionDTO.getStatus() != null)
+					instruction.setStatus(statusService.getStatusById(instructionDTO.getStatus()));
+
+				if (instructionDTO.getPacketClassificationId() != null)
+					instruction.setPacketClassification(packetClassificationService.getPacketClassificationById(instructionDTO.getPacketClassificationId()));
+
+				if (instructionDTO.getGroupId() != null)
+					instruction.setGroupId(instructionDTO.getGroupId());
+
+				if (instructionDTO.getParentInstructionId() != null) {
+
+					Instruction parentInstruction = getById(instructionDTO.getParentInstructionId());
+
+					instruction.setParentInstruction(parentInstruction);
+				} else
+					instruction.setParentInstruction(null);
+
+				if (instructionDTO.getWastage() != null)
+					instruction.setWastage(instructionDTO.getWastage());
+
+				if (instructionDTO.getDamage() != null)
+					instruction.setDamage(instructionDTO.getDamage());
+
+				if (instructionDTO.getPackingWeight() != null)
+					instruction.setPackingWeight(instructionDTO.getPackingWeight());
+
+				instruction.setCreatedBy(instructionDTO.getCreatedBy());
+				instruction.setUpdatedBy(instructionDTO.getUpdatedBy());
+				instruction.setCreatedOn(timestamp);
+				instruction.setUpdatedOn(timestamp);
+				instruction.setIsDeleted(false);
+
+				updatedInstruction = instructionRepository.save(instruction);
+				updatedInstructionList.add(updatedInstruction);
+
+				//	return new ResponseEntity<Object>("update success!!", HttpStatus.OK);
+			} catch (Exception e) {
+
+				return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+		}
+
+		return new ResponseEntity<Object>(updatedInstructionList, HttpStatus.OK);
 	}
 
 	@Override
