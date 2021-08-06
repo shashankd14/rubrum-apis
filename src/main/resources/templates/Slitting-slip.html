@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+  <head>
+    <style>
+      .m_des {
+        width: 100%;
+        margin: auto;
+        padding: 20px;
+        border-collapse: collapse;
+        border-spacing: 0;
+      }
+      .m_DesTable {
+        border: 1px solid #666;
+        text-align: left;
+        padding: 8px;
+        height: 30px;
+        width: 30px;
+      }
+      input {
+        outline: 0;
+        border-width: 0 0 1px;
+        width: 200px;
+      }
+      input[type="radio"] {
+        width: 20px;
+      }
+      td {
+        line-height: 2.3rem;
+      }
+      .footer {
+        margin: 3% 0;
+      }
+      .footer-left {
+        text-align: center;
+      }
+      .footer-right {
+        text-align: center;
+      }
+    </style>
+  </head>
+<body>
+<div id="slitting-slip">
+  <h2 style="text-align:center;">SLITTING SLIP</h2>
+  <hr style="text-align:center;color:black; width: 100%;"/>
+  <div>
+    <div style="padding: 20px; text-align: center; font-weight: bold;">PROCESS NAME : SLITTING</div>
+  <div class="flex" style="display: flex; justify-content: space-evenly; padding: 20px 0">
+    <div class="column">
+      <table>
+        <tbody>
+        <tr>
+          <td>Process Date: </td>
+          <td id="process-date" th:text="${inward.createdOn}"></td>
+        </tr>
+        <tr>
+          <td>Customer Name: </td>
+          <td id="customer-name" th:text="${inward.partyName}" ></td>
+        </tr>
+        <tr>
+          <td>ASPEN Coil No: </td>
+          <td id="coil-number" th:text="${inward.coilNumber}"></td>
+        </tr>
+        <tr>
+          <td>Customer Batch No: </td>
+          <td th:text="${inward.customerBatchId}"></td>
+        </tr>
+        <tr>
+          <td>Machine No: </td>
+          <td> - </td>
+        </tr>
+        <tr>
+          <td>Number of Parts: </td>
+          <td th:text="${inward.fQuantity}"></td>
+        </tr>
+        <tr>
+          <td>Balance coil remove: </td>
+          <td>
+            <input type="radio" name='coil' id='yes' value='Yes'/>
+            <label for="yes">Yes</label>
+            <input type="radio" name='coil' id='no' value='No'/>
+            <label for="no">No</label>
+        </td>
+        </tr>
+      </tbody></table>
+    </div>
+    <div class="column">
+      <table>
+        <tbody>
+          <tr>
+            <th style="text-align:right"></th>
+          </tr>
+          <tr>
+            <td>Shift: </td>
+            <td> - </td>
+          </tr>
+          <tr>
+            <td>Material Description: </td>
+            <td th:text="${inward.matDescription}"></td>
+          </tr>
+          <tr>
+            <td>Material Grade: </td>
+            <td th:text="${inward.materialGradeName}"></td>
+          </tr>
+          <tr>
+            <td>Thickness: </td>
+            <td th:text="${inward.fThickness}"></td>
+          </tr>
+          <tr>
+            <td>Width: </td>
+            <td th:text="${inward.fWidth}"></td>
+          </tr>
+          <tr>
+          <td>Weight: </td>
+            <td th:text="${inward.grossWeight}"></td>
+            </tr>
+        </tbody>
+      </table>
+    
+    </div>
+  </div>
+  </div>
+  <div style="margin: auto;width: 70vw;">
+    <table class="m_des">
+      <tbody><tr class="m_tp">
+      <th class="m_DesTable">Length</th>
+      <th class="m_DesTable">Thick</th>
+      <th class="m_DesTable">Width</th>
+      <th class="m_DesTable">No Of Slits</th>
+      <th class="m_DesTable">Weight</th>
+      <th class="m_DesTable">Tags</th>
+      </tr>
+      <tr class="m_tp" th:each="ins: ${inward.instruction}">
+        <td class="m_DesTable" th:text="${ins?.plannedLength}"></td>
+        <td class="m_DesTable"> - </td>
+        <td class="m_DesTable" th:text="${ins?.plannedWidth}"></td>
+        <td class="m_DesTable" th:text="${ins?.plannedNoOfPieces}"></td>
+        <td class="m_DesTable" th:text="${ins?.plannedWeight}"></td>
+        <td class="m_DesTable" th:text="${ins?.packetClassificationName}"></td>
+      </tr>
+      <tr>
+        <td class="m_DesTable" colspan="4" style="text-align: center; font-weight: 600;">TOTAL WEIGHT</td>
+        <td class="m_DesTable" th:text="${inward.totalWeight}"></td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+    <div class="footer" style="width: 100%;">
+      <table class="m_sign" style="width: 100%;">
+        <tbody><tr>
+          <td class="footer-left">OPERATOR SIGN PLANNED BY <input type="text"/></td>
+          <td class="footer-right">QC SIGN CHECKED BY <input type="text"/></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+</div>
+
+</body>
+</html>
