@@ -2,7 +2,6 @@ package com.steel.product.application.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.steel.product.application.dto.pdf.DeliveryChallanPdfDto;
 import com.steel.product.application.dto.pdf.InwardEntryPdfDto;
 
 import javax.persistence.*;
@@ -21,7 +20,7 @@ public class InwardEntry {
 
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "npartyid")
-	@JsonManagedReference(value = "party-inward")
+	@JsonBackReference(value = "party-inward")
 	private Party party;
 
 	@Column(name = "coilnumber")
@@ -63,12 +62,12 @@ public class InwardEntry {
 	@Column(name = "vinvoiceno")
 	private String vInvoiceNo;
 
-	@JsonManagedReference
+	@JsonBackReference(value="inward-material")
 	@ManyToOne
 	@JoinColumn(name = "nmatid")
 	private Material material;
 	
-	@JsonManagedReference
+	@JsonBackReference(value="inward-grade")
 	@ManyToOne
 	@JoinColumn(name = "materialgradeid")
 	private MaterialGrade materialGrade;
@@ -88,7 +87,7 @@ public class InwardEntry {
 	@Column(name = "grossweight")
 	private float grossWeight;
 
-	@JsonManagedReference
+	@JsonBackReference(value="inward-status")
 	@ManyToOne
 	@JoinColumn(name = "vstatus")
 	private Status status;
@@ -133,7 +132,7 @@ public class InwardEntry {
 	@Column(name = "isdeleted", columnDefinition = "BIT")
 	private Boolean isDeleted;
 
-	@JsonBackReference
+	@JsonManagedReference(value="inward-docs")
 	@OneToMany(mappedBy = "inwardEntry", fetch = FetchType.EAGER)
 	private List<InwardDoc> docs;
 	

@@ -1,6 +1,7 @@
 package com.steel.product.application.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.steel.product.application.entity.InwardEntry;
 import java.util.List;
 import javax.persistence.CascadeType;
@@ -23,12 +24,12 @@ public class Status {
 	@Column(name = "statusname")
 	private String statusName;
 
-	@JsonBackReference
+	@JsonManagedReference(value="inward-status")
 	@OneToMany(mappedBy = "status", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH,
 			CascadeType.REFRESH })
 	private List<InwardEntry> inwardEntry;
 	
-	@JsonBackReference
+	@JsonManagedReference(value="instruction-status")
 	@OneToMany(mappedBy = "status", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH,
 			CascadeType.REFRESH })
 	private List<Instruction> instruction;
