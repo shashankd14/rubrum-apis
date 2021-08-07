@@ -115,7 +115,7 @@ public class InwardEntryController {
 				String fileUrl = awsS3Service.uploadFile(inward.getTestCertificateFile());
 				inwardEntry.setTestCertificateFileUrl(fileUrl);
 			}
-			inwdEntrySvc.saveEntry(inwardEntry);
+			InwardEntry savedInwardEntry = inwdEntrySvc.saveEntry(inwardEntry);
 
 			if (inward.getInwardFiles() != null) {
 
@@ -131,10 +131,8 @@ public class InwardEntryController {
 				}
 			}
 
-			return new ResponseEntity<Object>("success", HttpStatus.OK);
+			return new ResponseEntity<Object>(savedInwardEntry, HttpStatus.OK);
 		} catch (Exception e) {
-
-			System.out.println(e.toString());
 			e.printStackTrace();
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}

@@ -1,7 +1,7 @@
 package com.steel.product.application.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.steel.product.application.dto.material.MaterialDto;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.steel.product.application.dto.materialGradeDto.MaterialGradeDto;
 
 import javax.persistence.*;
@@ -16,7 +16,7 @@ public class MaterialGrade {
 	@Column(name = "gradeid")
 	private int gradeId;
 
-	@JsonBackReference
+	@JsonBackReference(value="material-grade")
 	@ManyToOne(cascade = { CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH })
 	@JoinColumn(name = "nmatid")
 	private Material parentMaterial;
@@ -24,7 +24,7 @@ public class MaterialGrade {
 	@Column(name = "gradename")
 	private String gradeName;
 
-	@JsonBackReference
+	@JsonManagedReference(value="inward-grade")
 	@OneToMany(mappedBy = "materialGrade", 
 			cascade = { CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH })
 	private List<InwardEntry> inwardEntry;

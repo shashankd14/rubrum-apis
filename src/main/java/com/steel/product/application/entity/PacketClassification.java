@@ -1,6 +1,7 @@
 package com.steel.product.application.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import javax.persistence.*;
 import java.util.List;
@@ -17,7 +18,7 @@ public class PacketClassification {
     @Column(name = "classification_name")
     private String classificationName;
 
-    @JsonBackReference
+    @JsonManagedReference(value="instruction-packet")
     @OneToMany(mappedBy = "packetClassification")
     private List<Instruction> instructionClass;
 

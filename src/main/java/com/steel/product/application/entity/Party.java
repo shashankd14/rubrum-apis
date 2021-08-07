@@ -48,12 +48,12 @@ public class Party {
 	@Column(name = "phone2")
 	private String phone2;
 
-	@JsonManagedReference
+	@JsonBackReference(value="party-address1")
 	@ManyToOne(cascade = { CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH })
 	@JoinColumn(name = "address1")
 	private Address address1;
 
-	@JsonManagedReference
+	@JsonBackReference(value="party-address2")
 	@ManyToOne(cascade = { CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH })
 	@JoinColumn(name = "address2")
 	private Address address2;
@@ -75,12 +75,12 @@ public class Party {
 	@Column(name = "isdeleted", columnDefinition = "BIT")
 	private Boolean isDeleted;
 
-	@JsonBackReference(value = "party-inward")
+	@JsonManagedReference(value = "party-inward")
 	@OneToMany(mappedBy = "party")
 	private List<InwardEntry> inwardEntry;
 
 	@OneToMany(mappedBy = "partyRates")
-	@JsonBackReference(value = "party-rates")
+	@JsonManagedReference(value = "party-rates")
 	private List<Rates> rates;
 
 	public int getnPartyId() {
