@@ -25,7 +25,7 @@ public class Instruction {
 	@JoinColumn(name = "inwardid")
 	private InwardEntry inwardId;
 
-	@JsonBackReference(value="instruction-process")
+	@JsonManagedReference
 	@ManyToOne(cascade = { CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH })
 	@JoinColumn(name = "processid")
 	private Process process;
@@ -57,12 +57,12 @@ public class Instruction {
 	@Column(name = "actualnoofpieces")
 	private Integer actualNoOfPieces;
 	
-	@JsonBackReference(value="instruction-status")
+	@JsonManagedReference
 	@ManyToOne(cascade = { CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH })
 	@JoinColumn(name = "status")
 	private Status status;
 
-	@JsonBackReference(value="instruction-packet")
+	@JsonManagedReference
 	@ManyToOne
 	@JoinColumn(name = "packetClassificationId")
 	private PacketClassification packetClassification;
@@ -73,11 +73,11 @@ public class Instruction {
 	@Column(name = "parentgroupid")
 	private Integer parentGroupId ;
 
-	@JsonManagedReference(value="instruction-instruction")
+	@JsonBackReference
 	@OneToMany(mappedBy = "parentInstruction", cascade = {CascadeType.PERSIST,CascadeType.MERGE,CascadeType.REMOVE}, orphanRemoval = true)
 	private List<Instruction> childInstructions;
 
-	@JsonBackReference(value="instruction-instruction")
+	@JsonManagedReference
 	@ManyToOne
 	@JoinColumn(name = "parentinstructionid", referencedColumnName = "instructionid")
 	private Instruction parentInstruction;
@@ -93,10 +93,10 @@ public class Instruction {
 
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "rateid")
-	@JsonBackReference(value = "instruction-rates")
+	@JsonManagedReference(value = "instruction-rates")
 	private Rates rates;
 
-	@JsonBackReference(value = "instruction-delivery")
+	@JsonManagedReference
 	@ManyToOne
 	@JoinColumn(name = "deliveryid")
 	private DeliveryDetails deliveryDetails;

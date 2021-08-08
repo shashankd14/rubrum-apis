@@ -17,21 +17,21 @@ public class Rates {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "partyid")
-    @JsonBackReference(value = "party-rates")
+    @JsonManagedReference(value = "party-rates")
     private Party partyRates;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "processid")
-    @JsonBackReference(value = "process-rates")
+    @JsonManagedReference(value = "process-rates")
     private Process process;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "materialtype")
-    @JsonBackReference(value = "material-rates")
+    @JsonManagedReference(value = "material-rates")
     private Material materialType;
 
     @OneToMany(mappedBy = "rates")
-    @JsonManagedReference(value = "instruction-rates")
+    @JsonBackReference(value = "instruction-rates")
     private List<Instruction> instructionRate;
 
     @Column(name = "thickness_min")

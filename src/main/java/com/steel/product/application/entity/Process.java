@@ -1,6 +1,6 @@
 package com.steel.product.application.entity;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import javax.persistence.*;
 import java.util.List;
@@ -17,7 +17,7 @@ public class Process {
     @Column(name = "processname")
     private String processName;
 
-    @JsonManagedReference(value = "process-rates")
+    @JsonBackReference(value = "process-rates")
     @OneToMany(mappedBy = "process")
     private List<Rates> rates;
 
@@ -25,7 +25,7 @@ public class Process {
         return processId;
     }
 
-    @JsonManagedReference(value="instruction-process")
+    @JsonBackReference
     @OneToMany(mappedBy = "status", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH,
             CascadeType.REFRESH })
     private List<Instruction> instruction;

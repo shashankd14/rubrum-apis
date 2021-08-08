@@ -10,7 +10,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
 @Table(name = "product_tblinwarddocs")
@@ -24,7 +24,7 @@ public class InwardDoc {
 	@Column(name = "docurl")
 	private String docUrl;
 
-	@JsonBackReference(value="inward-docs")
+	@JsonManagedReference
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "inwardid")
 	private InwardEntry inwardEntry;

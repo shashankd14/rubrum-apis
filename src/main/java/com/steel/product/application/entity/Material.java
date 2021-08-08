@@ -1,5 +1,6 @@
 package com.steel.product.application.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.steel.product.application.dto.material.MaterialDto;
 
@@ -38,17 +39,17 @@ public class Material {
   @Column(name = "isdeleted", columnDefinition = "BIT")
   private Boolean isDeleted;
   
-  @JsonManagedReference(value="inward-material")
+  @JsonBackReference
   @OneToMany(mappedBy = "material", 
   		cascade = {CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH})
   private List<InwardEntry> inwardEntry;
   
-  @JsonManagedReference(value="material-grade")
+  @JsonManagedReference
   @OneToMany(mappedBy = "parentMaterial", 
   		cascade = {CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH})
   private List<MaterialGrade> materialGrade;
 
-  @JsonManagedReference(value = "material-rates")
+  @JsonBackReference(value = "material-rates")
   @OneToMany(mappedBy = "materialType")
   private List<Rates> rates;
 

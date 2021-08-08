@@ -1,7 +1,5 @@
 package com.steel.product.application.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import javax.persistence.*;
 import java.util.Date;
 
@@ -19,12 +17,10 @@ public class CompanyDetails {
     @Column(name = "GSTN")
     private String gstN;
 
-    @JsonIgnore
     @ManyToOne
     @JoinColumn(name="ADDRESS_BRANCH_ID")
     private Address addressBranch;
 
-    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "ADDRESS_OFFICE_ID")
     private Address addressOffice;

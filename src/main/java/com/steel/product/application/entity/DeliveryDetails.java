@@ -2,7 +2,6 @@ package com.steel.product.application.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -47,7 +46,7 @@ public class DeliveryDetails {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private Date customerInvoiceDate;
 
-    @JsonManagedReference(value = "instruction-delivery")
+    @JsonBackReference
     @OneToMany(mappedBy = "status", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH,
             CascadeType.REFRESH })
     private List<Instruction> instruction;

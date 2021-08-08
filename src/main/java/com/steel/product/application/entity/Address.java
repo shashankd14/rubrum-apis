@@ -1,10 +1,11 @@
 package com.steel.product.application.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-
-import javax.persistence.*;
-import java.util.Set;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 @Entity
 @Table(name = "product_address")
@@ -25,30 +26,6 @@ public class Address {
 
   @Column(name = "pincode")
   private int pincode;
-
-  @OneToMany(mappedBy = "address1")
-  @JsonManagedReference(value="party-address1")
-  private Set<Party> parties1;
-
-  @OneToMany(mappedBy = "address2")
-  @JsonManagedReference(value="party-address2")
-  private Set<Party> parties2;
-
-  public Set<Party> getParties1() {
-    return parties1;
-  }
-
-  public void setParties1(Set<Party> parties1) {
-    this.parties1 = parties1;
-  }
-
-  public Set<Party> getParties2() {
-    return parties2;
-  }
-
-  public void setParties2(Set<Party> parties2) {
-    this.parties2 = parties2;
-  }
 
   public int getAddressId() {
     return addressId;
