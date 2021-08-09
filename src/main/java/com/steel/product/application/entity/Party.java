@@ -2,6 +2,7 @@ package com.steel.product.application.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.steel.product.application.dto.party.PartyDto;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -48,12 +49,10 @@ public class Party {
 	@Column(name = "phone2")
 	private String phone2;
 
-	@JsonBackReference(value="party-address1")
 	@ManyToOne(cascade = { CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH })
 	@JoinColumn(name = "address1")
 	private Address address1;
 
-	@JsonBackReference(value="party-address2")
 	@ManyToOne(cascade = { CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH })
 	@JoinColumn(name = "address2")
 	private Address address2;
@@ -245,5 +244,28 @@ public class Party {
 
 	public void setRates(List<Rates> rates) {
 		this.rates = rates;
+	}
+
+	public Address getAddress2() {
+		return address2;
+	}
+
+	public static PartyDto valueOf(Party party){
+		PartyDto partyDto = new PartyDto();
+		partyDto.setPartyName(party.getPartyName());
+		partyDto.setPartyId(party.getnPartyId());
+		partyDto.setPartyNickname(party.getPartyNickname());
+		partyDto.setAddress1(Address.valueOf(party.getAddress1()));
+		partyDto.setAddress2(Address.valueOf(party.getAddress2()));
+		partyDto.setContactName(party.getContactName());
+		partyDto.setContactNumber(party.getContactNumber());
+		partyDto.setEmail1(party.getEmail1());
+		partyDto.setEmail2(party.getEmail2());
+		partyDto.setGstNumber(party.getGstNumber());
+		partyDto.setPanNumber(party.getPanNumber());
+		partyDto.setPhone1(party.getPhone1());
+		partyDto.setPhone2(party.getPhone2());
+		partyDto.setTanNumber(party.getTanNumber());
+		return partyDto;
 	}
 }

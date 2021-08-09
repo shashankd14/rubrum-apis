@@ -19,7 +19,8 @@ public interface DeliveryDetailsService {
 
     public void deleteById(int id);
 
-    public List<DeliveryPacketsDto> deliveryList();
+    public List<DeliveryDetails> deliveryList();
+
 
     public Float findInstructionByInwardIdAndInstructionId(Integer inwardId,Integer instructionId);
 }

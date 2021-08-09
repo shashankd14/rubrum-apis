@@ -14,7 +14,7 @@ import java.util.List;
 @Entity
 @Table(name = "product_instruction")
 public class Instruction {
-	
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "instructionid")
@@ -25,7 +25,6 @@ public class Instruction {
 	@JoinColumn(name = "inwardid")
 	private InwardEntry inwardId;
 
-	@JsonBackReference(value="instruction-process")
 	@ManyToOne(cascade = { CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH })
 	@JoinColumn(name = "processid")
 	private Process process;
@@ -57,12 +56,10 @@ public class Instruction {
 	@Column(name = "actualnoofpieces")
 	private Integer actualNoOfPieces;
 	
-	@JsonBackReference(value="instruction-status")
 	@ManyToOne(cascade = { CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH })
 	@JoinColumn(name = "status")
 	private Status status;
 
-	@JsonBackReference(value="instruction-packet")
 	@ManyToOne
 	@JoinColumn(name = "packetClassificationId")
 	private PacketClassification packetClassification;
@@ -73,11 +70,9 @@ public class Instruction {
 	@Column(name = "parentgroupid")
 	private Integer parentGroupId ;
 
-	@JsonManagedReference(value="instruction-instruction")
 	@OneToMany(mappedBy = "parentInstruction", cascade = {CascadeType.PERSIST,CascadeType.MERGE,CascadeType.REMOVE}, orphanRemoval = true)
 	private List<Instruction> childInstructions;
 
-	@JsonBackReference(value="instruction-instruction")
 	@ManyToOne
 	@JoinColumn(name = "parentinstructionid", referencedColumnName = "instructionid")
 	private Instruction parentInstruction;
@@ -93,10 +88,9 @@ public class Instruction {
 
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "rateid")
-	@JsonBackReference(value = "instruction-rates")
 	private Rates rates;
 
-	@JsonBackReference(value = "instruction-delivery")
+	@JsonBackReference(value="instruction-delivery")
 	@ManyToOne
 	@JoinColumn(name = "deliveryid")
 	private DeliveryDetails deliveryDetails;

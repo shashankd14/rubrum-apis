@@ -121,15 +121,16 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
     }
 
     @Override
-    public List<DeliveryPacketsDto> deliveryList() {
-        Map<InwardEntry,Map<DeliveryDetails,List<Instruction>>> deliveryDetailsListMap = deliveryDetailsRepo.findAllDeliveries()
-                .stream()
-                .collect(Collectors.groupingBy(Instruction::getInwardId,Collectors.groupingBy(Instruction::getDeliveryDetails)));
-        List<DeliveryPacketsDto> deliveryPacketsDtos = new ArrayList<>();
-                deliveryDetailsListMap
-                .forEach((iw,map) -> map.forEach((dd,ins) -> deliveryPacketsDtos.add(new DeliveryPacketsDto(dd,ins))));
-
-        return deliveryPacketsDtos;
+    public List<DeliveryDetails> deliveryList() {
+//        Map<InwardEntry,Map<DeliveryDetails,List<Instruction>>> deliveryDetailsListMap = deliveryDetailsRepo.findAllDeliveries()
+//                .stream()
+//                .collect(Collectors.groupingBy(Instruction::getInwardId,Collectors.groupingBy(Instruction::getDeliveryDetails)));
+//        List<DeliveryPacketsDto> deliveryPacketsDtos = new ArrayList<>();
+//                deliveryDetailsListMap
+//                .forEach((iw,map) -> map.forEach((dd,ins) -> deliveryPacketsDtos.add(new DeliveryPacketsDto(dd,ins))));
+//
+//        return deliveryPacketsDtos;
+        return deliveryDetailsRepo.findAll();
     }
 
     @Override

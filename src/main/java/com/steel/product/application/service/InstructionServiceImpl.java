@@ -198,7 +198,7 @@ public class InstructionServiceImpl implements InstructionService {
 		}else{
 			saveAll(savedInstructionList);
 		}
-		return new ResponseEntity<>(savedInstructionList,HttpStatus.OK);
+		return new ResponseEntity<>(savedInstructionList.stream().map(i -> Instruction.valueOf(i)),HttpStatus.OK);
 	}
 
 	@Override
@@ -341,7 +341,7 @@ public class InstructionServiceImpl implements InstructionService {
 			}
 		}
 
-		return new ResponseEntity<Object>(updatedInstructionList, HttpStatus.OK);
+		return new ResponseEntity<Object>(updatedInstructionList.stream().map(i -> Instruction.valueOf(i)), HttpStatus.OK);
 	}
 
 	@Override

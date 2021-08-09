@@ -38,17 +38,14 @@ public class Material {
   @Column(name = "isdeleted", columnDefinition = "BIT")
   private Boolean isDeleted;
   
-  @JsonManagedReference(value="inward-material")
-  @OneToMany(mappedBy = "material", 
+  @OneToMany(mappedBy = "material",
   		cascade = {CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH})
   private List<InwardEntry> inwardEntry;
   
-  @JsonManagedReference(value="material-grade")
-  @OneToMany(mappedBy = "parentMaterial", 
+  @OneToMany(mappedBy = "parentMaterial",
   		cascade = {CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH})
   private List<MaterialGrade> materialGrade;
 
-  @JsonManagedReference(value = "material-rates")
   @OneToMany(mappedBy = "materialType")
   private List<Rates> rates;
 

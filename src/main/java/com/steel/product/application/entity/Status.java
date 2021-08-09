@@ -24,12 +24,11 @@ public class Status {
 	@Column(name = "statusname")
 	private String statusName;
 
-	@JsonManagedReference(value="inward-status")
 	@OneToMany(mappedBy = "status", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH,
 			CascadeType.REFRESH })
 	private List<InwardEntry> inwardEntry;
-	
-	@JsonManagedReference(value="instruction-status")
+
+	@JsonBackReference
 	@OneToMany(mappedBy = "status", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH,
 			CascadeType.REFRESH })
 	private List<Instruction> instruction;

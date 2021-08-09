@@ -1,7 +1,6 @@
 package com.steel.product.application.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.steel.product.application.dto.address.AddressDto;
 
 import javax.persistence.*;
 import java.util.Set;
@@ -27,11 +26,9 @@ public class Address {
   private int pincode;
 
   @OneToMany(mappedBy = "address1")
-  @JsonManagedReference(value="party-address1")
   private Set<Party> parties1;
 
   @OneToMany(mappedBy = "address2")
-  @JsonManagedReference(value="party-address2")
   private Set<Party> parties2;
 
   public Set<Party> getParties1() {
@@ -88,6 +85,25 @@ public class Address {
 
   public void setPincode(int pincode) {
     this.pincode = pincode;
+  }
+
+  public static AddressDto valueOf(Address address){
+    AddressDto addressDto = new AddressDto();
+    addressDto.setAddressId(address.getAddressId());
+    addressDto.setCity(address.getCity());
+    addressDto.setPincode(address.getPincode());
+    addressDto.setState(address.state);
+    addressDto.setDetails(address.getDetails());
+    return addressDto;
+  }
+
+  public Address toEntity(AddressDto addressDto){
+    Address address = new Address();
+    address.setCity(addressDto.getCity());
+    address.setDetails(addressDto.getDetails());
+    address.setPincode(addressDto.getPincode());
+    address.setState(address.getState());
+    return address;
   }
 
   @Override

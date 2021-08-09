@@ -1,6 +1,7 @@
 package com.steel.product.application.controller;
 
 import com.steel.product.application.dto.inward.InwardDto;
+import com.steel.product.application.dto.inward.InwardEntryResponseDto;
 import com.steel.product.application.entity.InwardDoc;
 import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.service.*;
@@ -12,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 //@CrossOrigin(origins = {"http://rubrum-frontend.s3-website.ap-south-1.amazonaws.com"})
@@ -131,7 +133,7 @@ public class InwardEntryController {
 				}
 			}
 
-			return new ResponseEntity<Object>(savedInwardEntry, HttpStatus.OK);
+			return new ResponseEntity<Object>(InwardEntry.valueOfResponse(savedInwardEntry), HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -217,7 +219,8 @@ public class InwardEntryController {
   @GetMapping({"/list"})
   public ResponseEntity<Object> findAll() {
     try {
-      List<InwardEntry> inwardEntries = inwdEntrySvc.getAllEntries();
+      List<InwardEntryResponseDto> inwardEntries = inwdEntrySvc.getAllEntries().stream().map(inw -> InwardEntry.valueOfResponse(inw))
+			  .collect(Collectors.toList());
      // inwardEntries = this.inwdEntrySvc.getAllEntries();
      // System.out.println("Inward "+inwardEntries.toString());
       return new ResponseEntity<Object>(inwardEntries, HttpStatus.OK);

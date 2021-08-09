@@ -1,6 +1,6 @@
 package com.steel.product.application.dto.party;
 
-import com.steel.product.application.entity.Address;
+import com.steel.product.application.dto.address.AddressDto;
 
 public class PartyDto {
 
@@ -16,8 +16,9 @@ public class PartyDto {
     private String email2;
     private String phone1;
     private String phone2;
-    private Address address1;
-    private Address address2;
+    private AddressDto address1;
+    private AddressDto address2;
+
 
     public String getPartyName() {
         return partyName;
@@ -107,19 +108,19 @@ public class PartyDto {
         this.phone2 = phone2;
     }
 
-    public Address getAddress1() {
+    public AddressDto getAddress1() {
         return address1;
     }
 
-    public void setAddress1(Address address1) {
+    public void setAddress1(AddressDto address1) {
         this.address1 = address1;
     }
 
-    public Address getAddress2() {
+    public AddressDto getAddress2() {
         return address2;
     }
 
-    public void setAddress2(Address address2) {
+    public void setAddress2(AddressDto address2) {
         this.address2 = address2;
     }
 

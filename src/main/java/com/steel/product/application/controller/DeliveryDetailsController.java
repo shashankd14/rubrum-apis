@@ -27,7 +27,7 @@ public class DeliveryDetailsController {
     @GetMapping("/list")
     public ResponseEntity<Object> getAll(){
         try{
-            List<DeliveryPacketsDto> deliveryDetailsList = deliveryDetailsService.deliveryList();
+            List<DeliveryDetails> deliveryDetailsList = deliveryDetailsService.deliveryList();
             return new ResponseEntity<>(deliveryDetailsList, HttpStatus.OK);
         }catch(Exception e){
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);

@@ -24,7 +24,6 @@ public class InwardDoc {
 	@Column(name = "docurl")
 	private String docUrl;
 
-	@JsonBackReference(value="inward-docs")
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "inwardid")
 	private InwardEntry inwardEntry;

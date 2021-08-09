@@ -18,7 +18,6 @@ public class PacketClassification {
     @Column(name = "classification_name")
     private String classificationName;
 
-    @JsonManagedReference(value="instruction-packet")
     @OneToMany(mappedBy = "packetClassification")
     private List<Instruction> instructionClass;
 

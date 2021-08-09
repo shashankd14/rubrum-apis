@@ -2,6 +2,7 @@ package com.steel.product.application.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.steel.product.application.dto.inward.InwardEntryResponseDto;
 import com.steel.product.application.dto.pdf.InwardEntryPdfDto;
 
 import javax.persistence.*;
@@ -20,7 +21,6 @@ public class InwardEntry {
 
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "npartyid")
-	@JsonBackReference(value = "party-inward")
 	private Party party;
 
 	@Column(name = "coilnumber")
@@ -62,12 +62,10 @@ public class InwardEntry {
 	@Column(name = "vinvoiceno")
 	private String vInvoiceNo;
 
-	@JsonBackReference(value="inward-material")
 	@ManyToOne
 	@JoinColumn(name = "nmatid")
 	private Material material;
 	
-	@JsonBackReference(value="inward-grade")
 	@ManyToOne
 	@JoinColumn(name = "materialgradeid")
 	private MaterialGrade materialGrade;
@@ -87,7 +85,6 @@ public class InwardEntry {
 	@Column(name = "grossweight")
 	private float grossWeight;
 
-	@JsonBackReference(value="inward-status")
 	@ManyToOne
 	@JoinColumn(name = "vstatus")
 	private Status status;
@@ -132,7 +129,6 @@ public class InwardEntry {
 	@Column(name = "isdeleted", columnDefinition = "BIT")
 	private Boolean isDeleted;
 
-	@JsonManagedReference(value="inward-docs")
 	@OneToMany(mappedBy = "inwardEntry", fetch = FetchType.EAGER)
 	private List<InwardDoc> docs;
 	
@@ -494,6 +490,32 @@ public class InwardEntry {
 		inwardEntryPdfDto.setValueOfGoods(inwardEntry.getValueOfGoods());
 		inwardEntryPdfDto.setPartyCgst(inwardEntry.getParty().getGstNumber());
 		return inwardEntryPdfDto;
+	}
+
+	public static InwardEntryResponseDto valueOfResponse(InwardEntry inwardEntry){
+		InwardEntryResponseDto inwardEntryResponseDto = new InwardEntryResponseDto();
+		inwardEntryResponseDto.setInwardEntryId(inwardEntry.getInwardEntryId());
+		inwardEntryResponseDto.setParty(inwardEntry.getParty() != null ? Party.valueOf(inwardEntry.getParty()) : null);
+		inwardEntryResponseDto.setCoilNumber(inwardEntry.getCoilNumber());
+		inwardEntryResponseDto.setBatchNumber(inwardEntry.getBatchNumber());
+		inwardEntryResponseDto.setCustomerBatchId(inwardEntry.getCustomerBatchId());
+		inwardEntryResponseDto.setfQuantity(inwardEntry.getfQuantity());
+		inwardEntryResponseDto.setMaterial(inwardEntry.getMaterial() != null ? Material.valueOf(inwardEntry.getMaterial(),inwardEntry) : null);
+		inwardEntryResponseDto.setMaterialGrade(inwardEntry.getMaterialGrade() != null ? MaterialGrade.valueOf(inwardEntry.getMaterialGrade()) : null);
+		inwardEntryResponseDto.setfThickness(inwardEntry.getfThickness());
+		inwardEntryResponseDto.setfWidth(inwardEntry.getfWidth());
+		inwardEntryResponseDto.setGrossWeight(inwardEntry.getGrossWeight());
+		inwardEntryResponseDto.setCreatedOn(inwardEntry.getCreatedOn());
+		inwardEntryResponseDto.setInstruction(inwardEntry.getInstruction().stream().map(i -> Instruction.valueOf(i)).collect(Collectors.toSet()));
+		inwardEntryResponseDto.setPurposeType(inwardEntry.getPurposeType());
+		inwardEntryResponseDto.setdReceivedDate(inwardEntry.getdReceivedDate());
+		inwardEntryResponseDto.setvLorryNo(inwardEntry.getvLorryNo());
+		inwardEntryResponseDto.setvInvoiceNo(inwardEntry.getvInvoiceNo());
+		inwardEntryResponseDto.setTestCertificateNumber(inwardEntry.getTestCertificateNumber());
+		inwardEntryResponseDto.setRemarks(inwardEntry.getRemarks());
+		inwardEntryResponseDto.setdInvoiceDate(inwardEntry.getdInvoiceDate());
+		inwardEntryResponseDto.setValueOfGoods(inwardEntry.getValueOfGoods());
+		return inwardEntryResponseDto;
 	}
 
 }

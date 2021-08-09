@@ -51,7 +51,8 @@ public class InstructionController {
 
         try {
 
-            List<Instruction> instructionList = instructionService.getAll();
+            List<InstructionDto> instructionList = instructionService.getAll().stream().map(i -> Instruction.valueOf(i))
+                    .collect(Collectors.toList());
 
             return new ResponseEntity<Object>(instructionList, HttpStatus.OK);
 
@@ -86,7 +87,7 @@ public class InstructionController {
         try {
 
             Instruction instruction = instructionService.getById(theId);
-            return new ResponseEntity<Object>(instruction, HttpStatus.OK);
+            return new ResponseEntity<Object>(Instruction.valueOf(instruction), HttpStatus.OK);
 
         } catch (Exception e) {
 
