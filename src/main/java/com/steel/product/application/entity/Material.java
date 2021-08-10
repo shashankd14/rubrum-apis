@@ -31,7 +31,7 @@ public class Material {
   @Column(name = "updatedon")
   private Date updatedOn;
 
-  @Column(name = "hsnCode")
+  @Column(name = "hsn_Code")
   private String hsnCode;
 
   @Column(name = "isdeleted", columnDefinition = "BIT")
@@ -48,7 +48,7 @@ public class Material {
   @OneToMany(mappedBy = "materialType")
   private List<Rates> rates;
 
-  @Column(name = "materialCode")
+  @Column(name = "material_Code")
   private String materialCode;
 
   public int getMatId() {

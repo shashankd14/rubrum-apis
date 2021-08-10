@@ -6,15 +6,12 @@ import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.Material;
 
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class DeliveryPacketsDto {
 
-    private DeliveryDetails deliveryDetails;
-
-    private List<InstructionResponseDto> instructions;
+    private DeliveryResponseDto deliveryDetails;
 
     private String partyName;
 
@@ -29,30 +26,22 @@ public class DeliveryPacketsDto {
     public DeliveryPacketsDto() {
     }
 
-    public DeliveryPacketsDto(DeliveryDetails deliveryDetails, List<Instruction> instructions) {
-        this.deliveryDetails = deliveryDetails;
-        this.instructions = instructions.size() > 0 ? instructions.stream().map(i -> Instruction.valueOf(i)).collect(Collectors.toList()) : null;
-        this.partyName = instructions.size() > 0 ? instructions.get(0).getInwardId().getParty().getPartyName() : "";
-        this.customerBatchId = instructions.size() > 0 ? instructions.get(0).getInwardId().getCustomerBatchId() : "";
-        this.coilNumber = instructions.size() > 0 ? instructions.get(0).getInwardId().getCoilNumber(): "";
-        this.fThickness = instructions.size() > 0 ? instructions.get(0).getInwardId().getfThickness(): null;
-        this.materialDto = instructions.size() > 0 ? Material.valueOf(instructions.get(0).getInwardId().getMaterial(),instructions.get(0).getInwardId()):null;
+    public DeliveryPacketsDto(DeliveryDetails deliveryDetails) {
+        this.deliveryDetails = DeliveryDetails.valueOf(deliveryDetails);
+        this.partyName = deliveryDetails.getInstruction().get(0).getInwardId().getParty() != null ? deliveryDetails.getInstruction().get(0).getInwardId().getParty().getPartyName() : "";
+        this.customerBatchId = deliveryDetails.getInstruction().get(0).getInwardId().getCustomerBatchId();
+        this.coilNumber = deliveryDetails.getInstruction().get(0).getInwardId().getCoilNumber();
+        this.fThickness = deliveryDetails.getInstruction().get(0).getInwardId().getfThickness();
+        this.materialDto = Material.valueOf(deliveryDetails.getInstruction().get(0).getInwardId().getMaterial(),deliveryDetails.getInstruction().get(0).getInwardId());
     }
 
-    public DeliveryDetails getDeliveryDetails() {
+
+    public DeliveryResponseDto getDeliveryDetails() {
         return deliveryDetails;
     }
 
-    public void setDeliveryDetails(DeliveryDetails deliveryDetails) {
+    public void setDeliveryDetails(DeliveryResponseDto deliveryDetails) {
         this.deliveryDetails = deliveryDetails;
-    }
-
-    public List<InstructionResponseDto> getInstructions() {
-        return instructions;
-    }
-
-    public void setInstructions(List<InstructionResponseDto> instructions) {
-        this.instructions = instructions;
     }
 
     public String getPartyName() {

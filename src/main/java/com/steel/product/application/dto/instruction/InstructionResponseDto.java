@@ -1,11 +1,13 @@
 package com.steel.product.application.dto.instruction;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.steel.product.application.dto.delivery.DeliveryResponseDto;
 import com.steel.product.application.dto.process.ProcessDto;
 import com.steel.product.application.dto.status.StatusDto;
 import com.steel.product.application.entity.PacketClassification;
 
 import java.util.Date;
+import java.util.List;
 
 public class InstructionResponseDto {
     private int instructionId ;
@@ -60,6 +62,8 @@ public class InstructionResponseDto {
     private Boolean isDeleted;
 
     private String remarks;
+
+//    private List<DeliveryResponseDto> deliveryDetails;
 
     public int getInstructionId() {
         return instructionId;
