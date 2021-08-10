@@ -1,6 +1,8 @@
 package com.steel.product.application.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.steel.product.application.dto.process.ProcessDto;
 
 import javax.persistence.*;
 import java.util.List;
@@ -54,5 +56,12 @@ public class Process {
 
     public void setRates(List<Rates> rates) {
         this.rates = rates;
+    }
+
+    public static ProcessDto valueOf(Process process){
+        ProcessDto processDto = new ProcessDto();
+        processDto.setProcessId(process.getProcessId());
+        processDto.setProcessName(process.getProcessName());
+        return processDto;
     }
 }

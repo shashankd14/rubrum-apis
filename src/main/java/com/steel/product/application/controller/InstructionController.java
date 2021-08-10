@@ -1,9 +1,8 @@
 package com.steel.product.application.controller;
 
-import com.steel.product.application.dto.instruction.InstructionDto;
 import com.steel.product.application.dto.instruction.InstructionFinishDto;
-import com.steel.product.application.dto.pdf.DeliveryChallanPdfDto;
-import com.steel.product.application.dto.pdf.DeliveryPdfDto;
+import com.steel.product.application.dto.instruction.InstructionRequestDto;
+import com.steel.product.application.dto.instruction.InstructionResponseDto;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.service.*;
@@ -14,9 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -51,7 +48,7 @@ public class InstructionController {
 
         try {
 
-            List<InstructionDto> instructionList = instructionService.getAll().stream().map(i -> Instruction.valueOf(i))
+            List<InstructionResponseDto> instructionList = instructionService.getAll().stream().map(i -> Instruction.valueOf(i))
                     .collect(Collectors.toList());
 
             return new ResponseEntity<Object>(instructionList, HttpStatus.OK);
@@ -96,7 +93,7 @@ public class InstructionController {
     }
 
     @PostMapping("/save")
-    public ResponseEntity<Object> save(@RequestBody List<InstructionDto> instructionDTOs) {
+    public ResponseEntity<Object> save(@RequestBody List<InstructionRequestDto> instructionDTOs) {
         return instructionService.addInstruction(instructionDTOs);
 
     }

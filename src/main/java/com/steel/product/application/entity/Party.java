@@ -1,6 +1,5 @@
 package com.steel.product.application.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.steel.product.application.dto.party.PartyDto;
 
@@ -253,7 +252,7 @@ public class Party {
 	public static PartyDto valueOf(Party party){
 		PartyDto partyDto = new PartyDto();
 		partyDto.setPartyName(party.getPartyName());
-		partyDto.setPartyId(party.getnPartyId());
+		partyDto.setnPartyId(party.getnPartyId());
 		partyDto.setPartyNickname(party.getPartyNickname());
 		partyDto.setAddress1(Address.valueOf(party.getAddress1()));
 		partyDto.setAddress2(Address.valueOf(party.getAddress2()));

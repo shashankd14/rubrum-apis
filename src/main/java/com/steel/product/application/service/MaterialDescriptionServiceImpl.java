@@ -35,10 +35,10 @@ public class MaterialDescriptionServiceImpl implements MaterialDescriptionServic
     Timestamp timestamp = new Timestamp(System.currentTimeMillis());
     Material material = new Material();
     Material savedMaterial = new Material();
-    if(materialDto.getMaterialId() !=0){
-      material = getMatById(materialDto.getMaterialId());
+    if(materialDto.getMatId() !=0){
+      material = getMatById(materialDto.getMatId());
     }
-    material.setDescription(materialDto.getMaterial());
+    material.setDescription(materialDto.getDescription());
     material.setCreatedBy(1);
     material.setUpdatedBy(1);
     material.setCreatedOn(timestamp);
@@ -49,8 +49,8 @@ public class MaterialDescriptionServiceImpl implements MaterialDescriptionServic
 
     savedMaterial = matDescRepo.save(material);
 
-    if(materialDto.getMaterialId() != 0){
-      materialGradeRepository.deleteGradesByMaterialId(materialDto.getMaterialId());
+    if(materialDto.getMatId() != 0){
+      materialGradeRepository.deleteGradesByMaterialId(materialDto.getMatId());
     }
     for(String grade : materialDto.getGrade()){
       MaterialGrade materialGrade = new MaterialGrade();

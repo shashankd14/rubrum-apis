@@ -1,11 +1,10 @@
 package com.steel.product.application.dto.pdf;
 
-import com.steel.product.application.dto.instruction.InstructionDto;
+import com.steel.product.application.dto.instruction.InstructionResponseDto;
 import com.steel.product.application.entity.*;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 public class InwardEntryPdfDto {
 
@@ -83,7 +82,7 @@ public class InwardEntryPdfDto {
 
         private List<InwardDoc> docs;
 
-        private Set<InstructionDto> instruction;
+        private List<InstructionResponseDto> instruction;
 
         private Float totalWeight;
 
@@ -377,11 +376,11 @@ public class InwardEntryPdfDto {
         this.docs = docs;
     }
 
-    public Set<InstructionDto> getInstruction() {
+    public List<InstructionResponseDto> getInstruction() {
         return instruction;
     }
 
-    public void setInstruction(Set<InstructionDto> instruction) {
+    public void setInstruction(List<InstructionResponseDto> instruction) {
         this.instruction = instruction;
     }
 

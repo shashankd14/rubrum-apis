@@ -1,6 +1,6 @@
 package com.steel.product.application.dto.delivery;
 
-import com.steel.product.application.dto.instruction.InstructionDto;
+import com.steel.product.application.dto.instruction.InstructionResponseDto;
 import com.steel.product.application.dto.material.MaterialDto;
 import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.Instruction;
@@ -14,7 +14,7 @@ public class DeliveryPacketsDto {
 
     private DeliveryDetails deliveryDetails;
 
-    private List<InstructionDto> instructions;
+    private List<InstructionResponseDto> instructions;
 
     private String partyName;
 
@@ -47,11 +47,11 @@ public class DeliveryPacketsDto {
         this.deliveryDetails = deliveryDetails;
     }
 
-    public List<InstructionDto> getInstructions() {
+    public List<InstructionResponseDto> getInstructions() {
         return instructions;
     }
 
-    public void setInstructions(List<InstructionDto> instructions) {
+    public void setInstructions(List<InstructionResponseDto> instructions) {
         this.instructions = instructions;
     }
 

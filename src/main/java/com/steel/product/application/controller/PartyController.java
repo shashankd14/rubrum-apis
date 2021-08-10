@@ -27,7 +27,7 @@ public class PartyController {
   @PostMapping({"/save"})
   public ResponseEntity<Object> saveParty(@RequestBody PartyDto partyDto) {
     try{
-      partyDto.setPartyId(0);
+      partyDto.setnPartyId(0);
       Party party = partySvc.saveParty(partyDto);
       if(party==null)
         return new ResponseEntity<>("Error in saving party!!!", HttpStatus.INTERNAL_SERVER_ERROR);

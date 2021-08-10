@@ -29,7 +29,7 @@ public class PartyDetailsServiceImpl implements PartyDetailsService {
 
     Party party = new Party();
     try{
-      party.setnPartyId(partyDto.getPartyId());
+      party.setnPartyId(partyDto.getnPartyId());
       party.setPartyName(partyDto.getPartyName());
       party.setPartyNickname(partyDto.getPartyNickname());
       party.setContactName(partyDto.getContactName());

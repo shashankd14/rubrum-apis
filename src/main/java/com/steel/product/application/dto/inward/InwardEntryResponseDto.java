@@ -1,6 +1,6 @@
 package com.steel.product.application.dto.inward;
 
-import com.steel.product.application.dto.instruction.InstructionDto;
+import com.steel.product.application.dto.instruction.InstructionResponseDto;
 import com.steel.product.application.dto.material.MaterialDto;
 import com.steel.product.application.dto.materialGradeDto.MaterialGradeDto;
 import com.steel.product.application.dto.party.PartyDto;
@@ -84,7 +84,7 @@ public class InwardEntryResponseDto {
 
     private List<InwardDoc> docs;
 
-    private Set<InstructionDto> instruction;
+    private List<InstructionResponseDto> instruction;
 
     private Float inStockWeight;
 
@@ -376,11 +376,11 @@ public class InwardEntryResponseDto {
         this.docs = docs;
     }
 
-    public Set<InstructionDto> getInstruction() {
+    public List<InstructionResponseDto> getInstruction() {
         return instruction;
     }
 
-    public void setInstruction(Set<InstructionDto> instruction) {
+    public void setInstruction(List<InstructionResponseDto> instruction) {
         this.instruction = instruction;
     }
 

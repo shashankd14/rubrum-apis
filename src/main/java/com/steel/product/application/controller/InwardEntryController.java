@@ -234,7 +234,7 @@ public class InwardEntryController {
 	public ResponseEntity<Object> findAllEntriesPwr() {
 		try {
 			List<InwardEntry> inwardEntries = inwdEntrySvc.getAllEntriesPwr();
-			return new ResponseEntity<Object>(inwardEntries, HttpStatus.OK);
+			return new ResponseEntity<Object>(inwardEntries.stream().map(inw -> InwardEntry.valueOfResponse(inw)).collect(Collectors.toList()), HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -247,7 +247,7 @@ public class InwardEntryController {
       InwardEntry entry = this.inwdEntrySvc.getByEntryId(inwardEntryId);
       if (entry == null)
         throw new RuntimeException("Entry id not found - " + inwardEntryId); 
-      return new ResponseEntity<Object>(entry, HttpStatus.OK);
+      return new ResponseEntity<Object>(InwardEntry.valueOf(entry), HttpStatus.OK);
     } catch (Exception e) {
       return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     } 

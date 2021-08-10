@@ -1,6 +1,5 @@
 package com.steel.product.application.entity;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.steel.product.application.dto.material.MaterialDto;
 
 import javax.persistence.*;
@@ -143,9 +142,9 @@ public void setMaterialGrade(List<MaterialGrade> materialGrade) {
   public static MaterialDto valueOf(Material material, InwardEntry inwardEntry){
     MaterialDto materialDto = new MaterialDto();
     materialDto.setMaterialId(material.getMatId());
-    materialDto.setMaterial(material.getDescription());
+    materialDto.setDescription(material.getDescription());
 //    materialDto.setGrade(material.getMaterialGrade().stream().map(mg -> mg.getGradeName()).collect(Collectors.toList()));
-    materialDto.setMaterialGradeDto(MaterialGrade.valueOf(inwardEntry.getMaterialGrade()));
+    materialDto.setMaterialGrade(MaterialGrade.valueOf(inwardEntry.getMaterialGrade()));
     materialDto.setHsnCode(material.getHsnCode());
     materialDto.setMaterialCode(material.getMaterialCode());
     return materialDto;

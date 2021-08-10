@@ -4,7 +4,7 @@ import java.util.List;
 
 public class InstructionFinishDto {
 
-    private List<InstructionDto> instructionDtos;
+    private List<InstructionRequestDto> InstructionRequestDtos;
 
     private boolean isFinishTask;
 
@@ -12,12 +12,12 @@ public class InstructionFinishDto {
 
     private String coilNumber;
 
-    public List<InstructionDto> getInstructionDtos() {
-        return instructionDtos;
+    public List<InstructionRequestDto> getInstructionRequestDtos() {
+        return InstructionRequestDtos;
     }
 
-    public void setInstructionDtos(List<InstructionDto> instructionDtos) {
-        this.instructionDtos = instructionDtos;
+    public void setInstructionRequestDtos(List<InstructionRequestDto> InstructionRequestDtos) {
+        this.InstructionRequestDtos = InstructionRequestDtos;
     }
 
     public boolean getIsFinishTask() {

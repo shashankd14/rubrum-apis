@@ -1,6 +1,5 @@
 package com.steel.product.application.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.steel.product.application.dto.inward.InwardEntryResponseDto;
 import com.steel.product.application.dto.pdf.InwardEntryPdfDto;
@@ -19,7 +18,7 @@ public class InwardEntry {
 	@Column(name = "inwardentryid")
 	private int inwardEntryId;
 
-	@ManyToOne(fetch = FetchType.EAGER)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "npartyid")
 	private Party party;
 
@@ -62,11 +61,11 @@ public class InwardEntry {
 	@Column(name = "vinvoiceno")
 	private String vInvoiceNo;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "nmatid")
 	private Material material;
 	
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "materialgradeid")
 	private MaterialGrade materialGrade;
 
@@ -85,7 +84,7 @@ public class InwardEntry {
 	@Column(name = "grossweight")
 	private float grossWeight;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "vstatus")
 	private Status status;
 
@@ -110,10 +109,12 @@ public class InwardEntry {
 	@Column(name = "remarks")
 	private String remarks;
 
+	@JsonManagedReference
 	@ManyToOne
 	@JoinColumn(name = "createdby")
 	private User createdBy;
 
+	@JsonManagedReference
 	@ManyToOne
 	@JoinColumn(name = "updatedby")
 	private User updatedBy;
@@ -135,7 +136,7 @@ public class InwardEntry {
 	@OneToMany(mappedBy = "inwardId", fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST,CascadeType.MERGE})
 	private Set<Instruction> instruction;
 
-	@Column(name = "inStockWeight")
+	@Column(name = "in_stock_weight")
 	private Float inStockWeight;
 
 	public void addInstruction(Instruction instruction){
@@ -478,7 +479,7 @@ public class InwardEntry {
 		inwardEntryPdfDto.setfWidth(inwardEntry.getfWidth());
 		inwardEntryPdfDto.setGrossWeight(inwardEntry.getGrossWeight());
 		inwardEntryPdfDto.setCreatedOn(inwardEntry.getCreatedOn());
-		inwardEntryPdfDto.setInstruction(inwardEntry.getInstruction().stream().map(i -> Instruction.valueOf(i)).collect(Collectors.toSet()));
+		inwardEntryPdfDto.setInstruction(inwardEntry.getInstruction().stream().map(i -> Instruction.valueOf(i)).collect(Collectors.toList()));
 		inwardEntryPdfDto.setTotalWeight((float)inwardEntry.getInstruction().stream().mapToDouble(Instruction::getPlannedWeight).sum());
 		inwardEntryPdfDto.setPurposeType(inwardEntry.getPurposeType());
 		inwardEntryPdfDto.setdReceivedDate(inwardEntry.getdReceivedDate());
@@ -506,7 +507,8 @@ public class InwardEntry {
 		inwardEntryResponseDto.setfWidth(inwardEntry.getfWidth());
 		inwardEntryResponseDto.setGrossWeight(inwardEntry.getGrossWeight());
 		inwardEntryResponseDto.setCreatedOn(inwardEntry.getCreatedOn());
-		inwardEntryResponseDto.setInstruction(inwardEntry.getInstruction().stream().map(i -> Instruction.valueOf(i)).collect(Collectors.toSet()));
+		inwardEntryResponseDto.setInstruction(inwardEntry.getInstruction() != null ?
+				inwardEntry.getInstruction().stream().map(i -> Instruction.valueOf(i)).collect(Collectors.toList()): null);
 		inwardEntryResponseDto.setPurposeType(inwardEntry.getPurposeType());
 		inwardEntryResponseDto.setdReceivedDate(inwardEntry.getdReceivedDate());
 		inwardEntryResponseDto.setvLorryNo(inwardEntry.getvLorryNo());
@@ -515,6 +517,10 @@ public class InwardEntry {
 		inwardEntryResponseDto.setRemarks(inwardEntry.getRemarks());
 		inwardEntryResponseDto.setdInvoiceDate(inwardEntry.getdInvoiceDate());
 		inwardEntryResponseDto.setValueOfGoods(inwardEntry.getValueOfGoods());
+		inwardEntryResponseDto.setCreatedBy(inwardEntry.getCreatedBy());
+		inwardEntryResponseDto.setCreatedOn(inwardEntry.getCreatedOn());
+		inwardEntryResponseDto.setUpdatedBy(inwardEntry.getUpdatedBy());
+		inwardEntryResponseDto.setUpdatedOn(inwardEntry.getUpdatedOn());
 		return inwardEntryResponseDto;
 	}
 

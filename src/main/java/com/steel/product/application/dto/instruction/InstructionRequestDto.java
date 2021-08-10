@@ -2,11 +2,10 @@ package com.steel.product.application.dto.instruction;
 
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.steel.product.application.entity.DeliveryDetails;
 
 import java.util.Date;
 
-public class InstructionDto {
+public class InstructionRequestDto {
 
 	private int instructionId ;
 	
@@ -36,8 +35,6 @@ public class InstructionDto {
 	private Integer status;
 
 	private Integer packetClassificationId;
-
-	private String packetClassificationName;
 	
 	private Integer groupId ;
 
@@ -62,8 +59,6 @@ public class InstructionDto {
 	private Boolean isDeleted;
 
 	private String remarks;
-
-	private DeliveryDetails deliveryDetails;
 
 	public int getInstructionId() {
 		return instructionId;
@@ -265,14 +260,6 @@ public class InstructionDto {
 		this.packetClassificationId = packetClassificationId;
 	}
 
-	public String getPacketClassificationName() {
-		return packetClassificationName;
-	}
-
-	public void setPacketClassificationName(String packetClassificationName) {
-		this.packetClassificationName = packetClassificationName;
-	}
-
 	public Boolean getDeleted() {
 		return isDeleted;
 	}
@@ -289,11 +276,4 @@ public class InstructionDto {
 		this.remarks = remarks;
 	}
 
-	public DeliveryDetails getDeliveryDetails() {
-		return deliveryDetails;
-	}
-
-	public void setDeliveryDetails(DeliveryDetails deliveryDetails) {
-		this.deliveryDetails = deliveryDetails;
-	}
 }

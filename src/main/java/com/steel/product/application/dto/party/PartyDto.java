@@ -4,7 +4,7 @@ import com.steel.product.application.dto.address.AddressDto;
 
 public class PartyDto {
 
-    private int partyId;
+    private int nPartyId;
     private String partyName;
     private String partyNickname;
     private String contactName;
@@ -124,11 +124,11 @@ public class PartyDto {
         this.address2 = address2;
     }
 
-    public int getPartyId() {
-        return partyId;
+    public int getnPartyId() {
+        return nPartyId;
     }
 
-    public void setPartyId(int partyId) {
-        this.partyId = partyId;
+    public void setnPartyId(int nPartyId) {
+        this.nPartyId = nPartyId;
     }
 }
