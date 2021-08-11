@@ -25,10 +25,12 @@ public class Status {
 	@Column(name = "statusname")
 	private String statusName;
 
+	@JsonBackReference
 	@OneToMany(mappedBy = "status", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH,
 			CascadeType.REFRESH })
 	private List<InwardEntry> inwardEntry;
 
+	@JsonBackReference
 	@OneToMany(mappedBy = "status", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH,
 			CascadeType.REFRESH })
 	private List<Instruction> instruction;

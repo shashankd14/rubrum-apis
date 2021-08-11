@@ -1,14 +1,13 @@
 package com.steel.product.application.dto.inward;
 
 import com.steel.product.application.dto.instruction.InstructionResponseDto;
-import com.steel.product.application.dto.material.MaterialDto;
+import com.steel.product.application.dto.material.MaterialResponseDto;
 import com.steel.product.application.dto.materialGradeDto.MaterialGradeDto;
 import com.steel.product.application.dto.party.PartyDto;
 import com.steel.product.application.entity.*;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 public class InwardEntryResponseDto {
 
@@ -42,7 +41,7 @@ public class InwardEntryResponseDto {
 
     private String vInvoiceNo;
 
-    private MaterialDto material;
+    private MaterialResponseDto material;
 
     private MaterialGradeDto materialGrade;
 
@@ -208,11 +207,11 @@ public class InwardEntryResponseDto {
         this.vInvoiceNo = vInvoiceNo;
     }
 
-    public MaterialDto getMaterial() {
+    public MaterialResponseDto getMaterial() {
         return material;
     }
 
-    public void setMaterial(MaterialDto material) {
+    public void setMaterial(MaterialResponseDto material) {
         this.material = material;
     }
 
@@ -391,4 +390,7 @@ public class InwardEntryResponseDto {
     public void setInStockWeight(Float inStockWeight) {
         this.inStockWeight = inStockWeight;
     }
+
+
+
 }

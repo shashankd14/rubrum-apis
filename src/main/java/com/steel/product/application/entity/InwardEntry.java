@@ -84,7 +84,7 @@ public class InwardEntry {
 	@Column(name = "grossweight")
 	private float grossWeight;
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "vstatus")
 	private Status status;
 
@@ -521,6 +521,9 @@ public class InwardEntry {
 		inwardEntryResponseDto.setCreatedOn(inwardEntry.getCreatedOn());
 		inwardEntryResponseDto.setUpdatedBy(inwardEntry.getUpdatedBy());
 		inwardEntryResponseDto.setUpdatedOn(inwardEntry.getUpdatedOn());
+		inwardEntryResponseDto.setStatus(inwardEntry.getStatus());
+		inwardEntryResponseDto.setfQuantity(inwardEntry.getfQuantity());
+		inwardEntryResponseDto.setFpresent(inwardEntry.getFpresent());
 		return inwardEntryResponseDto;
 	}
 

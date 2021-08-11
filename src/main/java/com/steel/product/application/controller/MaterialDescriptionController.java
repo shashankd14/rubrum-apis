@@ -1,6 +1,7 @@
 package com.steel.product.application.controller;
 
-import com.steel.product.application.dto.material.MaterialDto;
+import com.steel.product.application.dto.material.MaterialInputDto;
+import com.steel.product.application.dto.material.MaterialResponseDto;
 import com.steel.product.application.entity.Material;
 import com.steel.product.application.service.MaterialDescriptionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,10 +23,9 @@ public class MaterialDescriptionController {
 
   
   @PostMapping({"/save"})
-  public ResponseEntity<Object> saveMatDesc(@RequestBody MaterialDto materialDto) {
+  public ResponseEntity<Object> saveMatDesc(@RequestBody MaterialInputDto materialInputDto) {
     try{
-      materialDto.setMaterialId(0);
-      matDescSvc.saveMatDesc(materialDto);
+      matDescSvc.saveMatDesc(materialInputDto);
       return new ResponseEntity<>("Material saved successfully", HttpStatus.OK);
     }catch (Exception e){
       e.printStackTrace();
@@ -34,9 +34,9 @@ public class MaterialDescriptionController {
   }
 
   @PutMapping({"/update"})
-  public ResponseEntity<Object> updateMaterial(@RequestBody MaterialDto materialDto) {
+  public ResponseEntity<Object> updateMaterial(@RequestBody MaterialInputDto materialInputDto) {
     try{
-      matDescSvc.saveMatDesc(materialDto);
+      matDescSvc.saveMatDesc(materialInputDto);
       return new ResponseEntity<>("Material saved successfully", HttpStatus.OK);
     }catch (Exception e){
       e.printStackTrace();
@@ -45,7 +45,7 @@ public class MaterialDescriptionController {
   }
   
   @GetMapping({"/list"})
-  public List<Material> getAllMatDesc() {
+  public List<MaterialResponseDto> getAllMatDesc() {
     return this.matDescSvc.getAllMatDesc();
   }
   

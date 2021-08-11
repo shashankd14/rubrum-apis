@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 //@CrossOrigin(origins = {"http://localhost:3001"})
@@ -48,12 +49,12 @@ public class PartyController {
   }
   
   @GetMapping({"/list"})
-  public List<Party> getAllParties() {
-    return this.partySvc.getAllParties();
+  public List<PartyDto> getAllParties() {
+    return this.partySvc.getAllParties().stream().map(p -> Party.valueOf(p)).collect(Collectors.toList());
   }
   
   @GetMapping({"/getById/{partyId}"})
-  public Party getPartyById(@PathVariable int partyId) {
-    return this.partySvc.getPartyById(partyId);
+  public PartyDto getPartyById(@PathVariable int partyId) {
+    return Party.valueOf(this.partySvc.getPartyById(partyId));
   }
 }

@@ -1,13 +1,8 @@
 package com.steel.product.application.dto.delivery;
 
-import com.steel.product.application.dto.instruction.InstructionResponseDto;
-import com.steel.product.application.dto.material.MaterialDto;
+import com.steel.product.application.dto.material.MaterialResponseDto;
 import com.steel.product.application.entity.DeliveryDetails;
-import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.Material;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class DeliveryPacketsDto {
 
@@ -21,7 +16,7 @@ public class DeliveryPacketsDto {
 
     private Float fThickness;
 
-    private MaterialDto materialDto;
+    private MaterialResponseDto materialResponseDto;
 
     public DeliveryPacketsDto() {
     }
@@ -32,7 +27,7 @@ public class DeliveryPacketsDto {
         this.customerBatchId = deliveryDetails.getInstruction().get(0).getInwardId().getCustomerBatchId();
         this.coilNumber = deliveryDetails.getInstruction().get(0).getInwardId().getCoilNumber();
         this.fThickness = deliveryDetails.getInstruction().get(0).getInwardId().getfThickness();
-        this.materialDto = Material.valueOf(deliveryDetails.getInstruction().get(0).getInwardId().getMaterial(),deliveryDetails.getInstruction().get(0).getInwardId());
+        this.materialResponseDto = Material.valueOf(deliveryDetails.getInstruction().get(0).getInwardId().getMaterial(),deliveryDetails.getInstruction().get(0).getInwardId());
     }
 
 
@@ -77,11 +72,11 @@ public class DeliveryPacketsDto {
         this.fThickness = fThickness;
     }
 
-    public MaterialDto getMaterialDto() {
-        return materialDto;
+    public MaterialResponseDto getMaterialResponseDto() {
+        return materialResponseDto;
     }
 
-    public void setMaterialDto(MaterialDto materialDto) {
-        this.materialDto = materialDto;
+    public void setMaterialResponseDto(MaterialResponseDto materialResponseDto) {
+        this.materialResponseDto = materialResponseDto;
     }
 }

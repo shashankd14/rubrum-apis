@@ -254,8 +254,12 @@ public class Party {
 		partyDto.setPartyName(party.getPartyName());
 		partyDto.setnPartyId(party.getnPartyId());
 		partyDto.setPartyNickname(party.getPartyNickname());
-		partyDto.setAddress1(Address.valueOf(party.getAddress1()));
-		partyDto.setAddress2(Address.valueOf(party.getAddress2()));
+		if(party.getAddress1() != null) {
+			partyDto.setAddress1(Address.valueOf(party.getAddress1()));
+		}
+		if(party.getAddress2() != null) {
+			partyDto.setAddress2(Address.valueOf(party.getAddress2()));
+		}
 		partyDto.setContactName(party.getContactName());
 		partyDto.setContactNumber(party.getContactNumber());
 		partyDto.setEmail1(party.getEmail1());
