@@ -4,9 +4,12 @@ import com.steel.product.application.dao.DeliveryDetailsRepository;
 import com.steel.product.application.dto.delivery.DeliveryDto;
 import com.steel.product.application.dto.delivery.DeliveryItemDetails;
 import com.steel.product.application.dto.delivery.DeliveryPacketsDto;
+import com.steel.product.application.dto.delivery.DeliveryResponseDto;
 import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +21,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
+
+    Logger logger = LoggerFactory.getLogger(DeliveryDetails.class);
 
     @Autowired
     private DeliveryDetailsRepository deliveryDetailsRepo;
@@ -122,14 +127,10 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 
     @Override
     public List<DeliveryPacketsDto> deliveryList() {
-        Map<InwardEntry,Map<DeliveryDetails,List<Instruction>>> deliveryDetailsListMap = deliveryDetailsRepo.findAllDeliveries()
-                .stream()
-                .collect(Collectors.groupingBy(Instruction::getInwardId,Collectors.groupingBy(Instruction::getDeliveryDetails)));
-        List<DeliveryPacketsDto> deliveryPacketsDtos = new ArrayList<>();
-                deliveryDetailsListMap
-                .forEach((iw,map) -> map.forEach((dd,ins) -> deliveryPacketsDtos.add(new DeliveryPacketsDto(dd,ins))));
+        List<DeliveryDetails> inwardEntryList = deliveryDetailsRepo.findAllDeliveries();
+        logger.info("Delivery details list size "+inwardEntryList.size());
+        return inwardEntryList.stream().map(inw -> new DeliveryPacketsDto(inw)).collect(Collectors.toList());
 
-        return deliveryPacketsDtos;
     }
 
     @Override

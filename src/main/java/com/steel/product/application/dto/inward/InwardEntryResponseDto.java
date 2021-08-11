@@ -1,107 +1,106 @@
-package com.steel.product.application.dto.pdf;
+package com.steel.product.application.dto.inward;
 
 import com.steel.product.application.dto.instruction.InstructionResponseDto;
+import com.steel.product.application.dto.material.MaterialResponseDto;
+import com.steel.product.application.dto.materialGradeDto.MaterialGradeDto;
+import com.steel.product.application.dto.party.PartyDto;
 import com.steel.product.application.entity.*;
 
 import java.util.Date;
 import java.util.List;
 
-public class InwardEntryPdfDto {
+public class InwardEntryResponseDto {
 
-        private Integer inwardEntryId;
-        
-        private String partyName;
+    private int inwardEntryId;
 
-        private String partyCgst;
+    private PartyDto party;
 
-        private String coilNumber;
+    private String coilNumber;
 
-        private String batchNumber;
+    private String batchNumber;
 
-        private Date dReceivedDate;
+    private Date dReceivedDate;
 
-        private Date dBillDate;
+    private Date dBillDate;
 
-        private String vLorryNo;
+    private String vLorryNo;
 
-        private Date dInvoiceDate;
+    private Date dInvoiceDate;
 
-        private String customerCoilId;
+    private String customerCoilId;
 
-        private String customerInvoiceNo;
+    private String customerInvoiceNo;
 
-        private String customerBatchId;
+    private String customerBatchId;
 
-        private String purposeType;
+    private String purposeType;
 
-        private String testCertificateNumber;
+    private String testCertificateNumber;
 
-        private String testCertificateFileUrl;
+    private String testCertificateFileUrl;
 
-        private String vInvoiceNo;
+    private String vInvoiceNo;
 
-        private String matDescription;
+    private MaterialResponseDto material;
 
-        private String materialGradeName;
+    private MaterialGradeDto materialGrade;
 
-        private float fWidth;
+    private float fWidth;
 
-        private float fThickness;
+    private float fThickness;
 
-        private float fLength;
+    private float fLength;
 
-        private float fQuantity;
+    private float fQuantity;
 
-        private float grossWeight;
+    private float grossWeight;
 
-        private Status status;
+    private Status status;
 
-        private String vProcess;
+    private String vProcess;
 
-        private Float fpresent;
+    private Float fpresent;
 
-        private Float valueOfGoods;
+    private Float valueOfGoods;
 
-        private float billedweight;
+    private float billedweight;
 
-        private String parentCoilNumber;
+    private String parentCoilNumber;
 
-        private int vParentBundleNumber;
+    private int vParentBundleNumber;
 
-        private String remarks;
+    private String remarks;
 
-        private User createdBy;
+    private User createdBy;
 
-        private User updatedBy;
+    private User updatedBy;
 
-        private Date createdOn;
+    private Date createdOn;
 
-        private Date updatedOn;
+    private Date updatedOn;
 
-        private Boolean isDeleted;
+    private Boolean isDeleted;
 
-        private List<InwardDoc> docs;
+    private List<InwardDoc> docs;
 
-        private List<InstructionResponseDto> instruction;
+    private List<InstructionResponseDto> instruction;
 
-        private Float totalWeight;
+    private Float inStockWeight;
 
-        private Float inStockWeight;
-
-    public Integer getInwardEntryId() {
+    public int getInwardEntryId() {
         return inwardEntryId;
     }
 
-    public void setInwardEntryId(Integer inwardEntryId) {
+    public void setInwardEntryId(int inwardEntryId) {
         this.inwardEntryId = inwardEntryId;
     }
 
-    public String getPartyName() {
-        return partyName;
+    public PartyDto getParty() {
+        return party;
     }
 
-    public void setPartyName(String partyName) {
-        this.partyName = partyName;
+    public void setParty(PartyDto party) {
+        this.party = party;
     }
 
     public String getCoilNumber() {
@@ -208,20 +207,20 @@ public class InwardEntryPdfDto {
         this.vInvoiceNo = vInvoiceNo;
     }
 
-    public String getMatDescription() {
-        return matDescription;
+    public MaterialResponseDto getMaterial() {
+        return material;
     }
 
-    public void setMatDescription(String matDescription) {
-        this.matDescription = matDescription;
+    public void setMaterial(MaterialResponseDto material) {
+        this.material = material;
     }
 
-    public String getMaterialGradeName() {
-        return materialGradeName;
+    public MaterialGradeDto getMaterialGrade() {
+        return materialGrade;
     }
 
-    public void setMaterialGradeName(String materialGradeName) {
-        this.materialGradeName = materialGradeName;
+    public void setMaterialGrade(MaterialGradeDto materialGrade) {
+        this.materialGrade = materialGrade;
     }
 
     public float getfWidth() {
@@ -384,14 +383,6 @@ public class InwardEntryPdfDto {
         this.instruction = instruction;
     }
 
-    public Float getTotalWeight() {
-        return totalWeight;
-    }
-
-    public void setTotalWeight(Float totalWeight) {
-        this.totalWeight = totalWeight;
-    }
-
     public Float getInStockWeight() {
         return inStockWeight;
     }
@@ -400,11 +391,6 @@ public class InwardEntryPdfDto {
         this.inStockWeight = inStockWeight;
     }
 
-    public String getPartyCgst() {
-        return partyCgst;
-    }
 
-    public void setPartyCgst(String partyCgst) {
-        this.partyCgst = partyCgst;
-    }
+
 }

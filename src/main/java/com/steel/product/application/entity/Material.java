@@ -1,11 +1,11 @@
 package com.steel.product.application.entity;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.steel.product.application.dto.material.MaterialDto;
+import com.steel.product.application.dto.material.MaterialResponseDto;
 
 import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "product_tblmatdescription")
@@ -32,27 +32,24 @@ public class Material {
   @Column(name = "updatedon")
   private Date updatedOn;
 
-  @Column(name = "hsnCode")
+  @Column(name = "hsn_Code")
   private String hsnCode;
 
   @Column(name = "isdeleted", columnDefinition = "BIT")
   private Boolean isDeleted;
   
-  @JsonManagedReference(value="inward-material")
-  @OneToMany(mappedBy = "material", 
+  @OneToMany(mappedBy = "material",
   		cascade = {CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH})
   private List<InwardEntry> inwardEntry;
   
-  @JsonManagedReference(value="material-grade")
-  @OneToMany(mappedBy = "parentMaterial", 
+  @OneToMany(mappedBy = "parentMaterial",
   		cascade = {CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH})
   private List<MaterialGrade> materialGrade;
 
-  @JsonManagedReference(value = "material-rates")
   @OneToMany(mappedBy = "materialType")
   private List<Rates> rates;
 
-  @Column(name = "materialCode")
+  @Column(name = "material_Code")
   private String materialCode;
 
   public int getMatId() {
@@ -143,15 +140,27 @@ public void setMaterialGrade(List<MaterialGrade> materialGrade) {
     this.materialCode = materialCode;
   }
 
-  public static MaterialDto valueOf(Material material, InwardEntry inwardEntry){
-    MaterialDto materialDto = new MaterialDto();
-    materialDto.setMaterialId(material.getMatId());
-    materialDto.setMaterial(material.getDescription());
-//    materialDto.setGrade(material.getMaterialGrade().stream().map(mg -> mg.getGradeName()).collect(Collectors.toList()));
-    materialDto.setMaterialGradeDto(MaterialGrade.valueOf(inwardEntry.getMaterialGrade()));
-    materialDto.setHsnCode(material.getHsnCode());
-    materialDto.setMaterialCode(material.getMaterialCode());
-    return materialDto;
+  public static MaterialResponseDto valueOf(Material material, InwardEntry inwardEntry){
+    MaterialResponseDto materialResponseDto = new MaterialResponseDto();
+    materialResponseDto.setMatId(material.getMatId());
+    materialResponseDto.setDescription(material.getDescription());
+    if(inwardEntry != null){
+      materialResponseDto.setMaterialGrade(MaterialGrade.valueOf(inwardEntry.getMaterialGrade()));
+    }
+    materialResponseDto.setHsnCode(material.getHsnCode());
+    materialResponseDto.setMaterialCode(material.getMaterialCode());
+    return materialResponseDto;
+  }
+
+  public static MaterialResponseDto valueOf(Material material){
+    MaterialResponseDto materialResponseDto = new MaterialResponseDto();
+    materialResponseDto.setMatId(material.getMatId());
+    materialResponseDto.setDescription(material.getDescription());
+    materialResponseDto.setMaterialGradeList(material.getMaterialGrade().stream().filter(m -> m != null)
+            .map(m -> MaterialGrade.valueOf(m)).collect(Collectors.toList()));
+    materialResponseDto.setHsnCode(material.getHsnCode());
+    materialResponseDto.setMaterialCode(material.getMaterialCode());
+    return materialResponseDto;
   }
 
   

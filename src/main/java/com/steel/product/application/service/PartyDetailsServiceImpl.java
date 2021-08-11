@@ -29,7 +29,7 @@ public class PartyDetailsServiceImpl implements PartyDetailsService {
 
     Party party = new Party();
     try{
-      party.setnPartyId(partyDto.getPartyId());
+      party.setnPartyId(partyDto.getnPartyId());
       party.setPartyName(partyDto.getPartyName());
       party.setPartyNickname(partyDto.getPartyNickname());
       party.setContactName(partyDto.getContactName());
@@ -47,17 +47,17 @@ public class PartyDetailsServiceImpl implements PartyDetailsService {
 
       if(partyDto.getAddress1() != null) {
         if (partyDto.getAddress1().getAddressId() == 0) {
-          address1 = saveAddress(partyDto.getAddress1());
+          address1 = saveAddress(address1.toEntity(partyDto.getAddress1()));
         } else {
-          address1 = addressService.saveAddress(partyDto.getAddress1());
+          address1 = addressService.saveAddress(address2.toEntity(partyDto.getAddress1()));
         }
         party.setAddress1(address1);
       }
       if(partyDto.getAddress2() != null) {
         if (partyDto.getAddress2().getAddressId() == 0) {
-          address2 = saveAddress(partyDto.getAddress2());
+          address2 = saveAddress(address2.toEntity(partyDto.getAddress2()));
         } else {
-          address2 = addressService.saveAddress(partyDto.getAddress2());
+          address2 = addressService.saveAddress(address2.toEntity(partyDto.getAddress2()));
         }
         party.setAddress2(address2);
       }

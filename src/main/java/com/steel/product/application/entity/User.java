@@ -1,5 +1,6 @@
 package com.steel.product.application.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.steel.product.application.entity.InwardEntry;
 import java.util.List;
@@ -22,11 +23,13 @@ public class User {
   
   @Column(name = "username")
   private String userName;
-  
+
+  @JsonBackReference
   @OneToMany(mappedBy = "createdBy", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH})
   @JsonIgnoreProperties({"createdBy"})
   private List<InwardEntry> inwardEntry;
-  
+
+  @JsonBackReference
   @OneToMany(mappedBy = "updatedBy", cascade = {CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH})
   @JsonIgnoreProperties({"updatedBy"})
   private List<InwardEntry> inwardEntry1;

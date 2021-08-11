@@ -2,7 +2,8 @@ package com.steel.product.application.service;
 
 import com.steel.product.application.dao.MaterialDescriptionRepository;
 import com.steel.product.application.dao.MaterialGradeRepository;
-import com.steel.product.application.dto.material.MaterialDto;
+import com.steel.product.application.dto.material.MaterialInputDto;
+import com.steel.product.application.dto.material.MaterialResponseDto;
 import com.steel.product.application.entity.Material;
 import com.steel.product.application.entity.MaterialGrade;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class MaterialDescriptionServiceImpl implements MaterialDescriptionService {
@@ -30,29 +32,29 @@ public class MaterialDescriptionServiceImpl implements MaterialDescriptionServic
   }
 
   @Override
-  public Material saveMatDesc(MaterialDto materialDto) {
+  public Material saveMatDesc(MaterialInputDto materialInputDto) {
 
     Timestamp timestamp = new Timestamp(System.currentTimeMillis());
     Material material = new Material();
     Material savedMaterial = new Material();
-    if(materialDto.getMaterialId() !=0){
-      material = getMatById(materialDto.getMaterialId());
+    if(materialInputDto.getMatId() !=0){
+      material = getMatById(materialInputDto.getMatId());
     }
-    material.setDescription(materialDto.getMaterial());
+    material.setDescription(materialInputDto.getDescription());
     material.setCreatedBy(1);
     material.setUpdatedBy(1);
     material.setCreatedOn(timestamp);
     material.setUpdatedOn(timestamp);
     material.setIsDeleted(false);
-    material.setHsnCode(materialDto.getHsnCode());
-    material.setMaterialCode(materialDto.getMaterialCode());
+    material.setHsnCode(materialInputDto.getHsnCode());
+    material.setMaterialCode(materialInputDto.getMaterialCode());
 
     savedMaterial = matDescRepo.save(material);
 
-    if(materialDto.getMaterialId() != 0){
-      materialGradeRepository.deleteGradesByMaterialId(materialDto.getMaterialId());
+    if(materialInputDto.getMatId() != 0){
+      materialGradeRepository.deleteGradesByMaterialId(materialInputDto.getMatId());
     }
-    for(String grade : materialDto.getGrade()){
+    for(String grade : materialInputDto.getGrade()){
       MaterialGrade materialGrade = new MaterialGrade();
       materialGrade.setParentMaterial(savedMaterial);
       materialGrade.setGradeName(grade);
@@ -63,8 +65,9 @@ public class MaterialDescriptionServiceImpl implements MaterialDescriptionServic
 
   }
 
-  public List<Material> getAllMatDesc() {
-    return this.matDescRepo.findAll();
+  public List<MaterialResponseDto> getAllMatDesc() {
+    List<Material> materials = matDescRepo.findAll();
+    return materials.stream().map(m -> Material.valueOf(m)).collect(Collectors.toList());
   }
   
   public Material getMatById(int MatId) {

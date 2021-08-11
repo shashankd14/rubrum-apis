@@ -2,6 +2,7 @@ package com.steel.product.application.controller;
 
 import com.steel.product.application.dto.delivery.DeliveryDto;
 import com.steel.product.application.dto.delivery.DeliveryPacketsDto;
+import com.steel.product.application.dto.delivery.DeliveryResponseDto;
 import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.service.DeliveryDetailsService;
@@ -12,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin
@@ -38,7 +40,7 @@ public class DeliveryDetailsController {
     public ResponseEntity<Object> getById(@PathVariable("deliveryId") int deliveryId){
         try{
             List<Instruction> deliveredInstructionsById = deliveryDetailsService.getInstructionsByDeliveryId(deliveryId);
-            return new ResponseEntity<>(deliveredInstructionsById, HttpStatus.OK);
+            return new ResponseEntity<>(deliveredInstructionsById.stream().map(ins -> Instruction.valueOf(ins)).collect(Collectors.toList()), HttpStatus.OK);
         }catch (Exception e){
             e.getMessage();
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);

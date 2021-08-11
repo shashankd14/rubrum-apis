@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 //@CrossOrigin(origins = {"http://localhost:3001"})
@@ -27,7 +28,7 @@ public class PartyController {
   @PostMapping({"/save"})
   public ResponseEntity<Object> saveParty(@RequestBody PartyDto partyDto) {
     try{
-      partyDto.setPartyId(0);
+      partyDto.setnPartyId(0);
       Party party = partySvc.saveParty(partyDto);
       if(party==null)
         return new ResponseEntity<>("Error in saving party!!!", HttpStatus.INTERNAL_SERVER_ERROR);
@@ -48,12 +49,12 @@ public class PartyController {
   }
   
   @GetMapping({"/list"})
-  public List<Party> getAllParties() {
-    return this.partySvc.getAllParties();
+  public List<PartyDto> getAllParties() {
+    return this.partySvc.getAllParties().stream().map(p -> Party.valueOf(p)).collect(Collectors.toList());
   }
   
   @GetMapping({"/getById/{partyId}"})
-  public Party getPartyById(@PathVariable int partyId) {
-    return this.partySvc.getPartyById(partyId);
+  public PartyDto getPartyById(@PathVariable int partyId) {
+    return Party.valueOf(this.partySvc.getPartyById(partyId));
   }
 }
