@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.steel.product.application.dto.delivery.DeliveryResponseDto;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -55,7 +56,10 @@ public class DeliveryDetails {
     private List<Instruction> instruction;
 
     public void addInstruction(Instruction instruction){
-        this.instruction.add(instruction);
+        if(this.instruction == null){
+            this.instruction = new ArrayList<>();
+        }
+        this.getInstruction().add(instruction);
         instruction.setDeliveryDetails(this);
     }
 
@@ -164,7 +168,7 @@ public class DeliveryDetails {
         deliveryResponseDto.setUpdatedBy(deliveryDetails.getUpdatedBy());
         deliveryResponseDto.setUpdatedOn(deliveryDetails.getUpdatedOn());
         deliveryResponseDto.setVehicleNo(deliveryDetails.getVehicleNo());
-        deliveryResponseDto.setInstruction(deliveryDetails.getInstruction().stream().map(i -> Instruction.valueOf(i)).collect(Collectors.toList()));
+//        deliveryResponseDto.setInstruction(deliveryDetails.getInstruction().stream().map(i -> Instruction.valueOf(i)).collect(Collectors.toList()));
         return deliveryResponseDto;
     }
 }

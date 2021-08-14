@@ -130,10 +130,10 @@ public class InwardEntry {
 	@Column(name = "isdeleted", columnDefinition = "BIT")
 	private Boolean isDeleted;
 
-	@OneToMany(mappedBy = "inwardEntry", fetch = FetchType.EAGER)
+	@OneToMany(mappedBy = "inwardEntry", fetch = FetchType.LAZY)
 	private List<InwardDoc> docs;
 	
-	@OneToMany(mappedBy = "inwardId", fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST,CascadeType.MERGE})
+	@OneToMany(mappedBy = "inwardId", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST,CascadeType.MERGE})
 	private Set<Instruction> instruction;
 
 	@Column(name = "in_stock_weight")
@@ -524,7 +524,12 @@ public class InwardEntry {
 		inwardEntryResponseDto.setStatus(inwardEntry.getStatus());
 		inwardEntryResponseDto.setfQuantity(inwardEntry.getfQuantity());
 		inwardEntryResponseDto.setFpresent(inwardEntry.getFpresent());
+		inwardEntryResponseDto.setInStockWeight(inwardEntry.getInStockWeight());
+		inwardEntryResponseDto.setDeleted(inwardEntry.getDeleted());
+		inwardEntryResponseDto.setfLength(inwardEntry.getfLength());
 		return inwardEntryResponseDto;
 	}
+
+
 
 }

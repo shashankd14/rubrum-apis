@@ -1,14 +1,15 @@
 package com.steel.product.application.service;
 
-import com.steel.product.application.dto.material.MaterialInputDto;
+import com.steel.product.application.dto.material.MaterialRequestDto;
+import com.steel.product.application.dto.material.MaterialResponseDetailsDto;
 import com.steel.product.application.dto.material.MaterialResponseDto;
 import com.steel.product.application.entity.Material;
 import java.util.List;
 
 public interface MaterialDescriptionService {
-  Material saveMatDesc(MaterialInputDto materialInputDto);
+  Material saveMatDesc(MaterialRequestDto materialRequestDto);
   
-  List<MaterialResponseDto> getAllMatDesc();
+  List<MaterialResponseDetailsDto> getAllMatDesc();
   
   Material getMatById(int paramInt);
 }

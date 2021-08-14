@@ -38,11 +38,6 @@ public class InstructionController {
     @Resource
     private PacketClassificationService packetClassificationService;
 
-//    @GetMapping("/ids")
-//    public DeliveryChallanPdfDto getList(@RequestBody DeliveryPdfDto deliveryPdfDto){
-//        return new DeliveryChallanPdfDto(companyDetailsService.findById(1),inwardService.findDeliveryItemsByInstructionIds(deliveryPdfDto.getInstructionIds()));
-//    }
-
     @GetMapping("/list")
     public ResponseEntity<Object> getAll() {
 
@@ -145,7 +140,7 @@ public class InstructionController {
             inward.setFpresent(0f);
             inwardService.saveEntry(inward);
 
-            return new ResponseEntity<Object>(savedInstruction, HttpStatus.OK);
+            return new ResponseEntity<Object>(Instruction.valueOf(savedInstruction), HttpStatus.OK);
 
         } catch (Exception e) {
             return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);

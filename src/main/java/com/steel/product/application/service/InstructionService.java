@@ -3,6 +3,7 @@ package com.steel.product.application.service;
 import com.steel.product.application.dto.instruction.InstructionFinishDto;
 import com.steel.product.application.dto.instruction.InstructionRequestDto;
 import com.steel.product.application.entity.Instruction;
+import com.steel.product.application.entity.Status;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
@@ -33,7 +34,9 @@ public interface InstructionService {
 
 	public List<Instruction> saveAll(List<Instruction> instructions);
 
-	public List<Instruction> findByIdIn(List<Integer> ids);
+	public List<Instruction> findInstructionsByInstructionIdInAndStatusNot(List<Integer> ids, Status status);
+
+	public List<Instruction> findInstructionsWithDeliveryDetails(List<Integer> instructionIds);
 
 
 	ResponseEntity<Object> updateInstruction(InstructionFinishDto instructionFinishDto);

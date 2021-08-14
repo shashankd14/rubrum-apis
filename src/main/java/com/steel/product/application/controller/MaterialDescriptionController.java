@@ -1,6 +1,7 @@
 package com.steel.product.application.controller;
 
-import com.steel.product.application.dto.material.MaterialInputDto;
+import com.steel.product.application.dto.material.MaterialRequestDto;
+import com.steel.product.application.dto.material.MaterialResponseDetailsDto;
 import com.steel.product.application.dto.material.MaterialResponseDto;
 import com.steel.product.application.entity.Material;
 import com.steel.product.application.service.MaterialDescriptionService;
@@ -23,9 +24,9 @@ public class MaterialDescriptionController {
 
   
   @PostMapping({"/save"})
-  public ResponseEntity<Object> saveMatDesc(@RequestBody MaterialInputDto materialInputDto) {
+  public ResponseEntity<Object> saveMatDesc(@RequestBody MaterialRequestDto materialRequestDto) {
     try{
-      matDescSvc.saveMatDesc(materialInputDto);
+      matDescSvc.saveMatDesc(materialRequestDto);
       return new ResponseEntity<>("Material saved successfully", HttpStatus.OK);
     }catch (Exception e){
       e.printStackTrace();
@@ -34,9 +35,9 @@ public class MaterialDescriptionController {
   }
 
   @PutMapping({"/update"})
-  public ResponseEntity<Object> updateMaterial(@RequestBody MaterialInputDto materialInputDto) {
+  public ResponseEntity<Object> updateMaterial(@RequestBody MaterialRequestDto materialRequestDto) {
     try{
-      matDescSvc.saveMatDesc(materialInputDto);
+      matDescSvc.saveMatDesc(materialRequestDto);
       return new ResponseEntity<>("Material saved successfully", HttpStatus.OK);
     }catch (Exception e){
       e.printStackTrace();
@@ -45,12 +46,12 @@ public class MaterialDescriptionController {
   }
   
   @GetMapping({"/list"})
-  public List<MaterialResponseDto> getAllMatDesc() {
+  public List<MaterialResponseDetailsDto> getAllMatDesc() {
     return this.matDescSvc.getAllMatDesc();
   }
   
   @GetMapping({"/getById/{matId}"})
-  public Material getMatById(@PathVariable int matId) {
-    return this.matDescSvc.getMatById(matId);
+  public MaterialResponseDetailsDto getMatById(@PathVariable int matId) {
+    return Material.valueOfMat(this.matDescSvc.getMatById(matId));
   }
 }

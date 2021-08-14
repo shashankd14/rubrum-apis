@@ -2,7 +2,6 @@ package com.steel.product.application.entity;
 
 
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.steel.product.application.dto.instruction.InstructionResponseDto;
@@ -10,6 +9,7 @@ import com.steel.product.application.dto.instruction.InstructionResponseDto;
 import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "product_instruction")
@@ -25,7 +25,7 @@ public class Instruction {
 	@JoinColumn(name = "inwardid")
 	private InwardEntry inwardId;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "processid")
 	private Process process;
 	 
@@ -56,7 +56,7 @@ public class Instruction {
 	@Column(name = "actualnoofpieces")
 	private Integer actualNoOfPieces;
 	
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "status")
 	private Status status;
 
@@ -74,7 +74,7 @@ public class Instruction {
 	@OneToMany(mappedBy = "parentInstruction", cascade = {CascadeType.PERSIST,CascadeType.MERGE,CascadeType.REMOVE}, orphanRemoval = true)
 	private List<Instruction> childInstructions;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "parentinstructionid", referencedColumnName = "instructionid")
 	private Instruction parentInstruction;
 	
@@ -91,7 +91,7 @@ public class Instruction {
 	@JoinColumn(name = "rateid")
 	private Rates rates;
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "deliveryid")
 	private DeliveryDetails deliveryDetails;
 
@@ -347,6 +347,14 @@ public class Instruction {
 		this.parentGroupId = parentGroupId;
 	}
 
+	public Boolean getDeleted() {
+		return isDeleted;
+	}
+
+	public void setDeleted(Boolean deleted) {
+		isDeleted = deleted;
+	}
+
 	public void addChildInstruction(Instruction instruction){
 		this.childInstructions.add(instruction);
 		instruction.setParentInstruction(this);
@@ -358,34 +366,37 @@ public class Instruction {
 	}
 
 	public static InstructionResponseDto valueOf(Instruction instruction){
-		InstructionResponseDto InstructionResponseDto = new InstructionResponseDto();
-		InstructionResponseDto.setStatus(Status.valueOf(instruction.getStatus()));
-		InstructionResponseDto.setParentInstructionId(instruction.getParentInstruction() != null ?
+		InstructionResponseDto instructionResponseDto = new InstructionResponseDto();
+		instructionResponseDto.setStatus(Status.valueOf(instruction.getStatus()));
+		instructionResponseDto.setParentInstructionId(instruction.getParentInstruction() != null ?
 				instruction.getParentInstruction().getInstructionId() : null);
-		InstructionResponseDto.setPacketClassification(instruction.getPacketClassification() != null ?
+		instructionResponseDto.setPacketClassification(instruction.getPacketClassification() != null ?
 				instruction.getPacketClassification(): null);
-		InstructionResponseDto.setInstructionDate(instruction.getInstructionDate());
-		InstructionResponseDto.setInstructionId(instruction.getInstructionId());
-		InstructionResponseDto.setProcess(instruction.getProcess() != null ? Process.valueOf(instruction.getProcess()) : null);
-		InstructionResponseDto.setPlannedWeight(instruction.getPlannedWeight());
-		InstructionResponseDto.setPlannedWidth(instruction.getPlannedWidth());
-		InstructionResponseDto.setPlannedLength(instruction.getPlannedLength());
-		InstructionResponseDto.setPlannedNoOfPieces(instruction.getPlannedNoOfPieces());
-		InstructionResponseDto.setActualWidth(instruction.getActualWidth());
-		InstructionResponseDto.setActualWeight(instruction.getActualWeight());
-		InstructionResponseDto.setActualLength(instruction.actualLength);
-		InstructionResponseDto.setActualNoOfPieces(instruction.getActualNoOfPieces());
-		InstructionResponseDto.setInwardId(instruction.getInwardId() != null ? instruction.getInwardId().getInwardEntryId() : null);
-		InstructionResponseDto.setDeleted(instruction.getIsDeleted());
-		InstructionResponseDto.setGroupId(instruction.getGroupId());
-		InstructionResponseDto.setDamage(instruction.getDamage());
-		InstructionResponseDto.setCreatedOn(instruction.getCreatedOn());
-		InstructionResponseDto.setUpdatedOn(instruction.getUpdatedOn());
-		InstructionResponseDto.setUpdatedBy(instruction.updatedBy);
-		InstructionResponseDto.setCreatedBy(instruction.getCreatedBy());
-		InstructionResponseDto.setPackingWeight(instruction.getPackingWeight());
-		InstructionResponseDto.setWastage(instruction.getWastage());
-		InstructionResponseDto.setRemarks(instruction.getRemarks());
-		return InstructionResponseDto;
+		instructionResponseDto.setInstructionDate(instruction.getInstructionDate());
+		instructionResponseDto.setInstructionId(instruction.getInstructionId());
+		instructionResponseDto.setProcess(instruction.getProcess() != null ? Process.valueOf(instruction.getProcess()) : null);
+		instructionResponseDto.setPlannedWeight(instruction.getPlannedWeight());
+		instructionResponseDto.setPlannedWidth(instruction.getPlannedWidth());
+		instructionResponseDto.setPlannedLength(instruction.getPlannedLength());
+		instructionResponseDto.setPlannedNoOfPieces(instruction.getPlannedNoOfPieces());
+		instructionResponseDto.setActualWidth(instruction.getActualWidth());
+		instructionResponseDto.setActualWeight(instruction.getActualWeight());
+		instructionResponseDto.setActualLength(instruction.getActualLength());
+		instructionResponseDto.setActualNoOfPieces(instruction.getActualNoOfPieces());
+		instructionResponseDto.setInwardId(instruction.getInwardId() != null ? instruction.getInwardId().getInwardEntryId() : null);
+		instructionResponseDto.setDeleted(instruction.getIsDeleted());
+		instructionResponseDto.setGroupId(instruction.getGroupId());
+		instructionResponseDto.setDamage(instruction.getDamage());
+		instructionResponseDto.setCreatedOn(instruction.getCreatedOn());
+		instructionResponseDto.setUpdatedOn(instruction.getUpdatedOn());
+		instructionResponseDto.setUpdatedBy(instruction.updatedBy);
+		instructionResponseDto.setCreatedBy(instruction.getCreatedBy());
+		instructionResponseDto.setPackingWeight(instruction.getPackingWeight());
+		instructionResponseDto.setWastage(instruction.getWastage());
+		instructionResponseDto.setRemarks(instruction.getRemarks());
+		instructionResponseDto.setDeliveryDetails(instruction.getDeliveryDetails() != null ? DeliveryDetails.valueOf(instruction.getDeliveryDetails()) : null);
+		instructionResponseDto.setChildInstructions((instruction.getChildInstructions() != null && instruction.getChildInstructions().size() > 0)
+				? instruction.getChildInstructions().stream().map(ci -> Instruction.valueOf(ci)).collect(Collectors.toList()) : null);
+		return instructionResponseDto;
 	}
 }

@@ -4,15 +4,10 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.steel.product.application.dto.status.StatusDto;
 import com.steel.product.application.entity.InwardEntry;
+
+import java.util.ArrayList;
 import java.util.List;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Entity
 @Table(name = "product_status")
@@ -27,13 +22,26 @@ public class Status {
 
 	@JsonBackReference
 	@OneToMany(mappedBy = "status", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH,
-			CascadeType.REFRESH })
+			CascadeType.REFRESH },fetch = FetchType.LAZY)
 	private List<InwardEntry> inwardEntry;
 
 	@JsonBackReference
 	@OneToMany(mappedBy = "status", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH,
-			CascadeType.REFRESH })
+			CascadeType.REFRESH },fetch = FetchType.LAZY)
 	private List<Instruction> instruction;
+
+	public void addInstruction(Instruction instruction){
+		if(this.getInstruction() == null){
+			this.instruction = new ArrayList<>();
+		}
+		this.getInstruction().add(instruction);
+		instruction.setStatus(this);
+	}
+
+	public void removeInstruction(Instruction instruction){
+		this.getInstruction().remove(instruction);
+		instruction.setStatus(null);
+	}
 
 	public int getStatusId() {
 		return this.statusId;
@@ -69,9 +77,9 @@ public class Status {
 
 	public static StatusDto valueOf(Status status){
 		StatusDto statusDto = new StatusDto();
-		status.setStatusId(status.getStatusId());
-		status.setStatusName(status.getStatusName());
+		statusDto.setStatusId(status.getStatusId());
+		statusDto.setStatusName(status.getStatusName());
 		return statusDto;
 	}
-	
+
 }

@@ -43,7 +43,8 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 	public ResponseEntity<Object> getInwardEntriesByPartyId(int partyId) {
 		List<InwardEntry> entities = new ArrayList<>();
 		entities = this.inwdEntryRepo.getInwardEntriesByPartyId(Integer.valueOf(partyId));
-		return new ResponseEntity(entities, HttpStatus.OK);
+		return new ResponseEntity(entities.stream().map(inw -> InwardEntry.valueOfResponse(inw))
+				.collect(Collectors.toList()), HttpStatus.OK);
 	}
 
 	public void deleteById(int id) {

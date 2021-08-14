@@ -4,9 +4,9 @@ import com.steel.product.application.dao.InstructionRepository;
 import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.dto.instruction.InstructionRequestDto;
 import com.steel.product.application.dto.instruction.InstructionFinishDto;
-import com.steel.product.application.dto.instruction.InstructionRequestDto;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
+import com.steel.product.application.entity.Status;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -252,8 +252,13 @@ public class InstructionServiceImpl implements InstructionService {
 	}
 
 	@Override
+	public List<Instruction> findInstructionsByInstructionIdInAndStatusNot(List<Integer> ids, Status status) {
+		return instructionRepository.findInstructionsByInstructionIdInAndStatusNot(ids,status);
+	}
+
+	@Override
 	public ResponseEntity<Object> updateInstruction(InstructionFinishDto instructionFinishDto) {
-		List<InstructionRequestDto> InstructionRequestDtos = instructionFinishDto.getInstructionRequestDtos();
+		List<InstructionRequestDto> InstructionRequestDtos = instructionFinishDto.getInstructionDtos();
 		List<Instruction> updatedInstructionList = new ArrayList<Instruction>();
 		Instruction updatedInstruction = new Instruction();
 		InwardEntry inwardEntry = new InwardEntry();
@@ -300,8 +305,8 @@ public class InstructionServiceImpl implements InstructionService {
 				if (InstructionRequestDto.getActualNoOfPieces() != null)
 					instruction.setActualNoOfPieces(InstructionRequestDto.getActualNoOfPieces());
 
-				if (InstructionRequestDto.getStatus() != null)
-					instruction.setStatus(statusService.getStatusById(InstructionRequestDto.getStatus()));
+//				if (InstructionRequestDto.getStatus() != null)
+//					instruction.setStatus(statusService.getStatusById(InstructionRequestDto.getStatus()));
 
 				if (InstructionRequestDto.getPacketClassificationId() != null)
 					instruction.setPacketClassification(packetClassificationService.getPacketClassificationById(InstructionRequestDto.getPacketClassificationId()));
@@ -346,10 +351,9 @@ public class InstructionServiceImpl implements InstructionService {
 	}
 
 	@Override
-	public List<Instruction> findByIdIn(List<Integer> ids) {
-		return instructionRepository.findByInstructionIdIn(ids);
+	public List<Instruction> findInstructionsWithDeliveryDetails(List<Integer> instructionIds) {
+		return instructionRepository.findInstructionsWithDeliveryDetails(instructionIds);
 	}
-
 
 
 }

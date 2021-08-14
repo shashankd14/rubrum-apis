@@ -25,4 +25,7 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
           " ins.status.statusId = 4")
   public List<InwardEntry> findDeliveryItemsByInstructionIds(@Param("instructionIds")List<Integer> instructionIds);
 
+  @Query("select inw from InwardEntry inw join fetch inw.party join fetch inw.material join fetch inw.materialGrade where inw.inwardEntryId = :inwardId")
+  public Optional<InwardEntry> findById(@Param("inwardId")Integer inwardId);
+
 }

@@ -102,7 +102,7 @@ public class Address {
     address.setCity(addressDto.getCity());
     address.setDetails(addressDto.getDetails());
     address.setPincode(addressDto.getPincode());
-    address.setState(address.getState());
+    address.setState(addressDto.getState());
     return address;
   }
 

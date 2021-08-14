@@ -4,9 +4,9 @@ package com.steel.product.application.dto.material;
 import java.util.Date;
 import java.util.List;
 
-public class MaterialInputDto {
+public class MaterialRequestDto {
     private int matId;
-    private String description;
+    private String material;
     private List<String> grade;
     private String hsnCode;
     private String materialCode;
@@ -23,12 +23,12 @@ public class MaterialInputDto {
         this.matId = matId;
     }
 
-    public String getDescription() {
-        return description;
+    public String getMaterial() {
+        return material;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setMaterial(String material) {
+        this.material = material;
     }
 
     public List<String> getGrade() {

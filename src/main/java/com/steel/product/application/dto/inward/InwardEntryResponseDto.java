@@ -391,6 +391,4 @@ public class InwardEntryResponseDto {
         this.inStockWeight = inStockWeight;
     }
 
-
-
 }

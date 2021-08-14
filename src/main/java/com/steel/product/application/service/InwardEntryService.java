@@ -1,17 +1,15 @@
 package com.steel.product.application.service;
 
-import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface InwardEntryService {
   InwardEntry saveEntry(InwardEntry paramInwardEntry);
   
   List<InwardEntry> getAllEntries();
-  
+
   InwardEntry getByEntryId(int inwardId);
   
   InwardEntry getByCoilNumber(String coilNumber);

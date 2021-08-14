@@ -2,6 +2,7 @@ package com.steel.product.application.dao;
 
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
+import com.steel.product.application.entity.Status;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -9,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.Optional;
 
 public interface InstructionRepository extends JpaRepository<Instruction, Integer> {
     @Modifying
@@ -34,8 +36,10 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
     @Query("select i from Instruction i where i.parentInstruction.instructionId = :parentInstructionId")
     public List<Instruction> findByParentInstructionId(@Param("parentInstructionId")Integer parentInstructionId);
 
-    public List<Instruction> findByInstructionIdIn(List<Integer> ids);
+//    @Query("select ins from Instruction ins")
+    public List<Instruction> findInstructionsByInstructionIdInAndStatusNot(List<Integer> instructionIds, Status status);
 
-
+    @Query("select ins from Instruction ins join fetch ins.deliveryDetails dd where ins.instructionId in :instructionIds")
+    public List<Instruction> findInstructionsWithDeliveryDetails(@Param("instructionIds")List<Integer> instructionIds);
 
 }

@@ -1,5 +1,6 @@
 package com.steel.product.application.entity;
 
+import com.steel.product.application.dto.material.MaterialResponseDetailsDto;
 import com.steel.product.application.dto.material.MaterialResponseDto;
 
 import javax.persistence.*;
@@ -152,15 +153,26 @@ public void setMaterialGrade(List<MaterialGrade> materialGrade) {
     return materialResponseDto;
   }
 
-  public static MaterialResponseDto valueOf(Material material){
-    MaterialResponseDto materialResponseDto = new MaterialResponseDto();
-    materialResponseDto.setMatId(material.getMatId());
-    materialResponseDto.setDescription(material.getDescription());
-    materialResponseDto.setMaterialGradeList(material.getMaterialGrade().stream().filter(m -> m != null)
+//  public static MaterialResponseDto valueOf(Material material){
+//    MaterialResponseDto materialResponseDto = new MaterialResponseDto();
+//    materialResponseDto.setMatId(material.getMatId());
+//    materialResponseDto.setDescription(material.getDescription());
+//    materialResponseDto.setHsnCode(material.getHsnCode());
+//    materialResponseDto.setMaterialCode(material.getMaterialCode());
+//    return materialResponseDto;
+//  }
+
+  public static MaterialResponseDetailsDto valueOfMat(Material material){
+    MaterialResponseDetailsDto materialResponseDetailsDto = new MaterialResponseDetailsDto();
+    materialResponseDetailsDto.setMatId(material.getMatId());
+    materialResponseDetailsDto.setDescription(material.getDescription());
+    materialResponseDetailsDto.setMaterialGrade(material.getMaterialGrade().stream().filter(m -> m != null)
             .map(m -> MaterialGrade.valueOf(m)).collect(Collectors.toList()));
-    materialResponseDto.setHsnCode(material.getHsnCode());
-    materialResponseDto.setMaterialCode(material.getMaterialCode());
-    return materialResponseDto;
+    materialResponseDetailsDto.setHsnCode(material.getHsnCode());
+    materialResponseDetailsDto.setMaterialCode(material.getMaterialCode());
+    materialResponseDetailsDto.setDeleted(material.getIsDeleted());
+    materialResponseDetailsDto.setCreatedOn(material.getCreatedOn());
+    return materialResponseDetailsDto;
   }
 
   

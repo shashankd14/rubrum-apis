@@ -9,6 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 //@CrossOrigin(origins = {"http://rubrum-frontend.s3-website.ap-south-1.amazonaws.com"})
@@ -22,7 +23,7 @@ public class MaterialGradeController {
 	public ResponseEntity<Object> getById(@PathVariable int gradeId) {
 		try {
 			MaterialGrade materialGrade = this.materialGradeService.getById(gradeId);
-			return new ResponseEntity(materialGrade, HttpStatus.OK);
+			return new ResponseEntity(MaterialGrade.valueOf(materialGrade), HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -32,7 +33,7 @@ public class MaterialGradeController {
 	public ResponseEntity<Object> getAll() {
 		try {
 			List<MaterialGrade> matGradeList = this.materialGradeService.getAll();
-			return new ResponseEntity<Object>(matGradeList, HttpStatus.OK);
+			return new ResponseEntity<Object>(matGradeList.stream().map(g -> MaterialGrade.valueOf(g)).collect(Collectors.toList()), HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -42,7 +43,7 @@ public class MaterialGradeController {
 	public ResponseEntity<Object> getByMaterialId(@PathVariable int materialId){
 		try {
 			List<MaterialGrade> gradeList = materialGradeService.getByMaterialId(materialId);
-			return new ResponseEntity<Object>(gradeList, HttpStatus.OK);
+			return new ResponseEntity<Object>(gradeList.stream().map(g -> MaterialGrade.valueOf(g)).collect(Collectors.toList()), HttpStatus.OK);
 			
 		} catch(Exception e) {
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);

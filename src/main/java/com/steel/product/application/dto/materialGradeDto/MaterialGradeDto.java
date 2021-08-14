@@ -1,15 +1,15 @@
 package com.steel.product.application.dto.materialGradeDto;
 
 public class MaterialGradeDto {
-    private Integer materialGradeId;
+    private Integer gradeId;
     private String gradeName;
 
-    public Integer getMaterialGradeId() {
-        return materialGradeId;
+    public Integer getGradeId() {
+        return gradeId;
     }
 
-    public void setMaterialGradeId(Integer materialGradeId) {
-        this.materialGradeId = materialGradeId;
+    public void setGradeId(Integer gradeId) {
+        this.gradeId = gradeId;
     }
 
     public String getGradeName() {

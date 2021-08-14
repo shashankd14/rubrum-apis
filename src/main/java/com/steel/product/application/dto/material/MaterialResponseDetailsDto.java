@@ -5,17 +5,18 @@ import com.steel.product.application.dto.materialGradeDto.MaterialGradeDto;
 import java.util.Date;
 import java.util.List;
 
-public class MaterialResponseDto {
+public class MaterialResponseDetailsDto {
 
     private int matId;
     private String description;
-    private MaterialGradeDto materialGrade;
+    private List<MaterialGradeDto> materialGrade;
     private String hsnCode;
     private String materialCode;
     private int createdBy;
     private int updatedBy;
     private Date createdOn;
     private Date updatedOn;
+    private Boolean isDeleted;
 
     public int getMatId() {
         return matId;
@@ -31,6 +32,14 @@ public class MaterialResponseDto {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public List<MaterialGradeDto> getMaterialGrade() {
+        return materialGrade;
+    }
+
+    public void setMaterialGrade(List<MaterialGradeDto> materialGrade) {
+        this.materialGrade = materialGrade;
     }
 
     public String getHsnCode() {
@@ -81,11 +90,11 @@ public class MaterialResponseDto {
         this.updatedOn = updatedOn;
     }
 
-    public MaterialGradeDto getMaterialGrade() {
-        return materialGrade;
+    public Boolean getDeleted() {
+        return isDeleted;
     }
 
-    public void setMaterialGrade(MaterialGradeDto materialGrade) {
-        this.materialGrade = materialGrade;
+    public void setDeleted(Boolean deleted) {
+        isDeleted = deleted;
     }
 }

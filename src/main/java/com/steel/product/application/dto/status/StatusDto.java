@@ -1,18 +1,17 @@
 package com.steel.product.application.dto.status;
 
-import javax.persistence.Column;
 
 public class StatusDto {
 
-    private int statusId;
+    private Integer statusId;
 
     private String statusName;
 
-    public int getStatusId() {
+    public Integer getStatusId() {
         return statusId;
     }
 
-    public void setStatusId(int statusId) {
+    public void setStatusId(Integer statusId) {
         this.statusId = statusId;
     }
 

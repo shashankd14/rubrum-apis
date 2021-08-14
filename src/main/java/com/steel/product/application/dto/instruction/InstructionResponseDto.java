@@ -10,7 +10,7 @@ import java.util.Date;
 import java.util.List;
 
 public class InstructionResponseDto {
-    private int instructionId ;
+    private Integer instructionId ;
 
     private Integer inwardId;
 
@@ -63,13 +63,15 @@ public class InstructionResponseDto {
 
     private String remarks;
 
-//    private List<DeliveryResponseDto> deliveryDetails;
+    private List<InstructionResponseDto> childInstructions;
 
-    public int getInstructionId() {
+    private DeliveryResponseDto deliveryDetails;
+
+    public Integer getInstructionId() {
         return instructionId;
     }
 
-    public void setInstructionId(int instructionId) {
+    public void setInstructionId(Integer instructionId) {
         this.instructionId = instructionId;
     }
 
@@ -271,5 +273,21 @@ public class InstructionResponseDto {
 
     public void setRemarks(String remarks) {
         this.remarks = remarks;
+    }
+
+    public DeliveryResponseDto getDeliveryDetails() {
+        return deliveryDetails;
+    }
+
+    public void setDeliveryDetails(DeliveryResponseDto deliveryDetails) {
+        this.deliveryDetails = deliveryDetails;
+    }
+
+    public List<InstructionResponseDto> getChildInstructions() {
+        return childInstructions;
+    }
+
+    public void setChildInstructions(List<InstructionResponseDto> childInstructions) {
+        this.childInstructions = childInstructions;
     }
 }
