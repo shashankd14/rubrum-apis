@@ -11,8 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -104,11 +104,11 @@ public class InstructionServiceImpl implements InstructionService {
 		}else if(InstructionRequestDtos.get(0).getParentInstructionId() != null)
 		{
 			incomingWeight = (float)InstructionRequestDtos.stream().
-					mapToDouble(i -> i.getActualWeight() != null ? i.getActualWeight() : i.getPlannedWeight()).sum();
+					mapToDouble(i -> i.getPlannedWeight()).sum();
 			existingWeight = (float)findAllByParentInstructionId(InstructionRequestDtos.get(0).getParentInstructionId())
-					.stream().mapToDouble(i -> i.getActualWeight() != null ? i.getActualWeight() : i.getPlannedWeight()).sum();
+					.stream().mapToDouble(i -> i.getPlannedWeight()).sum();
 			parentInstruction = getById(InstructionRequestDtos.get(0).getParentInstructionId());
-			availableWeight = parentInstruction.getActualWeight() != null ? parentInstruction.getActualWeight() : parentInstruction.getPlannedWeight();
+			availableWeight = parentInstruction.getPlannedWeight();
 			fromParentInstruction = true;
 		}
 		else if(InstructionRequestDtos.get(0).getGroupId() != null){
@@ -117,9 +117,9 @@ public class InstructionServiceImpl implements InstructionService {
 				return new ResponseEntity<Object>("Instructions with parent group id "+InstructionRequestDtos.get(0).getGroupId()+" already exists.", HttpStatus.BAD_REQUEST);
 			}
 			incomingWeight = (float)InstructionRequestDtos.stream().
-					mapToDouble(i -> i.getActualWeight() != null ? i.getActualWeight() : i.getPlannedWeight()).sum();
+					mapToDouble(i -> i.getPlannedWeight()).sum();
 			availableWeight = (float)findAllByGroupId(InstructionRequestDtos.get(0).getGroupId()).stream()
-					.mapToDouble(i -> i.getActualWeight() != null ? i.getActualWeight() : i.getPlannedWeight()).sum();
+					.mapToDouble(i -> i.getPlannedWeight()).sum();
 			fromGroup = true;
 		}else{
 			return new ResponseEntity<Object>("Invalid request.",HttpStatus.BAD_REQUEST);

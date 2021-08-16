@@ -1,5 +1,6 @@
 package com.steel.product.application.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.steel.product.application.dto.address.AddressDto;
 
 import javax.persistence.*;
@@ -25,9 +26,11 @@ public class Address {
   @Column(name = "pincode")
   private int pincode;
 
+  @JsonIgnore
   @OneToMany(mappedBy = "address1")
   private Set<Party> parties1;
 
+  @JsonIgnore
   @OneToMany(mappedBy = "address2")
   private Set<Party> parties2;
 

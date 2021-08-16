@@ -10,6 +10,9 @@ import java.util.List;
 @Entity
 @Table(name = "product_tblpartydetails")
 public class Party {
+
+
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "npartyid")
