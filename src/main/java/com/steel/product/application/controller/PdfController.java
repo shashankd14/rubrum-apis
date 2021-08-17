@@ -15,6 +15,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 @RestController
+@CrossOrigin
 @RequestMapping("/api/pdf")
 public class PdfController {
     private AddressService addressService;

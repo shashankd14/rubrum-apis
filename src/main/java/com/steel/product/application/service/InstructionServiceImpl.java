@@ -212,6 +212,9 @@ public class InstructionServiceImpl implements InstructionService {
 			if (deleteInstruction.getPlannedWeight()!=null && inwardEntry.getFpresent() != null) {
 				inwardEntry.setFpresent((inwardEntry.getFpresent() + deleteInstruction.getPlannedWeight()));
 			}
+			if(deleteInstruction.getActualWeight() != null && inwardEntry.getInStockWeight() != null){
+				inwardEntry.setInStockWeight(inwardEntry.getInStockWeight() + deleteInstruction.getActualWeight());
+			}
 			inwardEntry.removeInstruction(deleteInstruction);
 			inwardEntryRepository.save(inwardEntry);
 			instructionRepository.delete(deleteInstruction);

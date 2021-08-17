@@ -96,7 +96,7 @@ public class PdfService {
         }else if(processId != null && processId == 2) {
             return templateEngine.process("Slitting-slip", context);
         }else{
-            return templateEngine.process("inward",context);
+            return templateEngine.process("Inward",context);
         }
     }
 

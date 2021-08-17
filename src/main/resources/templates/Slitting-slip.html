@@ -50,19 +50,19 @@
         <tbody>
         <tr>
           <td>Process Date: </td>
-          <td id="process-date" th:text="${inward.createdOn}"></td>
+          <td id="process-date" th:text="${inward?.createdOn}"></td>
         </tr>
         <tr>
           <td>Customer Name: </td>
-          <td id="customer-name" th:text="${inward.partyName}" ></td>
+          <td id="customer-name" th:text="${inward?.partyName}" ></td>
         </tr>
         <tr>
           <td>ASPEN Coil No: </td>
-          <td id="coil-number" th:text="${inward.coilNumber}"></td>
+          <td id="coil-number" th:text="${inward?.coilNumber}"></td>
         </tr>
         <tr>
           <td>Customer Batch No: </td>
-          <td th:text="${inward.customerBatchId}"></td>
+          <td th:text="${inward?.customerBatchId}"></td>
         </tr>
         <tr>
           <td>Machine No: </td>
@@ -70,7 +70,7 @@
         </tr>
         <tr>
           <td>Number of Parts: </td>
-          <td th:text="${inward.fQuantity}"></td>
+          <td th:text="${inward?.fQuantity}"></td>
         </tr>
         <tr>
           <td>Balance coil remove: </td>
@@ -95,23 +95,23 @@
           </tr>
           <tr>
             <td>Material Description: </td>
-            <td th:text="${inward.matDescription}"></td>
+            <td th:text="${inward?.matDescription}"></td>
           </tr>
           <tr>
             <td>Material Grade: </td>
-            <td th:text="${inward.materialGradeName}"></td>
+            <td th:text="${inward?.materialGradeName}"></td>
           </tr>
           <tr>
             <td>Thickness: </td>
-            <td th:text="${inward.fThickness}"></td>
+            <td th:text="${inward?.fThickness}"></td>
           </tr>
           <tr>
             <td>Width: </td>
-            <td th:text="${inward.fWidth}"></td>
+            <td th:text="${inward?.fWidth}"></td>
           </tr>
           <tr>
           <td>Weight: </td>
-            <td th:text="${inward.grossWeight}"></td>
+            <td th:text="${inward?.grossWeight}"></td>
             </tr>
         </tbody>
       </table>
@@ -129,17 +129,17 @@
       <th class="m_DesTable">Weight</th>
       <th class="m_DesTable">Tags</th>
       </tr>
-      <tr class="m_tp" th:each="ins: ${inward.instruction}">
+      <tr class="m_tp" th:each="ins: ${inward?.instruction}">
         <td class="m_DesTable" th:text="${ins?.plannedLength}"></td>
         <td class="m_DesTable"> - </td>
         <td class="m_DesTable" th:text="${ins?.plannedWidth}"></td>
         <td class="m_DesTable" th:text="${ins?.plannedNoOfPieces}"></td>
         <td class="m_DesTable" th:text="${ins?.plannedWeight}"></td>
-        <td class="m_DesTable" th:text="${ins?.packetClassificationName}"></td>
+        <td class="m_DesTable" th:text="${ins?.packetClassification?.classificationName}"></td>
       </tr>
       <tr>
         <td class="m_DesTable" colspan="4" style="text-align: center; font-weight: 600;">TOTAL WEIGHT</td>
-        <td class="m_DesTable" th:text="${inward.totalWeight}"></td>
+        <td class="m_DesTable" th:text="${inward?.totalWeight}"></td>
       </tr>
       </tbody>
     </table>
