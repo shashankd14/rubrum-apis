@@ -133,7 +133,7 @@ public class InwardEntry {
 	@OneToMany(mappedBy = "inwardEntry", fetch = FetchType.LAZY)
 	private List<InwardDoc> docs;
 	
-	@OneToMany(mappedBy = "inwardId", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST,CascadeType.MERGE})
+	@OneToMany(mappedBy = "inwardId", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST,CascadeType.MERGE},orphanRemoval = true)
 	private Set<Instruction> instruction;
 
 	@Column(name = "in_stock_weight")

@@ -212,12 +212,11 @@ public class InstructionServiceImpl implements InstructionService {
 			if (deleteInstruction.getPlannedWeight()!=null && inwardEntry.getFpresent() != null) {
 				inwardEntry.setFpresent((inwardEntry.getFpresent() + deleteInstruction.getPlannedWeight()));
 			}
-			if(deleteInstruction.getActualWeight() != null && inwardEntry.getInStockWeight() != null){
+			if(deleteInstruction.getDeliveryDetails() != null && deleteInstruction.getActualWeight() != null && inwardEntry.getInStockWeight() != null){
 				inwardEntry.setInStockWeight(inwardEntry.getInStockWeight() + deleteInstruction.getActualWeight());
 			}
 			inwardEntry.removeInstruction(deleteInstruction);
 			inwardEntryRepository.save(inwardEntry);
-			instructionRepository.delete(deleteInstruction);
 		}else if(deleteInstruction.getParentInstruction() != null){
 			Instruction parentInstruction = deleteInstruction.getParentInstruction();
 				parentInstruction.removeChildInstruction(deleteInstruction);
@@ -308,8 +307,7 @@ public class InstructionServiceImpl implements InstructionService {
 				if (InstructionRequestDto.getActualNoOfPieces() != null)
 					instruction.setActualNoOfPieces(InstructionRequestDto.getActualNoOfPieces());
 
-//				if (InstructionRequestDto.getStatus() != null)
-//					instruction.setStatus(statusService.getStatusById(InstructionRequestDto.getStatus()));
+				instruction.setStatus(statusService.getStatusById(3));
 
 				if (InstructionRequestDto.getPacketClassificationId() != null)
 					instruction.setPacketClassification(packetClassificationService.getPacketClassificationById(InstructionRequestDto.getPacketClassificationId()));
