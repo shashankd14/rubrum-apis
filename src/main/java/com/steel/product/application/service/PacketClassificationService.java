@@ -9,4 +9,6 @@ public interface PacketClassificationService {
     List<PacketClassification> getAllPacketClassification();
 
     PacketClassification getPacketClassificationById(int paramInt);
+
+    List<PacketClassification> findAllByPacketClassificationIdIn(List<Integer> packetClassificationIds);
 }

@@ -3,22 +3,22 @@ package com.steel.product.application.controller;
 import com.lowagie.text.DocumentException;
 import com.steel.product.application.dto.pdf.DeliveryPdfDto;
 import com.steel.product.application.dto.pdf.PdfDto;
+import com.steel.product.application.dto.pdf.PdfResponseDto;
 import com.steel.product.application.service.AddressService;
 import com.steel.product.application.service.PdfService;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Base64;
 
 @RestController
 @CrossOrigin
@@ -26,6 +26,7 @@ import java.nio.file.Paths;
 public class PdfController {
     private AddressService addressService;
     private PdfService pdfService;
+    private Base64.Encoder encoder = Base64.getEncoder();
 
     @Autowired
     public PdfController(AddressService addressService, PdfService pdfService) {
@@ -34,52 +35,42 @@ public class PdfController {
     }
 
     @PostMapping("/inward")
-    public ResponseEntity<InputStreamResource> downloadInwardPDF(@RequestBody PdfDto pdfDto, HttpServletResponse response) {
+    public ResponseEntity<PdfResponseDto> downloadInwardPDF(@RequestBody PdfDto pdfDto, HttpServletResponse response) {
         Path file = null;
+        byte[] bytes = null;
+        StringBuilder builder = new StringBuilder();
         try {
-
             file = Paths.get(pdfService.generatePdf(pdfDto).getAbsolutePath());
+            bytes = Files.readAllBytes(file);
+            builder.append(Base64.getEncoder().encodeToString(bytes));
         } catch (IOException | DocumentException | org.dom4j.DocumentException ex) {
             ex.printStackTrace();
         }
-            HttpHeaders headers = new HttpHeaders();
-            headers.add("content-disposition","inline;filename=" +file.getFileName());
-        InputStreamResource resource = null;
-        try {
-            resource = new InputStreamResource(new FileInputStream(file.toFile()));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        return ResponseEntity.ok()
-                    .headers(headers)
-                    .contentLength(file.toFile().length())
-                    .contentType(MediaType.parseMediaType("application/pdf"))
-                    .body(resource);
-//            if (Files.exists(file)) {
-//                response.setContentType("application/pdf");
-//                response.addHeader("Content-Disposition",
-//                        "inline; filename=" + file.getFileName());
-//                Files.copy(file, response.getOutputStream());
-//                response.getOutputStream().flush();
-//            }
+        String encodedFile = builder.toString();
 
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.setContentType(MediaType.APPLICATION_PDF);
+//        String filename="output.pdf";
+//        headers.setContentDispositionFormData(filename,filename);
+//        headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+
+        return new ResponseEntity<PdfResponseDto>(new PdfResponseDto(encodedFile), HttpStatus.OK);
     }
 
     @PostMapping("/delivery")
-    public void downloadDeliveryPDF(@RequestBody DeliveryPdfDto deliveryPdfDto, HttpServletResponse response) {
+    public ResponseEntity<PdfResponseDto> downloadDeliveryPDF(@RequestBody DeliveryPdfDto deliveryPdfDto, HttpServletResponse response) {
+        Path file = null;
+        byte[] bytes = null;
+        StringBuilder builder = new StringBuilder();
         try {
-
-            Path file = Paths.get(pdfService.generateDeliveryPdf(deliveryPdfDto).getAbsolutePath());
-            if (Files.exists(file)) {
-                response.setContentType("application/pdf");
-                response.addHeader("Content-Disposition",
-                        "attachment; filename=" + file.getFileName());
-                Files.copy(file, response.getOutputStream());
-                response.getOutputStream().flush();
-            }
+             file = Paths.get(pdfService.generateDeliveryPdf(deliveryPdfDto).getAbsolutePath());
+             bytes = Files.readAllBytes(file);
+             builder.append(Base64.getEncoder().encodeToString(bytes));
         } catch (IOException | DocumentException | org.dom4j.DocumentException ex) {
             ex.printStackTrace();
         }
+        String encodedFile = builder.toString();
+        return new ResponseEntity<>(new PdfResponseDto(encodedFile), HttpStatus.OK);
     }
 
 

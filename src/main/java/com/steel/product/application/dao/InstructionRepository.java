@@ -36,8 +36,10 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
     @Query("select i from Instruction i where i.parentInstruction.instructionId = :parentInstructionId")
     public List<Instruction> findByParentInstructionId(@Param("parentInstructionId")Integer parentInstructionId);
 
-//    @Query("select ins from Instruction ins")
     public List<Instruction> findInstructionsByInstructionIdInAndStatusNot(List<Integer> instructionIds, Status status);
+
+    @Query("select ins from Instruction ins left join fetch ins.inwardId left join fetch ins.parentInstruction where ins.instructionId in :instructionIds and ins.status.statusId = :statusId")
+    public List<Instruction> findAllByInstructionIdInAndStatus(@Param("instructionIds")List<Integer> instructionIds, @Param("statusId")Integer statusId);
 
     @Query("select ins from Instruction ins join fetch ins.deliveryDetails dd where ins.instructionId in :instructionIds")
     public List<Instruction> findInstructionsWithDeliveryDetails(@Param("instructionIds")List<Integer> instructionIds);

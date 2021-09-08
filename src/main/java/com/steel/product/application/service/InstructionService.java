@@ -40,4 +40,6 @@ public interface InstructionService {
 
 
 	ResponseEntity<Object> updateInstruction(InstructionFinishDto instructionFinishDto);
+
+	public List<Instruction> findAllByInstructionIdInAndStatus(List<Integer> instructionIds,Integer statusId);
 }

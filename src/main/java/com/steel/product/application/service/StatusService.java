@@ -9,4 +9,6 @@ public interface StatusService {
   List<Status> getAllStatus();
   
   Status getStatusById(int paramInt);
+
+  List<Status> findStatusByStatusIdIn(List<Integer> statusIds);
 }

@@ -4,6 +4,7 @@ import com.steel.product.application.entity.InwardEntry;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
+import java.util.Set;
 
 public interface InwardEntryService {
   InwardEntry saveEntry(InwardEntry paramInwardEntry);
@@ -27,5 +28,7 @@ public interface InwardEntryService {
   List<InwardEntry> getAllEntriesPwr();
 
   public List<InwardEntry> findDeliveryItemsByInstructionIds(List<Integer> instructionIds);
+
+  public List<InwardEntry> saveAll(Set<InwardEntry> inwardEntries);
 
 }

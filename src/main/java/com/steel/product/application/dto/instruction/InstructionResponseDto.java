@@ -63,6 +63,8 @@ public class InstructionResponseDto {
 
     private String remarks;
 
+    private Boolean isSlitAndCut;
+
     private List<InstructionResponseDto> childInstructions;
 
     private DeliveryResponseDto deliveryDetails;
@@ -281,6 +283,14 @@ public class InstructionResponseDto {
 
     public void setDeliveryDetails(DeliveryResponseDto deliveryDetails) {
         this.deliveryDetails = deliveryDetails;
+    }
+
+    public Boolean getSlitAndCut() {
+        return isSlitAndCut;
+    }
+
+    public void setSlitAndCut(Boolean slitAndCut) {
+        isSlitAndCut = slitAndCut;
     }
 
     public List<InstructionResponseDto> getChildInstructions() {

@@ -31,4 +31,9 @@ public class PacketClassificationServiceImpl implements PacketClassificationServ
         }
         return thePacketClassification;
     }
+
+    @Override
+    public List<PacketClassification> findAllByPacketClassificationIdIn(List<Integer> packetClassificationIds) {
+        return packetClassificationRepository.findAllByClassificationIdIn(packetClassificationIds);
+    }
 }

@@ -35,4 +35,9 @@ public class StatusServiceImpl implements StatusService {
     } 
     return status;
   }
+
+  @Override
+  public List<Status> findStatusByStatusIdIn(List<Integer> statusIds) {
+    return statusRepo.getByStatusIdIn(statusIds);
+  }
 }

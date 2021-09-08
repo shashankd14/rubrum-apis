@@ -60,6 +60,8 @@ public class InstructionRequestDto {
 
 	private String remarks;
 
+	private Boolean isSlitAndCut;
+
 	public int getInstructionId() {
 		return instructionId;
 	}
@@ -276,4 +278,11 @@ public class InstructionRequestDto {
 		this.remarks = remarks;
 	}
 
+	public Boolean getSlitAndCut() {
+		return isSlitAndCut;
+	}
+
+	public void setSlitAndCut(Boolean slitAndCut) {
+		isSlitAndCut = slitAndCut;
+	}
 }

@@ -43,6 +43,19 @@ public class Status {
 		instruction.setStatus(null);
 	}
 
+	public void addInwardEntry(InwardEntry inward){
+		if(this.getInwardEntry() == null){
+			this.inwardEntry = new ArrayList<>();
+		}
+		this.getInwardEntry().add(inward);
+		inward.setStatus(this);
+	}
+
+	public void removeInwardEntry(InwardEntry inwardEntry){
+		this.getInwardEntry().remove(inwardEntry);
+		inwardEntry.setStatus(null);
+	}
+
 	public int getStatusId() {
 		return this.statusId;
 	}

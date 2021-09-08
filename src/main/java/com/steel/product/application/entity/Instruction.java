@@ -71,7 +71,7 @@ public class Instruction {
 	@Column(name = "parentgroupid")
 	private Integer parentGroupId ;
 
-	@OneToMany(mappedBy = "parentInstruction", cascade = {CascadeType.PERSIST,CascadeType.MERGE,CascadeType.REMOVE}, orphanRemoval = true)
+	@OneToMany(mappedBy = "parentInstruction", cascade = {CascadeType.PERSIST,CascadeType.MERGE,CascadeType.REMOVE}, orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<Instruction> childInstructions;
 
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -114,6 +114,9 @@ public class Instruction {
 
 	@Column(name = "isdeleted", columnDefinition = "BIT")
 	private Boolean isDeleted;
+
+	@Column(name = "isSlitAndCut", columnDefinition = "BIT")
+	private Boolean isSlitAndCut;
 
 	public Integer getInstructionId() {
 		return instructionId;
@@ -355,6 +358,14 @@ public class Instruction {
 		isDeleted = deleted;
 	}
 
+	public Boolean getSlitAndCut() {
+		return isSlitAndCut;
+	}
+
+	public void setSlitAndCut(Boolean slitAndCut) {
+		isSlitAndCut = slitAndCut;
+	}
+
 	public void addChildInstruction(Instruction instruction){
 		this.childInstructions.add(instruction);
 		instruction.setParentInstruction(this);
@@ -394,9 +405,11 @@ public class Instruction {
 		instructionResponseDto.setPackingWeight(instruction.getPackingWeight());
 		instructionResponseDto.setWastage(instruction.getWastage());
 		instructionResponseDto.setRemarks(instruction.getRemarks());
+		instructionResponseDto.setParentGroupId(instruction.getParentGroupId());
 		instructionResponseDto.setDeliveryDetails(instruction.getDeliveryDetails() != null ? DeliveryDetails.valueOf(instruction.getDeliveryDetails()) : null);
 		instructionResponseDto.setChildInstructions((instruction.getChildInstructions() != null && instruction.getChildInstructions().size() > 0)
 				? instruction.getChildInstructions().stream().map(ci -> Instruction.valueOf(ci)).collect(Collectors.toList()) : null);
+		instructionResponseDto.setSlitAndCut(instruction.getSlitAndCut());
 		return instructionResponseDto;
 	}
 }

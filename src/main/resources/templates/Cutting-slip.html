@@ -36,6 +36,7 @@
     .footer-right {
       text-align: center;
     }
+
   </style>
 </head>
 <body>
@@ -135,7 +136,7 @@
         <td class="m_DesTable" th:text="${ins?.plannedWidth}"></td>
         <td class="m_DesTable" th:text="${ins?.plannedNoOfPieces}"></td>
         <td class="m_DesTable" th:text="${ins?.plannedWeight}"></td>
-        <td class="m_DesTable" th:text="${ins?.packetClassification.classificationName}"></td>
+        <td class="m_DesTable" th:text="${ins?.packetClassification?.classificationName}"></td>
       </tr>
       <tr>
         <td class="m_DesTable" colspan="4" style="text-align: center; font-weight: 600;">TOTAL WEIGHT</td>
