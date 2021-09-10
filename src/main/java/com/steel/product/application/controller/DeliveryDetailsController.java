@@ -82,8 +82,8 @@ public class DeliveryDetailsController {
 //        }
 //    }
 
-    @DeleteMapping("/deleteById/{instructionId}")
-    public ResponseEntity<Object> deleteById(@PathVariable int id){
+    @DeleteMapping("/deleteById/{deliveryId}")
+    public ResponseEntity<Object> deleteById(@PathVariable("deliveryId") Integer id){
         try{
             deliveryDetailsService.deleteById(id);
             return new ResponseEntity<>("Delete successful!", HttpStatus.OK);

@@ -12,8 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -112,7 +112,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
             Instruction parentInstruction;
             List<Instruction> groupInstructions = null;
             Set<Instruction> parentGroupInstructions = new HashSet<>();
-            List<Instruction> childrenInstructions;
+            Set<Instruction> childrenInstructions;
             Set<InwardEntry> inwardEntryList = new HashSet<>();
             Integer parentGroupId;
             boolean isAnyInstructionNotDelivered = true;
@@ -181,6 +181,9 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
                         throw new RuntimeException("weight to deliver " + weightToDeliver + " exceeds in stock weight " + inStockWeight);
                     }
                     inwardEntry.setInStockWeight(inStockWeight - weightToDeliver);
+                    if(inwardEntry.getInStockWeight() == 0f){
+                        deliveredStatus.addInwardEntry(inwardEntry);
+                    }
                     inwardEntryList.add(inwardEntry);
                     instruction.setRemarks(instructionRemarksMap.get(instruction.getInstructionId()));
                     delivery.addInstruction(instruction);
@@ -198,8 +201,68 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
     }
 
     @Override
-    public void deleteById(int id) {
-        deliveryDetailsRepo.deleteById(id);
+    @Transactional
+    public void deleteById(Integer deliveryId) {
+        LOGGER.info("inside delete delivery api for delivery id "+deliveryId);
+        List<Instruction> instructions = this.findInstructionsByDeliveryId(deliveryId);
+        DeliveryDetails deliveryDetails = instructions.get(0).getDeliveryDetails();
+        LOGGER.info("deleting delivery "+deliveryDetails.getDeliveryId());
+        Integer deliveredStatusId = 4,readyToDeliverStatusId = 3;
+        Status deliveredStatus = statusService.getStatusById(deliveredStatusId);
+        Status readyToDeliverStatus = statusService.getStatusById(readyToDeliverStatusId);
+
+        InwardEntry inwardEntry = null;
+        Instruction parentInstruction = null;
+        Integer parentGroupId;
+        List<Instruction> groupInstructions = null;
+
+        for(Instruction ins:instructions){
+            LOGGER.info("deleting delivery for instruction id "+ins.getInstructionId());
+            inwardEntry = ins.getInwardId();
+            parentInstruction = ins.getParentInstruction();
+            if(inwardEntry == null){
+                LOGGER.info("setting inward from parent instruction "+parentInstruction.getInstructionId());
+                inwardEntry = parentInstruction.getInwardId();
+            }
+            parentGroupId = ins.getParentGroupId();
+            if(inwardEntry != null && parentGroupId != null){
+                LOGGER.info("deleting delivery for parent group instruction with id, "+parentGroupId+" instruction id "+ins.getInstructionId());
+                if(groupInstructions == null || (groupInstructions != null && !groupInstructions.isEmpty() &&!groupInstructions.get(0).getGroupId().equals(parentGroupId))){
+                    LOGGER.info("fetching group instructions for parent group id "+parentGroupId);
+                    groupInstructions = instructionService.findAllByGroupId(parentGroupId);
+                    LOGGER.info("group instructions size "+groupInstructions.size());
+                    if(groupInstructions.get(0).getStatus().equals(deliveredStatus)) {
+                        LOGGER.info("setting group instructions status from delivered to readyToDeliver");
+                        groupInstructions.forEach(groupIns -> readyToDeliverStatus.addInstruction(groupIns));
+                    }
+                }
+            }
+            else if(parentInstruction != null){
+                LOGGER.info("instruction has parent instruction id "+parentInstruction.getInstructionId());
+                if(parentInstruction.getStatus().equals(deliveredStatus)){
+                    readyToDeliverStatus.addInstruction(parentInstruction);
+                }
+            }
+            else if(inwardEntry != null){
+                LOGGER.info("instruction has inward id "+inwardEntry.getInwardEntryId());
+                readyToDeliverStatus.addInwardEntry(inwardEntry);
+            }
+            else{
+                LOGGER.error("No inward id or parent instruction id found in instruction with id " + ins.getInstructionId());
+                throw new RuntimeException("No inward id or parent instruction id found in instruction with id " + ins.getInstructionId());
+            }
+            readyToDeliverStatus.addInstruction(ins);
+            Float inStockWeight = inwardEntry.getInStockWeight();
+            inwardEntry.setInStockWeight(inStockWeight + ins.getActualWeight());
+            LOGGER.info("adding instruction actual weight "+ins.getActualWeight()+" and setting inward inStock weight from "+inStockWeight+" to "+(inStockWeight + ins.getActualWeight()));
+            if(inwardEntry.getStatus().equals(deliveredStatus)){
+                LOGGER.info("setting inward "+inwardEntry.getInwardEntryId()+" status to ready to deliver");
+                readyToDeliverStatus.addInwardEntry(inwardEntry);
+            }
+            deliveryDetails.removeInstruction(ins);
+        }
+        deliveryDetailsRepo.deleteById(deliveryId);
+
     }
 
     @Override
@@ -208,6 +271,11 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
         LOGGER.info("Delivery details list size "+inwardEntryList.size());
         return inwardEntryList.stream().map(inw -> new DeliveryPacketsDto(inw)).collect(Collectors.toList());
 
+    }
+
+    @Override
+    public List<Instruction> findInstructionsByDeliveryId(Integer deliveryId) {
+        return deliveryDetailsRepo.findInstructionsByDeliveryId(deliveryId);
     }
 
     @Override

@@ -18,10 +18,11 @@ public interface DeliveryDetailsService {
 
     public DeliveryDetails save(DeliveryDto deliveryDto);
 
-    public void deleteById(int id);
+    public void deleteById(Integer id);
 
     public List<DeliveryPacketsDto> deliveryList();
 
+    public List<Instruction> findInstructionsByDeliveryId(Integer deliveryId);
 
     public Float findInstructionByInwardIdAndInstructionId(Integer inwardId,Integer instructionId);
 }

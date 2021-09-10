@@ -17,11 +17,11 @@ public interface DeliveryDetailsRepository extends JpaRepository<DeliveryDetails
     @Query(" from Instruction where deliveryId =:deliveryId")
     public List<Instruction> deliveredItemsById(@Param("deliveryId") int deliveryId);
 
-    @Query("select dd from DeliveryDetails dd join dd.instruction ins join ins.inwardId inw where ins.deliveryDetails is not null group by inw")
+    @Query("select dd from DeliveryDetails dd join dd.instructions ins join ins.inwardId inw where ins.deliveryDetails is not null group by inw")
     public List<DeliveryDetails> findAllDeliveries();
 
-//    @Query("select sum(ins.actualWeight) from Instruction ins where ins.inwardId.inwardEntryId = :inwardId and ins.deliveryDetails.deliveryId = :deliveryId group by ins.deliveryDetails, ins.inwardId")
-//    public List<Float> findAllInstructionsbyInwardIdAndDeliveryId(Integer inwardId,Integer deliveryId);
+    @Query("select ins from Instruction ins left join fetch ins.parentInstruction inner join fetch ins.deliveryDetails dd where dd.deliveryId = :deliveryId")
+    List<Instruction> findInstructionsByDeliveryId(@Param("deliveryId")Integer deliveryId);//delete delivery
 
 //    @Query("select sum(ins.actualWeight) from Instruction ins where ins.inwardId.inwardEntryId = :inwardId group by ins.inwardId")
     @Query("select ins.actualWeight from Instruction ins where ins.inwardId.inwardEntryId = :inwardId and instructionId = :instructionId")

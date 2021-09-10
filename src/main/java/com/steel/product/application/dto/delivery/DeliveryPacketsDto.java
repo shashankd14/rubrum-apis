@@ -2,7 +2,10 @@ package com.steel.product.application.dto.delivery;
 
 import com.steel.product.application.dto.material.MaterialResponseDto;
 import com.steel.product.application.entity.DeliveryDetails;
+import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.Material;
+
+import java.util.Iterator;
 
 public class DeliveryPacketsDto {
 
@@ -23,11 +26,12 @@ public class DeliveryPacketsDto {
 
     public DeliveryPacketsDto(DeliveryDetails deliveryDetails) {
         this.deliveryDetails = DeliveryDetails.valueOf(deliveryDetails);
-        this.partyName = deliveryDetails.getInstruction().get(0).getInwardId().getParty() != null ? deliveryDetails.getInstruction().get(0).getInwardId().getParty().getPartyName() : "";
-        this.customerBatchId = deliveryDetails.getInstruction().get(0).getInwardId().getCustomerBatchId();
-        this.coilNumber = deliveryDetails.getInstruction().get(0).getInwardId().getCoilNumber();
-        this.fThickness = deliveryDetails.getInstruction().get(0).getInwardId().getfThickness();
-        this.materialResponseDto = Material.valueOf(deliveryDetails.getInstruction().get(0).getInwardId().getMaterial(),deliveryDetails.getInstruction().get(0).getInwardId());
+        Instruction instruction = deliveryDetails.getInstructions().iterator().next();
+        this.partyName = instruction.getInwardId().getParty() != null ? instruction.getInwardId().getParty().getPartyName() : "";
+        this.customerBatchId = instruction.getInwardId().getCustomerBatchId();
+        this.coilNumber = instruction.getInwardId().getCoilNumber();
+        this.fThickness = instruction.getInwardId().getfThickness();
+        this.materialResponseDto = Material.valueOf(instruction.getInwardId().getMaterial(),instruction.getInwardId());
     }
 
 

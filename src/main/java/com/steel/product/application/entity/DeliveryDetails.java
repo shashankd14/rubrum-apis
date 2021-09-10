@@ -1,16 +1,10 @@
 package com.steel.product.application.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.steel.product.application.dto.delivery.DeliveryResponseDto;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Entity
 @Table(name = "product_tbl_delivery_details")
@@ -53,18 +47,18 @@ public class DeliveryDetails {
 
     @OneToMany(mappedBy = "deliveryDetails", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH,
             CascadeType.REFRESH })
-    private List<Instruction> instruction;
+    private Set<Instruction> instructions;
 
     public void addInstruction(Instruction instruction){
-        if(this.instruction == null){
-            this.instruction = new ArrayList<>();
+        if(this.instructions == null){
+            this.instructions = new HashSet<>();
         }
-        this.getInstruction().add(instruction);
+        this.getInstructions().add(instruction);
         instruction.setDeliveryDetails(this);
     }
 
     public void removeInstruction(Instruction instruction){
-        this.instruction.remove(instruction);
+        this.getInstructions().remove(instruction);
         instruction.setDeliveryDetails(null);
     }
 
@@ -148,12 +142,12 @@ public class DeliveryDetails {
         this.customerInvoiceDate = customerInvoiceDate;
     }
 
-    public List<Instruction> getInstruction() {
-        return instruction;
+    public Set<Instruction> getInstructions() {
+        return instructions;
     }
 
-    public void setInstruction(List<Instruction> instruction) {
-        this.instruction = instruction;
+    public void setInstructions(Set<Instruction> instruction) {
+        this.instructions = instruction;
     }
 
     public static DeliveryResponseDto valueOf(DeliveryDetails deliveryDetails){
