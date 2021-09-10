@@ -51,11 +51,11 @@ public class Party {
 	@Column(name = "phone2")
 	private String phone2;
 
-	@ManyToOne(cascade = { CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH })
+	@ManyToOne(cascade = { CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH },fetch = FetchType.LAZY)
 	@JoinColumn(name = "address1")
 	private Address address1;
 
-	@ManyToOne(cascade = { CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH })
+	@ManyToOne(cascade = { CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH },fetch = FetchType.LAZY)
 	@JoinColumn(name = "address2")
 	private Address address2;
 

@@ -77,15 +77,7 @@ public class PdfService {
     private Context getContext(PdfDto pdfDto) {
         Context context = new Context();
         InwardEntry inwardEntry = inwardEntryService.getByEntryId(pdfDto.getInwardId());
-        if(inwardEntry == null){
-            throw new RuntimeException(String.format("InwardEntry with id %d does not have instructions with process id %d",
-                    pdfDto.getInwardId(),pdfDto.getProcessId()));
-        }
-        if(pdfDto.getProcessId() != null) {
-            inwardEntry.setInstruction(inwardEntry.getInstruction().stream()
-                    .filter(ins -> ins.getProcess().getProcessId() == pdfDto.getProcessId()).collect(Collectors.toSet()));
-        }
-        InwardEntryPdfDto inwardEntryPdfDto = InwardEntry.valueOf(inwardEntry);
+        InwardEntryPdfDto inwardEntryPdfDto = InwardEntry.valueOf(inwardEntry,pdfDto.getProcessId());
         context.setVariable("inward", inwardEntryPdfDto);
         return context;
     }

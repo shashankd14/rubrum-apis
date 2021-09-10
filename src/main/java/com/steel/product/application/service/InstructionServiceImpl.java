@@ -329,7 +329,7 @@ public class InstructionServiceImpl implements InstructionService {
             LOGGER.info("group instructions with group id " + parentGroupId + " is in progress");
         } else if (inwardEntry != null) {
             LOGGER.info("instruction has inward " + savedInstruction.getInwardId().getInwardEntryId());
-            isAnyInstructionInProgress = inwardEntry.getInstruction().stream().anyMatch(cin -> cin.getStatus().equals(inProgressStatus));
+            isAnyInstructionInProgress = inwardEntry.getInstructions().stream().anyMatch(cin -> cin.getStatus().equals(inProgressStatus));
             if (!isAnyInstructionInProgress) {
                 LOGGER.info("inward " + inwardEntry + " ready to deliver");
                 readyToDeliverStatus.addInwardEntry(inwardEntry);

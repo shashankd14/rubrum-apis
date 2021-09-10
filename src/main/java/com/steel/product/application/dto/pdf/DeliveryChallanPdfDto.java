@@ -27,7 +27,7 @@ public class DeliveryChallanPdfDto {
         if(this.inwardPdfDtos == null){
             this.inwardPdfDtos = new ArrayList<>();
         }
-        this.inwardPdfDtos = inwardEntries.stream().map(inw -> InwardEntry.valueOf(inw)).collect(Collectors.toList());
+        this.inwardPdfDtos = inwardEntries.stream().map(inw -> InwardEntry.valueOf(inw,null)).collect(Collectors.toList());
     }
 
     public String getCompanyName() {

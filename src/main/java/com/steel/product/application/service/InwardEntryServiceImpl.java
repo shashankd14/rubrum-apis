@@ -1,6 +1,7 @@
 package com.steel.product.application.service;
 
 import com.steel.product.application.dao.InwardEntryRepository;
+import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -84,7 +85,7 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 	public List<InwardEntry> getAllEntriesPwr() {
 		return inwdEntryRepo.findAll().stream()
 				.filter(inwardEntry -> inwardEntry.getStatus().getStatusId() != 4 && inwardEntry.getStatus().getStatusId() != 5)
-				.peek(inwardEntry -> inwardEntry.getInstruction().stream().filter(ins -> ins.getStatus().getStatusId() != 4 &&
+				.peek(inwardEntry -> inwardEntry.getInstructions().stream().filter(ins -> ins.getStatus().getStatusId() != 4 &&
 						ins.getStatus().getStatusId() != 5)).collect(Collectors.toList());
 	}
 

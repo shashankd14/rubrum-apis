@@ -1,13 +1,13 @@
 package com.steel.product.application.entity;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.steel.product.application.dto.instruction.InstructionResponseDto;
 import com.steel.product.application.dto.inward.InwardEntryResponseDto;
+import com.steel.product.application.dto.pdf.InstructionResponsePdfDto;
 import com.steel.product.application.dto.pdf.InwardEntryPdfDto;
 
 import javax.persistence.*;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Entity
@@ -134,18 +134,21 @@ public class InwardEntry {
 	private List<InwardDoc> docs;
 	
 	@OneToMany(mappedBy = "inwardId", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST,CascadeType.MERGE},orphanRemoval = true)
-	private Set<Instruction> instruction;
+	private Set<Instruction> instructions;
 
 	@Column(name = "in_stock_weight")
 	private Float inStockWeight;
 
 	public void addInstruction(Instruction instruction){
-		this.getInstruction().add(instruction);
+		if(this.instructions == null){
+			this.instructions = new HashSet<>();
+		}
+		this.getInstructions().add(instruction);
 		instruction.setInwardId(this);
 	}
 
 	public void removeInstruction(Instruction instruction){
-		this.getInstruction().remove(instruction);
+		this.getInstructions().remove(instruction);
 		instruction.setInwardId(null);
 	}
 
@@ -433,12 +436,12 @@ public class InwardEntry {
 		this.remarks = remarks;
 	}
 
-	public Set<Instruction> getInstruction() {
-		return instruction;
+	public Set<Instruction> getInstructions() {
+		return instructions;
 	}
 
-	public void setInstruction(Set<Instruction> instruction) {
-		this.instruction = instruction;
+	public void setInstructions(Set<Instruction> instruction) {
+		this.instructions = instruction;
 	}
 
 	public Float getValueOfGoods() {
@@ -465,7 +468,7 @@ public class InwardEntry {
 		this.inStockWeight = inStockWeight;
 	}
 
-	public static InwardEntryPdfDto valueOf(InwardEntry inwardEntry){
+	public static InwardEntryPdfDto valueOf(InwardEntry inwardEntry,Integer processId){
 		InwardEntryPdfDto inwardEntryPdfDto = new InwardEntryPdfDto();
 		inwardEntryPdfDto.setInwardEntryId(inwardEntry.getInwardEntryId());
 		inwardEntryPdfDto.setPartyName(inwardEntry.getParty() != null ? inwardEntry.getParty().getPartyName() : "");
@@ -479,8 +482,20 @@ public class InwardEntry {
 		inwardEntryPdfDto.setfWidth(inwardEntry.getfWidth());
 		inwardEntryPdfDto.setGrossWeight(inwardEntry.getGrossWeight());
 		inwardEntryPdfDto.setCreatedOn(inwardEntry.getCreatedOn());
-		inwardEntryPdfDto.setInstruction(inwardEntry.getInstruction().stream().map(i -> Instruction.valueOf(i)).collect(Collectors.toList()));
-		inwardEntryPdfDto.setTotalWeight((float)inwardEntry.getInstruction().stream().mapToDouble(Instruction::getPlannedWeight).sum());
+		if(processId != null) {
+			Set<Instruction> instructions = inwardEntry.getInstructions();
+			Map<Float,List<InstructionResponsePdfDto>> instructionsMap = instructions.stream()
+					.filter(ins -> ins.getProcess().getProcessId() == processId)
+					.map(ins -> Instruction.valueOfInstructionPdf(ins)).collect(Collectors.groupingBy(InstructionResponsePdfDto::getPlannedWeight));
+			inwardEntryPdfDto.setInstructionsMap(instructionsMap);
+			inwardEntryPdfDto.setInstructions(instructions.stream()
+					.filter(i -> i.getProcess().getProcessId() == processId)
+					.map(i -> Instruction.valueOfInstructionPdf(i))
+					.collect(Collectors.toList()));
+			inwardEntryPdfDto.setTotalWeight(inwardEntryPdfDto.getInstructions().stream().
+					map(ins -> ins.getPlannedWeight())
+					.reduce(0f,Float::sum));
+		}
 		inwardEntryPdfDto.setPurposeType(inwardEntry.getPurposeType());
 		inwardEntryPdfDto.setdReceivedDate(inwardEntry.getdReceivedDate());
 		inwardEntryPdfDto.setvLorryNo(inwardEntry.getvLorryNo());
@@ -490,6 +505,8 @@ public class InwardEntry {
 		inwardEntryPdfDto.setdInvoiceDate(inwardEntry.getdInvoiceDate());
 		inwardEntryPdfDto.setValueOfGoods(inwardEntry.getValueOfGoods());
 		inwardEntryPdfDto.setPartyCgst(inwardEntry.getParty().getGstNumber());
+		inwardEntryPdfDto.setCustomerInvoiceNo(inwardEntry.getCustomerInvoiceNo());
+		inwardEntryPdfDto.setBilledWeight(inwardEntry.getBilledweight());
 		return inwardEntryPdfDto;
 	}
 
@@ -507,8 +524,8 @@ public class InwardEntry {
 		inwardEntryResponseDto.setfWidth(inwardEntry.getfWidth());
 		inwardEntryResponseDto.setGrossWeight(inwardEntry.getGrossWeight());
 		inwardEntryResponseDto.setCreatedOn(inwardEntry.getCreatedOn());
-		inwardEntryResponseDto.setInstruction(inwardEntry.getInstruction() != null ?
-				inwardEntry.getInstruction().stream().map(i -> Instruction.valueOf(i)).collect(Collectors.toList()): null);
+		inwardEntryResponseDto.setInstruction(inwardEntry.getInstructions() != null ?
+				inwardEntry.getInstructions().stream().map(i -> Instruction.valueOf(i)).collect(Collectors.toList()): null);
 		inwardEntryResponseDto.setPurposeType(inwardEntry.getPurposeType());
 		inwardEntryResponseDto.setdReceivedDate(inwardEntry.getdReceivedDate());
 		inwardEntryResponseDto.setvLorryNo(inwardEntry.getvLorryNo());

@@ -5,6 +5,7 @@ package com.steel.product.application.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.steel.product.application.dto.instruction.InstructionResponseDto;
+import com.steel.product.application.dto.pdf.InstructionResponsePdfDto;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -411,5 +412,20 @@ public class Instruction {
 				? instruction.getChildInstructions().stream().map(ci -> Instruction.valueOf(ci)).collect(Collectors.toList()) : null);
 		instructionResponseDto.setSlitAndCut(instruction.getSlitAndCut());
 		return instructionResponseDto;
+	}
+
+	public static InstructionResponsePdfDto valueOfInstructionPdf(Instruction instruction){
+		InstructionResponsePdfDto instructionResponsePdfDto = new InstructionResponsePdfDto();
+		instructionResponsePdfDto.setPacketClassification(instruction.getPacketClassification() != null ?
+				instruction.getPacketClassification(): null);
+		instructionResponsePdfDto.setPlannedLength(instruction.getPlannedLength());
+		instructionResponsePdfDto.setPlannedNoOfPieces(instruction.getPlannedNoOfPieces());
+		instructionResponsePdfDto.setPlannedWeight(instruction.getPlannedWeight());
+		instructionResponsePdfDto.setPlannedWidth(instruction.getPlannedWidth());
+		instructionResponsePdfDto.setActualLength(instruction.getActualLength());
+		instructionResponsePdfDto.setActualNoOfPieces(instruction.getActualNoOfPieces());
+		instructionResponsePdfDto.setActualWeight(instruction.getActualWeight());
+		instructionResponsePdfDto.setActualWidth(instruction.getActualWidth());
+		return instructionResponsePdfDto;
 	}
 }

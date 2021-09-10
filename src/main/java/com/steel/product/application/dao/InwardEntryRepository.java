@@ -1,5 +1,6 @@
 package com.steel.product.application.dao;
 
+import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -17,10 +18,10 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 
   @Query(nativeQuery = true, value = "SELECT customerbatchid FROM product_tblinwardentry WHERE customerbatchid = :customerbatchid limit 1")
   String isCustomerBatchIdPresent(@Param("customerbatchid") String customerbatchId);
-  
+
   <T> Optional<InwardEntry> findByCoilNumber(String coilNumber);
 
-  @Query("select DISTINCT(inw) from InwardEntry inw join fetch inw.instruction ins join fetch ins.deliveryDetails dd where dd != null" +
+  @Query("select DISTINCT(inw) from InwardEntry inw join fetch inw.instructions ins join fetch ins.deliveryDetails dd where dd != null" +
           " and ins.instructionId in :instructionIds and" +
           " ins.status.statusId = 4")
   public List<InwardEntry> findDeliveryItemsByInstructionIds(@Param("instructionIds")List<Integer> instructionIds);

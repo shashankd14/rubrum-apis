@@ -5,6 +5,7 @@ import com.steel.product.application.entity.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public class InwardEntryPdfDto {
 
@@ -62,7 +63,7 @@ public class InwardEntryPdfDto {
 
         private Float valueOfGoods;
 
-        private float billedweight;
+        private float billedWeight;
 
         private String parentCoilNumber;
 
@@ -82,7 +83,9 @@ public class InwardEntryPdfDto {
 
         private List<InwardDoc> docs;
 
-        private List<InstructionResponseDto> instruction;
+        private List<InstructionResponsePdfDto> instructions;
+
+        private Map<Float,List<InstructionResponsePdfDto>> instructionsMap;
 
         private Float totalWeight;
 
@@ -296,12 +299,12 @@ public class InwardEntryPdfDto {
         this.valueOfGoods = valueOfGoods;
     }
 
-    public float getBilledweight() {
-        return billedweight;
+    public float getBilledWeight() {
+        return billedWeight;
     }
 
-    public void setBilledweight(float billedweight) {
-        this.billedweight = billedweight;
+    public void setBilledWeight(float billedWeight) {
+        this.billedWeight = billedWeight;
     }
 
     public String getParentCoilNumber() {
@@ -376,12 +379,12 @@ public class InwardEntryPdfDto {
         this.docs = docs;
     }
 
-    public List<InstructionResponseDto> getInstruction() {
-        return instruction;
+    public List<InstructionResponsePdfDto> getInstructions() {
+        return instructions;
     }
 
-    public void setInstruction(List<InstructionResponseDto> instruction) {
-        this.instruction = instruction;
+    public void setInstructions(List<InstructionResponsePdfDto> instructions) {
+        this.instructions = instructions;
     }
 
     public Float getTotalWeight() {
@@ -406,5 +409,13 @@ public class InwardEntryPdfDto {
 
     public void setPartyCgst(String partyCgst) {
         this.partyCgst = partyCgst;
+    }
+
+    public Map<Float, List<InstructionResponsePdfDto>> getInstructionsMap() {
+        return instructionsMap;
+    }
+
+    public void setInstructionsMap(Map<Float, List<InstructionResponsePdfDto>> instructionsMap) {
+        this.instructionsMap = instructionsMap;
     }
 }
