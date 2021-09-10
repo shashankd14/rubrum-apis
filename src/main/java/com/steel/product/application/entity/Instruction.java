@@ -9,7 +9,7 @@ import com.steel.product.application.dto.pdf.InstructionResponsePdfDto;
 
 import javax.persistence.*;
 import java.util.Date;
-import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Entity
@@ -73,7 +73,7 @@ public class Instruction {
 	private Integer parentGroupId ;
 
 	@OneToMany(mappedBy = "parentInstruction", cascade = {CascadeType.PERSIST,CascadeType.MERGE,CascadeType.REMOVE}, orphanRemoval = true, fetch = FetchType.LAZY)
-	private List<Instruction> childInstructions;
+	private Set<Instruction> childInstructions;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "parentinstructionid", referencedColumnName = "instructionid")
@@ -199,11 +199,11 @@ public class Instruction {
 		this.groupId = groupId;
 	}
 
-	public List<Instruction> getChildInstructions() {
+	public Set<Instruction> getChildInstructions() {
 		return childInstructions;
 	}
 
-	public void setChildInstructions(List<Instruction> childInstructions) {
+	public void setChildInstructions(Set<Instruction> childInstructions) {
 		this.childInstructions = childInstructions;
 	}
 
@@ -368,7 +368,7 @@ public class Instruction {
 	}
 
 	public void addChildInstruction(Instruction instruction){
-		this.childInstructions.add(instruction);
+		this.getChildInstructions().add(instruction);
 		instruction.setParentInstruction(this);
 	}
 
@@ -408,7 +408,7 @@ public class Instruction {
 		instructionResponseDto.setRemarks(instruction.getRemarks());
 		instructionResponseDto.setParentGroupId(instruction.getParentGroupId());
 		instructionResponseDto.setDeliveryDetails(instruction.getDeliveryDetails() != null ? DeliveryDetails.valueOf(instruction.getDeliveryDetails()) : null);
-		instructionResponseDto.setChildInstructions((instruction.getChildInstructions() != null && instruction.getChildInstructions().size() > 0)
+		instructionResponseDto.setChildInstructions((instruction.getChildInstructions() != null && !instruction.getChildInstructions().isEmpty())
 				? instruction.getChildInstructions().stream().map(ci -> Instruction.valueOf(ci)).collect(Collectors.toList()) : null);
 		instructionResponseDto.setSlitAndCut(instruction.getSlitAndCut());
 		return instructionResponseDto;
