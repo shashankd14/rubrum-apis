@@ -78,19 +78,21 @@
     <div class="inline-block w-60 font-size-small">
         <p>
           <strong>DC date : </strong><th:block th:each="inw : ${deliveryChallan.inwardPdfDtos}">
-            <span th:if="${inwStat.first}" th:text="${#dates.format(inw.instruction[0].deliveryDetails?.createdOn,'dd/MM/yyyy')}"></span>
+            <span th:if="${inwStat.first}" th:text="${#dates.format(inw.instructions[0].deliveryDetails?.createdOn,'dd/MM/yyyy')}"></span>
           </th:block>
         </p>
         <p class="col"><strong>To M/s. : </strong><span th:text="${deliveryChallan.inwardPdfDtos[0]?.partyName}"></span></p>
         <p class="col"><strong>Desp By Lorry No : </strong>
           <th:block th:each="inw : ${deliveryChallan.inwardPdfDtos}">
-            <span th:if="${inwStat.first}" th:text="${inw.instruction[0].deliveryDetails.vehicleNo}"></span>
+            <span th:if="${inwStat.first}" th:text="${inw.instructions[0].deliveryDetails.vehicleNo}"></span>
           </th:block>
         </p>
     </div>
   <div class="inline-block w-30 font-size-small">
     <p class="col"><strong>CGST Number : </strong><span th:text="${deliveryChallan.inwardPdfDtos[0]?.partyCgst}"></span></p>
-    <p class="col"><strong>Inward date : </strong><span th:each="inw,index : ${deliveryChallan.inwardPdfDtos}" th:text="${#dates.format(inw.dInvoiceDate, 'dd-MM-yyyy')}  + ${!index.last ? ', ' : ''}">
+    <p class="col"><strong>Inward date : </strong><span th:each="inw,index : ${deliveryChallan.inwardPdfDtos}" th:text="${#dates.format(inw.dInvoiceDate, 'dd/MM/
+
+    yyyy')}  + ${!index.last ? ', ' : ''}">
       </span></p>
     <p class="col"><strong>Inward Challan No : </strong><span th:each="inw,index : ${deliveryChallan.inwardPdfDtos}" th:text="${inw.inwardEntryId}  + ${!index.last ? ', ' : ''}">
       </span></p>
@@ -108,7 +110,7 @@
 
       </tr>
       <th:block th:each="inw : ${deliveryChallan.inwardPdfDtos}">
-        <tr th:each="ins : ${inw.instruction}">
+        <tr th:each="ins : ${inw.instructions}">
           <td class="t-head" th:text="${inw.coilNumber}"></td>
           <td class="t-head" th:text="${ins?.deliveryDetails.deliveryId}"></td>
 <!--          <td class="t-head" th:text="${ins.deliveryDetails.vehicleNo}"></td>-->

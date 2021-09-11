@@ -18,7 +18,7 @@ public class DeliveryChallanPdfDto {
     public DeliveryChallanPdfDto() {
     }
 
-    public DeliveryChallanPdfDto(CompanyDetails companyDetails, List<InwardEntry> inwardEntries){
+    public DeliveryChallanPdfDto(CompanyDetails companyDetails, List<InwardEntry> inwardEntries,List<InstructionResponsePdfDto> instructionResponsePdfDtos){
         this.companyName = companyDetails.getCompanyName();
         this.gstN = companyDetails.getGstN();
         this.addressBranch = companyDetails.getAddressBranch();
@@ -27,7 +27,7 @@ public class DeliveryChallanPdfDto {
         if(this.inwardPdfDtos == null){
             this.inwardPdfDtos = new ArrayList<>();
         }
-        this.inwardPdfDtos = inwardEntries.stream().map(inw -> InwardEntry.valueOf(inw,null)).collect(Collectors.toList());
+        this.inwardPdfDtos = inwardEntries.stream().map(inw -> InwardEntry.valueOf(inw,instructionResponsePdfDtos)).collect(Collectors.toList());
     }
 
     public String getCompanyName() {
