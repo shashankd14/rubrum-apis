@@ -33,8 +33,11 @@ public class InstructionResponsePdfDto {
 
     private Integer actualNoOfPieces;
 
+    private String remarks;
 
     private PacketClassification packetClassification;
+
+    private DeliveryResponseDto deliveryDetails;
 
     public Integer getInstructionId() {
         return instructionId;
@@ -130,5 +133,21 @@ public class InstructionResponsePdfDto {
 
     public void setPacketClassification(PacketClassification packetClassification) {
         this.packetClassification = packetClassification;
+    }
+
+    public DeliveryResponseDto getDeliveryDetails() {
+        return deliveryDetails;
+    }
+
+    public void setDeliveryDetails(DeliveryResponseDto deliveryDetails) {
+        this.deliveryDetails = deliveryDetails;
+    }
+
+    public String getRemarks() {
+        return remarks;
+    }
+
+    public void setRemarks(String remarks) {
+        this.remarks = remarks;
     }
 }

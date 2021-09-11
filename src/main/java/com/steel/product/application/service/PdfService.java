@@ -1,10 +1,7 @@
 package com.steel.product.application.service;
 
 import com.lowagie.text.DocumentException;
-import com.steel.product.application.dto.pdf.DeliveryChallanPdfDto;
-import com.steel.product.application.dto.pdf.DeliveryPdfDto;
-import com.steel.product.application.dto.pdf.InwardEntryPdfDto;
-import com.steel.product.application.dto.pdf.PdfDto;
+import com.steel.product.application.dto.pdf.*;
 import com.steel.product.application.entity.CompanyDetails;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
@@ -19,7 +16,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -55,8 +52,13 @@ public class PdfService {
     private Context getDeliveryContext(DeliveryPdfDto deliveryPdfDto) {
         Context context = new Context();
         List<InwardEntry> inwardEntries = inwardEntryService.findDeliveryItemsByInstructionIds(deliveryPdfDto.getInstructionIds());
+        List<Instruction> instructions = new ArrayList<>();
+        inwardEntries.forEach(inw -> instructions.addAll(inw.getInstructions()));
+        List<InstructionResponsePdfDto> instructionResponsePdfDtos = instructions.stream()
+                .map(ins -> Instruction.valueOfInstructionPdf(ins))
+                .collect(Collectors.toList());
         CompanyDetails companyDetails = companyDetailsService.findById(1);
-        DeliveryChallanPdfDto deliveryChallanPdfDto = new DeliveryChallanPdfDto(companyDetails,inwardEntries);
+        DeliveryChallanPdfDto deliveryChallanPdfDto = new DeliveryChallanPdfDto(companyDetails,inwardEntries,instructionResponsePdfDtos);
         context.setVariable("deliveryChallan",deliveryChallanPdfDto);
         return context;
     }
@@ -77,7 +79,11 @@ public class PdfService {
     private Context getContext(PdfDto pdfDto) {
         Context context = new Context();
         InwardEntry inwardEntry = inwardEntryService.getByEntryId(pdfDto.getInwardId());
-        InwardEntryPdfDto inwardEntryPdfDto = InwardEntry.valueOf(inwardEntry,pdfDto.getProcessId());
+        List<InstructionResponsePdfDto> instructions = inwardEntry.getInstructions()
+                .stream().filter(i -> i.getProcess().getProcessId() == pdfDto.getProcessId())
+                .map(i -> Instruction.valueOfInstructionPdf(i))
+                .collect(Collectors.toList());
+        InwardEntryPdfDto inwardEntryPdfDto = InwardEntry.valueOf(inwardEntry,instructions);
         context.setVariable("inward", inwardEntryPdfDto);
         return context;
     }

@@ -468,7 +468,7 @@ public class InwardEntry {
 		this.inStockWeight = inStockWeight;
 	}
 
-	public static InwardEntryPdfDto valueOf(InwardEntry inwardEntry,Integer processId){
+	public static InwardEntryPdfDto valueOf(InwardEntry inwardEntry,List<InstructionResponsePdfDto> instructionResponsePdfDtos){
 		InwardEntryPdfDto inwardEntryPdfDto = new InwardEntryPdfDto();
 		inwardEntryPdfDto.setInwardEntryId(inwardEntry.getInwardEntryId());
 		inwardEntryPdfDto.setPartyName(inwardEntry.getParty() != null ? inwardEntry.getParty().getPartyName() : "");
@@ -482,17 +482,12 @@ public class InwardEntry {
 		inwardEntryPdfDto.setfWidth(inwardEntry.getfWidth());
 		inwardEntryPdfDto.setGrossWeight(inwardEntry.getGrossWeight());
 		inwardEntryPdfDto.setCreatedOn(inwardEntry.getCreatedOn());
-		if(processId != null) {
-			Set<Instruction> instructions = inwardEntry.getInstructions();
-			Map<Float,List<InstructionResponsePdfDto>> instructionsMap = instructions.stream()
-					.filter(ins -> ins.getProcess().getProcessId() == processId)
-					.map(ins -> Instruction.valueOfInstructionPdf(ins)).collect(Collectors.groupingBy(InstructionResponsePdfDto::getPlannedWeight));
+		if(instructionResponsePdfDtos != null) {
+			Map<Float,List<InstructionResponsePdfDto>> instructionsMap = instructionResponsePdfDtos.stream()
+					.collect(Collectors.groupingBy(InstructionResponsePdfDto::getPlannedWeight));
 			inwardEntryPdfDto.setInstructionsMap(instructionsMap);
-			inwardEntryPdfDto.setInstructions(instructions.stream()
-					.filter(i -> i.getProcess().getProcessId() == processId)
-					.map(i -> Instruction.valueOfInstructionPdf(i))
-					.collect(Collectors.toList()));
-			inwardEntryPdfDto.setTotalWeight(inwardEntryPdfDto.getInstructions().stream().
+			inwardEntryPdfDto.setInstructions(instructionResponsePdfDtos);
+			inwardEntryPdfDto.setTotalWeight(instructionResponsePdfDtos.stream().
 					map(ins -> ins.getPlannedWeight())
 					.reduce(0f,Float::sum));
 		}

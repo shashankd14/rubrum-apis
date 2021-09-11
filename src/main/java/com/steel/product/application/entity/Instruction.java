@@ -426,6 +426,8 @@ public class Instruction {
 		instructionResponsePdfDto.setActualNoOfPieces(instruction.getActualNoOfPieces());
 		instructionResponsePdfDto.setActualWeight(instruction.getActualWeight());
 		instructionResponsePdfDto.setActualWidth(instruction.getActualWidth());
+		instructionResponsePdfDto.setDeliveryDetails(instruction.getDeliveryDetails() != null ? DeliveryDetails.valueOf(instruction.getDeliveryDetails()) : null);
+		instructionResponsePdfDto.setRemarks(instruction.getRemarks());
 		return instructionResponsePdfDto;
 	}
 }

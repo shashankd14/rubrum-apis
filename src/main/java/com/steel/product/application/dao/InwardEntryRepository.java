@@ -21,7 +21,7 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 
   <T> Optional<InwardEntry> findByCoilNumber(String coilNumber);
 
-  @Query("select DISTINCT(inw) from InwardEntry inw join fetch inw.instructions ins join fetch ins.deliveryDetails dd where dd != null" +
+  @Query("select DISTINCT(inw) from InwardEntry inw join fetch inw.party join fetch inw.material join fetch inw.materialGrade join fetch inw.instructions ins join fetch ins.deliveryDetails dd where dd is not null" +
           " and ins.instructionId in :instructionIds and" +
           " ins.status.statusId = 4")
   public List<InwardEntry> findDeliveryItemsByInstructionIds(@Param("instructionIds")List<Integer> instructionIds);

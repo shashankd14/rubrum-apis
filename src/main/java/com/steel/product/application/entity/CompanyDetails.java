@@ -6,30 +6,30 @@ import javax.persistence.*;
 import java.util.Date;
 
 @Entity
-@Table(name = "PRODUCT_COMPANY_DETAILS")
+@Table(name = "product_company_details")
 public class CompanyDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "COMPANY_NAME")
+    @Column(name = "company_name")
     private String companyName;
 
-    @Column(name = "GSTN")
+    @Column(name = "gstn")
     private String gstN;
 
     @JsonIgnore
     @ManyToOne
-    @JoinColumn(name="ADDRESS_BRANCH_ID")
+    @JoinColumn(name="address_branch_id")
     private Address addressBranch;
 
     @JsonIgnore
     @ManyToOne
-    @JoinColumn(name = "ADDRESS_OFFICE_ID")
+    @JoinColumn(name = "address_office_id")
     private Address addressOffice;
 
-    @Column(name = "EMAIL")
+    @Column(name = "email")
     private String email;
 
     @Column(name = "createdby")
