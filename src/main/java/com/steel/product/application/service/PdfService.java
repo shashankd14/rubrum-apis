@@ -79,11 +79,17 @@ public class PdfService {
     private Context getContext(PdfDto pdfDto) {
         Context context = new Context();
         InwardEntry inwardEntry = inwardEntryService.getByEntryId(pdfDto.getInwardId());
-        List<InstructionResponsePdfDto> instructions = inwardEntry.getInstructions()
-                .stream().filter(i -> i.getProcess().getProcessId() == pdfDto.getProcessId())
-                .map(i -> Instruction.valueOfInstructionPdf(i))
-                .collect(Collectors.toList());
-        InwardEntryPdfDto inwardEntryPdfDto = InwardEntry.valueOf(inwardEntry,instructions);
+        InwardEntryPdfDto inwardEntryPdfDto;
+        if(pdfDto.getProcessId() != null) {
+            List<InstructionResponsePdfDto> instructions = inwardEntry.getInstructions()
+                    .stream().filter(i -> i.getProcess().getProcessId() == pdfDto.getProcessId())
+                    .map(i -> Instruction.valueOfInstructionPdf(i))
+                    .collect(Collectors.toList());
+            inwardEntryPdfDto = InwardEntry.valueOf(inwardEntry,instructions);
+        }else{
+            inwardEntryPdfDto = InwardEntry.valueOf(inwardEntry,null);
+        }
+
         context.setVariable("inward", inwardEntryPdfDto);
         return context;
     }

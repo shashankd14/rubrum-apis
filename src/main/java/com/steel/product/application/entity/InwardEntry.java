@@ -502,6 +502,7 @@ public class InwardEntry {
 		inwardEntryPdfDto.setPartyCgst(inwardEntry.getParty().getGstNumber());
 		inwardEntryPdfDto.setCustomerInvoiceNo(inwardEntry.getCustomerInvoiceNo());
 		inwardEntryPdfDto.setBilledWeight(inwardEntry.getBilledweight());
+		inwardEntryPdfDto.setfLength(inwardEntry.getfLength());
 		return inwardEntryPdfDto;
 	}
 
