@@ -88,97 +88,101 @@ public class InstructionServiceImpl implements InstructionService {
         return savedInstruction;
     }
 
-    @Transactional
+
     @Override
+    @Transactional
     public ResponseEntity<Object> addInstruction(List<InstructionRequestDto> instructionRequestDtos) {
-        float incomingWeight = 0f;
+        LOGGER.info("inside save instruction method");
+        float incomingWeight = instructionRequestDtos.stream().reduce(0f,(sum,dto) -> sum + dto.getPlannedWeight(),Float::sum);
         float availableWeight = 0f;
         float existingWeight = 0f;
         boolean fromInward = false, fromParentInstruction = false, fromGroup = false;
         InwardEntry inwardEntry;
         Instruction parentInstruction = null;
+        InstructionRequestDto instructionRequestDto = instructionRequestDtos.get(0);
+        Integer inwardId = instructionRequestDto.getInwardId();
+        Integer groupId = instructionRequestDto.getGroupId();
+        Integer parentInstructionId = instructionRequestDto.getParentInstructionId();
+        LOGGER.info("incoming weight " + incomingWeight);
 
-        if (instructionRequestDtos.get(0).getInwardId() != null && instructionRequestDtos.get(0).getGroupId() != null) {
-            LOGGER.info("adding instructions from group id " + instructionRequestDtos.get(0).getInwardId());
-            inwardEntry = inwardService.getByEntryId(instructionRequestDtos.get(0).getInwardId());
-            List<Instruction> existingInstructions = findAllByParentGroupId(instructionRequestDtos.get(0).getGroupId());
-            if (existingInstructions.size() > 0) {
-                return new ResponseEntity<Object>("Instructions with parent group id " + instructionRequestDtos.get(0).getGroupId() + " already exists.", HttpStatus.BAD_REQUEST);
-            }
-
-            incomingWeight = (float) instructionRequestDtos.stream().
-                    mapToDouble(i -> i.getPlannedWeight().floatValue()).sum();
-            availableWeight = (float) findAllByGroupId(instructionRequestDtos.get(0).getGroupId()).stream()
-                    .mapToDouble(i -> i.getPlannedWeight().floatValue()).sum();
+        if (inwardId != null && groupId != null) {
+            LOGGER.info("adding instructions from inward"+ inwardId +", group id " + inwardId);
+            inwardEntry = inwardService.getByEntryId(inwardId);
+            availableWeight = this.sumOfPlannedWeightOfInstructionsHavingGroupId(groupId);
+            LOGGER.info("available weight for instructions with group id "+availableWeight);
             fromGroup = true;
-        } else if (instructionRequestDtos.get(0).getInwardId() != null) {
-            LOGGER.info("adding instructions from inward id " + instructionRequestDtos.get(0).getInwardId());
-            incomingWeight = (float) instructionRequestDtos.stream().mapToDouble(InstructionRequestDto::getPlannedWeight).sum();
-            inwardEntry = inwardService.getByEntryId(instructionRequestDtos.get(0).getInwardId());
+        } else if (inwardId != null) {
+            LOGGER.info("adding instructions from inward id " + inwardId);
+            inwardEntry = inwardService.getByEntryId(inwardId);
             availableWeight = inwardEntry.getFpresent();
+            LOGGER.info("available weight of inward "+inwardEntry.getInwardEntryId()+" is "+availableWeight);
             fromInward = true;
-        } else if (instructionRequestDtos.get(0).getParentInstructionId() != null) {
-            LOGGER.info("adding instructions from parent instruction id " + instructionRequestDtos.get(0).getParentInstructionId());
-            incomingWeight = (float) instructionRequestDtos.stream().
-                    mapToDouble(i -> i.getPlannedWeight().floatValue()).sum();
-            LOGGER.info("incoming weight " + incomingWeight);
-            existingWeight = (float) findAllByParentInstructionId(instructionRequestDtos.get(0).getParentInstructionId())
-                    .stream().mapToDouble(i -> i.getPlannedWeight().floatValue()).sum();
-            parentInstruction = getById(instructionRequestDtos.get(0).getParentInstructionId());
-            inwardEntry = parentInstruction.getInwardId();
-            availableWeight = parentInstruction.getPlannedWeight().floatValue();
-            fromParentInstruction = true;
-        } else {
-            return new ResponseEntity<Object>("Invalid request.", HttpStatus.BAD_REQUEST);
-        }
+        } else if (parentInstructionId != null) {
+                LOGGER.info("adding instructions from parent instruction id " + parentInstructionId);
+                existingWeight = this.sumOfPlannedWeightOfInstructionHavingParentInstructionId(parentInstructionId);
+                LOGGER.info("existing weight of instructions with parent instruction id is "+existingWeight);
+                parentInstruction = this.getById(parentInstructionId);
+                inwardEntry = parentInstruction.getInwardId();
+                availableWeight = parentInstruction.getPlannedWeight();
+                fromParentInstruction = true;
+            }
+        else {
+                return new ResponseEntity<Object>("Invalid request.", HttpStatus.BAD_REQUEST);
+            }
         if (inwardEntry.getFpresent() < 0) {
+            LOGGER.error("inward has negative fpresent value "+inwardEntry.getFpresent());
             return new ResponseEntity<Object>("Inward with id " + inwardEntry.getInwardEntryId() + " has invalid fpresent value " + inwardEntry.getFpresent(), HttpStatus.BAD_REQUEST);
         }
-        if (incomingWeight > availableWeight - existingWeight) {
-            return new ResponseEntity<Object>("No available weight for processing.", HttpStatus.BAD_REQUEST);
+        Float newFpresent = availableWeight - existingWeight - incomingWeight;
+        LOGGER.info("inward has fpresent "+inwardEntry.getFpresent());
+        if (newFpresent < 0) {
+            return new ResponseEntity<Object>("inward "+inwardEntry.getInwardEntryId()+" has no available weight for processing.", HttpStatus.BAD_REQUEST);
         }
-        if (fromGroup && incomingWeight != availableWeight) {
-            return new ResponseEntity<Object>("Input instructions total weight must be equal to instructions with group id " + instructionRequestDtos.get(0).getGroupId(), HttpStatus.BAD_REQUEST);
+        if (fromGroup && newFpresent == 0f) {
+            return new ResponseEntity<Object>("Input instructions total weight must be equal to instructions with group id " + groupId, HttpStatus.BAD_REQUEST);
         }
-        Process process = processService.getById(instructionRequestDtos.get(0).getProcessId());
+        LOGGER.info("inward "+inwardEntry.getInwardEntryId()+" has valid fpresent value "+newFpresent);
+        inwardEntry.setFpresent(newFpresent);
+        LOGGER.info("setting fpresent for inward "+inwardEntry.getInwardEntryId()+" to "+inwardEntry.getFpresent());
+        Process process = processService.getById(instructionRequestDto.getProcessId());
         Status inProgress = statusService.getStatusById(2);
         inProgress.addInwardEntry(inwardEntry);
         List<Instruction> savedInstructionList = new ArrayList<Instruction>();
         try {
-            for (InstructionRequestDto instructionRequestDto : instructionRequestDtos) {
+            for (InstructionRequestDto requestDto : instructionRequestDtos) {
 
                 Instruction instruction = new Instruction();
                 Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 
                 instruction.setProcess(process);
-                instruction.setInstructionDate(instructionRequestDto.getInstructionDate());
+                instruction.setInstructionDate(requestDto.getInstructionDate());
 
-                if (instructionRequestDto.getPlannedLength() != null)
-                    instruction.setPlannedLength(instructionRequestDto.getPlannedLength());
+                if (requestDto.getPlannedLength() != null)
+                    instruction.setPlannedLength(requestDto.getPlannedLength());
 
-                if (instructionRequestDto.getPlannedWidth() != null)
-                    instruction.setPlannedWidth(instructionRequestDto.getPlannedWidth());
+                if (requestDto.getPlannedWidth() != null)
+                    instruction.setPlannedWidth(requestDto.getPlannedWidth());
 
-                if (instructionRequestDto.getPlannedWeight() != null)
-                    instruction.setPlannedWeight(instructionRequestDto.getPlannedWeight());
+                if (requestDto.getPlannedWeight() != null)
+                    instruction.setPlannedWeight(requestDto.getPlannedWeight());
 
-                if (instructionRequestDto.getPlannedNoOfPieces() != null)
-                    instruction.setPlannedNoOfPieces(instructionRequestDto.getPlannedNoOfPieces());
+                if (requestDto.getPlannedNoOfPieces() != null)
+                    instruction.setPlannedNoOfPieces(requestDto.getPlannedNoOfPieces());
 
                 inProgress.addInstruction(instruction);
-                instruction.setSlitAndCut(instructionRequestDto.getSlitAndCut() != null ? instructionRequestDto.getSlitAndCut() : false);
+                instruction.setSlitAndCut(requestDto.getSlitAndCut() != null ? requestDto.getSlitAndCut() : false);
 
-                if (instructionRequestDto.getWastage() != null)
-                    instruction.setWastage(instructionRequestDto.getWastage());
+                if (requestDto.getWastage() != null)
+                    instruction.setWastage(requestDto.getWastage());
 
-                if (instructionRequestDto.getDamage() != null)
-                    instruction.setDamage(instructionRequestDto.getDamage());
+                if (requestDto.getDamage() != null)
+                    instruction.setDamage(requestDto.getDamage());
 
-                if (instructionRequestDto.getPackingWeight() != null)
-                    instruction.setPackingWeight(instructionRequestDto.getPackingWeight());
+                if (requestDto.getPackingWeight() != null)
+                    instruction.setPackingWeight(requestDto.getPackingWeight());
 
-                instruction.setCreatedBy(instructionRequestDto.getCreatedBy());
-                instruction.setUpdatedBy(instructionRequestDto.getUpdatedBy());
+                instruction.setCreatedBy(requestDto.getCreatedBy());
+                instruction.setUpdatedBy(requestDto.getUpdatedBy());
                 instruction.setCreatedOn(timestamp);
                 instruction.setUpdatedOn(timestamp);
                 instruction.setIsDeleted(false);
@@ -189,7 +193,7 @@ public class InstructionServiceImpl implements InstructionService {
                     inwardEntry.addInstruction(instruction);
                 } else {
                     inwardEntry.addInstruction(instruction);
-                    instruction.setParentGroupId(instructionRequestDto.getGroupId());
+                    instruction.setParentGroupId(requestDto.getGroupId());
                 }
                 savedInstructionList.add(instruction);
             }
@@ -201,7 +205,6 @@ public class InstructionServiceImpl implements InstructionService {
         if (fromParentInstruction) {
             instructionRepository.save(parentInstruction);
         } else if (fromInward) {
-            inwardEntry.setFpresent(availableWeight - incomingWeight);
             inwardService.saveEntry(inwardEntry);
         }
         return new ResponseEntity<>(savedInstructionList.stream().map(i -> Instruction.valueOf(i)), HttpStatus.OK);
@@ -358,6 +361,16 @@ public class InstructionServiceImpl implements InstructionService {
     @Override
     public List<Instruction> findAllByInstructionIdInAndStatus(List<Integer> instructionIds, Integer statusId) {
         return instructionRepository.findAllByInstructionIdInAndStatus(instructionIds, statusId);
+    }
+
+    @Override
+    public Float sumOfPlannedWeightOfInstructionsHavingGroupId(Integer groupId) {
+        return instructionRepository.sumOfPlannedWeightOfInstructionsHavingGroupId(groupId);
+    }
+
+    @Override
+    public Float sumOfPlannedWeightOfInstructionHavingParentInstructionId(Integer parentInstructionId) {
+        return sumOfPlannedWeightOfInstructionHavingParentInstructionId(parentInstructionId);
     }
 
     @Override
