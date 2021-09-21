@@ -14,11 +14,13 @@ public class DeliveryChallanPdfDto {
     private Address addressOffice;
     private String email;
     private List<InwardEntryPdfDto> inwardPdfDtos;
+    private Float totalDeliveryWeight;
+    private Float totalValueOfGoods;
 
     public DeliveryChallanPdfDto() {
     }
 
-    public DeliveryChallanPdfDto(CompanyDetails companyDetails, List<InwardEntry> inwardEntries,List<InstructionResponsePdfDto> instructionResponsePdfDtos){
+    public DeliveryChallanPdfDto(CompanyDetails companyDetails, List<InwardEntry> inwardEntries){
         this.companyName = companyDetails.getCompanyName();
         this.gstN = companyDetails.getGstN();
         this.addressBranch = companyDetails.getAddressBranch();
@@ -27,7 +29,13 @@ public class DeliveryChallanPdfDto {
         if(this.inwardPdfDtos == null){
             this.inwardPdfDtos = new ArrayList<>();
         }
-        this.inwardPdfDtos = inwardEntries.stream().map(inw -> InwardEntry.valueOf(inw,instructionResponsePdfDtos)).collect(Collectors.toList());
+        this.inwardPdfDtos = inwardEntries.stream().map(inw -> InwardEntry.valueOf(inw,inw.getInstructions()
+                .stream().map(ins -> Instruction.valueOfInstructionPdf(ins)).collect(Collectors.toList()))).collect(Collectors.toList());
+        this.totalDeliveryWeight = inwardPdfDtos.stream().flatMap(inw -> inw.getInstructions().stream())
+                .reduce(0f,(sum,ins) -> sum + ins.getActualWeight(), Float::sum);
+        this.totalValueOfGoods = inwardPdfDtos.stream().flatMap(inw -> inw.getInstructions().stream())
+                .reduce(0f,(sum,ins) -> sum+ins.getValueOfGoods(),Float::sum);
+
     }
 
     public String getCompanyName() {
@@ -76,5 +84,21 @@ public class DeliveryChallanPdfDto {
 
     public void setInwardPdfDtos(List<InwardEntryPdfDto> inwardPdfDtos) {
         this.inwardPdfDtos = inwardPdfDtos;
+    }
+
+    public Float getTotalDeliveryWeight() {
+        return totalDeliveryWeight;
+    }
+
+    public void setTotalDeliveryWeight(Float totalDeliveryWeight) {
+        this.totalDeliveryWeight = totalDeliveryWeight;
+    }
+
+    public Float getTotalValueOfGoods() {
+        return totalValueOfGoods;
+    }
+
+    public void setTotalValueOfGoods(Float totalValueOfGoods) {
+        this.totalValueOfGoods = totalValueOfGoods;
     }
 }

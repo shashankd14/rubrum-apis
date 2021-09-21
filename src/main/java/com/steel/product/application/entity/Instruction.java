@@ -428,6 +428,7 @@ public class Instruction {
 		instructionResponsePdfDto.setActualWidth(instruction.getActualWidth());
 		instructionResponsePdfDto.setDeliveryDetails(instruction.getDeliveryDetails() != null ? DeliveryDetails.valueOf(instruction.getDeliveryDetails()) : null);
 		instructionResponsePdfDto.setRemarks(instruction.getRemarks());
+		instructionResponsePdfDto.setValueOfGoods((float)(instruction.getInwardId().getfQuantity()/instruction.getInwardId().getValueOfGoods()) * instruction.getActualWeight());
 		return instructionResponsePdfDto;
 	}
 }
