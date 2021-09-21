@@ -1,14 +1,8 @@
 package com.steel.product.application.dto.pdf;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.steel.product.application.dto.delivery.DeliveryResponseDto;
-import com.steel.product.application.dto.instruction.InstructionResponseDto;
 import com.steel.product.application.dto.process.ProcessDto;
-import com.steel.product.application.dto.status.StatusDto;
 import com.steel.product.application.entity.PacketClassification;
-
-import java.util.Date;
-import java.util.List;
 
 public class InstructionResponsePdfDto {
     private Integer instructionId ;
@@ -38,6 +32,8 @@ public class InstructionResponsePdfDto {
     private PacketClassification packetClassification;
 
     private DeliveryResponseDto deliveryDetails;
+
+    private Float valueOfGoods;
 
     public Integer getInstructionId() {
         return instructionId;
@@ -149,5 +145,13 @@ public class InstructionResponsePdfDto {
 
     public void setRemarks(String remarks) {
         this.remarks = remarks;
+    }
+
+    public Float getValueOfGoods() {
+        return valueOfGoods;
+    }
+
+    public void setValueOfGoods(Float valueOfGoods) {
+        this.valueOfGoods = valueOfGoods;
     }
 }

@@ -1,201 +1,170 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
-<style>
-  table {
-    border-collapse: collapse;
-    border-spacing: 0;
-    margin: auto;
-  }
-  .t-head {
-    border-top: 1px solid #666;
-    border-bottom: 1px solid #666;
-    text-align: left;
-    padding: 8px;
-    height: 50px;
-  }
-  hr {
-    margin: 0 70px;
-  }
-  td {
-    line-height: 2.3rem;
-  }
-  .font-size-x-small{
-  font-size: x-small;
-  }
-  .font-size-small{
-    font-size: small;
-   }
-  .inline-block{
-    display:inline-block;
-  }
-  .border{
-    border:1px solid black;
-  }
-  .w-50{
-    width: 50%;
-   }
-  .w-40{
-    width: 40%;
-   }
-  .w-30{
-    width: 30%;
-   }
-   .w-60{
-    width: 60%;
-   }
-   .w-70{
-    width: 70%;
-   }
-   .w-25{
-    width: 25%;
-   }
+    <style>
+        table {
+            border-collapse: collapse;
+            border-spacing: 0;
+            margin: auto;
+        }
 
-</style>
+        .t-head {
+            border-top: 1px solid #666;
+            border-bottom: 1px solid #666;
+            text-align: left;
+            padding: 8px;
+            height: 50px;
+        }
+
+        hr {
+            margin: 0 70px;
+        }
+
+        td {
+            line-height: 2.3rem;
+        }
+
+        .font-size-x-small {
+            font-size: x-small;
+        }
+
+        .font-size-small {
+            font-size: small;
+        }
+
+        .inline-block {
+            display: inline-block;
+        }
+
+        .border {
+            border: 1px solid black;
+        }
+
+        .w-50 {
+            width: 50%;
+        }
+
+        .w-40 {
+            width: 40%;
+        }
+
+        .w-30 {
+            width: 30%;
+        }
+
+        .w-60 {
+            width: 60%;
+        }
+
+        .w-70 {
+            width: 70%;
+        }
+
+        .w-25 {
+            width: 25%;
+        }
+
+    </style>
 </head>
 <body>
-<hr id="DC-slip" style="margin: auto; width: 75vw;"></hr>
-  <div>
-    <h4 style="text-align:center;">DELIVERY CHALLAN</h4>
-  </div>
-  <div style="margin: auto;">
-    <h1 style="text-align:center;" th:text="${deliveryChallan?.companyName}"></h1>
-  </div>
-  <div>
-    <div class="inline-block w-60">
-      <p class="font-size-small"><strong>Head Office At: </strong><span th:text="${deliveryChallan?.addressOffice}"></span></p>
-      <p class="font-size-small"><strong>Branch At: </strong><span th:text="${deliveryChallan?.addressBranch}"></span></p>
+    <div>
+        <h4 style="text-align:center;">DELIVERY CHALLAN</h4>
     </div>
-    <div class="inline-block w-30">
-      <p class="font-size-small"><strong>Email: </strong><span th:text="${deliveryChallan?.email}"></span></p>
-      <p class="font-size-small inline-block" style="vertical-align: top;"><strong>GST No: </strong><span th:text="${deliveryChallan?.gstN}"></span></p>
+    <div style="margin: auto;">
+        <h1 style="text-align:center;" th:text="${deliveryChallan?.companyName}"></h1>
     </div>
-  </div>
-
-<hr style="text-align:center;color:black;"></hr>
-
-<div>
-    <div class="inline-block w-60 font-size-small">
-        <p>
-          <strong>DC date : </strong><th:block th:each="inw : ${deliveryChallan.inwardPdfDtos}">
-            <span th:if="${inwStat.first}" th:text="${#dates.format(inw.instructions[0].deliveryDetails?.createdOn,'dd/MM/yyyy')}"></span>
-          </th:block>
-        </p>
-        <p class="col"><strong>To M/s. : </strong><span th:text="${deliveryChallan.inwardPdfDtos[0]?.partyName}"></span></p>
-        <p class="col"><strong>Desp By Lorry No : </strong>
-          <th:block th:each="inw : ${deliveryChallan.inwardPdfDtos}">
-            <span th:if="${inwStat.first}" th:text="${inw.instructions[0].deliveryDetails.vehicleNo}"></span>
-          </th:block>
-        </p>
-    </div>
-  <div class="inline-block w-30 font-size-small">
-    <p class="col"><strong>CGST Number : </strong><span th:text="${deliveryChallan.inwardPdfDtos[0]?.partyCgst}"></span></p>
-    <p class="col"><strong>Inward date : </strong><span th:each="inw,index : ${deliveryChallan.inwardPdfDtos}" th:text="${#dates.format(inw.dInvoiceDate, 'dd/MM/
-
-    yyyy')}  + ${!index.last ? ', ' : ''}">
-      </span></p>
-    <p class="col"><strong>Inward Challan No : </strong><span th:each="inw,index : ${deliveryChallan.inwardPdfDtos}" th:text="${inw.inwardEntryId}  + ${!index.last ? ', ' : ''}">
-      </span></p>
-  </div>
-</div>
-  <div style="margin-top: 5%;">
-    <table style="width:100%">
-      <tr>
-        <th class="t-head">Coil No</th>
-        <th class="t-head">DC No</th>
-<!--        <th class="t-head">Vehicle no</th>-->
-        <th class="t-head">width (in mm)</th>
-        <th class="t-head">Description</th>
-        <th class="t-head">Value of goods</th>
-
-      </tr>
-      <th:block th:each="inw : ${deliveryChallan.inwardPdfDtos}">
-        <tr th:each="ins : ${inw.instructions}">
-          <td class="t-head" th:text="${inw.coilNumber}"></td>
-          <td class="t-head" th:text="${ins?.deliveryDetails.deliveryId}"></td>
-<!--          <td class="t-head" th:text="${ins.deliveryDetails.vehicleNo}"></td>-->
-          <td class="t-head" th:text="${ins?.actualWidth}"></td>
-          <td class="t-head" th:text="${ins?.remarks}"></td>
-          <th:block th:if="${ins.actualWeight} != null and ${inw.valueOfGoods} != null" th:with="res=${(inw.fQuantity/inw.valueOfGoods) * ins.actualWeight}">
-          <td class="t-head" th:text="${#numbers.formatDecimal(res,1,2)}"></td>
-          </th:block>
-        </tr>
-      </th:block>
-    </table>
-    <div style="display: inline-block;margin: 20px 0;width: 100%;">
-      <div style="float: left;">
-        Strapping charge :
-      </div>
-      <div style="width: 13%; float: right;">
-        {amount}
-      </div>
+    <div>
+        <div class="inline-block w-60">
+            <p class="font-size-small"><strong>Head Office At: </strong><span
+                    th:text="${deliveryChallan?.addressOffice}"></span></p>
+            <p class="font-size-small"><strong>Branch At: </strong><span
+                    th:text="${deliveryChallan?.addressBranch}"></span></p>
+        </div>
+        <div class="inline-block w-30">
+            <p class="font-size-small"><strong>Email: </strong><span th:text="${deliveryChallan?.email}"></span></p>
+            <p class="font-size-small inline-block" style="vertical-align: top;"><strong>GST No: </strong><span
+                    th:text="${deliveryChallan?.gstN}"></span></p>
+        </div>
     </div>
 
-    <hr style="text-align:right;color:black; width: 20%; float: right; margin-bottom: 10px; margin-right: 0px;"></hr>
+    <hr style="text-align:center;color:black;"/>
 
-    <div style="display: inline-block;margin: 10px 0;width: 100%;">
-      <div style="float: left;">
-        Subtotal
-      </div>
-      <div style="width: 13%; float: right;">
-        {amount}
-      </div>
+    <div>
+        <div class="inline-block w-60 font-size-small">
+            <p>
+                <strong>DC date : </strong>
+                <th:block th:each="inw : ${deliveryChallan.inwardPdfDtos}">
+                    <span th:if="${inwStat.first}"
+                          th:text="${#dates.format(inw.instructions[0].deliveryDetails?.createdOn,'dd/MM/yyyy')}"></span>
+                </th:block>
+            </p>
+            <p class="col"><strong>DC Number : </strong><span
+                    th:text="${deliveryChallan?.inwardPdfDtos[0]?.instructions[0]?.deliveryDetails.deliveryId}"></span>
+            </p>
+
+        </div>
+        <div class="inline-block w-30 font-size-small">
+            <p class="col"><strong>To M/s. : </strong><span
+                    th:text="${deliveryChallan.inwardPdfDtos[0]?.partyName}"></span></p>
+            <p class="col"><strong>Desp By Lorry No : </strong>
+                <th:block th:each="inw : ${deliveryChallan.inwardPdfDtos}">
+                    <span th:if="${inwStat.first}" th:text="${inw.instructions[0].deliveryDetails.vehicleNo}"></span>
+                </th:block>
+            </p>
+        </div>
+    </div>
+    <div style="margin-top: 5%;">
+        <table style="width:100%">
+            <tr>
+                <th class="t-head font-size-small">Coil No</th>
+                <th class="t-head font-size-small">Customer Batch No</th>
+                <!--        <th class="t-head">Vehicle no</th>-->
+                <th class="t-head font-size-small">TxWxL (mm)</th>
+                <th class="t-head font-size-small">Inward date (DD/MM/YYYY)</th>
+                <th class="t-head font-size-small">Inward challan No</th>
+                <th class="t-head font-size-small">Description</th>
+                <th class="t-head font-size-small">Delivery Weight</th>
+                <th class="t-head font-size-small">Value of goods</th>
+
+            </tr>
+            <th:block th:each="inw : ${deliveryChallan.inwardPdfDtos}">
+                <tr th:each="ins : ${inw.instructions}">
+                    <td class="t-head font-size-small" th:text="${inw.coilNumber}"></td>
+                    <td class="t-head font-size-small" th:text="${inw?.customerBatchId}"></td>
+                    <td class="t-head font-size-small" th:text="${inw?.fThickness + ' x ' + inw?.fWidth + ' x ' + inw?.fLength}"></td>
+                    <td class="t-head font-size-small" th:text="${#dates.format(inw?.createdOn,'dd/MM/yyyy')}"></td>
+                    <td class="t-head font-size-small" th:text="${inw?.inwardEntryId}"></td>
+                    <td class="t-head font-size-small" th:text="${ins?.remarks}"></td>
+                    <td class="t-head font-size-small" th:text="${ins?.actualWeight}"></td>
+                    <td class="t-head font-size-small" th:text="${#numbers.formatDecimal(ins?.valueOfGoods,1,2)}"></td>
+                </tr>
+
+            </th:block>
+            <tr>
+                <td class="t-head" colspan="6" style="text-align: center; font-weight: bold;">Total</td>
+                <td class="t-head font-size-small" th:text="${#numbers.formatDecimal(deliveryChallan?.totalDeliveryWeight,2,2)}"></td>
+                <td class="t-head font-size-small" th:text="${#numbers.formatDecimal(deliveryChallan?.totalValueOfGoods,2,2)}"></td>
+            </tr>
+        </table>
     </div>
 
-    <div style="display: inline-block;margin: 10px 0;width: 100%;">
-      <div style="float: left;">
-        CGST @ 6%
-      </div>
-      <div style="width: 13%; float: right;">
-        {amount}
-      </div>
-    </div>
-
-    <div style="display: inline-block;margin: 10px 0;width: 100%;">
-      <div style="float: left;">
-        SGST @ 6%
-      </div>
-      <div style="width: 13%; float: right;">
-        {amount}
-      </div>
-    </div>
-
-    <div style="display: inline-block;margin: 10px 0;width: 100%;">
-      <div style="float: left;">
-        Grand Total
-      </div>
-      <div style="width: 13%; float: right;">
-        {amount}
-      </div>
-    </div>
-
-    <div style="display: inline-block;margin: 10px 0;width: 100%;">
-      <div style="float: left;">
-        Grand Total In Words
-      </div>
-      <div style="width: 13%; display: inline-block; text-align: center; margin-left: 10%;">
-        {amount in words}
-      </div>
-    </div>
-
-    <div style="display: inline-block;margin: 10px 0;width: 100%;">
-      <div style="float: left;">
-        Recieved the above goods in good condition
-      </div>
-      <div style="width: 13%; float: right;">
-        For {company} 
-      </div>
+    <div style="display: inline-block;margin: 30px 0;width: 100%;">
+        <div style="float: left;">
+            Received the above goods in good condition
+        </div>
+        <div style="width: 13%; float: right;">
+            For {company}
+        </div>
     </div>
 
     <div style="display: inline-block;margin: 5% 0;width: 100%;">
-      <div style="float: left;">
-        Recievers Signature
-      </div>
-      <div style="width: 13%; float: right;">
-        Manager/Director
-      </div>
+        <div style="float: left;">
+            Receivers Signature
+        </div>
+        <div style="width: 13%; float: right;">
+            Manager/Director
+        </div>
     </div>
-</div>
 
 </body>
 </html>

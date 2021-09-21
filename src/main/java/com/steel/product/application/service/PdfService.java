@@ -52,13 +52,8 @@ public class PdfService {
     private Context getDeliveryContext(DeliveryPdfDto deliveryPdfDto) {
         Context context = new Context();
         List<InwardEntry> inwardEntries = inwardEntryService.findDeliveryItemsByInstructionIds(deliveryPdfDto.getInstructionIds());
-        List<Instruction> instructions = new ArrayList<>();
-        inwardEntries.forEach(inw -> instructions.addAll(inw.getInstructions()));
-        List<InstructionResponsePdfDto> instructionResponsePdfDtos = instructions.stream()
-                .map(ins -> Instruction.valueOfInstructionPdf(ins))
-                .collect(Collectors.toList());
         CompanyDetails companyDetails = companyDetailsService.findById(1);
-        DeliveryChallanPdfDto deliveryChallanPdfDto = new DeliveryChallanPdfDto(companyDetails,inwardEntries,instructionResponsePdfDtos);
+        DeliveryChallanPdfDto deliveryChallanPdfDto = new DeliveryChallanPdfDto(companyDetails,inwardEntries);
         context.setVariable("deliveryChallan",deliveryChallanPdfDto);
         return context;
     }
@@ -93,7 +88,10 @@ public class PdfService {
             return templateEngine.process("Cutting-slip", context);
         }else if(processId != null && processId == 2) {
             return templateEngine.process("Slitting-slip", context);
-        }else{
+        }else if(processId != null && processId == 3){
+            return templateEngine.process("SlitAndCut-slip", context);
+        }
+        else{
             return templateEngine.process("Inward",context);
         }
     }
