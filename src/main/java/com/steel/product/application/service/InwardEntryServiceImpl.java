@@ -106,4 +106,5 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 		}
 		return theEntry;
 	}
+
 }

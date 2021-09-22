@@ -29,10 +29,10 @@ public class DeliveryChallanPdfDto {
         if(this.inwardPdfDtos == null){
             this.inwardPdfDtos = new ArrayList<>();
         }
-        this.inwardPdfDtos = inwardEntries.stream().map(inw -> InwardEntry.valueOf(inw,inw.getInstructions()
-                .stream().map(ins -> Instruction.valueOfInstructionPdf(ins)).collect(Collectors.toList()))).collect(Collectors.toList());
+        this.inwardPdfDtos = inwardEntries.stream().map(inw -> InwardEntry.valueOf(inw, inw.getInstructions()
+                .stream().map(ins -> Instruction.valueOfInstructionPdf(ins, inw)).collect(Collectors.toList()))).collect(Collectors.toList());
         this.totalDeliveryWeight = inwardPdfDtos.stream().flatMap(inw -> inw.getInstructions().stream())
-                .reduce(0f,(sum,ins) -> sum + ins.getActualWeight(), Float::sum);
+                .reduce(0f, (sum, ins) -> sum + ins.getActualWeight(), Float::sum);
         this.totalValueOfGoods = inwardPdfDtos.stream().flatMap(inw -> inw.getInstructions().stream())
                 .reduce(0f,(sum,ins) -> sum+ins.getValueOfGoods(),Float::sum);
 

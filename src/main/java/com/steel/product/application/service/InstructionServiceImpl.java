@@ -211,6 +211,11 @@ public class InstructionServiceImpl implements InstructionService {
     }
 
     @Override
+    public List<Instruction> findSlitAndCutInstructionByInwardId(Integer inwardId) {
+        return instructionRepository.findSlitAndCutInstructionByInwardId(inwardId);
+    }
+
+    @Override
     @Transactional
     public void deleteById(Instruction deleteInstruction) {
         deleteInstruction.setPacketClassification(null);

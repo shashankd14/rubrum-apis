@@ -65,12 +65,10 @@
           <td th:text="${inward?.customerBatchId}"></td>
         </tr>
         <tr>
-          <td>Machine No: </td>
-          <td> - </td>
+          <td>Machine No: -</td>
         </tr>
         <tr>
-          <td>Number of Parts: </td>
-          <td th:text="${inward?.fQuantity}"></td>
+          <td>Number of Parts: -</td>
         </tr>
         <tr>
           <td>Balance coil remove: </td>
@@ -134,7 +132,7 @@
         <td class="m_DesTable" th:text="${inward.fThickness}"></td>
         <td class="m_DesTable" th:text="${ins[0]?.plannedWidth}"></td>
         <td class="m_DesTable" th:text="${ins[0]?.plannedNoOfPieces}"></td>
-        <td class="m_DesTable" th:text="${(weight.key*(#lists.size(ins))) + ' X ' + (#lists.size(ins))}"></td>
+        <td class="m_DesTable" th:text="${(weight.key) + ' X ' + (#lists.size(ins))}"></td>
         <td class="m_DesTable" th:text="${ins[0]?.packetClassification?.classificationName}"></td>
       </tr>
       <tr>
