@@ -414,10 +414,11 @@ public class Instruction {
 		return instructionResponseDto;
 	}
 
-	public static InstructionResponsePdfDto valueOfInstructionPdf(Instruction instruction){
+	public static InstructionResponsePdfDto valueOfInstructionPdf(Instruction instruction, InwardEntry inwardEntry) {
 		InstructionResponsePdfDto instructionResponsePdfDto = new InstructionResponsePdfDto();
 		instructionResponsePdfDto.setPacketClassification(instruction.getPacketClassification() != null ?
-				instruction.getPacketClassification(): null);
+				instruction.getPacketClassification() : null);
+		instructionResponsePdfDto.setProcess(Process.valueOf(instruction.getProcess()));
 		instructionResponsePdfDto.setPlannedLength(instruction.getPlannedLength());
 		instructionResponsePdfDto.setPlannedNoOfPieces(instruction.getPlannedNoOfPieces());
 		instructionResponsePdfDto.setPlannedWeight(instruction.getPlannedWeight());
@@ -428,7 +429,9 @@ public class Instruction {
 		instructionResponsePdfDto.setActualWidth(instruction.getActualWidth());
 		instructionResponsePdfDto.setDeliveryDetails(instruction.getDeliveryDetails() != null ? DeliveryDetails.valueOf(instruction.getDeliveryDetails()) : null);
 		instructionResponsePdfDto.setRemarks(instruction.getRemarks());
-		instructionResponsePdfDto.setValueOfGoods((float)(instruction.getInwardId().getfQuantity()/instruction.getInwardId().getValueOfGoods()) * instruction.getActualWeight());
+		if (inwardEntry != null) {
+			instructionResponsePdfDto.setValueOfGoods((float) (inwardEntry.getfQuantity() / inwardEntry.getValueOfGoods()) * instruction.getActualWeight());
+		}
 		return instructionResponsePdfDto;
 	}
 }

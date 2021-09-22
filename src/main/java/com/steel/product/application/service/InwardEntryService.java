@@ -2,9 +2,11 @@ package com.steel.product.application.service;
 
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public interface InwardEntryService {
@@ -31,5 +33,4 @@ public interface InwardEntryService {
   public List<InwardEntry> findDeliveryItemsByInstructionIds(List<Integer> instructionIds);
 
   public List<InwardEntry> saveAll(Set<InwardEntry> inwardEntries);
-
 }

@@ -77,19 +77,27 @@ public class InwardEntryPdfDto {
 
         private Date createdOn;
 
-        private Date updatedOn;
+    private Date updatedOn;
 
-        private Boolean isDeleted;
+    private Boolean isDeleted;
 
-        private List<InwardDoc> docs;
+    private List<InwardDoc> docs;
 
-        private List<InstructionResponsePdfDto> instructions;
+    private List<InstructionResponsePdfDto> instructions;
 
-        private Map<Float,List<InstructionResponsePdfDto>> instructionsMap;
+    private Map<Float, List<InstructionResponsePdfDto>> instructionsMap;
 
-        private Float totalWeight;
+    private Map<Float, List<InstructionResponsePdfDto>> instructionsSlitMap;
 
-        private Float inStockWeight;
+    private Map<Float, List<InstructionResponsePdfDto>> instructionsCutMap;
+
+    private Float totalWeight;
+
+    private Float totalWeightSlit;
+
+    private Float totalWeightCut;
+
+    private Float inStockWeight;
 
     public Integer getInwardEntryId() {
         return inwardEntryId;
@@ -417,5 +425,37 @@ public class InwardEntryPdfDto {
 
     public void setInstructionsMap(Map<Float, List<InstructionResponsePdfDto>> instructionsMap) {
         this.instructionsMap = instructionsMap;
+    }
+
+    public Map<Float, List<InstructionResponsePdfDto>> getInstructionsSlitMap() {
+        return instructionsSlitMap;
+    }
+
+    public void setInstructionsSlitMap(Map<Float, List<InstructionResponsePdfDto>> instructionsSlitMap) {
+        this.instructionsSlitMap = instructionsSlitMap;
+    }
+
+    public Map<Float, List<InstructionResponsePdfDto>> getInstructionsCutMap() {
+        return instructionsCutMap;
+    }
+
+    public void setInstructionsCutMap(Map<Float, List<InstructionResponsePdfDto>> instructionsCutMap) {
+        this.instructionsCutMap = instructionsCutMap;
+    }
+
+    public Float getTotalWeightSlit() {
+        return totalWeightSlit;
+    }
+
+    public void setTotalWeightSlit(Float totalWeightSlit) {
+        this.totalWeightSlit = totalWeightSlit;
+    }
+
+    public Float getTotalWeightCut() {
+        return totalWeightCut;
+    }
+
+    public void setTotalWeightCut(Float totalWeightCut) {
+        this.totalWeightCut = totalWeightCut;
     }
 }
