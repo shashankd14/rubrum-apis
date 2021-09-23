@@ -430,7 +430,7 @@ public class Instruction {
 		instructionResponsePdfDto.setDeliveryDetails(instruction.getDeliveryDetails() != null ? DeliveryDetails.valueOf(instruction.getDeliveryDetails()) : null);
 		instructionResponsePdfDto.setRemarks(instruction.getRemarks());
 		if (inwardEntry != null) {
-			instructionResponsePdfDto.setValueOfGoods((float) (inwardEntry.getfQuantity() / inwardEntry.getValueOfGoods()) * instruction.getActualWeight());
+			instructionResponsePdfDto.setValueOfGoods((float) ((instruction.getActualWeight() / inwardEntry.getfQuantity()) * inwardEntry.getValueOfGoods()));
 		}
 		return instructionResponsePdfDto;
 	}

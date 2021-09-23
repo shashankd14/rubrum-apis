@@ -118,23 +118,26 @@
             <tr>
                 <th class="t-head font-size-small">Coil No</th>
                 <th class="t-head font-size-small">Customer Batch No</th>
-                <!--        <th class="t-head">Vehicle no</th>-->
                 <th class="t-head font-size-small">TxWxL (mm)</th>
                 <th class="t-head font-size-small">Inward date (DD/MM/YYYY)</th>
                 <th class="t-head font-size-small">Inward challan No</th>
                 <th class="t-head font-size-small">Description</th>
-                <th class="t-head font-size-small">Delivery Weight</th>
-                <th class="t-head font-size-small">Value of goods</th>
+                <th class="t-head font-size-small">Delivery Weight (Kg)</th>
+                <th class="t-head font-size-small">Value of goods (Rs)</th>
 
             </tr>
             <th:block th:each="inw : ${deliveryChallan.inwardPdfDtos}">
                 <tr th:each="ins : ${inw.instructions}">
                     <td class="t-head font-size-small" th:text="${inw.coilNumber}"></td>
                     <td class="t-head font-size-small" th:text="${inw?.customerBatchId}"></td>
-                    <td class="t-head font-size-small" th:text="${inw?.fThickness + ' x ' + inw?.fWidth + ' x ' + inw?.fLength}"></td>
+                    <td class="t-head font-size-small"
+                        th:if="${ins.process.processId == 1 or ins.process.processId == 3}"
+                        th:text="${inw?.fThickness + ' x ' + inw?.fWidth + ' x ' + ins?.actualLength}"></td>
+                    <td class="t-head font-size-small" th:if="${ins.process.processId == 2}"
+                        th:text="${inw?.fThickness + ' x ' + ins?.actualWidth + ' x ' + inw?.fLength}"></td>
                     <td class="t-head font-size-small" th:text="${#dates.format(inw?.createdOn,'dd/MM/yyyy')}"></td>
                     <td class="t-head font-size-small" th:text="${inw?.inwardEntryId}"></td>
-                    <td class="t-head font-size-small" th:text="${ins?.remarks}"></td>
+                    <td class="t-head font-size-small" th:text="${inw?.matDescription}"></td>
                     <td class="t-head font-size-small" th:text="${ins?.actualWeight}"></td>
                     <td class="t-head font-size-small" th:text="${#numbers.formatDecimal(ins?.valueOfGoods,1,2)}"></td>
                 </tr>
