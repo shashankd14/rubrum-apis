@@ -140,7 +140,7 @@ public class InstructionServiceImpl implements InstructionService {
         if (incomingWeight > availableWeight - existingWeight) {
             return new ResponseEntity<Object>("No available weight for processing.", HttpStatus.BAD_REQUEST);
         }
-        if (fromGroup && incomingWeight != availableWeight) {
+        if (fromGroup && (incomingWeight - availableWeight) > 1) {
             return new ResponseEntity<Object>("Input instructions total weight must be equal to instructions with group id " + instructionRequestDtos.get(0).getGroupId(), HttpStatus.BAD_REQUEST);
         }
         Process process = processService.getById(instructionRequestDtos.get(0).getProcessId());
