@@ -26,13 +26,13 @@
   </div>
 
   <div class="coil-details column">
-    <h3>COIL DETAILS</h3>
-    <p>Coil Number : <span th:text="${inward.coilNumber}"></span></p>
-    <p>Material Description : <span th:text="${inward.matDescription}"></span></p>
-    <p>Dimensions T x W x L (mm) : <span
-            th:text="${inward.fThickness + ' x ' + inward.fWidth + ' x ' + inward.fLength}"></span></p>
-    <p>Net Weight (kg) : <span th:text="${inward.billedWeight}"></span></p>
-    <p>Gross Weight (kg) : <span th:text="${inward.grossWeight}"></span></p>
+      <h3>COIL DETAILS</h3>
+      <p>Coil Number : <span th:text="${inward.coilNumber}"></span></p>
+      <p>Material Description : <span th:text="${inward.matDescription}"></span></p>
+      <p>Dimensions T x W x L (mm) : <span
+              th:text="${inward.fThickness + ' x ' + inward.fWidth + ' x ' + inward.fLength}"></span></p>
+      <p>Net Weight : <span th:text="${inward?.fQuantity}"></span></p>
+      <p>Gross Weight : <span th:text="${inward?.grossWeight}"></span></p>
   </div>
 </div>
 
