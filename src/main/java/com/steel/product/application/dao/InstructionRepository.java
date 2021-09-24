@@ -44,6 +44,9 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
     @Query("select ins from Instruction ins join fetch ins.deliveryDetails dd where ins.instructionId in :instructionIds")
     public List<Instruction> findInstructionsWithDeliveryDetails(@Param("instructionIds")List<Integer> instructionIds);
 
+    @Query("select ins from Instruction ins join fetch ins.inwardId inw join fetch inw.party join fetch inw.material join fetch inw.materialGrade" +
+            " where inw.inwardEntryId = :inwardId and (ins.groupId is not null or ins.parentGroupId is not null)")
+    public List<Instruction> findSlitAndCutInstructionByInwardId(@Param("inwardId") Integer inwardId);
     @Query("select SUM(ins.plannedWeight) from Instruction ins where ins.instructionId = : groupId")
     public Float sumOfPlannedWeightOfInstructionsHavingGroupId(@Param("groupId")Integer groupId);
 

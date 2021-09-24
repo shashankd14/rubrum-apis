@@ -25,12 +25,14 @@ public class PdfService {
     private InwardEntryService inwardEntryService;
     private CompanyDetailsService companyDetailsService;
     private SpringTemplateEngine templateEngine;
+    private InstructionService instructionService;
 
     @Autowired
-    public PdfService(InwardEntryService inwardEntryService, CompanyDetailsService companyDetailsService, SpringTemplateEngine templateEngine) {
+    public PdfService(InwardEntryService inwardEntryService, CompanyDetailsService companyDetailsService, SpringTemplateEngine templateEngine, InstructionService instructionService) {
         this.inwardEntryService = inwardEntryService;
         this.companyDetailsService = companyDetailsService;
         this.templateEngine = templateEngine;
+        this.instructionService = instructionService;
     }
 
     public File generatePdf(PdfDto pdfDto) throws IOException, org.dom4j.DocumentException, DocumentException {
@@ -52,13 +54,8 @@ public class PdfService {
     private Context getDeliveryContext(DeliveryPdfDto deliveryPdfDto) {
         Context context = new Context();
         List<InwardEntry> inwardEntries = inwardEntryService.findDeliveryItemsByInstructionIds(deliveryPdfDto.getInstructionIds());
-        List<Instruction> instructions = new ArrayList<>();
-        inwardEntries.forEach(inw -> instructions.addAll(inw.getInstructions()));
-        List<InstructionResponsePdfDto> instructionResponsePdfDtos = instructions.stream()
-                .map(ins -> Instruction.valueOfInstructionPdf(ins))
-                .collect(Collectors.toList());
         CompanyDetails companyDetails = companyDetailsService.findById(1);
-        DeliveryChallanPdfDto deliveryChallanPdfDto = new DeliveryChallanPdfDto(companyDetails,inwardEntries,instructionResponsePdfDtos);
+        DeliveryChallanPdfDto deliveryChallanPdfDto = new DeliveryChallanPdfDto(companyDetails,inwardEntries);
         context.setVariable("deliveryChallan",deliveryChallanPdfDto);
         return context;
     }
@@ -78,18 +75,37 @@ public class PdfService {
 
     private Context getContext(PdfDto pdfDto) {
         Context context = new Context();
-        InwardEntry inwardEntry = inwardEntryService.getByEntryId(pdfDto.getInwardId());
+        Integer slitAndCutProcessId = 3;
+        InwardEntry inwardEntry;
+        List<InstructionResponsePdfDto> instructionResponsePdfDtos;
+        List<InstructionResponsePdfDto> instructionsSlit = null;
+        List<InstructionResponsePdfDto> instructionsCut = null;
         InwardEntryPdfDto inwardEntryPdfDto;
-        if(pdfDto.getProcessId() != null) {
-            List<InstructionResponsePdfDto> instructions = inwardEntry.getInstructions()
-                    .stream().filter(i -> i.getProcess().getProcessId() == pdfDto.getProcessId())
-                    .map(i -> Instruction.valueOfInstructionPdf(i))
+        if (pdfDto.getProcessId() != null && pdfDto.getProcessId() == slitAndCutProcessId) {
+            List<Instruction> instructions = instructionService.findSlitAndCutInstructionByInwardId(pdfDto.getInwardId());
+            inwardEntry = instructions.get(0).getInwardId();
+            instructionsCut = instructions.stream()
+                    .filter(ins -> ins.getProcess().getProcessId() == 3)
+                    .map(ins -> Instruction.valueOfInstructionPdf(ins, null))
                     .collect(Collectors.toList());
-            inwardEntryPdfDto = InwardEntry.valueOf(inwardEntry,instructions);
-        }else{
-            inwardEntryPdfDto = InwardEntry.valueOf(inwardEntry,null);
+            instructionsSlit = instructions.stream()
+                    .filter(ins -> ins.getProcess().getProcessId() == 2)
+                    .map(ins -> Instruction.valueOfInstructionPdf(ins, null))
+                    .collect(Collectors.toList());
+            instructionResponsePdfDtos = null;
+            inwardEntryPdfDto = InwardEntry.valueOf(inwardEntry, instructionsCut, instructionsSlit);
+        } else if (pdfDto.getProcessId() != null) {
+            inwardEntry = inwardEntryService.getByEntryId(pdfDto.getInwardId());
+            instructionResponsePdfDtos = inwardEntry.getInstructions()
+                    .stream().filter(ins -> ins.getProcess().getProcessId() == pdfDto.getProcessId())
+                    .map(i -> Instruction.valueOfInstructionPdf(i, null))
+                    .collect(Collectors.toList());
+            inwardEntryPdfDto = InwardEntry.valueOf(inwardEntry, instructionResponsePdfDtos);
+        } else {
+            inwardEntry = inwardEntryService.getByEntryId(pdfDto.getInwardId());
+            instructionResponsePdfDtos = null;
+            inwardEntryPdfDto = InwardEntry.valueOf(inwardEntry, instructionResponsePdfDtos);
         }
-
         context.setVariable("inward", inwardEntryPdfDto);
         return context;
     }
@@ -99,7 +115,10 @@ public class PdfService {
             return templateEngine.process("Cutting-slip", context);
         }else if(processId != null && processId == 2) {
             return templateEngine.process("Slitting-slip", context);
-        }else{
+        }else if(processId != null && processId == 3){
+            return templateEngine.process("SlitAndCut-slip", context);
+        }
+        else{
             return templateEngine.process("Inward",context);
         }
     }

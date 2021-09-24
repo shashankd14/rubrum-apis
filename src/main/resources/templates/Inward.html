@@ -19,19 +19,20 @@
 
   <div class="customer-details column">
     <h3>CUSTOMER DETAILS</h3>
-    <p>Customer Name : <span th:text="${inward?.partyName}"></span></p>
+    <p>Customer Name : <span th:text="${inward.partyName}"></span></p>
     <p>Customer Batch No : <span th:text="${inward.customerBatchId}"></span></p>
     <p>Customer Invoice No : <span th:text="${inward.customerInvoiceNo}"></span></p>
     <p>Purpose Type : <span th:text="${inward.purposeType}"></span></p>
   </div>
 
   <div class="coil-details column">
-    <h3>COIL DETAILS</h3>
-    <p>Coil Number : <span th:text="${inward.coilNumber}"></span></p>
-    <p>Material Description : <span th:text="${inward?.matDescription}"></span></p>
-    <p>Dimensions (mm) : <span th:text="${inward?.fLength +' x '+ inward?.fWidth +' x ' +inward?.fThickness}"></span></p>
-    <p>Net Weight (kg) : <span th:text="${inward.billedWeight}"></span></p>
-    <p>Gross Weight (kg) : <span th:text="${inward.grossWeight}"></span></p>
+      <h3>COIL DETAILS</h3>
+      <p>Coil Number : <span th:text="${inward.coilNumber}"></span></p>
+      <p>Material Description : <span th:text="${inward.matDescription}"></span></p>
+      <p>Dimensions T x W x L (mm) : <span
+              th:text="${inward.fThickness + ' x ' + inward.fWidth + ' x ' + inward.fLength}"></span></p>
+      <p>Net Weight : <span th:text="${inward?.fQuantity}"></span></p>
+      <p>Gross Weight : <span th:text="${inward?.grossWeight}"></span></p>
   </div>
 </div>
 
@@ -46,7 +47,7 @@
 
   <div class="quality-details column">
     <h3>QUALITY DETAILS</h3>
-    <p>Grade : <span th:text="${inward?.materialGradeName}"></span></p>
+    <p>Grade : <span th:text="${inward.materialGradeName}"></span></p>
     <p>Test Certificate No : <span th:text="${inward.testCertificateNumber}"></span></p>
     <p>Remarks : <span th:text="${inward.remarks}"></span></p>
   </div>
