@@ -82,6 +82,17 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 	}
 
 	@Override
+	public InwardEntry getByInwardEntryId(Integer inwardId) {
+		InwardEntry inwardEntry;
+		try{
+			inwardEntry = inwdEntryRepo.getOne(inwardId);
+		}catch (Exception ex){
+			throw new RuntimeException("inward with id "+inwardId+" not found");
+		}
+		return inwardEntry;
+	}
+
+	@Override
 	public List<InwardEntry> getAllEntriesPwr() {
 		return inwdEntryRepo.findAll().stream()
 				.filter(inwardEntry -> inwardEntry.getStatus().getStatusId() != 4 && inwardEntry.getStatus().getStatusId() != 5)

@@ -3,12 +3,15 @@ package com.steel.product.application.service;
 import com.steel.product.application.dto.instruction.InstructionFinishDto;
 import com.steel.product.application.dto.instruction.InstructionRequestDto;
 import com.steel.product.application.entity.Instruction;
+import com.steel.product.application.entity.InstructionGroup;
 import com.steel.product.application.entity.Status;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public interface InstructionService {
 
 	public List<Instruction> getAll();
@@ -18,8 +21,6 @@ public interface InstructionService {
     public List<Instruction> getAllWIPList();
 
     public Instruction getById(int theId);
-
-    public Instruction save(Instruction instruction);
 
     public ResponseEntity<Object> addInstruction(List<InstructionRequestDto> instructionDTOs);
 
@@ -41,6 +42,7 @@ public interface InstructionService {
 
 	public List<Instruction> findInstructionsWithDeliveryDetails(List<Integer> instructionIds);
 
+    public Instruction save(Instruction instruction);
 
 	ResponseEntity<Object> updateInstruction(InstructionFinishDto instructionFinishDto);
 
@@ -49,4 +51,7 @@ public interface InstructionService {
 	public Float sumOfPlannedWeightOfInstructionsHavingGroupId(Integer groupId);
 
 	public Float sumOfPlannedWeightOfInstructionHavingParentInstructionId(Integer parentInstructionId);
+
+	public List<Instruction> getAllByInstructionIdIn(List<Integer> instructionIds);
 }
+

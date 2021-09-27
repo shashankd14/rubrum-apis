@@ -23,20 +23,18 @@ public class InstructionGroupServiceImpl implements InstructionGroupService{
     public InstructionGroup saveInstructionGroup(InstructionGroupDto instructionGroupDto) {
 
         InstructionGroup instructionGroup = new InstructionGroup();
-        InstructionGroup savedInstructionGroup = new InstructionGroup();
-        try{
-            instructionGroup.setInstructionCount(instructionGroupDto.getCount());
-            savedInstructionGroup = instructionGroupRepository.save(instructionGroup);
+        List<Instruction> instructions = instructionService.getAllByInstructionIdIn(instructionGroupDto.getInstructionId());
+        InstructionGroup savedInstructionGroup = instructionGroupRepository.save(instructionGroup);
+        savedInstructionGroup = this.createBundle(instructions,savedInstructionGroup);
+        instructionService.saveAll(instructions);
+        return instructionGroupRepository.save(savedInstructionGroup);
+    }
 
-            for(Integer instructionId : instructionGroupDto.getInstructionId()){
-                Instruction instruction = instructionService.getById(instructionId);
-                instruction.setGroupId(savedInstructionGroup.getGroupId());
-                instructionService.save(instruction);
-            }
-
-        }catch(Exception e){
-            return null;
+    private InstructionGroup createBundle(List<Instruction> instructions, InstructionGroup savedInstructionGroup) {
+        for(Instruction ins:instructions){
+            ins.setGroupId(savedInstructionGroup.getGroupId());
         }
+        savedInstructionGroup.setInstructionCount(instructions.size());
         return savedInstructionGroup;
     }
 

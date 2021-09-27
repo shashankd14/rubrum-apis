@@ -117,6 +117,7 @@ public class InwardEntryController {
 				String fileUrl = awsS3Service.uploadFile(inward.getTestCertificateFile());
 				inwardEntry.setTestCertificateFileUrl(fileUrl);
 			}
+			inwardEntry.setTestCertificateNumber(inward.getTestCertificateNumber());
 			InwardEntry savedInwardEntry = inwdEntrySvc.saveEntry(inwardEntry);
 
 			if (inward.getInwardFiles() != null) {

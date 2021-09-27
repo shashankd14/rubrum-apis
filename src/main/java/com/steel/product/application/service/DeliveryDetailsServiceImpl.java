@@ -23,17 +23,21 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 
     private final static Logger LOGGER = LoggerFactory.getLogger(DeliveryDetails.class);
 
-    @Autowired
     private DeliveryDetailsRepository deliveryDetailsRepo;
 
-    @Autowired
     private InstructionService instructionService;
 
-    @Autowired
     private StatusService statusService;
 
-    @Autowired
     private InwardEntryService inwardEntryService;
+
+    @Autowired
+    public DeliveryDetailsServiceImpl(DeliveryDetailsRepository deliveryDetailsRepo, InstructionService instructionService, StatusService statusService, InwardEntryService inwardEntryService) {
+        this.deliveryDetailsRepo = deliveryDetailsRepo;
+        this.instructionService = instructionService;
+        this.statusService = statusService;
+        this.inwardEntryService = inwardEntryService;
+    }
 
     @Override
     public List<Instruction> getAll() {

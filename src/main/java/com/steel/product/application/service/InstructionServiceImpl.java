@@ -23,23 +23,27 @@ public class InstructionServiceImpl implements InstructionService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InstructionServiceImpl.class);
 
-    @Autowired
     private InstructionRepository instructionRepository;
 
-    @Autowired
     private InwardEntryRepository inwardEntryRepository;
 
-    @Autowired
     private InwardEntryService inwardService;
 
-    @Autowired
     private ProcessService processService;
 
-    @Autowired
     private StatusService statusService;
 
-    @Autowired
     private PacketClassificationService packetClassificationService;
+
+    @Autowired
+    public InstructionServiceImpl(InstructionRepository instructionRepository, InwardEntryRepository inwardEntryRepository, InwardEntryService inwardService, ProcessService processService, StatusService statusService, PacketClassificationService packetClassificationService) {
+        this.instructionRepository = instructionRepository;
+        this.inwardEntryRepository = inwardEntryRepository;
+        this.inwardService = inwardService;
+        this.processService = processService;
+        this.statusService = statusService;
+        this.packetClassificationService = packetClassificationService;
+    }
 
     @Override
     public List<Instruction> getAll() {
@@ -74,26 +78,10 @@ public class InstructionServiceImpl implements InstructionService {
     }
 
     @Override
-    public Instruction save(Instruction instruction) {
-        Instruction savedInstruction = new Instruction();
-        if (instruction.getInwardId() != null) {
-            InwardEntry inwardEntry = instruction.getInwardId();
-            if (instruction.getPlannedWeight() != null && inwardEntry.getFpresent() != null)
-                inwardEntry.setFpresent((inwardEntry.getFpresent() - instruction.getPlannedWeight()));
-            inwardEntryRepository.save(inwardEntry);
-        }
-
-        savedInstruction = instructionRepository.save(instruction);
-
-        return savedInstruction;
-    }
-
-
-    @Override
     @Transactional
     public ResponseEntity<Object> addInstruction(List<InstructionRequestDto> instructionRequestDtos) {
         LOGGER.info("inside save instruction method");
-        float incomingWeight = instructionRequestDtos.stream().reduce(0f,(sum,dto) -> sum + dto.getPlannedWeight(),Float::sum);
+        float incomingWeight = instructionRequestDtos.stream().filter(dto -> dto.getPlannedWeight() != null).reduce(0f,(sum,dto) -> sum + dto.getPlannedWeight(),Float::sum);
         float availableWeight = 0f;
         float existingWeight = 0f;
         boolean fromInward = false, fromParentInstruction = false, fromGroup = false;
@@ -106,14 +94,14 @@ public class InstructionServiceImpl implements InstructionService {
         LOGGER.info("incoming weight " + incomingWeight);
 
         if (inwardId != null && groupId != null) {
-            LOGGER.info("adding instructions from inward"+ inwardId +", group id " + inwardId);
-            inwardEntry = inwardService.getByEntryId(inwardId);
+            LOGGER.info("adding instructions from inward "+ inwardId +", group id " + groupId);
+            inwardEntry = inwardService.getByInwardEntryId(inwardId);
             availableWeight = this.sumOfPlannedWeightOfInstructionsHavingGroupId(groupId);
-            LOGGER.info("available weight for instructions with group id "+availableWeight);
+            LOGGER.info("available weight for instructions with group id "+groupId+ " is "+availableWeight);
             fromGroup = true;
         } else if (inwardId != null) {
             LOGGER.info("adding instructions from inward id " + inwardId);
-            inwardEntry = inwardService.getByEntryId(inwardId);
+            inwardEntry = inwardService.getByInwardEntryId(inwardId);
             availableWeight = inwardEntry.getFpresent();
             LOGGER.info("available weight of inward "+inwardEntry.getInwardEntryId()+" is "+availableWeight);
             fromInward = true;
@@ -131,19 +119,29 @@ public class InstructionServiceImpl implements InstructionService {
             }
         if (inwardEntry.getFpresent() < 0) {
             LOGGER.error("inward has negative fpresent value "+inwardEntry.getFpresent());
-            return new ResponseEntity<Object>("Inward with id " + inwardEntry.getInwardEntryId() + " has invalid fpresent value " + inwardEntry.getFpresent(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<Object>("Inward with id " + inwardId + " has invalid fpresent value " + inwardEntry.getFpresent(), HttpStatus.BAD_REQUEST);
         }
-        Float newFpresent = availableWeight - existingWeight - incomingWeight;
-        LOGGER.info("inward has fpresent "+inwardEntry.getFpresent());
-        if (newFpresent < 0) {
-            return new ResponseEntity<Object>("inward "+inwardEntry.getInwardEntryId()+" has no available weight for processing.", HttpStatus.BAD_REQUEST);
-        }
-        if (fromGroup && newFpresent == 0f) {
+        Float remainingWeight = availableWeight - existingWeight - incomingWeight;
+        LOGGER.info("remaining weight is "+remainingWeight);
+        if (fromGroup && Math.abs(remainingWeight) > 1f) {
             return new ResponseEntity<Object>("Input instructions total weight must be equal to instructions with group id " + groupId, HttpStatus.BAD_REQUEST);
         }
-        LOGGER.info("inward "+inwardEntry.getInwardEntryId()+" has valid fpresent value "+newFpresent);
-        inwardEntry.setFpresent(newFpresent);
-        LOGGER.info("setting fpresent for inward "+inwardEntry.getInwardEntryId()+" to "+inwardEntry.getFpresent());
+        else if (!fromGroup && remainingWeight < 0f) {
+            LOGGER.error("remaining weight is invalid "+remainingWeight);
+            return new ResponseEntity<Object>("inward "+inwardId+" has no available weight for processing.", HttpStatus.BAD_REQUEST);
+        }
+        if(fromInward){
+            LOGGER.info("setting fPresent for inward "+inwardEntry.getInwardEntryId()+" to "+remainingWeight);
+            inwardEntry.setFpresent(remainingWeight);
+            if(Math.abs(remainingWeight) < 1f){
+                LOGGER.info("setting fWidth for inward "+inwardId+" to 0");
+                inwardEntry.setfWidth(0f);
+            }
+        }
+        if(inwardEntry.getFpresent() < 1f){
+            LOGGER.info("setting fWidth for inward "+inwardEntry.getInwardEntryId()+" to 0 as available weight is 0");
+
+        }
         Process process = processService.getById(instructionRequestDto.getProcessId());
         Status inProgress = statusService.getStatusById(2);
         inProgress.addInwardEntry(inwardEntry);
@@ -348,7 +346,7 @@ public class InstructionServiceImpl implements InstructionService {
                 parentInstruction.setActualWeight(parentActualWeight);
                 readyToDeliverStatus.addInstruction(parentInstruction);
                 LOGGER.info("saving parent instruction id "+parentInstruction.getInstructionId());
-                this.save(parentInstruction);
+                instructionRepository.save(parentInstruction);
             }
         } else {
             LOGGER.error("no inwardId, parentInstructionId or parentGroupId found");
@@ -370,12 +368,37 @@ public class InstructionServiceImpl implements InstructionService {
 
     @Override
     public Float sumOfPlannedWeightOfInstructionHavingParentInstructionId(Integer parentInstructionId) {
-        return sumOfPlannedWeightOfInstructionHavingParentInstructionId(parentInstructionId);
+        return instructionRepository.sumOfPlannedWeightOfInstructionHavingParentInstructionId(parentInstructionId);
+    }
+
+    @Override
+    public List<Instruction> getAllByInstructionIdIn(List<Integer> instructionIds) {
+        return instructionRepository.getAllByInstructionIdIn(instructionIds);
     }
 
     @Override
     public List<Instruction> findInstructionsWithDeliveryDetails(List<Integer> instructionIds) {
         return instructionRepository.findInstructionsWithDeliveryDetails(instructionIds);
+    }
+
+    @Override
+    public List<Instruction> findSlitAndCutInstructionByInwardId(Integer inwardId) {
+        return instructionRepository.findSlitAndCutInstructionByInwardId(inwardId);
+    }
+
+    @Override
+    public Instruction save(Instruction instruction) {
+        Instruction savedInstruction = new Instruction();
+        if (instruction.getInwardId() != null) {
+            InwardEntry inwardEntry = instruction.getInwardId();
+            if (instruction.getPlannedWeight() != null && inwardEntry.getFpresent() != null)
+                inwardEntry.setFpresent((inwardEntry.getFpresent() - instruction.getPlannedWeight()));
+            inwardEntryRepository.save(inwardEntry);
+        }
+
+        savedInstruction = instructionRepository.save(instruction);
+
+        return savedInstruction;
     }
 
 

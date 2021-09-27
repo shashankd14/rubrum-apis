@@ -33,4 +33,6 @@ public interface InwardEntryService {
   public List<InwardEntry> findDeliveryItemsByInstructionIds(List<Integer> instructionIds);
 
   public List<InwardEntry> saveAll(Set<InwardEntry> inwardEntries);
+
+  public InwardEntry getByInwardEntryId(Integer inwardId);
 }
