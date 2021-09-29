@@ -132,7 +132,8 @@
         <td class="m_DesTable" th:text="${inward.fThickness}"></td>
         <td class="m_DesTable" th:text="${ins[0]?.plannedWidth}"></td>
         <td class="m_DesTable" th:text="${ins[0]?.plannedNoOfPieces}"></td>
-        <td class="m_DesTable" th:text="${(weight.key) + ' X ' + (#lists.size(ins))}"></td>
+        <td class="m_DesTable"
+            th:text="${(weight.key*#lists.size(ins)) + ' (' + (weight.key) + ' X ' + (#lists.size(ins)) + ')'}"></td>
         <td class="m_DesTable" th:text="${ins[0]?.packetClassification?.classificationName}"></td>
       </tr>
       <tr>

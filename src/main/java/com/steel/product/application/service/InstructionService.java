@@ -2,10 +2,9 @@ package com.steel.product.application.service;
 
 import com.steel.product.application.dto.instruction.InstructionFinishDto;
 import com.steel.product.application.dto.instruction.InstructionRequestDto;
+import com.steel.product.application.dto.instruction.InstructionResponseDto;
 import com.steel.product.application.entity.Instruction;
-import com.steel.product.application.entity.InstructionGroup;
 import com.steel.product.application.entity.Status;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -36,22 +35,24 @@ public interface InstructionService {
 
     public void updateInstructionWithDeliveryRemarks(int deliveryId, String remarks, int instructionId);
 
-	public List<Instruction> saveAll(List<Instruction> instructions);
+    public List<Instruction> saveAll(List<Instruction> instructions);
 
-	public List<Instruction> findInstructionsByInstructionIdInAndStatusNot(List<Integer> ids, Status status);
+    public List<Instruction> findInstructionsByInstructionIdInAndStatusNot(List<Integer> ids, Status status);
 
-	public List<Instruction> findInstructionsWithDeliveryDetails(List<Integer> instructionIds);
+    public List<Instruction> findInstructionsWithDeliveryDetails(List<Integer> instructionIds);
 
     public Instruction save(Instruction instruction);
 
-	ResponseEntity<Object> updateInstruction(InstructionFinishDto instructionFinishDto);
+    public InstructionResponseDto saveUnprocessedForDelivery(Integer inwardId);
 
-	public List<Instruction> findAllByInstructionIdInAndStatus(List<Integer> instructionIds,Integer statusId);
+    ResponseEntity<Object> updateInstruction(InstructionFinishDto instructionFinishDto);
 
-	public Float sumOfPlannedWeightOfInstructionsHavingGroupId(Integer groupId);
+    public List<Instruction> findAllByInstructionIdInAndStatus(List<Integer> instructionIds, Integer statusId);
 
-	public Float sumOfPlannedWeightOfInstructionHavingParentInstructionId(Integer parentInstructionId);
+    public Float sumOfPlannedWeightOfInstructionsHavingGroupId(Integer groupId);
 
-	public List<Instruction> getAllByInstructionIdIn(List<Integer> instructionIds);
+    public Float sumOfPlannedWeightOfInstructionHavingParentInstructionId(Integer parentInstructionId);
+
+    public List<Instruction> getAllByInstructionIdIn(List<Integer> instructionIds);
 }
 

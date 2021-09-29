@@ -81,28 +81,28 @@ public class Instruction {
 	
 	@Column(name = "wastage")
 	private Float wastage;
-	
-	@Column(name = "damage")
-	private Float damage;
-	
-	@Column(name = "packingweight")
-	private Float packingWeight;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "rateid")
-	private Rates rates;
+    @Column(name = "damage")
+    private Float damage;
 
-	@ManyToOne(fetch = FetchType.EAGER)
-	@JoinColumn(name = "deliveryid")
-	private DeliveryDetails deliveryDetails;
+    @Column(name = "packingweight")
+    private Float packingWeight;
 
-	@Column(name = "remarks")
-	private String remarks;
-	
-	@Column(name = "createdby")
-	private Integer createdBy;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "rateid")
+    private Rates rates;
 
-	@Column(name = "updatedby")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "deliveryid")
+    private DeliveryDetails deliveryDetails;
+
+    @Column(name = "remarks")
+    private String remarks;
+
+    @Column(name = "createdby")
+    private Integer createdBy;
+
+    @Column(name = "updatedby")
 	private Integer updatedBy;
 
 	@Temporal(TemporalType.TIMESTAMP)

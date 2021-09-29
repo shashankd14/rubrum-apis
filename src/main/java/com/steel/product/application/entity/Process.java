@@ -1,11 +1,11 @@
 package com.steel.product.application.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.steel.product.application.dto.process.ProcessDto;
 
 import javax.persistence.*;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "product_process")
@@ -26,10 +26,6 @@ public class Process {
         return processId;
     }
 
-    @OneToMany(mappedBy = "status", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH,
-            CascadeType.REFRESH })
-    private List<Instruction> instruction;
-
     public void setProcessId(int processId) {
         this.processId = processId;
     }
@@ -40,14 +36,6 @@ public class Process {
 
     public void setProcessName(String processName) {
         this.processName = processName;
-    }
-
-    public List<Instruction> getInstruction() {
-        return instruction;
-    }
-
-    public void setInstruction(List<Instruction> instruction) {
-        this.instruction = instruction;
     }
 
     public List<Rates> getRates() {

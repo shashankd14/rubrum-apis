@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -118,33 +119,7 @@ public class InstructionController {
 
     @PostMapping("/saveUnprocessedForDelivery/{inwardId}")
     public ResponseEntity<Object> saveUnprocessedForDelivery(@PathVariable int inwardId) {
-        try {
-            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-            Instruction instruction = new Instruction();
-            InwardEntry inward = inwardService.getByEntryId(inwardId);
-
-            instruction.setInwardId(inward);
-            instruction.setProcess(processService.getById(7));
-            instruction.setPlannedWeight(inward.getFpresent());
-            instruction.setStatus(statusService.getStatusById(3));
-
-            instruction.setInstructionDate(timestamp);
-            instruction.setCreatedBy(1);
-            instruction.setUpdatedBy(1);
-            instruction.setCreatedOn(timestamp);
-            instruction.setUpdatedOn(timestamp);
-            instruction.setIsDeleted(false);
-
-            Instruction savedInstruction = instructionService.save(instruction);
-
-            inward.setFpresent(0f);
-            inwardService.saveEntry(inward);
-
-            return new ResponseEntity<Object>(Instruction.valueOf(savedInstruction), HttpStatus.OK);
-
-        } catch (Exception e) {
-            return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        return new ResponseEntity<>(instructionService.saveUnprocessedForDelivery(inwardId), HttpStatus.OK);
     }
 
 

@@ -81,7 +81,7 @@ public class PdfService {
         List<InstructionResponsePdfDto> instructionsSlit = null;
         List<InstructionResponsePdfDto> instructionsCut = null;
         InwardEntryPdfDto inwardEntryPdfDto;
-        if (pdfDto.getProcessId() != null && pdfDto.getProcessId() == slitAndCutProcessId) {
+        if (pdfDto.getProcessId() != null && pdfDto.getProcessId().equals(slitAndCutProcessId)) {
             List<Instruction> instructions = instructionService.findSlitAndCutInstructionByInwardId(pdfDto.getInwardId());
             inwardEntry = instructions.get(0).getInwardId();
             instructionsCut = instructions.stream()

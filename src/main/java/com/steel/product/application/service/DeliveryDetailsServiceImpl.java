@@ -95,28 +95,28 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
             delivery.setUpdatedBy(1);
             delivery.setCreatedOn(timestamp);
             delivery.setUpdatedOn(timestamp);
-            delivery.setDeleted(false);
-            delivery.setVehicleNo(deliveryDto.getVehicleNo());
+        delivery.setDeleted(false);
+        delivery.setVehicleNo(deliveryDto.getVehicleNo());
 
-            deliveryItemDetails= deliveryDto.getDeliveryItemDetails();
+        deliveryItemDetails = deliveryDto.getDeliveryItemDetails();
 
 
-            float inStockWeight = 0f, weightToDeliver = 0f, parentWeight = 0f;
-            Integer deliveredStatusId = 4;
-            Status deliveredStatus = statusService.getStatusById(deliveredStatusId);
-            Integer readyToDeliverStatusId = 3;
-            Map<Integer,String> instructionRemarksMap = deliveryDto.getDeliveryItemDetails().stream().
-                    collect(Collectors.toMap(d -> d.getInstructionId(),d -> d.getRemarks()));
-            List<Instruction> instructions = instructionService.findAllByInstructionIdInAndStatus(deliveryItemDetails.stream()
-                    .map(d -> d.getInstructionId()).collect(Collectors.toList()), readyToDeliverStatusId);
-            instructions.forEach(ins -> deliveredStatus.addInstruction(ins));
-            instructions = instructionService.saveAll(instructions);
+        float inStockWeight = 0f, weightToDeliver = 0f, parentWeight = 0f;
+        Integer deliveredStatusId = 4;
+        Status deliveredStatus = statusService.getStatusById(deliveredStatusId);
+        Integer readyToDeliverStatusId = 3;
+        Map<Integer, String> instructionRemarksMap = deliveryDto.getDeliveryItemDetails().stream().filter(d -> d.getRemarks() != null)
+                .collect(Collectors.toMap(d -> d.getInstructionId(), d -> d.getRemarks()));
+        List<Instruction> instructions = instructionService.findAllByInstructionIdInAndStatus(deliveryItemDetails.stream()
+                .map(d -> d.getInstructionId()).collect(Collectors.toList()), readyToDeliverStatusId);
+        instructions.forEach(ins -> ins.setStatus(deliveredStatus));
+        instructions = instructionService.saveAll(instructions);
 
-            InwardEntry inwardEntry;
-            Instruction parentInstruction;
-            List<Instruction> groupInstructions = null;
-            Set<Instruction> parentGroupInstructions = new HashSet<>();
-            Set<Instruction> childrenInstructions;
+        InwardEntry inwardEntry;
+        Instruction parentInstruction;
+        List<Instruction> groupInstructions = null;
+        Set<Instruction> parentGroupInstructions = new HashSet<>();
+        Set<Instruction> childrenInstructions;
             Set<InwardEntry> inwardEntryList = new HashSet<>();
             Integer parentGroupId;
             boolean isAnyInstructionNotDelivered = true;
@@ -138,7 +138,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
                         if (!isAnyInstructionNotDelivered) {
                             if(groupInstructions == null || (groupInstructions != null && !groupInstructions.isEmpty() &&!groupInstructions.get(0).getGroupId().equals(parentGroupId))) {
                                 groupInstructions = instructionService.findAllByGroupId(parentGroupId);
-                                groupInstructions.forEach(ins -> deliveredStatus.addInstruction(ins));
+                                groupInstructions.forEach(ins -> ins.setStatus(deliveredStatus));
                             }
 
                             }
@@ -185,8 +185,8 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
                         throw new RuntimeException("weight to deliver " + weightToDeliver + " exceeds in stock weight " + inStockWeight);
                     }
                     inwardEntry.setInStockWeight(inStockWeight - weightToDeliver);
-                    if(inwardEntry.getInStockWeight() == 0f){
-                        deliveredStatus.addInwardEntry(inwardEntry);
+                    if (Math.abs(inwardEntry.getInStockWeight()) < 1f) {
+                        inwardEntry.setStatus(deliveredStatus);
                     }
                     inwardEntryList.add(inwardEntry);
                     instruction.setRemarks(instructionRemarksMap.get(instruction.getInstructionId()));
@@ -237,31 +237,31 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
                     LOGGER.info("group instructions size "+groupInstructions.size());
                     if(groupInstructions.get(0).getStatus().equals(deliveredStatus)) {
                         LOGGER.info("setting group instructions status from delivered to readyToDeliver");
-                        groupInstructions.forEach(groupIns -> readyToDeliverStatus.addInstruction(groupIns));
+                        groupInstructions.forEach(groupIns -> groupIns.setStatus(readyToDeliverStatus));
                     }
                 }
             }
             else if(parentInstruction != null){
                 LOGGER.info("instruction has parent instruction id "+parentInstruction.getInstructionId());
                 if(parentInstruction.getStatus().equals(deliveredStatus)){
-                    readyToDeliverStatus.addInstruction(parentInstruction);
+                    parentInstruction.setStatus(readyToDeliverStatus);
                 }
             }
             else if(inwardEntry != null){
-                LOGGER.info("instruction has inward id "+inwardEntry.getInwardEntryId());
-                readyToDeliverStatus.addInwardEntry(inwardEntry);
+                LOGGER.info("instruction has inward id " + inwardEntry.getInwardEntryId());
+                inwardEntry.setStatus(readyToDeliverStatus);
             }
             else{
                 LOGGER.error("No inward id or parent instruction id found in instruction with id " + ins.getInstructionId());
                 throw new RuntimeException("No inward id or parent instruction id found in instruction with id " + ins.getInstructionId());
             }
-            readyToDeliverStatus.addInstruction(ins);
+            ins.setStatus(readyToDeliverStatus);
             Float inStockWeight = inwardEntry.getInStockWeight();
             inwardEntry.setInStockWeight(inStockWeight + ins.getActualWeight());
             LOGGER.info("adding instruction actual weight "+ins.getActualWeight()+" and setting inward inStock weight from "+inStockWeight+" to "+(inStockWeight + ins.getActualWeight()));
             if(inwardEntry.getStatus().equals(deliveredStatus)){
-                LOGGER.info("setting inward "+inwardEntry.getInwardEntryId()+" status to ready to deliver");
-                readyToDeliverStatus.addInwardEntry(inwardEntry);
+                LOGGER.info("setting inward " + inwardEntry.getInwardEntryId() + " status to ready to deliver");
+                inwardEntry.setStatus(readyToDeliverStatus);
             }
             deliveryDetails.removeInstruction(ins);
         }

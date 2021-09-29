@@ -4,6 +4,7 @@ import com.steel.product.application.dao.InstructionRepository;
 import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.dto.instruction.InstructionRequestDto;
 import com.steel.product.application.dto.instruction.InstructionFinishDto;
+import com.steel.product.application.dto.instruction.InstructionResponseDto;
 import com.steel.product.application.entity.*;
 import com.steel.product.application.entity.Process;
 import org.slf4j.Logger;
@@ -81,7 +82,8 @@ public class InstructionServiceImpl implements InstructionService {
     @Transactional
     public ResponseEntity<Object> addInstruction(List<InstructionRequestDto> instructionRequestDtos) {
         LOGGER.info("inside save instruction method");
-        float incomingWeight = instructionRequestDtos.stream().filter(dto -> dto.getPlannedWeight() != null).reduce(0f,(sum,dto) -> sum + dto.getPlannedWeight(),Float::sum);
+        Integer inProgressStatusId = 2;
+        float incomingWeight = instructionRequestDtos.stream().filter(dto -> dto.getPlannedWeight() != null).reduce(0f, (sum, dto) -> sum + dto.getPlannedWeight(), Float::sum);
         float availableWeight = 0f;
         float existingWeight = 0f;
         boolean fromInward = false, fromParentInstruction = false, fromGroup = false;
@@ -125,26 +127,17 @@ public class InstructionServiceImpl implements InstructionService {
         LOGGER.info("remaining weight is "+remainingWeight);
         if (fromGroup && Math.abs(remainingWeight) > 1f) {
             return new ResponseEntity<Object>("Input instructions total weight must be equal to instructions with group id " + groupId, HttpStatus.BAD_REQUEST);
+        } else if (!fromGroup && remainingWeight < 0f) {
+            LOGGER.error("remaining weight is invalid " + remainingWeight);
+            return new ResponseEntity<Object>("inward " + inwardId + " has no available weight for processing.", HttpStatus.BAD_REQUEST);
         }
-        else if (!fromGroup && remainingWeight < 0f) {
-            LOGGER.error("remaining weight is invalid "+remainingWeight);
-            return new ResponseEntity<Object>("inward "+inwardId+" has no available weight for processing.", HttpStatus.BAD_REQUEST);
-        }
-        if(fromInward){
-            LOGGER.info("setting fPresent for inward "+inwardEntry.getInwardEntryId()+" to "+remainingWeight);
+        if (fromInward) {
+            LOGGER.info("setting fPresent for inward " + inwardEntry.getInwardEntryId() + " to " + remainingWeight);
             inwardEntry.setFpresent(remainingWeight);
-            if(Math.abs(remainingWeight) < 1f){
-                LOGGER.info("setting fWidth for inward "+inwardId+" to 0");
-                inwardEntry.setfWidth(0f);
-            }
-        }
-        if(inwardEntry.getFpresent() < 1f){
-            LOGGER.info("setting fWidth for inward "+inwardEntry.getInwardEntryId()+" to 0 as available weight is 0");
-
         }
         Process process = processService.getById(instructionRequestDto.getProcessId());
-        Status inProgress = statusService.getStatusById(2);
-        inProgress.addInwardEntry(inwardEntry);
+        Status inProgressStatus = statusService.getStatusById(inProgressStatusId);
+        inwardEntry.setStatus(inProgressStatus);
         List<Instruction> savedInstructionList = new ArrayList<Instruction>();
         try {
             for (InstructionRequestDto requestDto : instructionRequestDtos) {
@@ -167,7 +160,7 @@ public class InstructionServiceImpl implements InstructionService {
                 if (requestDto.getPlannedNoOfPieces() != null)
                     instruction.setPlannedNoOfPieces(requestDto.getPlannedNoOfPieces());
 
-                inProgress.addInstruction(instruction);
+                instruction.setStatus(inProgressStatus);
                 instruction.setSlitAndCut(requestDto.getSlitAndCut() != null ? requestDto.getSlitAndCut() : false);
 
                 if (requestDto.getWastage() != null)
@@ -298,7 +291,7 @@ public class InstructionServiceImpl implements InstructionService {
             instruction.setActualNoOfPieces(ins.getActualNoOfPieces());
             instruction.setPacketClassification(packetClassificationMap.get(ins.getPacketClassificationId()));
 
-                readyToDeliverStatus.addInstruction(instruction);
+            instruction.setStatus(readyToDeliverStatus);
 
 
             updatedInstructionList.add(instruction);
@@ -321,7 +314,7 @@ public class InstructionServiceImpl implements InstructionService {
             if (!isAnyInstructionInProgress) {
                 LOGGER.info("group instructions with group id " + parentGroupId + " ready to deliver");
                 groupInstructions = instructionRepository.findByGroupId(parentGroupId);
-                groupInstructions.forEach(in -> readyToDeliverStatus.addInstruction(in));
+                groupInstructions.forEach(in -> in.setStatus(readyToDeliverStatus));
                 instructionRepository.saveAll(groupInstructions);
             }
             LOGGER.info("group instructions with group id " + parentGroupId + " is in progress");
@@ -330,7 +323,7 @@ public class InstructionServiceImpl implements InstructionService {
             isAnyInstructionInProgress = inwardEntry.getInstructions().stream().anyMatch(cin -> cin.getStatus().equals(inProgressStatus));
             if (!isAnyInstructionInProgress) {
                 LOGGER.info("inward " + inwardEntry + " ready to deliver");
-                readyToDeliverStatus.addInwardEntry(inwardEntry);
+                inwardEntry.setStatus(readyToDeliverStatus);
                 inwardService.saveEntry(inwardEntry);
             }
             LOGGER.info("inward " + inwardEntry + " is in progress");
@@ -344,8 +337,8 @@ public class InstructionServiceImpl implements InstructionService {
                 Float parentActualWeight = childrenInstructions.stream().map(in -> in.getActualWeight()).reduce(0f, Float::sum);
                 LOGGER.info("parent actual weight "+parentActualWeight);
                 parentInstruction.setActualWeight(parentActualWeight);
-                readyToDeliverStatus.addInstruction(parentInstruction);
-                LOGGER.info("saving parent instruction id "+parentInstruction.getInstructionId());
+                parentInstruction.setStatus(readyToDeliverStatus);
+                LOGGER.info("saving parent instruction id " + parentInstruction.getInstructionId());
                 instructionRepository.save(parentInstruction);
             }
         } else {
@@ -376,6 +369,7 @@ public class InstructionServiceImpl implements InstructionService {
         return instructionRepository.getAllByInstructionIdIn(instructionIds);
     }
 
+
     @Override
     public List<Instruction> findInstructionsWithDeliveryDetails(List<Integer> instructionIds) {
         return instructionRepository.findInstructionsWithDeliveryDetails(instructionIds);
@@ -399,6 +393,44 @@ public class InstructionServiceImpl implements InstructionService {
         savedInstruction = instructionRepository.save(instruction);
 
         return savedInstruction;
+    }
+
+    @Override
+    public InstructionResponseDto saveUnprocessedForDelivery(Integer inwardId) {
+        LOGGER.info("inside saveUnprocessedForDelivery method");
+        Date date = new Date();
+        Instruction unprocessedInstruction = new Instruction();
+        InwardEntry inward = inwardService.getByInwardEntryId(inwardId);
+        LOGGER.info("inward with id " + inwardId + " has fPresent " + inward.getFpresent());
+        Integer handlingProcessId = 7, readyToDeliverStatusId = 3;
+        Process handlingProcess = processService.getById(handlingProcessId);
+        Status readyToDeliverStatus = statusService.getStatusById(readyToDeliverStatusId);
+
+        float denominator = inward.getfThickness() * (inward.getfWidth() / 1000f) * 7.85f;
+        float lengthUnprocessed = inward.getFpresent() / denominator;
+        LOGGER.info("calculated length of instruction " + lengthUnprocessed);
+
+        unprocessedInstruction.setPlannedLength(lengthUnprocessed);
+        unprocessedInstruction.setPlannedWidth(inward.getfWidth());
+        unprocessedInstruction.setPlannedWeight(inward.getFpresent());
+        unprocessedInstruction.setProcess(handlingProcess);
+        unprocessedInstruction.setStatus(readyToDeliverStatus);
+        unprocessedInstruction.setInstructionDate(date);
+        unprocessedInstruction.setCreatedBy(1);
+        unprocessedInstruction.setUpdatedBy(1);
+        unprocessedInstruction.setCreatedOn(date);
+        unprocessedInstruction.setUpdatedOn(date);
+        unprocessedInstruction.setIsDeleted(false);
+        unprocessedInstruction.setSlitAndCut(false);
+
+        inward.setFpresent(0f);
+        inward.addInstruction(unprocessedInstruction);
+        inward = inwardService.saveEntry(inward);
+        Optional<InstructionResponseDto> savedInstruction = inward.getInstructions().stream().filter(ins -> ins.getProcess().getProcessId() == 7)
+                .map(ins -> Instruction.valueOf(ins)).findFirst();
+
+        return savedInstruction.orElse(null);
+
     }
 
 

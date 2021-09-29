@@ -48,12 +48,6 @@ public class PdfController {
         }
         String encodedFile = builder.toString();
 
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.setContentType(MediaType.APPLICATION_PDF);
-//        String filename="output.pdf";
-//        headers.setContentDispositionFormData(filename,filename);
-//        headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
-
         return new ResponseEntity<PdfResponseDto>(new PdfResponseDto(encodedFile), HttpStatus.OK);
     }
 
