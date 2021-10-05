@@ -1,29 +1,35 @@
 package com.steel.product.application.service;
 
 import com.steel.product.application.dao.InstructionPlanRepository;
-import com.steel.product.application.dto.instructionPlan.InstructionPlanDto;
 import com.steel.product.application.entity.InstructionPlan;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
+@Service
 public class InstructionPlanServiceImpl implements InstructionPlanService {
 
     private InstructionPlanRepository instructionPlanRepository;
-    private ProcessService processService;
 
     @Autowired
-    public InstructionPlanServiceImpl(InstructionPlanRepository instructionPlanRepository, ProcessService processService) {
+    public InstructionPlanServiceImpl(InstructionPlanRepository instructionPlanRepository) {
         this.instructionPlanRepository = instructionPlanRepository;
-        this.processService = processService;
     }
 
     @Override
-    public InstructionPlan addInstructionPlan(InstructionPlanDto instructionPlanDto) {
-
-        return null;
+    public InstructionPlan addInstructionPlan(InstructionPlan instructionPlan) {
+        String instructionPlanId = "DOC_" + System.nanoTime();
+        instructionPlan.setInstructionPlanId(instructionPlanId);
+        return instructionPlanRepository.save(instructionPlan);
     }
 
     @Override
-    public InstructionPlan getInstructionPlan(Integer instructionPlanId) {
-        return null;
+    public InstructionPlan getInstructionPlan(Long instructionPlanId) {
+        Optional<InstructionPlan> instructionPlanOptional = instructionPlanRepository.findById(instructionPlanId);
+        if (!instructionPlanOptional.isPresent()) {
+            throw new RuntimeException("No instruction plan found with id " + instructionPlanId);
+        }
+        return instructionPlanOptional.get();
     }
 }

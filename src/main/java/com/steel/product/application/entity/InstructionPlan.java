@@ -1,13 +1,20 @@
 package com.steel.product.application.entity;
 
 import com.steel.product.application.dto.instructionPlan.InstructionPlanDto;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "PRODUCT_INSTRUCTION_PLAN")
 public class InstructionPlan {
@@ -17,7 +24,7 @@ public class InstructionPlan {
     private Long id;
 
     @Column(name = "INSTRUCTION_PLAN_ID", nullable = false)
-    private String planId;
+    private String instructionPlanId;
 
     @Column(name = "TARGET_WEIGHT", nullable = false)
     private Float targetWeight;
@@ -27,6 +34,9 @@ public class InstructionPlan {
 
     @Column(name = "IS_EQUAL", columnDefinition = "boolean default false", nullable = false)
     private Boolean isEqual;
+
+    @OneToMany(mappedBy = "instructionPlan", fetch = FetchType.LAZY)
+    private Set<Instruction> instructions;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "PROCESS_ID", nullable = false)
@@ -49,100 +59,26 @@ public class InstructionPlan {
     @Column(name = "IS_DELETED", columnDefinition = "boolean default false")
     private Boolean isDeleted;
 
-    public Long getId() {
-        return id;
+    public void addInstruction(Instruction instruction) {
+        if (this.instructions == null) {
+            this.instructions = new HashSet<>();
+        }
+        this.instructions.add(instruction);
+        instruction.setInstructionPlan(this);
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void removeInstruction(Instruction instruction) {
+        this.instructions.remove(instruction);
+        instruction.setInstructionPlan(null);
     }
 
-    public String getPlanId() {
-        return planId;
-    }
-
-    public void setPlanId(String planId) {
-        this.planId = planId;
-    }
-
-    public Float getTargetWeight() {
-        return targetWeight;
-    }
-
-    public void setTargetWeight(Float targetWeight) {
-        this.targetWeight = targetWeight;
-    }
-
-    public Integer getNoOfParts() {
-        return noOfParts;
-    }
-
-    public void setNoOfParts(Integer noOfParts) {
-        this.noOfParts = noOfParts;
-    }
-
-    public Boolean getEqual() {
-        return isEqual;
-    }
-
-    public void setEqual(Boolean equal) {
-        isEqual = equal;
-    }
-
-    public Process getProcess() {
-        return process;
-    }
-
-    public void setProcess(Process process) {
-        this.process = process;
-    }
-
-    public Integer getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(Integer createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public Integer getUpdatedBy() {
-        return updatedBy;
-    }
-
-    public void setUpdatedBy(Integer updatedBy) {
-        this.updatedBy = updatedBy;
-    }
-
-    public Date getCreatedOn() {
-        return createdOn;
-    }
-
-    public void setCreatedOn(Date createdOn) {
-        this.createdOn = createdOn;
-    }
-
-    public Date getUpdatedOn() {
-        return updatedOn;
-    }
-
-    public void setUpdatedOn(Date updatedOn) {
-        this.updatedOn = updatedOn;
-    }
-
-    public Boolean getDeleted() {
-        return isDeleted;
-    }
-
-    public void setDeleted(Boolean deleted) {
-        isDeleted = deleted;
-    }
-
-    public InstructionPlan entityOf(InstructionPlanDto instructionPlanDto, Process process) {
+    public static InstructionPlan entityOf(InstructionPlanDto instructionPlanDto) {
         InstructionPlan instructionPlan = new InstructionPlan();
         instructionPlan.setTargetWeight(instructionPlanDto.getTargetWeight());
         instructionPlan.setNoOfParts(instructionPlanDto.getNoOfParts());
-        instructionPlan.setEqual(instructionPlanDto.getEqual());
-        instructionPlan.setProcess(process);
+        instructionPlan.setIsEqual(instructionPlanDto.getIsEqual());
+        instructionPlan.setCreatedBy(instructionPlanDto.getCreatedBy());
+        instructionPlan.setUpdatedBy(instructionPlanDto.getUpdatedBy());
         return instructionPlan;
     }
 }

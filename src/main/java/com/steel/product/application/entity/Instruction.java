@@ -106,28 +106,32 @@ public class Instruction {
 	private Integer updatedBy;
 
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name = "createdon")
-	private Date createdOn;
+    @Column(name = "createdon")
+    private Date createdOn;
 
-	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name = "updatedon")
-	private Date updatedOn;
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "updatedon")
+    private Date updatedOn;
 
-	@Column(name = "isdeleted", columnDefinition = "BIT")
-	private Boolean isDeleted;
+    @Column(name = "isdeleted", columnDefinition = "BIT")
+    private Boolean isDeleted;
 
-	@Column(name = "isSlitAndCut", columnDefinition = "BIT")
-	private Boolean isSlitAndCut;
+    @Column(name = "is_slit_and_cut", columnDefinition = "BIT")
+    private Boolean isSlitAndCut;
 
-	public Integer getInstructionId() {
-		return instructionId;
-	}
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "INSTRUCTION_PLAN_ID")
+    private InstructionPlan instructionPlan;
 
-	public void setInstructionId(Integer instructionId) {
-		this.instructionId = instructionId;
-	}
+    public Integer getInstructionId() {
+        return instructionId;
+    }
 
-	public InwardEntry getInwardId() {
+    public void setInstructionId(Integer instructionId) {
+        this.instructionId = instructionId;
+    }
+
+    public InwardEntry getInwardId() {
 		return inwardId;
 	}
 
@@ -356,26 +360,34 @@ public class Instruction {
 	}
 
 	public void setDeleted(Boolean deleted) {
-		isDeleted = deleted;
-	}
+        isDeleted = deleted;
+    }
 
-	public Boolean getSlitAndCut() {
-		return isSlitAndCut;
-	}
+    public Boolean getSlitAndCut() {
+        return isSlitAndCut;
+    }
 
-	public void setSlitAndCut(Boolean slitAndCut) {
-		isSlitAndCut = slitAndCut;
-	}
+    public void setSlitAndCut(Boolean slitAndCut) {
+        isSlitAndCut = slitAndCut;
+    }
 
-	public void addChildInstruction(Instruction instruction){
-		this.getChildInstructions().add(instruction);
-		instruction.setParentInstruction(this);
-	}
+    public InstructionPlan getInstructionPlan() {
+        return instructionPlan;
+    }
 
-	public void removeChildInstruction(Instruction instruction) {
-		this.getChildInstructions().remove(instruction);
-		instruction.setParentInstruction(null);
-	}
+    public void setInstructionPlan(InstructionPlan instructionPlan) {
+        this.instructionPlan = instructionPlan;
+    }
+
+    public void addChildInstruction(Instruction instruction) {
+        this.getChildInstructions().add(instruction);
+        instruction.setParentInstruction(this);
+    }
+
+    public void removeChildInstruction(Instruction instruction) {
+        this.getChildInstructions().remove(instruction);
+        instruction.setParentInstruction(null);
+    }
 
 	public static InstructionResponseDto valueOf(Instruction instruction){
 		InstructionResponseDto instructionResponseDto = new InstructionResponseDto();

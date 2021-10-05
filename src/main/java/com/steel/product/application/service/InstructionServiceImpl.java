@@ -5,6 +5,7 @@ import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.dto.instruction.InstructionRequestDto;
 import com.steel.product.application.dto.instruction.InstructionFinishDto;
 import com.steel.product.application.dto.instruction.InstructionResponseDto;
+import com.steel.product.application.dto.instruction.InstructionSaveRequest;
 import com.steel.product.application.entity.*;
 import com.steel.product.application.entity.Process;
 import org.slf4j.Logger;
@@ -36,14 +37,17 @@ public class InstructionServiceImpl implements InstructionService {
 
     private PacketClassificationService packetClassificationService;
 
+    private InstructionPlanService instructionPlanService;
+
     @Autowired
-    public InstructionServiceImpl(InstructionRepository instructionRepository, InwardEntryRepository inwardEntryRepository, InwardEntryService inwardService, ProcessService processService, StatusService statusService, PacketClassificationService packetClassificationService) {
+    public InstructionServiceImpl(InstructionRepository instructionRepository, InwardEntryRepository inwardEntryRepository, InwardEntryService inwardService, ProcessService processService, StatusService statusService, PacketClassificationService packetClassificationService, InstructionPlanService instructionPlanService) {
         this.instructionRepository = instructionRepository;
         this.inwardEntryRepository = inwardEntryRepository;
         this.inwardService = inwardService;
         this.processService = processService;
         this.statusService = statusService;
         this.packetClassificationService = packetClassificationService;
+        this.instructionPlanService = instructionPlanService;
     }
 
     @Override
@@ -80,8 +84,9 @@ public class InstructionServiceImpl implements InstructionService {
 
     @Override
     @Transactional
-    public ResponseEntity<Object> addInstruction(List<InstructionRequestDto> instructionRequestDtos) {
+    public ResponseEntity<Object> addInstruction(InstructionSaveRequest instructionSaveRequest) {
         LOGGER.info("inside save instruction method");
+        List<InstructionRequestDto> instructionRequestDtos = instructionSaveRequest.getInstructionRequestDTOs();
         Integer inProgressStatusId = 2;
         float incomingWeight = instructionRequestDtos.stream().filter(dto -> dto.getPlannedWeight() != null).reduce(0f, (sum, dto) -> sum + dto.getPlannedWeight(), Float::sum);
         float availableWeight = 0f;
@@ -135,8 +140,10 @@ public class InstructionServiceImpl implements InstructionService {
             LOGGER.info("setting fPresent for inward " + inwardEntry.getInwardEntryId() + " to " + remainingWeight);
             inwardEntry.setFpresent(remainingWeight);
         }
-        Process process = processService.getById(instructionRequestDto.getProcessId());
+        InstructionPlan instructionPlan = InstructionPlan.entityOf(instructionSaveRequest.getInstructionPlanDto());
+        Process process = processService.getById(instructionSaveRequest.getInstructionPlanDto().getProcessId());
         Status inProgressStatus = statusService.getStatusById(inProgressStatusId);
+        process.addInstructionPlan(instructionPlan);
         inwardEntry.setStatus(inProgressStatus);
         List<Instruction> savedInstructionList = new ArrayList<Instruction>();
         try {
@@ -187,12 +194,15 @@ public class InstructionServiceImpl implements InstructionService {
                     instruction.setParentGroupId(requestDto.getGroupId());
                 }
                 savedInstructionList.add(instruction);
+                instructionPlan.addInstruction(instruction);
             }
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+        instructionPlan = instructionPlanService.addInstructionPlan(instructionPlan);
         savedInstructionList = saveAll(savedInstructionList);
+
         if (fromParentInstruction) {
             instructionRepository.save(parentInstruction);
         } else if (fromInward) {

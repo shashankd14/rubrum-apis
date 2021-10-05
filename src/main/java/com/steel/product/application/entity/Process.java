@@ -25,6 +25,19 @@ public class Process {
     @OneToMany(mappedBy = "process", fetch = FetchType.LAZY)
     private Set<InstructionPlan> instructionPlans;
 
+    public void addInstructionPlan(InstructionPlan instructionPlan) {
+        if (this.instructionPlans == null) {
+            this.instructionPlans = new HashSet<>();
+        }
+        this.getInstructionPlans().add(instructionPlan);
+        instructionPlan.setProcess(this);
+    }
+
+    public void removeInstructionPlan(InstructionPlan instructionPlan) {
+        this.getInstructionPlans().remove(instructionPlan);
+        instructionPlan.setProcess(null);
+    }
+
     public int getProcessId() {
         return processId;
     }
@@ -49,7 +62,15 @@ public class Process {
         this.rates = rates;
     }
 
-    public static ProcessDto valueOf(Process process){
+    public Set<InstructionPlan> getInstructionPlans() {
+        return instructionPlans;
+    }
+
+    public void setInstructionPlans(Set<InstructionPlan> instructionPlans) {
+        this.instructionPlans = instructionPlans;
+    }
+
+    public static ProcessDto valueOf(Process process) {
         ProcessDto processDto = new ProcessDto();
         processDto.setProcessId(process.getProcessId());
         processDto.setProcessName(process.getProcessName());

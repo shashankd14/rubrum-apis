@@ -1,8 +1,8 @@
 package com.steel.product.application.service;
 
 import com.steel.product.application.dto.instruction.InstructionFinishDto;
-import com.steel.product.application.dto.instruction.InstructionRequestDto;
 import com.steel.product.application.dto.instruction.InstructionResponseDto;
+import com.steel.product.application.dto.instruction.InstructionSaveRequest;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.Status;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +22,7 @@ public interface InstructionService {
 
     public Instruction getById(int theId);
 
-    public ResponseEntity<Object> addInstruction(List<InstructionRequestDto> instructionDTOs);
+    public ResponseEntity<Object> addInstruction(InstructionSaveRequest instructionSaveRequest);
 
     public List<Instruction> findSlitAndCutInstructionByInwardId(Integer inwardId);
 

@@ -3,6 +3,7 @@ package com.steel.product.application.controller;
 import com.steel.product.application.dto.instruction.InstructionFinishDto;
 import com.steel.product.application.dto.instruction.InstructionRequestDto;
 import com.steel.product.application.dto.instruction.InstructionResponseDto;
+import com.steel.product.application.dto.instruction.InstructionSaveRequest;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.service.*;
@@ -90,8 +91,8 @@ public class InstructionController {
     }
 
     @PostMapping("/save")
-    public ResponseEntity<Object> save(@RequestBody List<InstructionRequestDto> instructionDTOs) {
-        return instructionService.addInstruction(instructionDTOs);
+    public ResponseEntity<Object> save(@RequestBody InstructionSaveRequest instructionSaveRequest) {
+        return instructionService.addInstruction(instructionSaveRequest);
     }
 
     @PutMapping("/update")
