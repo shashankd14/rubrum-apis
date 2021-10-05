@@ -369,6 +369,19 @@ public class InstructionServiceImpl implements InstructionService {
         return instructionRepository.getAllByInstructionIdIn(instructionIds);
     }
 
+    @Override
+    public Map<Instruction, List<Double>> findInstructionsByInwardIdGroupedByPlannedLengthAndWeight(Integer inwardId) {
+        List<Object[]> result = instructionRepository.findInstructionsByInwardIdGroupedByPlannedLengthAndWeight(171);
+        Map<Instruction, List<Double>> map = null;
+        if (result != null && !result.isEmpty()) {
+            map = new HashMap<>();
+            for (Object[] object : result) {
+                map.put(((Instruction) object[0]), Arrays.asList((Double) object[1], (Double) object[2]));
+            }
+        }
+        return map;
+    }
+
 
     @Override
     public List<Instruction> findInstructionsWithDeliveryDetails(List<Integer> instructionIds) {

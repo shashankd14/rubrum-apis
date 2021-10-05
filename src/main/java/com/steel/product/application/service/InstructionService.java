@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 public interface InstructionService {
@@ -54,5 +55,7 @@ public interface InstructionService {
     public Float sumOfPlannedWeightOfInstructionHavingParentInstructionId(Integer parentInstructionId);
 
     public List<Instruction> getAllByInstructionIdIn(List<Integer> instructionIds);
+
+    public Map<Instruction, List<Double>> findInstructionsByInwardIdGroupedByPlannedLengthAndWeight(Integer inwardId);
 }
 

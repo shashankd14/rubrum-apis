@@ -22,6 +22,9 @@ public class Process {
     @OneToMany(mappedBy = "process")
     private List<Rates> rates;
 
+    @OneToMany(mappedBy = "process", fetch = FetchType.LAZY)
+    private Set<InstructionPlan> instructionPlans;
+
     public int getProcessId() {
         return processId;
     }
