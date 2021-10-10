@@ -1,10 +1,7 @@
 package com.steel.product.application.controller;
 
-import com.steel.product.application.dto.instruction.InstructionFinishDto;
-import com.steel.product.application.dto.instruction.InstructionRequestDto;
-import com.steel.product.application.dto.instruction.InstructionResponseDto;
+import com.steel.product.application.dto.instruction.*;
 import com.steel.product.application.entity.Instruction;
-import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,9 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import java.sql.Timestamp;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -94,10 +89,16 @@ public class InstructionController {
 
     }
 
+    @PostMapping("/save/slit")
+    public ResponseEntity<Object> saveSlitInstruction(@RequestBody List<SlitInstructionSaveRequestDto> slitInstructionSaveRequestDtos) {
+        return instructionService.addSlitInstruction(slitInstructionSaveRequestDtos);
+
+    }
+
     @PutMapping("/update")
     public ResponseEntity<Object> update(@RequestBody InstructionFinishDto instructionFinishDto) {
 
-       return instructionService.updateInstruction(instructionFinishDto);
+        return instructionService.updateInstruction(instructionFinishDto);
     }
 
     @DeleteMapping("/deleteById/{instructionId}")

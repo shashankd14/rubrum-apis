@@ -1,8 +1,6 @@
 package com.steel.product.application.service;
 
-import com.steel.product.application.dto.instruction.InstructionFinishDto;
-import com.steel.product.application.dto.instruction.InstructionRequestDto;
-import com.steel.product.application.dto.instruction.InstructionResponseDto;
+import com.steel.product.application.dto.instruction.*;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.Status;
 import org.springframework.http.ResponseEntity;
@@ -10,7 +8,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Service
 public interface InstructionService {
 
 	public List<Instruction> getAll();
@@ -54,5 +51,7 @@ public interface InstructionService {
     public Float sumOfPlannedWeightOfInstructionHavingParentInstructionId(Integer parentInstructionId);
 
     public List<Instruction> getAllByInstructionIdIn(List<Integer> instructionIds);
+
+    public ResponseEntity<Object> addSlitInstruction(List<SlitInstructionSaveRequestDto> slitInstructionSaveRequestDtos);
 }
 

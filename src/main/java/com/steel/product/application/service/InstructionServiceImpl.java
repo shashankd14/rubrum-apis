@@ -2,11 +2,11 @@ package com.steel.product.application.service;
 
 import com.steel.product.application.dao.InstructionRepository;
 import com.steel.product.application.dao.InwardEntryRepository;
-import com.steel.product.application.dto.instruction.InstructionRequestDto;
-import com.steel.product.application.dto.instruction.InstructionFinishDto;
-import com.steel.product.application.dto.instruction.InstructionResponseDto;
+import com.steel.product.application.dto.instruction.*;
+import com.steel.product.application.dto.instructionPlan.InstructionPlanDto;
 import com.steel.product.application.entity.*;
 import com.steel.product.application.entity.Process;
+import com.steel.product.application.mapper.InstructionPlanMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +22,9 @@ import java.util.stream.Collectors;
 @Service
 public class InstructionServiceImpl implements InstructionService {
 
+    Integer slitProcessId = 2;
+    Integer inProgressStatusId = 2;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(InstructionServiceImpl.class);
 
     private InstructionRepository instructionRepository;
@@ -36,14 +39,20 @@ public class InstructionServiceImpl implements InstructionService {
 
     private PacketClassificationService packetClassificationService;
 
+    private InstructionPlanMapper instructionPlanMapper;
+
+    private InstructionPlanService instructionPlanService;
+
     @Autowired
-    public InstructionServiceImpl(InstructionRepository instructionRepository, InwardEntryRepository inwardEntryRepository, InwardEntryService inwardService, ProcessService processService, StatusService statusService, PacketClassificationService packetClassificationService) {
+    public InstructionServiceImpl(InstructionRepository instructionRepository, InwardEntryRepository inwardEntryRepository, InwardEntryService inwardService, ProcessService processService, StatusService statusService, PacketClassificationService packetClassificationService, InstructionPlanMapper instructionPlanMapper, InstructionPlanService instructionPlanService) {
         this.instructionRepository = instructionRepository;
         this.inwardEntryRepository = inwardEntryRepository;
         this.inwardService = inwardService;
         this.processService = processService;
         this.statusService = statusService;
         this.packetClassificationService = packetClassificationService;
+        this.instructionPlanMapper = instructionPlanMapper;
+        this.instructionPlanService = instructionPlanService;
     }
 
     @Override
@@ -161,7 +170,7 @@ public class InstructionServiceImpl implements InstructionService {
                     instruction.setPlannedNoOfPieces(requestDto.getPlannedNoOfPieces());
 
                 instruction.setStatus(inProgressStatus);
-                instruction.setSlitAndCut(requestDto.getSlitAndCut() != null ? requestDto.getSlitAndCut() : false);
+                instruction.setIsSlitAndCut(requestDto.getSlitAndCut() != null ? requestDto.getSlitAndCut() : false);
 
                 if (requestDto.getWastage() != null)
                     instruction.setWastage(requestDto.getWastage());
@@ -421,7 +430,7 @@ public class InstructionServiceImpl implements InstructionService {
         unprocessedInstruction.setCreatedOn(date);
         unprocessedInstruction.setUpdatedOn(date);
         unprocessedInstruction.setIsDeleted(false);
-        unprocessedInstruction.setSlitAndCut(false);
+        unprocessedInstruction.setIsSlitAndCut(false);
 
         inward.setFpresent(0f);
         inward.addInstruction(unprocessedInstruction);
@@ -430,6 +439,136 @@ public class InstructionServiceImpl implements InstructionService {
                 .map(ins -> Instruction.valueOf(ins)).findFirst();
 
         return savedInstruction.orElse(null);
+
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<Object> addSlitInstruction(List<SlitInstructionSaveRequestDto> slitInstructionSaveRequestDtos) {
+
+        LOGGER.info("inside save slit instruction method");
+        LOGGER.info("no of request " + slitInstructionSaveRequestDtos.size());
+        Map<InstructionPlan, List<InstructionRequestDto>> instructionPlanAndListMap = new HashMap<>();
+        InstructionPlanDto instructionPlanDto;
+        InstructionRequestDto instructionRequestDto = slitInstructionSaveRequestDtos.get(0).getInstructionRequestDTOs().get(0);
+        Integer inwardId = instructionRequestDto.getInwardId();
+        Integer parentInstructionId = instructionRequestDto.getParentInstructionId();
+        boolean fromInward = false, fromParentInstruction = false;
+
+        InwardEntry inwardEntry;
+        Instruction parentInstruction = null;
+        float incomingWeight = 0f, availableWeight = 0f, existingWeight = 0f, remainingWeight = 0f;
+        if (parentInstructionId != null) {
+            LOGGER.info("adding instructions from parent instruction id " + parentInstructionId);
+            parentInstruction = this.getById(parentInstructionId);
+            inwardEntry = parentInstruction.getInwardId();
+            existingWeight = this.sumOfPlannedWeightOfInstructionHavingParentInstructionId(parentInstructionId);
+            LOGGER.info("existing weight of instructions with parent instruction id is " + existingWeight);
+            availableWeight = parentInstruction.getPlannedWeight();
+            LOGGER.info("available weight of parent instruction with id " + parentInstructionId + " is " + availableWeight);
+            fromParentInstruction = true;
+        } else if (inwardId != null) {
+            LOGGER.info("adding instructions from inward id " + inwardId);
+            inwardEntry = inwardService.getByInwardEntryId(inwardId);
+            availableWeight = inwardEntry.getFpresent();
+            LOGGER.info("available weight of inward " + inwardEntry.getInwardEntryId() + " is " + availableWeight);
+            fromInward = true;
+        } else {
+            return new ResponseEntity<Object>("Invalid request", HttpStatus.BAD_REQUEST);
+        }
+        if (inwardEntry.getFpresent() < 0) {
+            LOGGER.error("inward has negative fpresent value " + inwardEntry.getFpresent());
+            return new ResponseEntity<Object>("Inward with id " + inwardId + " has invalid fPresent value " + inwardEntry.getFpresent(), HttpStatus.BAD_REQUEST);
+        }
+        String instructionPlanId = "DOC_" + System.nanoTime();
+        Process slitProcess = processService.getById(this.slitProcessId);
+        Status inProgressStatus = statusService.getStatusById(this.inProgressStatusId);
+
+        for (SlitInstructionSaveRequestDto slitInstructionDto : slitInstructionSaveRequestDtos) {
+            incomingWeight += slitInstructionDto.getInstructionRequestDTOs().stream().filter(dto -> dto.getPlannedWeight() != null).reduce(0f, (sum, dto) -> sum + dto.getPlannedWeight(), Float::sum);
+            LOGGER.info("incoming weight " + incomingWeight);
+            remainingWeight = (availableWeight - existingWeight - incomingWeight);
+            LOGGER.info("remaining weight is " + remainingWeight);
+            if (remainingWeight < 0f) {
+                LOGGER.error("remaining weight is invalid " + remainingWeight);
+                return new ResponseEntity<Object>("inward " + inwardId + " has no available weight for processing.", HttpStatus.BAD_REQUEST);
+            }
+
+            instructionPlanDto = slitInstructionDto.getInstructionPlanDto();
+            InstructionPlan instructionPlan = instructionPlanMapper.toEntity(instructionPlanDto);
+            instructionPlan.setInstructionPlanId(instructionPlanId);
+            instructionPlan.setIsDeleted(false);
+            instructionPlanAndListMap.put(instructionPlan, slitInstructionDto.getInstructionRequestDTOs());
+        }
+        if (fromInward) {
+            LOGGER.info("setting fPresent for inward " + inwardEntry.getInwardEntryId() + " to " + remainingWeight);
+            inwardEntry.setFpresent(remainingWeight);
+        }
+
+        inwardEntry.setStatus(inProgressStatus);
+        List<Instruction> savedInstructionList = new ArrayList<>();
+        for (InstructionPlan instructionPlan : instructionPlanAndListMap.keySet()) {
+            for (InstructionRequestDto requestDto : instructionPlanAndListMap.get(instructionPlan)) {
+                Instruction instruction = new Instruction();
+                Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+
+                instruction.setProcess(slitProcess);
+                instruction.setStatus(inProgressStatus);
+                instruction.setInstructionDate(requestDto.getInstructionDate());
+
+                if (requestDto.getPlannedLength() != null)
+                    instruction.setPlannedLength(requestDto.getPlannedLength());
+
+                if (requestDto.getPlannedWidth() != null)
+                    instruction.setPlannedWidth(requestDto.getPlannedWidth());
+
+                if (requestDto.getPlannedWeight() != null)
+                    instruction.setPlannedWeight(requestDto.getPlannedWeight());
+
+                if (requestDto.getPlannedNoOfPieces() != null)
+                    instruction.setPlannedNoOfPieces(requestDto.getPlannedNoOfPieces());
+
+
+                instruction.setIsSlitAndCut(requestDto.getSlitAndCut() != null ? requestDto.getSlitAndCut() : false);
+
+                if (requestDto.getWastage() != null)
+                    instruction.setWastage(requestDto.getWastage());
+
+                if (requestDto.getDamage() != null)
+                    instruction.setDamage(requestDto.getDamage());
+
+                if (requestDto.getPackingWeight() != null)
+                    instruction.setPackingWeight(requestDto.getPackingWeight());
+
+                instruction.setCreatedBy(requestDto.getCreatedBy());
+                instruction.setUpdatedBy(requestDto.getUpdatedBy());
+                instruction.setCreatedOn(timestamp);
+                instruction.setUpdatedOn(timestamp);
+                instruction.setIsDeleted(false);
+                instruction.setInstructionPlanId(instructionPlanId);
+
+                if (fromParentInstruction) {
+                    parentInstruction.addChildInstruction(instruction);
+                } else if (fromInward) {
+                    inwardEntry.addInstruction(instruction);
+                }
+                savedInstructionList.add(instruction);
+            }
+        }
+        LOGGER.info("saving " + instructionPlanAndListMap.keySet().size() + " instruction plans");
+        List<InstructionPlan> instructionPlans = instructionPlanService.saveAll(instructionPlanAndListMap.keySet());
+        LOGGER.info("saving " + savedInstructionList.size() + " instructions");
+        savedInstructionList = this.saveAll(savedInstructionList);
+        if (fromParentInstruction) {
+            LOGGER.info("saving instructions from parent instruction " + parentInstructionId);
+            instructionRepository.save(parentInstruction);
+        } else if (fromInward) {
+            LOGGER.info("saving instructions from inward " + inwardId);
+            inwardService.saveEntry(inwardEntry);
+        }
+
+        List<InstructionPlanDto> instructionPlanDtos = instructionPlans.stream().map(plan -> instructionPlanMapper.toDto(plan)).collect(Collectors.toList());
+        return new ResponseEntity<Object>(instructionPlanDtos, HttpStatus.CREATED);
 
     }
 

@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.steel.product.application.dto.instruction.InstructionResponseDto;
 import com.steel.product.application.dto.pdf.InstructionResponsePdfDto;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -13,6 +15,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Entity
+@Getter
+@Setter
 @Table(name = "product_instruction")
 public class Instruction {
 
@@ -116,258 +120,13 @@ public class Instruction {
 	@Column(name = "isdeleted", columnDefinition = "BIT")
 	private Boolean isDeleted;
 
-	@Column(name = "isSlitAndCut", columnDefinition = "BIT")
+	@Column(name = "is_slit_and_cut", columnDefinition = "BIT")
 	private Boolean isSlitAndCut;
 
-	public Integer getInstructionId() {
-		return instructionId;
-	}
+	@Column(name = "instruction_plan_id")
+	private String instructionPlanId;
 
-	public void setInstructionId(Integer instructionId) {
-		this.instructionId = instructionId;
-	}
-
-	public InwardEntry getInwardId() {
-		return inwardId;
-	}
-
-	public void setInwardId(InwardEntry inwardId) {
-		this.inwardId = inwardId;
-	}
-
-	public Process getProcess() {
-		return process;
-	}
-
-	public void setProcess(Process process) {
-		this.process = process;
-	}
-
-	public Date getInstructionDate() {
-		return instructionDate;
-	}
-
-	public void setInstructionDate(Date instructionDate) {
-		this.instructionDate = instructionDate;
-	}
-
-	public Float getPlannedLength() {
-		return plannedLength;
-	}
-
-	public void setPlannedLength(Float plannedLength) {
-		this.plannedLength = plannedLength;
-	}
-
-	public Float getPlannedWidth() {
-		return plannedWidth;
-	}
-
-	public void setPlannedWidth(Float plannedWidth) {
-		this.plannedWidth = plannedWidth;
-	}
-
-	public Float getPlannedWeight() {
-		return plannedWeight;
-	}
-
-	public void setPlannedWeight(Float plannedWeight) {
-		this.plannedWeight = plannedWeight;
-	}
-
-	public Integer getPlannedNoOfPieces() {
-		return plannedNoOfPieces;
-	}
-
-	public void setPlannedNoOfPieces(Integer plannedNoOfPieces) {
-		this.plannedNoOfPieces = plannedNoOfPieces;
-	}
-
-	public Status getStatus() {
-		return status;
-	}
-
-	public void setStatus(Status status) {
-		this.status = status;
-	}
-
-	public Integer getGroupId() {
-		return groupId;
-	}
-
-	public void setGroupId(Integer groupId) {
-		this.groupId = groupId;
-	}
-
-	public Set<Instruction> getChildInstructions() {
-		return childInstructions;
-	}
-
-	public void setChildInstructions(Set<Instruction> childInstructions) {
-		this.childInstructions = childInstructions;
-	}
-
-	public Instruction getParentInstruction() {
-		return parentInstruction;
-	}
-
-	public void setParentInstruction(Instruction parentInstruction) {
-		this.parentInstruction = parentInstruction;
-	}
-
-	public Float getWastage() {
-		return wastage;
-	}
-
-	public void setWastage(Float wastage) {
-		this.wastage = wastage;
-	}
-
-	public Float getDamage() {
-		return damage;
-	}
-
-	public void setDamage(Float damage) {
-		this.damage = damage;
-	}
-
-	public Float getPackingWeight() {
-		return packingWeight;
-	}
-
-	public void setPackingWeight(Float packingWeight) {
-		this.packingWeight = packingWeight;
-	}
-
-	public DeliveryDetails getDeliveryDetails() {
-		return deliveryDetails;
-	}
-
-	public void setDeliveryDetails(DeliveryDetails deliveryDetails) {
-		this.deliveryDetails = deliveryDetails;
-	}
-
-	public String getRemarks() {
-		return remarks;
-	}
-
-	public void setRemarks(String remarks) {
-		this.remarks = remarks;
-	}
-
-	public Integer getCreatedBy() {
-		return createdBy;
-	}
-
-	public void setCreatedBy(Integer createdBy) {
-		this.createdBy = createdBy;
-	}
-
-	public Integer getUpdatedBy() {
-		return updatedBy;
-	}
-
-	public void setUpdatedBy(Integer updatedBy) {
-		this.updatedBy = updatedBy;
-	}
-
-	public Date getCreatedOn() {
-		return createdOn;
-	}
-
-	public void setCreatedOn(Date createdOn) {
-		this.createdOn = createdOn;
-	}
-
-	public Date getUpdatedOn() {
-		return updatedOn;
-	}
-
-	public void setUpdatedOn(Date updatedOn) {
-		this.updatedOn = updatedOn;
-	}
-
-	public Boolean getIsDeleted() {
-		return isDeleted;
-	}
-
-	public void setIsDeleted(Boolean isDeleted) {
-		this.isDeleted = isDeleted;
-	}
-
-	public Float getActualLength() {
-		return actualLength;
-	}
-
-	public void setActualLength(Float actualLength) {
-		this.actualLength = actualLength;
-	}
-
-	public Float getActualWidth() {
-		return actualWidth;
-	}
-
-	public void setActualWidth(Float actualWidth) {
-		this.actualWidth = actualWidth;
-	}
-
-	public Float getActualWeight() {
-		return actualWeight;
-	}
-
-	public void setActualWeight(Float actualWeight) {
-		this.actualWeight = actualWeight;
-	}
-
-	public Integer getActualNoOfPieces() {
-		return actualNoOfPieces;
-	}
-
-	public void setActualNoOfPieces(Integer actualNoOfPieces) {
-		this.actualNoOfPieces = actualNoOfPieces;
-	}
-
-	public Rates getRates() {
-		return rates;
-	}
-
-	public void setRates(Rates rates) {
-		this.rates = rates;
-	}
-
-	public PacketClassification getPacketClassification() {
-		return packetClassification;
-	}
-
-	public void setPacketClassification(PacketClassification packetClassification) {
-		this.packetClassification = packetClassification;
-	}
-
-	public Integer getParentGroupId() {
-		return parentGroupId;
-	}
-
-	public void setParentGroupId(Integer parentGroupId) {
-		this.parentGroupId = parentGroupId;
-	}
-
-	public Boolean getDeleted() {
-		return isDeleted;
-	}
-
-	public void setDeleted(Boolean deleted) {
-		isDeleted = deleted;
-	}
-
-	public Boolean getSlitAndCut() {
-		return isSlitAndCut;
-	}
-
-	public void setSlitAndCut(Boolean slitAndCut) {
-		isSlitAndCut = slitAndCut;
-	}
-
-	public void addChildInstruction(Instruction instruction){
+	public void addChildInstruction(Instruction instruction) {
 		this.getChildInstructions().add(instruction);
 		instruction.setParentInstruction(this);
 	}
@@ -410,7 +169,7 @@ public class Instruction {
 		instructionResponseDto.setDeliveryDetails(instruction.getDeliveryDetails() != null ? DeliveryDetails.valueOf(instruction.getDeliveryDetails()) : null);
 		instructionResponseDto.setChildInstructions((instruction.getChildInstructions() != null && !instruction.getChildInstructions().isEmpty())
 				? instruction.getChildInstructions().stream().map(ci -> Instruction.valueOf(ci)).collect(Collectors.toList()) : null);
-		instructionResponseDto.setSlitAndCut(instruction.getSlitAndCut());
+		instructionResponseDto.setSlitAndCut(instruction.getIsSlitAndCut());
 		return instructionResponseDto;
 	}
 
