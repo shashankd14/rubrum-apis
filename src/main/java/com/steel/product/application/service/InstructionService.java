@@ -32,11 +32,9 @@ public interface InstructionService {
 
     public void updateInstructionWithDeliveryRemarks(int deliveryId, String remarks, int instructionId);
 
+    public Instruction findInstructionById(Integer instructionId);
+
     public List<Instruction> saveAll(List<Instruction> instructions);
-
-    public List<Instruction> findInstructionsByInstructionIdInAndStatusNot(List<Integer> ids, Status status);
-
-    public List<Instruction> findInstructionsWithDeliveryDetails(List<Integer> instructionIds);
 
     public Instruction save(Instruction instruction);
 

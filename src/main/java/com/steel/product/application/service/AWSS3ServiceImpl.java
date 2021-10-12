@@ -18,9 +18,10 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 @Service
 public class AWSS3ServiceImpl implements AWSS3Service {
  
- 
-    @Autowired
+    @Autowired(required = false)
     private AmazonS3 amazonS3;
+
+
     @Value("${aws.s3.bucket}")
     private String bucketName;
     

@@ -10,18 +10,23 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class UserServiceImpl implements UserService {
-  @Autowired
-  private UserRepository userRepo;
-  
-  public User saveStatus(User user) {
-    return (User)this.userRepo.save(user);
-  }
-  
-  public List<User> getAllUsers() {
-    return this.userRepo.findAll();
-  }
-  
-  public User getUserById(int id) {
+
+    private UserRepository userRepo;
+
+    @Autowired
+    public UserServiceImpl(UserRepository userRepo) {
+        this.userRepo = userRepo;
+    }
+
+    public User saveStatus(User user) {
+        return (User) this.userRepo.save(user);
+    }
+
+    public List<User> getAllUsers() {
+        return this.userRepo.findAll();
+    }
+
+    public User getUserById(int id) {
     Optional<User> result = this.userRepo.findById(Integer.valueOf(id));
     User user = null;
     if (result.isPresent()) {

@@ -20,39 +20,39 @@ import java.util.stream.Collectors;
 @CrossOrigin
 @RequestMapping({"/api/inwardEntry"})
 public class InwardEntryController {
-  @Autowired
   private InwardEntryService inwdEntrySvc;
   
-  @Autowired
   private PartyDetailsService partyDetailsService;
   
-  @Autowired
   private StatusService statusService;
   
-  @Autowired
   private MaterialDescriptionService matDescService;
   
-  @Autowired
   private MaterialGradeService matGradeService;
-  
-  @Autowired
-  private UserService userSerive;
-  
-  @Autowired
-  private AWSS3Service awsS3Service;
-  
-  @Autowired
-  private InwardDocService inwardDocService;
-  
-  private Timestamp timestamp = new Timestamp(
-      
-      System.currentTimeMillis());
-  
-  public InwardEntryController(InwardEntryService theInwdEntrySvc) {
-    this.inwdEntrySvc = theInwdEntrySvc;
-  }
-  
-  @PostMapping("/addNew")
+
+	private UserService userSerive;
+
+	private AWSS3Service awsS3Service;
+
+	private InwardDocService inwardDocService;
+
+	private Timestamp timestamp = new Timestamp(
+
+			System.currentTimeMillis());
+
+	@Autowired
+	public InwardEntryController(InwardEntryService inwdEntrySvc, PartyDetailsService partyDetailsService, StatusService statusService, MaterialDescriptionService matDescService, MaterialGradeService matGradeService, UserService userSerive, AWSS3Service awsS3Service, InwardDocService inwardDocService) {
+		this.inwdEntrySvc = inwdEntrySvc;
+		this.partyDetailsService = partyDetailsService;
+		this.statusService = statusService;
+		this.matDescService = matDescService;
+		this.matGradeService = matGradeService;
+		this.userSerive = userSerive;
+		this.awsS3Service = awsS3Service;
+		this.inwardDocService = inwardDocService;
+	}
+
+	@PostMapping("/addNew")
 	public ResponseEntity<Object> saveInwardEntry(@ModelAttribute InwardDto inward) {
 		InwardEntry inwardEntry = new InwardEntry();
 		// InwardDoc inwardDoc = new InwardDoc();

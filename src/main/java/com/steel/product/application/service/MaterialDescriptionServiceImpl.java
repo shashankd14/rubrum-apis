@@ -17,19 +17,19 @@ import java.util.stream.Collectors;
 @Service
 public class MaterialDescriptionServiceImpl implements MaterialDescriptionService {
 
-  @Autowired
-  private MaterialDescriptionRepository matDescRepo;
+    private MaterialDescriptionRepository matDescRepo;
 
-  @Autowired
-  private MaterialGradeRepository materialGradeRepository;
-  
-  public MaterialDescriptionServiceImpl(MaterialDescriptionRepository theMatDesc) {
-    this.matDescRepo = theMatDesc;
-  }
-  
-  public Material saveMatDesc(Material matDesc) {
-    return (Material)this.matDescRepo.save(matDesc);
-  }
+    private MaterialGradeRepository materialGradeRepository;
+
+    @Autowired
+    public MaterialDescriptionServiceImpl(MaterialDescriptionRepository matDescRepo, MaterialGradeRepository materialGradeRepository) {
+        this.matDescRepo = matDescRepo;
+        this.materialGradeRepository = materialGradeRepository;
+    }
+
+    public Material saveMatDesc(Material matDesc) {
+        return (Material) this.matDescRepo.save(matDesc);
+    }
 
   @Override
   public Material saveMatDesc(MaterialRequestDto materialRequestDto) {

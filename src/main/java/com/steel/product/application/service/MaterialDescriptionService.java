@@ -2,7 +2,6 @@ package com.steel.product.application.service;
 
 import com.steel.product.application.dto.material.MaterialRequestDto;
 import com.steel.product.application.dto.material.MaterialResponseDetailsDto;
-import com.steel.product.application.dto.material.MaterialResponseDto;
 import com.steel.product.application.entity.Material;
 import java.util.List;
 

@@ -23,20 +23,19 @@
 # values (1,'Aspen Steel',1,null,'gautam-aggarwal@gmail.com','29AABCU9603R1ZJ',1,null);
 # UPDATE aspen.product_company_details SET address_branch_id = 3,address_office_id = 4 WHERE id = 1;
 
-CREATE TABLE IF NOT EXISTS `PRODUCT_INSTRUCTION_PLAN`
+CREATE TABLE IF NOT EXISTS `product_part_details`
 (
-    `ID`                  INT(11)      NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    `INSTRUCTION_PLAN_ID` VARCHAR(255) NOT NULL,
-    `TARGET_WEIGHT`       FLOAT        NOT NULL,
-    `LENGTH`              FLOAT        NOT NULL,
-    `IS_EQUAL`            BIT          NOT NULL DEFAULT 0,
-    `NO_OF_PARTS`         int          NOT NULL,
-    `CREATED_BY`          int                   DEFAULT NULL,
-    `CREATED_ON`          datetime(6)           DEFAULT NULL,
-    `UPDATED_BY`          int                   DEFAULT NULL,
-    `UPDATED_ON`          datetime(6)           DEFAULT NULL,
-    `IS_DELETED`          BIT          NOT NULL DEFAULT 0
+    `id`              INT(11)      NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `part_details_id` VARCHAR(255) NOT NULL,
+    `target_weight`   FLOAT        NOT NULL,
+    `length`          FLOAT        NOT NULL,
+    `created_by`      int         DEFAULT NULL,
+    `created_on`      datetime(6) DEFAULT NULL,
+    `updated_by`      int         DEFAULT NULL,
+    `updated_on`      datetime(6) DEFAULT NULL,
+    `is_deleted`      BIT         DEFAULT 0
 );
 
-ALTER TABLE aspen.PRODUCT_INSTRUCTION
-    ADD COLUMN instruction_plan_id varchar(255);
+ALTER TABLE ASPEN.product_instruction
+    ADD COLUMN `part_details_id` INT(11),
+    ADD FOREIGN KEY `part_details_id` (part_details_id) REFERENCES ASPEN.`product_part_details` (id);

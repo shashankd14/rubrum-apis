@@ -28,21 +28,24 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
     public List<Instruction> getAllWIPList();
 
     @Query("select i from Instruction i where i.groupId = :groupId")
-    public List<Instruction> findByGroupId(@Param("groupId")Integer groupId);
+    public List<Instruction> findByGroupId(@Param("groupId") Integer groupId);
 
     @Query("select i from Instruction i where i.parentGroupId = :parentGroupId")
-    public List<Instruction> findByParentGroupId(@Param("parentGroupId")Integer parentGroupId);
+    public List<Instruction> findByParentGroupId(@Param("parentGroupId") Integer parentGroupId);
 
     @Query("select i from Instruction i where i.parentInstruction.instructionId = :parentInstructionId")
-    public List<Instruction> findByParentInstructionId(@Param("parentInstructionId")Integer parentInstructionId);
+    public List<Instruction> findByParentInstructionId(@Param("parentInstructionId") Integer parentInstructionId);
 
     public List<Instruction> findInstructionsByInstructionIdInAndStatusNot(List<Integer> instructionIds, Status status);
 
+    @Query("select ins from Instruction ins left join fetch ins.inwardId where ins.instructionId = :instructionId")
+    public Optional<Instruction> findInstructionById(@Param("instructionId") Integer instructionId);
+
     @Query("select ins from Instruction ins left join fetch ins.inwardId left join fetch ins.parentInstruction where ins.instructionId in :instructionIds and ins.status.statusId = :statusId")
-    public List<Instruction> findAllByInstructionIdInAndStatus(@Param("instructionIds")List<Integer> instructionIds, @Param("statusId")Integer statusId);
+    public List<Instruction> findAllByInstructionIdInAndStatus(@Param("instructionIds") List<Integer> instructionIds, @Param("statusId") Integer statusId);
 
     @Query("select ins from Instruction ins join fetch ins.deliveryDetails dd where ins.instructionId in :instructionIds")
-    public List<Instruction> findInstructionsWithDeliveryDetails(@Param("instructionIds")List<Integer> instructionIds);
+    public List<Instruction> findInstructionsWithDeliveryDetails(@Param("instructionIds") List<Integer> instructionIds);
 
     @Query("select ins from Instruction ins join fetch ins.inwardId inw join fetch inw.party join fetch inw.material join fetch inw.materialGrade" +
             " where inw.inwardEntryId = :inwardId and (ins.groupId is not null or ins.parentGroupId is not null)")
