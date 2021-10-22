@@ -153,15 +153,6 @@ public void setMaterialGrade(List<MaterialGrade> materialGrade) {
     return materialResponseDto;
   }
 
-//  public static MaterialResponseDto valueOf(Material material){
-//    MaterialResponseDto materialResponseDto = new MaterialResponseDto();
-//    materialResponseDto.setMatId(material.getMatId());
-//    materialResponseDto.setDescription(material.getDescription());
-//    materialResponseDto.setHsnCode(material.getHsnCode());
-//    materialResponseDto.setMaterialCode(material.getMaterialCode());
-//    return materialResponseDto;
-//  }
-
   public static MaterialResponseDetailsDto valueOfMat(Material material){
     MaterialResponseDetailsDto materialResponseDetailsDto = new MaterialResponseDetailsDto();
     materialResponseDetailsDto.setMatId(material.getMatId());

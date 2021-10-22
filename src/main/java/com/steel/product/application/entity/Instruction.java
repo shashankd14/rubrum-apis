@@ -7,6 +7,7 @@ import com.steel.product.application.dto.instruction.InstructionResponseDto;
 import com.steel.product.application.dto.pdf.InstructionResponsePdfDto;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.FetchMode;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -26,7 +27,6 @@ public class Instruction {
 	@Column(name = "instructionid")
 	private Integer instructionId ;
 
-    //	@JsonIgnore
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "inwardid")
 	private InwardEntry inwardId;

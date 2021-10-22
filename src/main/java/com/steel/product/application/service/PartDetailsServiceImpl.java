@@ -40,10 +40,15 @@ public class PartDetailsServiceImpl implements PartDetailsService {
 
     @Override
     public List<PartDetailsResponse> getByPartDetailsId(String partDetailsId) {
-        List<PartDetails> partDetailsList = partDetailsRepository.findAllByPartDetailsId(partDetailsId);
+        List<PartDetails> partDetailsList = partDetailsRepository.getByPartDetailsId(partDetailsId);
         if (partDetailsList == null) {
             throw new RuntimeException("part details with partDetailsId " + partDetailsId + " not found");
         }
-        return partDetailsMapper.toResponseDtoList(partDetailsList);
+        return partDetailsMapper.toResponseDto(partDetailsList);
+    }
+
+    @Override
+    public List<PartDetails> findAllByPartDetailsId(String partDetailsId) {
+        return null;
     }
 }

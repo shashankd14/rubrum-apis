@@ -2,6 +2,7 @@ package com.steel.product.application.mapper;
 
 import com.steel.product.application.dto.instruction.InstructionRequestDto;
 import com.steel.product.application.dto.instruction.InstructionResponseDto;
+import com.steel.product.application.dto.pdf.InstructionResponsePdfDto;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
 import org.mapstruct.Mapper;
@@ -29,7 +30,13 @@ public interface InstructionMapper {
     @Mapping(target = "deliveryDetails", ignore = true)
     @Mapping(source = "instruction.inwardId.inwardEntryId", target = "inwardEntryId")
     @Mapping(target = "parentInstructionId", source = "instruction.parentInstruction.instructionId")
+    @Mapping(target = "partDetails.instructions", ignore = true)
     InstructionResponseDto toResponseDto(Instruction instruction);
 
     List<InstructionResponseDto> toResponseDtoList(List<Instruction> instructions);
+
+    @Mapping(target = "process", source = "instruction.process")
+    @Mapping(source = "instruction.inwardId.inwardEntryId", target = "inwardEntryId")
+    @Mapping(target = "countOfWeight", ignore = true)
+    InstructionResponsePdfDto toResponsePdfDto(Instruction instruction);
 }

@@ -1,10 +1,9 @@
 package com.steel.product.application.service;
 
 import com.steel.product.application.dto.instruction.*;
+import com.steel.product.application.dto.pdf.InwardEntryPdfDto;
 import com.steel.product.application.entity.Instruction;
-import com.steel.product.application.entity.Status;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 
@@ -51,5 +50,7 @@ public interface InstructionService {
     public List<Instruction> getAllByInstructionIdIn(List<Integer> instructionIds);
 
     public ResponseEntity<Object> addSlitInstruction(List<SlitInstructionSaveRequestDto> slitInstructionSaveRequestDtos);
+
+    public InwardEntryPdfDto findInstructionsByPartDetailsIdJoinFetch(String partDetailsId);
 }
 

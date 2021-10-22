@@ -1,14 +1,26 @@
 package com.steel.product.application.controller;
 
+import com.lowagie.text.DocumentException;
+import com.steel.product.application.dao.InstructionRepository;
 import com.steel.product.application.dto.instruction.*;
+import com.steel.product.application.dto.partDetails.PartDetailsResponse;
+import com.steel.product.application.dto.pdf.InwardEntryPdfDto;
+import com.steel.product.application.dto.pdf.PdfResponseDto;
 import com.steel.product.application.entity.Instruction;
+import com.steel.product.application.entity.InwardEntry;
+import com.steel.product.application.entity.PartDetails;
+import com.steel.product.application.mapper.InstructionMapper;
 import com.steel.product.application.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -17,22 +29,30 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/instruction")
 public class InstructionController {
 
-    @Autowired
     private InstructionService instructionService;
 
-    @Autowired
     private InwardEntryService inwardService;
 
-    @Autowired
     private StatusService statusService;
 
-    @Autowired
     private ProcessService processService;
-    @Autowired
     private CompanyDetailsService companyDetailsService;
 
-    @Resource
     private PacketClassificationService packetClassificationService;
+
+    private PdfService pdfService;
+
+
+    @Autowired
+    public InstructionController(InstructionService instructionService, InwardEntryService inwardService, StatusService statusService, ProcessService processService, CompanyDetailsService companyDetailsService, PacketClassificationService packetClassificationService, PdfService pdfService) {
+        this.instructionService = instructionService;
+        this.inwardService = inwardService;
+        this.statusService = statusService;
+        this.processService = processService;
+        this.companyDetailsService = companyDetailsService;
+        this.packetClassificationService = packetClassificationService;
+        this.pdfService = pdfService;
+    }
 
     @GetMapping("/list")
     public ResponseEntity<Object> getAll() {
@@ -117,10 +137,26 @@ public class InstructionController {
     }
 
 
-
     @PostMapping("/saveUnprocessedForDelivery/{inwardId}")
     public ResponseEntity<Object> saveUnprocessedForDelivery(@PathVariable int inwardId) {
         return new ResponseEntity<>(instructionService.saveUnprocessedForDelivery(inwardId), HttpStatus.OK);
+    }
+
+    @PostMapping("/slit/pdf/{partDetailsId}")
+    public ResponseEntity<PdfResponseDto> downloadInwardPDF(@PathVariable("partDetailsId") String partDetailsId) {
+        Path file = null;
+        byte[] bytes = null;
+        StringBuilder builder = new StringBuilder();
+        try {
+            file = Paths.get(pdfService.generatePdf(partDetailsId).getAbsolutePath());
+            bytes = Files.readAllBytes(file);
+            builder.append(Base64.getEncoder().encodeToString(bytes));
+        } catch (IOException | DocumentException | org.dom4j.DocumentException ex) {
+            ex.printStackTrace();
+        }
+        String encodedFile = builder.toString();
+
+        return new ResponseEntity<PdfResponseDto>(new PdfResponseDto(encodedFile), HttpStatus.OK);
     }
 
 

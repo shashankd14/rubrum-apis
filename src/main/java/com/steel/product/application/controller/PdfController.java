@@ -57,14 +57,31 @@ public class PdfController {
         byte[] bytes = null;
         StringBuilder builder = new StringBuilder();
         try {
-             file = Paths.get(pdfService.generateDeliveryPdf(deliveryPdfDto).getAbsolutePath());
-             bytes = Files.readAllBytes(file);
-             builder.append(Base64.getEncoder().encodeToString(bytes));
+            file = Paths.get(pdfService.generateDeliveryPdf(deliveryPdfDto).getAbsolutePath());
+            bytes = Files.readAllBytes(file);
+            builder.append(Base64.getEncoder().encodeToString(bytes));
         } catch (IOException | DocumentException | org.dom4j.DocumentException ex) {
             ex.printStackTrace();
         }
         String encodedFile = builder.toString();
         return new ResponseEntity<>(new PdfResponseDto(encodedFile), HttpStatus.OK);
+    }
+
+    @GetMapping("/slit/{partDetailsId}")
+    public ResponseEntity<PdfResponseDto> downloadSlitPDF(@PathVariable("partDetailsId") String partDetailsId) {
+        Path file = null;
+        byte[] bytes = null;
+        StringBuilder builder = new StringBuilder();
+        try {
+            file = Paths.get(pdfService.generatePdf(partDetailsId).getAbsolutePath());
+            bytes = Files.readAllBytes(file);
+            builder.append(Base64.getEncoder().encodeToString(bytes));
+        } catch (IOException | DocumentException | org.dom4j.DocumentException ex) {
+            ex.printStackTrace();
+        }
+        String encodedFile = builder.toString();
+
+        return new ResponseEntity<PdfResponseDto>(new PdfResponseDto(encodedFile), HttpStatus.OK);
     }
 
 

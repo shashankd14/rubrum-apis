@@ -5,6 +5,9 @@ import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.dto.instruction.*;
 import com.steel.product.application.dto.partDetails.PartDetailsResponse;
 import com.steel.product.application.dto.partDetails.partDetailsRequest;
+import com.steel.product.application.dto.pdf.InstructionResponsePdfDto;
+import com.steel.product.application.dto.pdf.InwardEntryPdfDto;
+import com.steel.product.application.dto.pdf.PartDetailsPdfResponse;
 import com.steel.product.application.entity.*;
 import com.steel.product.application.entity.Process;
 import com.steel.product.application.mapper.InstructionMapper;
@@ -528,9 +531,44 @@ public class InstructionServiceImpl implements InstructionService {
             LOGGER.info("saving instructions from inward " + inwardId);
             inwardService.saveEntry(inwardEntry);
         }
-        List<PartDetailsResponse> partDetailsResponseList = partDetailsMapper.toResponseDtoList(partDetails);
+        List<PartDetailsResponse> partDetailsResponseList = partDetailsMapper.toResponseDto(partDetails);
         return new ResponseEntity<Object>(partDetailsResponseList, HttpStatus.CREATED);
 
+    }
+
+    @Override
+    public InwardEntryPdfDto findInstructionsByPartDetailsIdJoinFetch(String partDetailsId) {
+        List<Object[]> objects = instructionRepository.findPartDetailsJoinFetchInstructions(partDetailsId);
+        Map<PartDetailsPdfResponse, List<InstructionResponsePdfDto>> partDetailsMap = new HashMap<>();
+        Integer inwardId = null;
+        float totalWeight = 0f;
+        for (Object[] obj : objects) {
+            PartDetails partDetails = (PartDetails) obj[0];
+            Instruction instruction = (Instruction) obj[1];
+            if (inwardId == null) {
+                inwardId = instruction.getInwardId().getInwardEntryId();
+            }
+            Long count = (Long) obj[2];
+            PartDetailsPdfResponse partDetailsPdfResponse = partDetailsMapper.toPartDetailsPdfResponse(partDetails);
+            InstructionResponsePdfDto instructionResponsePdfDto = instructionMapper.toResponsePdfDto(instruction);
+            instructionResponsePdfDto.setCountOfWeight(count);
+            if (partDetailsMap.isEmpty() || !partDetailsMap.containsKey(partDetailsPdfResponse)) {
+                List<InstructionResponsePdfDto> list = new ArrayList<>();
+                list.add(instructionResponsePdfDto);
+                partDetailsMap.put(partDetailsPdfResponse, list);
+                totalWeight += partDetailsPdfResponse.getTargetWeight();
+            } else {
+                List<InstructionResponsePdfDto> list = partDetailsMap.get(partDetailsPdfResponse);
+                list.add(instructionResponsePdfDto);
+                partDetailsMap.put(partDetailsPdfResponse, list);
+            }
+
+        }
+        InwardEntry inwardEntry = inwardService.getByEntryId(inwardId);
+        InwardEntryPdfDto inwardEntryPdfDto = InwardEntry.valueOf(inwardEntry, null);
+        inwardEntryPdfDto.setPartDetailsMap(partDetailsMap);
+        inwardEntryPdfDto.setTotalWeight(totalWeight);
+        return inwardEntryPdfDto;
     }
 
 

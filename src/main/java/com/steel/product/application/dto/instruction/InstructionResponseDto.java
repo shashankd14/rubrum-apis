@@ -2,6 +2,8 @@ package com.steel.product.application.dto.instruction;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.steel.product.application.dto.delivery.DeliveryResponseDto;
+import com.steel.product.application.dto.inward.InwardEntryResponseDto;
+import com.steel.product.application.dto.partDetails.PartDetailsResponse;
 import com.steel.product.application.dto.process.ProcessDto;
 import com.steel.product.application.dto.status.StatusDto;
 import com.steel.product.application.entity.PacketClassification;
@@ -14,13 +16,15 @@ import java.util.List;
 @Getter
 @Setter
 public class InstructionResponseDto {
-    private Integer instructionId ;
+    private Integer instructionId;
 
     private Integer inwardEntryId;
 
+    private InwardEntryResponseDto inwardEntryResponseDto;
+
     private ProcessDto process;
 
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date instructionDate;
 
     private Float plannedLength;
@@ -72,5 +76,7 @@ public class InstructionResponseDto {
     private List<InstructionResponseDto> childInstructions;
 
     private DeliveryResponseDto deliveryDetails;
+
+    private PartDetailsResponse partDetails;
 
 }

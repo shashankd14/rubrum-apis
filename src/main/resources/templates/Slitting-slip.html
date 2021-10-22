@@ -68,7 +68,8 @@
           <td>Machine No: -</td>
         </tr>
         <tr>
-          <td>Number of Parts: -</td>
+          <td>Number of Parts:</td>
+          <td th:text="${#maps.size(inward?.partDetailsMap)}"></td>
         </tr>
         <tr>
           <td>Balance coil remove: </td>
@@ -118,30 +119,31 @@
   </div>
   </div>
   <div style="margin: auto;width: 70vw;">
-    <table class="m_des">
-      <tbody><tr class="m_tp">
-      <th class="m_DesTable">Length</th>
-      <th class="m_DesTable">Thick</th>
-      <th class="m_DesTable">Width</th>
-      <th class="m_DesTable">No Of Slits</th>
-      <th class="m_DesTable">Weight</th>
-      <th class="m_DesTable">Tags</th>
-      </tr>
-      <tr class="m_tp" th:each="weight: ${inward?.instructionsMap}" th:with="ins=${weight.value}">
-        <td class="m_DesTable" th:text="${ins[0]?.plannedLength}"></td>
-        <td class="m_DesTable" th:text="${inward.fThickness}"></td>
-        <td class="m_DesTable" th:text="${ins[0]?.plannedWidth}"></td>
-        <td class="m_DesTable" th:text="${ins[0]?.plannedNoOfPieces}"></td>
-        <td class="m_DesTable"
-            th:text="${(weight.key*#lists.size(ins)) + ' (' + (weight.key) + ' X ' + (#lists.size(ins)) + ')'}"></td>
-        <td class="m_DesTable" th:text="${ins[0]?.packetClassification?.classificationName}"></td>
-      </tr>
-      <tr>
-        <td class="m_DesTable" colspan="4" style="text-align: center; font-weight: 600;">TOTAL WEIGHT</td>
-        <td class="m_DesTable" th:text="${#numbers.formatDecimal(inward?.totalWeight,1,2)}"></td>
-      </tr>
-      </tbody>
-    </table>
+    <div th:each="part: ${inward?.partDetailsMap}" th:with="list=${part.value}">
+      <p>Target weight :<span th:text="${part.key.targetWeight}"></span></p>
+      <p>Length :<span th:text="${part.key.length}"></span></p>
+      <table class="m_des">
+        <tbody>
+        <tr class="m_tp">
+          <th class="m_DesTable">Length</th>
+          <th class="m_DesTable">Thick</th>
+          <th class="m_DesTable">Width</th>
+          <th class="m_DesTable">No Of Slits</th>
+          <th class="m_DesTable">Weight</th>
+          <th class="m_DesTable">Tags</th>
+        </tr>
+        <tr class="m_tp" th:each="ins: ${list}">
+          <td class="m_DesTable" th:text="${ins?.plannedLength}"></td>
+          <td class="m_DesTable" th:text="${inward?.fThickness}"></td>
+          <td class="m_DesTable" th:text="${ins?.plannedWidth}"></td>
+          <td class="m_DesTable" th:text="${ins?.plannedNoOfPieces}"></td>
+          <td class="m_DesTable" th:text="${ins?.plannedWeight + ' x ' + ins.countOfWeight}"></td>
+          <td class="m_DesTable" th:text="${ins?.packetClassification?.classificationName}"></td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
   </div>
 
     <div class="footer" style="width: 100%;">

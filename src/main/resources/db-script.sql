@@ -36,6 +36,6 @@ CREATE TABLE IF NOT EXISTS `product_part_details`
     `is_deleted`      BIT         DEFAULT 0
 );
 
-ALTER TABLE ASPEN.product_instruction
+ALTER TABLE aspen.product_instruction
     ADD COLUMN `part_details_id` INT(11),
-    ADD FOREIGN KEY `part_details_id` (part_details_id) REFERENCES ASPEN.`product_part_details` (id);
+    ADD FOREIGN KEY `part_details_id` (part_details_id) REFERENCES aspen.`product_part_details` (id);

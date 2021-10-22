@@ -11,7 +11,7 @@ import java.util.List;
 
 public class InwardEntryResponseDto {
 
-    private int inwardEntryId;
+    private Integer inwardEntryId;
 
     private PartyDto party;
 
@@ -87,11 +87,11 @@ public class InwardEntryResponseDto {
 
     private Float inStockWeight;
 
-    public int getInwardEntryId() {
+    public Integer getInwardEntryId() {
         return inwardEntryId;
     }
 
-    public void setInwardEntryId(int inwardEntryId) {
+    public void setInwardEntryId(Integer inwardEntryId) {
         this.inwardEntryId = inwardEntryId;
     }
 

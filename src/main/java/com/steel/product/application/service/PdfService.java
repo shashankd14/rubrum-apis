@@ -37,18 +37,24 @@ public class PdfService {
 
     public File generatePdf(PdfDto pdfDto) throws IOException, org.dom4j.DocumentException, DocumentException {
         Context context = getContext(pdfDto);
-        String html = loadAndFillTemplate(context,pdfDto.getProcessId());
-        return renderPdf(html,"inward");
+        String html = loadAndFillTemplate(context, pdfDto.getProcessId());
+        return renderPdf(html, "inward");
+    }
+
+    public File generatePdf(String partDetailsId) throws IOException, org.dom4j.DocumentException, DocumentException {
+        Context context = getContext(partDetailsId);
+        String html = loadAndFillTemplate(context, 2);
+        return renderPdf(html, "inward");
     }
 
     public File generateDeliveryPdf(DeliveryPdfDto deliveryPdfDto) throws IOException, org.dom4j.DocumentException, DocumentException {
         Context context = getDeliveryContext(deliveryPdfDto);
-        String html = loadAndFillDeliveryTemplate(context,deliveryPdfDto);
-        return renderPdf(html,"delivery");
+        String html = loadAndFillDeliveryTemplate(context, deliveryPdfDto);
+        return renderPdf(html, "delivery");
     }
 
     private String loadAndFillDeliveryTemplate(Context context, DeliveryPdfDto deliveryPdfDto) {
-        return templateEngine.process("DC-slit",context);
+        return templateEngine.process("DC-slit", context);
     }
 
     private Context getDeliveryContext(DeliveryPdfDto deliveryPdfDto) {
@@ -110,15 +116,21 @@ public class PdfService {
         return context;
     }
 
+    private Context getContext(String partDetailsId) {
+        Context context = new Context();
+        InwardEntryPdfDto inwardEntryPdfDto = instructionService.findInstructionsByPartDetailsIdJoinFetch(partDetailsId);
+        context.setVariable("inward", inwardEntryPdfDto);
+        return context;
+    }
+
     private String loadAndFillTemplate(Context context, Integer processId) {
-        if(processId != null && processId == 1) {
+        if (processId != null && processId == 1) {
             return templateEngine.process("Cutting-slip", context);
-        }else if(processId != null && processId == 2) {
+        } else if (processId != null && processId == 2) {
             return templateEngine.process("Slitting-slip", context);
-        }else if(processId != null && processId == 3){
+        } else if (processId != null && processId == 3) {
             return templateEngine.process("SlitAndCut-slip", context);
-        }
-        else{
+        } else {
             return templateEngine.process("Inward",context);
         }
     }

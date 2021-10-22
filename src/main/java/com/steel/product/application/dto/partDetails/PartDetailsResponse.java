@@ -11,10 +11,11 @@ import java.util.Set;
 @Setter
 public class PartDetailsResponse {
 
+    private Long id;
     private Float targetWeight;
     private Float length;
     private String partDetailsId;
     private Integer createdBy;
     private Integer updatedBy;
-    private Set<InstructionResponseDto> instructionResponseDtos;
+    private Set<InstructionResponseDto> instructions;
 }

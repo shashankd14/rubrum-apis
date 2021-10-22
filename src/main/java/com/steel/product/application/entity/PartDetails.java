@@ -44,7 +44,7 @@ public class PartDetails {
     @Column(name = "updated_on")
     private Date updatedOn;
 
-    @OneToMany(mappedBy = "partDetails", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
+    @OneToMany(mappedBy = "partDetails", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH}, fetch = FetchType.LAZY)
     private Set<Instruction> instructions;
 
     @Column(name = "is_deleted", columnDefinition = "bit default 0")
