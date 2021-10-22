@@ -61,7 +61,7 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
     @Query("select ins, count(ins.plannedWeight) from Instruction ins join fetch ins.partDetails pd where pd.partDetailsId = :partDetailsId group by ins.plannedWeight order by pd.id")
     public List<Object[]> findInstructionsByPartDetailsIdJoinFetch(@Param("partDetailsId") String partDetailsId);
 
-    @Query("select pd,ins,COUNT(ins.plannedWeight) from PartDetails pd join fetch pd.instructions ins where pd.partDetailsId = :partDetailsId group by ins.plannedWeight")
+    @Query("select pd,ins,COUNT(ins.plannedWeight) from PartDetails pd join fetch pd.instructions ins where pd.partDetailsId = :partDetailsId group by ins.plannedWeight,ins.partDetails")
     public List<Object[]> findPartDetailsJoinFetchInstructions(@Param("partDetailsId") String partDetailsId);
 
 
