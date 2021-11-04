@@ -3,6 +3,7 @@ package com.steel.product.application.service;
 import com.steel.product.application.dto.instruction.*;
 import com.steel.product.application.dto.pdf.InwardEntryPdfDto;
 import com.steel.product.application.entity.Instruction;
+import com.steel.product.application.mapper.TotalLengthAndWeight;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
@@ -17,7 +18,7 @@ public interface InstructionService {
 
     public Instruction getById(int theId);
 
-    public ResponseEntity<Object> addInstruction(List<InstructionRequestDto> instructionDTOs);
+    public ResponseEntity<Object> addCutInstruction(List<InstructionSaveRequestDto> cutInstructionSaveRequestDtos);
 
     public List<Instruction> findSlitAndCutInstructionByInwardId(Integer inwardId);
 
@@ -47,10 +48,16 @@ public interface InstructionService {
 
     public Float sumOfPlannedWeightOfInstructionHavingParentInstructionId(Integer parentInstructionId);
 
+    public Float sumOfPlannedLengthOfInstructionHavingParentInstructionId(Integer parentInstructionId);
+
+    public TotalLengthAndWeight sumOfPlannedLengthAndWeightOfInstructionsHavingParentInstructionId(Integer parentInstructionId);
+
+    public TotalLengthAndWeight sumOfPlannedLengthAndWeightOfInstructionsHavingGroupId(Integer groupId);
+
     public List<Instruction> getAllByInstructionIdIn(List<Integer> instructionIds);
 
-    public ResponseEntity<Object> addSlitInstruction(List<SlitInstructionSaveRequestDto> slitInstructionSaveRequestDtos);
+    public ResponseEntity<Object> addSlitInstruction(List<InstructionSaveRequestDto> slitInstructionSaveRequestDtos);
 
-    public InwardEntryPdfDto findInstructionsByPartDetailsIdJoinFetch(String partDetailsId);
+    public InwardEntryPdfDto findInwardJoinFetchInstructionsAndPartDetails(String partDetailsId);
 }
 

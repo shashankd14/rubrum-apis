@@ -27,8 +27,8 @@ CREATE TABLE IF NOT EXISTS `product_part_details`
 (
     `id`              INT(11)      NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `part_details_id` VARCHAR(255) NOT NULL,
-    `target_weight`   FLOAT        NOT NULL,
-    `length`          FLOAT        NOT NULL,
+    `target_weight`   FLOAT        ,
+    `length`          FLOAT        ,
     `created_by`      int         DEFAULT NULL,
     `created_on`      datetime(6) DEFAULT NULL,
     `updated_by`      int         DEFAULT NULL,
@@ -36,6 +36,8 @@ CREATE TABLE IF NOT EXISTS `product_part_details`
     `is_deleted`      BIT         DEFAULT 0
 );
 
-ALTER TABLE aspen.product_instruction
-    ADD COLUMN `part_details_id` INT(11),
-    ADD FOREIGN KEY `part_details_id` (part_details_id) REFERENCES aspen.`product_part_details` (id);
+--ALTER TABLE aspen.product_instruction
+--    ADD COLUMN `part_details_id` INT(11),
+--    ADD FOREIGN KEY `part_details_id` (part_details_id) REFERENCES aspen.`product_part_details` (id);
+
+ALTER TABLE aspen.product_tblinwardentry ADD COLUMN `available_length` FLOAT;

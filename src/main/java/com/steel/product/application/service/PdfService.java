@@ -118,7 +118,7 @@ public class PdfService {
 
     private Context getContext(String partDetailsId) {
         Context context = new Context();
-        InwardEntryPdfDto inwardEntryPdfDto = instructionService.findInstructionsByPartDetailsIdJoinFetch(partDetailsId);
+        InwardEntryPdfDto inwardEntryPdfDto = instructionService.findInwardJoinFetchInstructionsAndPartDetails(partDetailsId);
         context.setVariable("inward", inwardEntryPdfDto);
         return context;
     }

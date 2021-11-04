@@ -138,6 +138,9 @@ public class InwardEntry {
 	@Column(name = "in_stock_weight")
 	private Float inStockWeight;
 
+	@Column(name = "available_length")
+	private Float availableLength;
+
 
 	public void addInstruction(Instruction instruction){
 		if(this.instructions == null){
@@ -468,7 +471,15 @@ public class InwardEntry {
 		this.inStockWeight = inStockWeight;
 	}
 
-	public static InwardEntryPdfDto valueOf(InwardEntry inwardEntry,List<InstructionResponsePdfDto> instructionResponsePdfDtos){
+	public Float getAvailableLength() {
+		return availableLength;
+	}
+
+	public void setAvailableLength(Float availableLength) {
+		this.availableLength = availableLength;
+	}
+
+	public static InwardEntryPdfDto valueOf(InwardEntry inwardEntry, List<InstructionResponsePdfDto> instructionResponsePdfDtos){
         InwardEntryPdfDto inwardEntryPdfDto = new InwardEntryPdfDto();
         inwardEntryPdfDto.setInwardEntryId(inwardEntry.getInwardEntryId());
         inwardEntryPdfDto.setPartyName(inwardEntry.getParty() != null ? inwardEntry.getParty().getPartyName() : "");

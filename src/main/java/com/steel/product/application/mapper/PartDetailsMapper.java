@@ -15,7 +15,12 @@ public interface PartDetailsMapper {
     partDetailsRequest toRequestDto(PartDetails partDetails);
 
     @Mapping(target = "isDeleted", defaultValue = "false")
-    PartDetails toEntity(partDetailsRequest partDetailsRequest);
+    PartDetails toEntityForSlit(partDetailsRequest partDetailsRequest);
+
+    @Mapping(target = "isDeleted", defaultValue = "false")
+    @Mapping(target = "targetWeight", ignore = true)
+    @Mapping(target = "length", ignore = true)
+    PartDetails toEntityForCut(partDetailsRequest partDetailsRequest);
 
     @Mapping(target = "instructions", source = "partDetails.instructions")
     PartDetailsResponse toResponseDto(PartDetails partDetails);

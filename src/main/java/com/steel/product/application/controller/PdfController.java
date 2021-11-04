@@ -67,8 +67,8 @@ public class PdfController {
         return new ResponseEntity<>(new PdfResponseDto(encodedFile), HttpStatus.OK);
     }
 
-    @GetMapping("/slit/{partDetailsId}")
-    public ResponseEntity<PdfResponseDto> downloadSlitPDF(@PathVariable("partDetailsId") String partDetailsId) {
+    @GetMapping("{partDetailsId}")
+    public ResponseEntity<PdfResponseDto> downloadPDF(@PathVariable("partDetailsId") String partDetailsId) {
         Path file = null;
         byte[] bytes = null;
         StringBuilder builder = new StringBuilder();

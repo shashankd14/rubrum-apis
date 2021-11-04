@@ -2,15 +2,18 @@ package com.steel.product.application.dao;
 
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.Status;
+import com.steel.product.application.mapper.TotalLengthAndWeight;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public interface InstructionRepository extends JpaRepository<Instruction, Integer> {
     @Modifying
     @Transactional
@@ -56,13 +59,23 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
     @Query("select COALESCE(SUM(ins.plannedWeight),0) from Instruction ins where ins.parentInstruction.instructionId = :parentInstructionId")
     public Float sumOfPlannedWeightOfInstructionHavingParentInstructionId(@Param("parentInstructionId") Integer parentInstructionId);
 
+    @Query("select COALESCE(SUM(ins.plannedLength),0) from Instruction ins where ins.parentInstruction.instructionId = :parentInstructionId")
+    public Float sumOfPlannedLengthOfInstructionHavingParentInstructionId(@Param("parentInstructionId") Integer parentInstructionId);
+
+    @Query("select new com.steel.product.application.mapper.TotalLengthAndWeight(COALESCE(SUM(ins.plannedLength),0),COALESCE(SUM(ins.plannedWeight),0)) from Instruction ins where ins.parentInstruction.instructionId = :parentInstructionId")
+    public TotalLengthAndWeight sumOfPlannedLengthAndWeightOfInstructionsHavingParentInstructionId(@Param("parentInstructionId") Integer parentInstructionId);
+
+    @Query("select new com.steel.product.application.mapper.TotalLengthAndWeight(COALESCE(SUM(ins.plannedLength),0),COALESCE(SUM(ins.plannedWeight),0)) from Instruction ins where ins.groupId = :groupId")
+    public TotalLengthAndWeight sumOfPlannedLengthAndWeightOfInstructionsHavingGroupId(@Param("groupId") Integer groupId);
+
     public List<Instruction> getAllByInstructionIdIn(List<Integer> instructionIds);
 
-    @Query("select ins, count(ins.plannedWeight) from Instruction ins join fetch ins.partDetails pd where pd.partDetailsId = :partDetailsId group by ins.plannedWeight order by pd.id")
-    public List<Object[]> findInstructionsByPartDetailsIdJoinFetch(@Param("partDetailsId") String partDetailsId);
+//    @Query("select ins, count(ins.plannedWeight) from Instruction ins join fetch ins.partDetails pd where pd.partDetailsId = :partDetailsId group by ins.plannedWeight order by pd.id")
+//    public List<Object[]> findInstructionsByPartDetailsIdJoinFetch(@Param("partDetailsId") String partDetailsId);
 
     @Query("select pd,ins,COUNT(ins.plannedWeight) from PartDetails pd join fetch pd.instructions ins where pd.partDetailsId = :partDetailsId group by ins.plannedWeight,ins.partDetails")
     public List<Object[]> findPartDetailsJoinFetchInstructions(@Param("partDetailsId") String partDetailsId);
 
+//    select ins,COUNT(ins.plannedWeight) from Instruction ins join fetch ins.partDetails pd where pd.partDetailsId = :partDetailsId group by ins.plannedWeight,pd
 
 }

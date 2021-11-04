@@ -8,7 +8,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class SlitInstructionSaveRequestDto {
+public class InstructionSaveRequestDto {
 
     private partDetailsRequest partDetailsRequest;
     private List<InstructionRequestDto> instructionRequestDTOs;

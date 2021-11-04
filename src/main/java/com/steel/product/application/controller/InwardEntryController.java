@@ -89,6 +89,7 @@ public class InwardEntryController {
 			inwardEntry.setfWidth(inward.getWidth());
 			inwardEntry.setfThickness(inward.getThickness());
 			inwardEntry.setfLength(inward.getLength());
+			inwardEntry.setAvailableLength(inward.getLength());
 			inwardEntry.setfQuantity(inward.getPresentWeight());
 			inwardEntry.setGrossWeight(inward.getGrossWeight());
 
