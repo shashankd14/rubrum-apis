@@ -581,22 +581,29 @@ public class InstructionServiceImpl implements InstructionService {
         List<Object[]> objects = instructionRepository.findPartDetailsJoinFetchInstructions(partDetailsId);
         Map<PartDetailsPdfResponse, List<InstructionResponsePdfDto>> partDetailsMap = new HashMap<>();
         Integer inwardId = null;
+        Integer processId = null;
         float totalWeight = 0f;
         for (Object[] obj : objects) {
             PartDetails partDetails = (PartDetails) obj[0];
             Instruction instruction = (Instruction) obj[1];
-            if (inwardId == null) {
+            if (inwardId == null && processId == null) {
                 inwardId = instruction.getInwardId().getInwardEntryId();
+                processId = instruction.getProcess().getProcessId();
             }
             Long count = (Long) obj[2];
             PartDetailsPdfResponse partDetailsPdfResponse = partDetailsMapper.toPartDetailsPdfResponse(partDetails);
             InstructionResponsePdfDto instructionResponsePdfDto = instructionMapper.toResponsePdfDto(instruction);
             instructionResponsePdfDto.setCountOfWeight(count);
+            if(processId == 1){
+                totalWeight += instruction.getPlannedWeight()*count;
+            }
             if (partDetailsMap.isEmpty() || !partDetailsMap.containsKey(partDetailsPdfResponse)) {
                 List<InstructionResponsePdfDto> list = new ArrayList<>();
                 list.add(instructionResponsePdfDto);
                 partDetailsMap.put(partDetailsPdfResponse, list);
-                totalWeight += partDetailsPdfResponse.getTargetWeight();
+                if(processId == 2) {
+                    totalWeight += partDetailsPdfResponse.getTargetWeight();
+                }
             } else {
                 List<InstructionResponsePdfDto> list = partDetailsMap.get(partDetailsPdfResponse);
                 list.add(instructionResponsePdfDto);
@@ -607,6 +614,7 @@ public class InstructionServiceImpl implements InstructionService {
         InwardEntry inwardEntry = inwardService.getByEntryId(inwardId);
         InwardEntryPdfDto inwardEntryPdfDto = InwardEntry.valueOf(inwardEntry, null);
         inwardEntryPdfDto.setPartDetailsMap(partDetailsMap);
+        inwardEntryPdfDto.setVProcess(String.valueOf(processId));
         inwardEntryPdfDto.setTotalWeight(totalWeight);
         return inwardEntryPdfDto;
     }

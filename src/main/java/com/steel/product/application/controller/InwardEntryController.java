@@ -182,8 +182,6 @@ public class InwardEntryController {
 			inwardEntry.setvParentBundleNumber(0);
 
 			inwardEntry.setIsDeleted(Boolean.valueOf(false));
-			inwardEntry.setCreatedOn(this.timestamp);
-			inwardEntry.setUpdatedOn(this.timestamp);
 
 			inwardEntry.setCreatedBy(this.userSerive.getUserById(inward.getCreatedBy()));
 			inwardEntry.setUpdatedBy(this.userSerive.getUserById(inward.getUpdatedBy()));

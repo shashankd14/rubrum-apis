@@ -43,7 +43,8 @@ public class PdfService {
 
     public File generatePdf(String partDetailsId) throws IOException, org.dom4j.DocumentException, DocumentException {
         Context context = getContext(partDetailsId);
-        String html = loadAndFillTemplate(context, 2);
+        InwardEntryPdfDto inwardEntryPdfDto = (InwardEntryPdfDto)context.getVariable("inward");
+        String html = loadAndFillTemplate(context,Integer.parseInt(inwardEntryPdfDto.getVProcess()));
         return renderPdf(html, "inward");
     }
 
