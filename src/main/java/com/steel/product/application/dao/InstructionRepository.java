@@ -2,6 +2,7 @@ package com.steel.product.application.dao;
 
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.Status;
+import com.steel.product.application.mapper.CutInstruction;
 import com.steel.product.application.mapper.TotalLengthAndWeight;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -70,12 +71,18 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
 
     public List<Instruction> getAllByInstructionIdIn(List<Integer> instructionIds);
 
-//    @Query("select ins, count(ins.plannedWeight) from Instruction ins join fetch ins.partDetails pd where pd.partDetailsId = :partDetailsId group by ins.plannedWeight order by pd.id")
-//    public List<Object[]> findInstructionsByPartDetailsIdJoinFetch(@Param("partDetailsId") String partDetailsId);
-
     @Query("select pd,ins,COUNT(ins.plannedWeight) from PartDetails pd join fetch pd.instructions ins where pd.partDetailsId = :partDetailsId group by ins.plannedWeight,ins.partDetails")
-    public List<Object[]> findPartDetailsJoinFetchInstructions(@Param("partDetailsId") String partDetailsId);
+    List<Object[]> findPartDetailsJoinFetchInstructions(@Param("partDetailsId") String partDetailsId);
 
-//    select ins,COUNT(ins.plannedWeight) from Instruction ins join fetch ins.partDetails pd where pd.partDetailsId = :partDetailsId group by ins.plannedWeight,pd
+//    @Query(value = "SELECT ANY_VALUE(pd.target_weight) as targetWeight,ANY_VALUE(pd.length) AS length, ANY_VALUE(ins.inwardId) AS inwardId, ANY_VALUE(ins.processId) as processId" +
+//            ",ANY_VALUE(ins.plannedWeight) AS plannedWeight,ANY_VALUE(ins.plannedWidth) AS plannedWidth,ANY_VALUE(ins.plannedNoOfPieces) AS plannedNoOfPieces" +
+//            ",COUNT(ins.plannedWeight) AS weightCount, ANY_VALUE(ins.plannedLength) as plannedLength, pd.id AS partId" +
+//            " FROM product_instruction as ins INNER JOIN product_part_details AS pd ON pd.id = ins.part_details_id" +
+//            "  WHERE pd.part_details_id = :partDetailsId GROUP BY ins.plannedWeight,ins.part_details_id ORDER BY pd.id",nativeQuery = true)
+//    public List<PartInstruction> findPartDetailsFetchInstructions(@Param("partDetailsId")String partDetailsId);
+
+    @Query("select new com.steel.product.application.mapper.CutInstruction(ins AS instruction,COUNT(ins.plannedWeight) AS weightCount) from Instruction ins where " +
+            "ins.inwardId.inwardEntryId = :inwardId and parentGroupId = :parentGroupId and ins.process.processId = :processId group by ins.plannedWeight")
+    List<CutInstruction> findCutInstructionsByParentGroupId(@Param("inwardId")Integer inwardId,@Param("parentGroupId")Integer groupId, @Param("processId")Integer processId);
 
 }

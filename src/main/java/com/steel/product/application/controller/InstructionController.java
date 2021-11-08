@@ -1,9 +1,7 @@
 package com.steel.product.application.controller;
 
-import com.steel.product.application.dao.InstructionRepository;
 import com.steel.product.application.dto.instruction.*;
 import com.steel.product.application.entity.Instruction;
-import com.steel.product.application.mapper.InstructionMapper;
 import com.steel.product.application.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,11 +23,10 @@ public class InstructionController {
     private CompanyDetailsService companyDetailsService;
     private PacketClassificationService packetClassificationService;
     private PdfService pdfService;
-    private InstructionRepository instructionRepository;
-    private InstructionMapper instructionMapper;
+
 
     @Autowired
-    public InstructionController(InstructionService instructionService, InwardEntryService inwardService, StatusService statusService, ProcessService processService, CompanyDetailsService companyDetailsService, PacketClassificationService packetClassificationService, PdfService pdfService, InstructionRepository instructionRepository, InstructionMapper instructionMapper) {
+    public InstructionController(InstructionService instructionService, InwardEntryService inwardService, StatusService statusService, ProcessService processService, CompanyDetailsService companyDetailsService, PacketClassificationService packetClassificationService, PdfService pdfService) {
         this.instructionService = instructionService;
         this.inwardService = inwardService;
         this.statusService = statusService;
@@ -37,8 +34,6 @@ public class InstructionController {
         this.companyDetailsService = companyDetailsService;
         this.packetClassificationService = packetClassificationService;
         this.pdfService = pdfService;
-        this.instructionRepository = instructionRepository;
-        this.instructionMapper = instructionMapper;
     }
 
     @GetMapping("/list")
@@ -90,15 +85,21 @@ public class InstructionController {
         }
     }
 
-    @PostMapping("/save/cut")
-    public ResponseEntity<Object> saveCutInstruction(@RequestBody List<InstructionSaveRequestDto> cutInstructionSaveRequestDtos) {
-        return instructionService.addCutInstruction(cutInstructionSaveRequestDtos);
+//    @PostMapping("/save/cut")
+//    public ResponseEntity<Object> saveCutInstruction(@RequestBody List<InstructionSaveRequestDto> cutInstructionSaveRequestDtos) {
+//        return instructionService.addCutInstruction(cutInstructionSaveRequestDtos);
+//
+//    }
+//
+//    @PostMapping("/save/slit")
+//    public ResponseEntity<Object> saveSlitInstruction(@RequestBody List<InstructionSaveRequestDto> slitInstructionSaveRequestDtos) {
+//        return instructionService.addSlitInstruction(slitInstructionSaveRequestDtos);
+//
+//    }
 
-    }
-
-    @PostMapping("/save/slit")
-    public ResponseEntity<Object> saveSlitInstruction(@RequestBody List<InstructionSaveRequestDto> slitInstructionSaveRequestDtos) {
-        return instructionService.addSlitInstruction(slitInstructionSaveRequestDtos);
+    @PostMapping("/save")
+    public ResponseEntity<Object> saveInstruction(@RequestBody List<InstructionSaveRequestDto> instructionSaveRequestDtos) {
+        return instructionService.addInstruction(instructionSaveRequestDtos);
 
     }
 
@@ -129,11 +130,17 @@ public class InstructionController {
         return new ResponseEntity<>(instructionService.saveUnprocessedForDelivery(inwardId), HttpStatus.OK);
     }
 
-//    @GetMapping("/test/{parentInstructionId}")
-//    public void test(@PathVariable("parentInstructionId") Integer parentInstructionId){
-//        TotalLengthAndWeight t = instructionRepository.sumOfPlannedLengthAndWeightOfInstructionsHavingParentInstructionId(parentInstructionId);
-//        System.out.println(t.getTotalLength()+" "+t.getTotalWeight());
-//        objects.forEach(obj -> System.out.println((Float)obj[0]+" "+(Float)obj[1]));
+//    @GetMapping("/test/{partDetailsId}")
+//    public void test(@PathVariable("partDetailsId") String partDetailsId){
+//        List<CutInstruction> objects = instructionRepository.findCutInstructionsByParentGroupId(59,3);
+//        System.out.println(objects.size());
+//        for(CutInstruction pdf:objects){
+//            Instruction instruction = pdf.getInstruction();
+//            System.out.println(pdf.get+" "+pdf.getLength()+" "+pdf.getPlannedWeight()+" "+pdf.getPlannedWidth()+" "+pdf.getWeightCount()+" "+pdf.getProcessId()
+//            +" "+pdf.getInwardId()+" "+pdf.getPartId());;
+
+//        }
+
 //    }
 
 

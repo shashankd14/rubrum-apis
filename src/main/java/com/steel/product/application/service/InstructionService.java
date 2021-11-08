@@ -3,6 +3,7 @@ package com.steel.product.application.service;
 import com.steel.product.application.dto.instruction.*;
 import com.steel.product.application.dto.pdf.InwardEntryPdfDto;
 import com.steel.product.application.entity.Instruction;
+import com.steel.product.application.mapper.CutInstruction;
 import com.steel.product.application.mapper.TotalLengthAndWeight;
 import org.springframework.http.ResponseEntity;
 
@@ -50,14 +51,19 @@ public interface InstructionService {
 
     public Float sumOfPlannedLengthOfInstructionHavingParentInstructionId(Integer parentInstructionId);
 
-    public TotalLengthAndWeight sumOfPlannedLengthAndWeightOfInstructionsHavingParentInstructionId(Integer parentInstructionId);
+    TotalLengthAndWeight sumOfPlannedLengthAndWeightOfInstructionsHavingParentInstructionId(Integer parentInstructionId);
 
-    public TotalLengthAndWeight sumOfPlannedLengthAndWeightOfInstructionsHavingGroupId(Integer groupId);
+    TotalLengthAndWeight sumOfPlannedLengthAndWeightOfInstructionsHavingGroupId(Integer groupId);
 
-    public List<Instruction> getAllByInstructionIdIn(List<Integer> instructionIds);
+    List<Instruction> getAllByInstructionIdIn(List<Integer> instructionIds);
 
-    public ResponseEntity<Object> addSlitInstruction(List<InstructionSaveRequestDto> slitInstructionSaveRequestDtos);
+    ResponseEntity<Object> addSlitInstruction(List<InstructionSaveRequestDto> slitInstructionSaveRequestDtos);
 
-    public InwardEntryPdfDto findInwardJoinFetchInstructionsAndPartDetails(String partDetailsId);
+    ResponseEntity<Object> addInstruction(List<InstructionSaveRequestDto> instructionSaveRequestDtos);
+
+    InwardEntryPdfDto findInwardJoinFetchInstructionsAndPartDetails(String partDetailsId);
+
+    List<CutInstruction> findCutInstructionsByParentGroupId(Integer inwardId, Integer groupId, Integer processId);
+
 }
 

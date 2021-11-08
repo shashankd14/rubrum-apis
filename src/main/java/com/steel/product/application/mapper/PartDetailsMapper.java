@@ -3,11 +3,14 @@ package com.steel.product.application.mapper;
 import com.steel.product.application.dto.partDetails.PartDetailsResponse;
 import com.steel.product.application.dto.partDetails.partDetailsRequest;
 import com.steel.product.application.dto.pdf.PartDetailsPdfResponse;
+import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.PartDetails;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 
 import java.util.List;
+import java.util.Set;
 
 @Mapper(componentModel = "spring", uses = {InstructionMapper.class})
 public interface PartDetailsMapper {
@@ -25,10 +28,14 @@ public interface PartDetailsMapper {
     @Mapping(target = "instructions", source = "partDetails.instructions")
     PartDetailsResponse toResponseDto(PartDetails partDetails);
 
+
     @Mapping(target = "instructions", ignore = true)
     PartDetailsPdfResponse toPartDetailsPdfResponse(PartDetails partDetails);
 
     List<PartDetailsResponse> toResponseDto(List<PartDetails> partDetails);
+
+
+//    List<PartDetailsResponse> toResponseDtoWithoutInstructionsInPartDetails(List<PartDetails> partDetails);
 
 
 }

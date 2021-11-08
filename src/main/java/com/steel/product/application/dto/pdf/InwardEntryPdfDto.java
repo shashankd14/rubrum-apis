@@ -1,5 +1,6 @@
 package com.steel.product.application.dto.pdf;
 
+import com.steel.product.application.dto.instruction.InstructionResponseDto;
 import com.steel.product.application.entity.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -7,6 +8,7 @@ import lombok.Setter;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -92,7 +94,7 @@ public class InwardEntryPdfDto {
 
     private Map<Float, List<InstructionResponsePdfDto>> instructionsSlitMap;
 
-    private Map<Float, List<InstructionResponsePdfDto>> instructionsCutMap;
+    private Map<Long, List<InstructionResponsePdfDto>> instructionsCutMap;
 
     private Map<PartDetailsPdfResponse, List<InstructionResponsePdfDto>> partDetailsMap;
 
@@ -103,5 +105,7 @@ public class InwardEntryPdfDto {
     private Float totalWeightCut;
 
     private Float inStockWeight;
+
+    private String partDetailsId;
 
 }

@@ -500,9 +500,9 @@ public class InwardEntry {
                     .collect(Collectors.groupingBy(InstructionResponsePdfDto::getPlannedWeight));
             inwardEntryPdfDto.setInstructionsMap(instructionsMap);
             inwardEntryPdfDto.setInstructions(instructionResponsePdfDtos);
-            inwardEntryPdfDto.setTotalWeight(instructionResponsePdfDtos.stream().
-                    map(ins -> ins.getPlannedWeight())
-                    .reduce(0f, Float::sum));
+//            inwardEntryPdfDto.setTotalWeight(instructionResponsePdfDtos.stream().
+//                    map(ins -> ins.getPlannedWeight())
+//                    .reduce(0f, Float::sum));
         }
         inwardEntryPdfDto.setPurposeType(inwardEntry.getPurposeType());
         inwardEntryPdfDto.setDReceivedDate(inwardEntry.getdReceivedDate());
@@ -534,8 +534,8 @@ public class InwardEntry {
         inwardEntryPdfDto.setFWidth(inwardEntry.getfWidth());
         inwardEntryPdfDto.setGrossWeight(inwardEntry.getGrossWeight());
         inwardEntryPdfDto.setCreatedOn(inwardEntry.getCreatedOn());
-        inwardEntryPdfDto.setInstructionsCutMap(instructionsCut.stream()
-                .collect(Collectors.groupingBy(InstructionResponsePdfDto::getPlannedWeight)));
+//        inwardEntryPdfDto.setInstructionsCutMap(instructionsCut.stream()
+//                .collect(Collectors.groupingBy(InstructionResponsePdfDto::getPlannedWeight)));
         inwardEntryPdfDto.setInstructionsSlitMap(instructionsSlit.stream()
                 .collect(Collectors.groupingBy(InstructionResponsePdfDto::getPlannedWeight)));
         inwardEntryPdfDto.setTotalWeightCut(instructionsCut.stream().

@@ -33,6 +33,4 @@ public interface InwardEntryService {
   public List<InwardEntry> saveAll(Set<InwardEntry> inwardEntries);
 
   public InwardEntry getByInwardEntryId(Integer inwardId);
-
-  public InwardEntry fetchInwardWithCutInstructions(Integer inwardId, Integer groupId,Integer processId);
 }

@@ -93,15 +93,6 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 	}
 
 	@Override
-	public InwardEntry fetchInwardWithCutInstructions(Integer inwardId, Integer groupId,Integer processId) {
-		Optional<InwardEntry> inwardEntryOptional =  inwdEntryRepo.fetchInwardWithCutInstructions(inwardId,groupId,processId);
-		if(!inwardEntryOptional.isPresent()){
-			throw new RuntimeException("Inward with id "+inwardId+" not found");
-		}
-		return inwardEntryOptional.get();
-	}
-
-	@Override
 	public List<InwardEntry> getAllEntriesPwr() {
 		return inwdEntryRepo.findAll().stream()
 				.filter(inwardEntry -> inwardEntry.getStatus().getStatusId() != 4 && inwardEntry.getStatus().getStatusId() != 5)
