@@ -22,6 +22,7 @@ public interface InstructionMapper {
     @Mapping(target = "packetClassification", ignore = true)
     @Mapping(target = "isSlitAndCut", defaultValue = "false")
     @Mapping(target = "isDeleted", defaultValue = "false")
+    @Mapping(target = "groupId", ignore = true)
     Instruction toEntity(InstructionRequestDto instructionRequestDto);
 
 
