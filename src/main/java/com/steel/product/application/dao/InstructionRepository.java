@@ -85,4 +85,6 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
             "ins.inwardId.inwardEntryId = :inwardId and parentGroupId = :parentGroupId and ins.process.processId = :processId group by ins.plannedWeight")
     List<CutInstruction> findCutInstructionsByParentGroupId(@Param("inwardId")Integer inwardId,@Param("parentGroupId")Integer groupId, @Param("processId")Integer processId);
 
+    Instruction findFirstByGroupId(Integer groupId);
+
 }

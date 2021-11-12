@@ -57,8 +57,6 @@ public interface InstructionService {
 
     List<Instruction> getAllByInstructionIdIn(List<Integer> instructionIds);
 
-    ResponseEntity<Object> addSlitInstruction(List<InstructionSaveRequestDto> slitInstructionSaveRequestDtos);
-
     ResponseEntity<Object> addInstruction(List<InstructionSaveRequestDto> instructionSaveRequestDtos);
 
     InwardEntryPdfDto findInwardJoinFetchInstructionsAndPartDetails(String partDetailsId);

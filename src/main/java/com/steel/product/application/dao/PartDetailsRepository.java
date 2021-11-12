@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PartDetailsRepository extends JpaRepository<PartDetails, Integer> {
@@ -16,6 +17,7 @@ public interface PartDetailsRepository extends JpaRepository<PartDetails, Intege
 
     @Query("select pd from PartDetails pd left join fetch pd.instructions ins left join fetch ins.inwardId where pd.partDetailsId = :partDetailsId")
     public List<PartDetails> findAllByPartDetailsId(@Param("partDetailsId") String partDetailsId);
+
 
 
 }
