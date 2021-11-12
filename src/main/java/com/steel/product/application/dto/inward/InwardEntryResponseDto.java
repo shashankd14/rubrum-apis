@@ -87,6 +87,8 @@ public class InwardEntryResponseDto {
 
     private Float inStockWeight;
 
+    private Float availableLength;
+
     public Integer getInwardEntryId() {
         return inwardEntryId;
     }
@@ -391,4 +393,11 @@ public class InwardEntryResponseDto {
         this.inStockWeight = inStockWeight;
     }
 
+    public Float getAvailableLength() {
+        return availableLength;
+    }
+
+    public void setAvailableLength(Float availableLength) {
+        this.availableLength = availableLength;
+    }
 }

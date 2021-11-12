@@ -593,6 +593,7 @@ public class InwardEntry {
 		inwardEntryResponseDto.setInStockWeight(inwardEntry.getInStockWeight());
 		inwardEntryResponseDto.setDeleted(inwardEntry.getDeleted());
 		inwardEntryResponseDto.setfLength(inwardEntry.getfLength());
+		inwardEntryResponseDto.setAvailableLength(inwardEntry.getAvailableLength());
 		return inwardEntryResponseDto;
 	}
 
