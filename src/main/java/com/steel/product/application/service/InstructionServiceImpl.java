@@ -480,74 +480,67 @@ public class InstructionServiceImpl implements InstructionService {
     @Override
     public InwardEntryPdfDto findInwardJoinFetchInstructionsAndPartDetails(String partDetailsId) {
         List<Object[]> objects = instructionRepository.findPartDetailsJoinFetchInstructions(partDetailsId);
-        Map<PartDetailsPdfResponse, List<InstructionResponsePdfDto>> partDetailsMap = new HashMap<>();
         Integer inwardId = null;
         Integer processId = null;
         Integer groupId = null;
-        float totalWeight = 0f;
+        float totalWeightSlit = 0f;
+        float totalWeightCut = 0f;
         Integer slitAndCutProcessId = 3;
+        Map<PartDetailsPdfResponse, List<InstructionResponsePdfDto>> partDetailsSlitMap = null, partDetailsCutMap = null;
         for (Object[] obj : objects) {
             PartDetails partDetails = (PartDetails) obj[0];
             Instruction instruction = (Instruction) obj[1];
-            if (inwardId == null && processId == null) {
+            if (inwardId == null) {
                 inwardId = instruction.getInwardId().getInwardEntryId();
-                processId = instruction.getProcess().getProcessId();
-            }
-            if(instruction.getGroupId() != null){
-                groupId = instruction.getGroupId();
             }
             Long count = (Long) obj[2];
             PartDetailsPdfResponse partDetailsPdfResponse = partDetailsMapper.toPartDetailsPdfResponse(partDetails);
             InstructionResponsePdfDto instructionResponsePdfDto = instructionMapper.toResponsePdfDto(instruction);
             instructionResponsePdfDto.setCountOfWeight(count);
-            if(processId == 1){
-                totalWeight += instruction.getPlannedWeight()*count;
-            }
-            if (partDetailsMap.isEmpty() || !partDetailsMap.containsKey(partDetailsPdfResponse)) {
-                List<InstructionResponsePdfDto> list = new ArrayList<>();
-                list.add(instructionResponsePdfDto);
-                partDetailsMap.put(partDetailsPdfResponse, list);
-                if(processId == 2) {
-                    totalWeight += partDetailsPdfResponse.getTargetWeight();
+            processId = instruction.getProcess().getProcessId();
+            if(processId == 1 || processId == 3){
+                totalWeightCut += instruction.getPlannedWeight()*count;
+                if(partDetailsCutMap == null) {
+                    partDetailsCutMap = new HashMap<>();
                 }
-            } else {
-                List<InstructionResponsePdfDto> list = partDetailsMap.get(partDetailsPdfResponse);
-                list.add(instructionResponsePdfDto);
-                partDetailsMap.put(partDetailsPdfResponse, list);
-            }
+                partDetailsCutMap = addInstructionToPartDetailsMap(partDetailsCutMap,partDetailsPdfResponse,instructionResponsePdfDto);
 
+            }else{//slit process
+                totalWeightSlit += instruction.getPlannedWeight()*count;
+                if(partDetailsSlitMap == null) {
+                    partDetailsSlitMap = new HashMap<>();
+                }
+                partDetailsSlitMap = addInstructionToPartDetailsMap(partDetailsSlitMap,partDetailsPdfResponse,instructionResponsePdfDto);
+            }
         }
         InwardEntry inwardEntry;
         InwardEntryPdfDto inwardEntryPdfDto;
 
         inwardEntry = inwardService.getByEntryId(inwardId);
         inwardEntryPdfDto = InwardEntry.valueOf(inwardEntry, null);
-        if(groupId != null){
-            LOGGER.info("group id "+groupId);
-            List<CutInstruction> cutInstructions = this.findCutInstructionsByParentGroupId(inwardId,groupId,slitAndCutProcessId);
-            Map<Long, List<InstructionResponsePdfDto>> map = new HashMap<>();
-            for(CutInstruction cut:cutInstructions){
-                InstructionResponsePdfDto instructionResponsePdfDto = instructionMapper.toResponsePdfDto(cut.getInstruction());
-                totalWeight += instructionResponsePdfDto.getPlannedWeight() * cut.getWeightCount();
-                if(map.containsKey(cut.getWeightCount())){
-                    List<InstructionResponsePdfDto> ins = map.get(cut.getWeightCount());
-                    ins.add(instructionResponsePdfDto);
-                    map.put(cut.getWeightCount(),ins);
-                }else{
-                    List<InstructionResponsePdfDto> instructionResponsePdfDtos = new ArrayList<>();
-                    instructionResponsePdfDtos.add(instructionResponsePdfDto);
-                    map.put(cut.getWeightCount(),instructionResponsePdfDtos);
-                }
-            }
-            inwardEntryPdfDto.setInstructionsCutMap(map);
-            inwardEntryPdfDto.setVProcess(String.valueOf(slitAndCutProcessId));
-        }else{
-            inwardEntryPdfDto.setVProcess(String.valueOf(processId));
-        }
-        inwardEntryPdfDto.setPartDetailsMap(partDetailsMap);
+        inwardEntryPdfDto.setPartDetailsCutMap(partDetailsCutMap);
+        inwardEntryPdfDto.setPartDetailsSlitMap(partDetailsSlitMap);
+        inwardEntryPdfDto.setTotalWeightCut(totalWeightCut);
+        inwardEntryPdfDto.setTotalWeightSlit(totalWeightSlit);
         inwardEntryPdfDto.setPartDetailsId(partDetailsId);
-        inwardEntryPdfDto.setTotalWeight(totalWeight);
+        inwardEntryPdfDto.setVProcess(String.valueOf(processId));
         return inwardEntryPdfDto;
+    }
+
+    private Map<PartDetailsPdfResponse, List<InstructionResponsePdfDto>> addInstructionToPartDetailsMap(Map<PartDetailsPdfResponse, List<InstructionResponsePdfDto>> partDetailsMap, PartDetailsPdfResponse partDetailsPdfResponse, InstructionResponsePdfDto instructionResponsePdfDto) {
+        if (partDetailsMap.isEmpty() || !partDetailsMap.containsKey(partDetailsPdfResponse)) {
+            List<InstructionResponsePdfDto> list = new ArrayList<>();
+            list.add(instructionResponsePdfDto);
+            partDetailsMap.put(partDetailsPdfResponse, list);
+//                    if(processId == 2 && partDetailsPdfResponse.getTargetWeight() != null) {
+//                        totalWeight += partDetailsPdfResponse.getTargetWeight();
+//                    }
+        } else {
+            List<InstructionResponsePdfDto> list = partDetailsMap.get(partDetailsPdfResponse);
+            list.add(instructionResponsePdfDto);
+            partDetailsMap.put(partDetailsPdfResponse, list);
+        }
+        return partDetailsMap;
     }
 
     @Override
@@ -614,14 +607,14 @@ public class InstructionServiceImpl implements InstructionService {
 
         for (InstructionSaveRequestDto instructionSaveRequestDto : instructionSaveRequestDtos) {
             if(processId == 1 || processId == 3) {
-                incomingWeight += instructionSaveRequestDto.getInstructionRequestDTOs().stream().filter(dto -> dto.getPlannedWeight() != null).reduce(0f, (sum, dto) -> sum + dto.getPlannedWeight(), Float::sum);
-                incomingLength += instructionSaveRequestDto.getInstructionRequestDTOs().stream().filter(dto -> dto.getPlannedLength() != null).reduce(0f, (sum, dto) -> sum + dto.getPlannedLength(), Float::sum);
+                incomingWeight += instructionSaveRequestDto.getInstructionRequestDTOs().stream().reduce(0f, (sum, dto) -> sum + dto.getPlannedWeight(), Float::sum);
+                incomingLength += instructionSaveRequestDto.getInstructionRequestDTOs().stream().reduce(0f, (sum, dto) -> sum + dto.getPlannedLength(), Float::sum);
                 partDetailsRequest = instructionSaveRequestDto.getPartDetailsRequest();
                 PartDetails partDetails = partDetailsMapper.toEntityForCut(partDetailsRequest);
                 partDetails.setPartDetailsId(partDetailsId);
                 instructionPlanAndListMap.put(partDetails, instructionSaveRequestDto.getInstructionRequestDTOs());
             }else{//for slit process
-                incomingWeight += instructionSaveRequestDto.getInstructionRequestDTOs().stream().filter(dto -> dto.getPlannedWeight() != null).reduce(0f, (sum, dto) -> sum + dto.getPlannedWeight(), Float::sum);
+                incomingWeight += instructionSaveRequestDto.getInstructionRequestDTOs().stream().reduce(0f, (sum, dto) -> sum + dto.getPlannedWeight(), Float::sum);
                 incomingLength += instructionSaveRequestDto.getPartDetailsRequest().getLength();
                 partDetailsRequest = instructionSaveRequestDto.getPartDetailsRequest();
                 PartDetails partDetails = partDetailsMapper.toEntityForSlit(partDetailsRequest);
