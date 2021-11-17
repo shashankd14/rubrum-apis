@@ -262,6 +262,7 @@ public class InwardEntryController {
         throw new RuntimeException("Entry coilNumber id not found - " + coilNumber); 
       return new ResponseEntity<Object>(InwardEntry.valueOfResponse(entry), HttpStatus.OK);
     } catch (Exception e) {
+		e.printStackTrace();
       return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     } 
   }

@@ -85,17 +85,6 @@ public class InstructionController {
         }
     }
 
-//    @PostMapping("/save/cut")
-//    public ResponseEntity<Object> saveCutInstruction(@RequestBody List<InstructionSaveRequestDto> cutInstructionSaveRequestDtos) {
-//        return instructionService.addCutInstruction(cutInstructionSaveRequestDtos);
-//
-//    }
-//
-//    @PostMapping("/save/slit")
-//    public ResponseEntity<Object> saveSlitInstruction(@RequestBody List<InstructionSaveRequestDto> slitInstructionSaveRequestDtos) {
-//        return instructionService.addSlitInstruction(slitInstructionSaveRequestDtos);
-//
-//    }
 
     @PostMapping("/save")
     public ResponseEntity<Object> saveInstruction(@RequestBody List<InstructionSaveRequestDto> instructionSaveRequestDtos) {
@@ -109,14 +98,11 @@ public class InstructionController {
         return instructionService.updateInstruction(instructionFinishDto);
     }
 
-    @DeleteMapping("/deleteById/{instructionId}")
-    public ResponseEntity<Object> deleteById(@PathVariable int instructionId) {
+    @PostMapping("{instructionId}")
+    public ResponseEntity<Object> deleteById(@PathVariable Integer instructionId) {
 
         try {
-
-            Instruction deleteInstruction = new Instruction();
-            deleteInstruction = instructionService.getById(instructionId);
-            instructionService.deleteById(deleteInstruction);
+            instructionService.deleteById(instructionId);
             return new ResponseEntity<Object>("delete success!", HttpStatus.OK);
 
         } catch (Exception e) {

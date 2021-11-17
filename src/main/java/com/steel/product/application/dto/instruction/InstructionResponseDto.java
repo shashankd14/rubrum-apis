@@ -79,4 +79,8 @@ public class InstructionResponseDto {
 
     private PartDetailsResponse partDetails;
 
+    private Long partId;
+
+    private String partDetailsId;
+
 }

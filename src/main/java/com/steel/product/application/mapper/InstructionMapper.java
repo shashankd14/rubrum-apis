@@ -35,19 +35,6 @@ public interface InstructionMapper {
     @Mapping(target = "partDetails", ignore = true)
     InstructionResponseDto toResponseDto(Instruction instruction);
 
-//    @Named("toResponseDtoNoPartDetails")
-//    @Mapping(target = "process", source = "instruction.process")
-//    @Mapping(target = "status", source = "instruction.status")
-//    @Mapping(target = "childInstructions", ignore = true)
-//    @Mapping(target = "deliveryDetails", ignore = true)
-//    @Mapping(source = "instruction.inwardId.inwardEntryId", target = "inwardEntryId")
-//    @Mapping(target = "parentInstructionId", source = "instruction.parentInstruction.instructionId")
-//    @Mapping(target = "partDetails", ignore = true)
-//    InstructionResponseDto toResponseDtoNoPartDetails(Instruction instruction);
-//
-//    @IterableMapping(qualifiedByName = "toResponseDtoNoPartDetails")
-//    List<InstructionResponseDto> toResponseDtoListNoPartDetails(List<Instruction> instruction);
-
     List<InstructionResponseDto> toResponseDtoList(List<Instruction> instructions);
 
     @Mapping(target = "process", source = "instruction.process")

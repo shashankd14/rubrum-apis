@@ -10,7 +10,6 @@ import com.steel.product.application.dto.pdf.InwardEntryPdfDto;
 import com.steel.product.application.dto.pdf.PartDetailsPdfResponse;
 import com.steel.product.application.entity.*;
 import com.steel.product.application.entity.Process;
-import com.steel.product.application.mapper.CutInstruction;
 import com.steel.product.application.mapper.InstructionMapper;
 import com.steel.product.application.mapper.PartDetailsMapper;
 import com.steel.product.application.mapper.TotalLengthAndWeight;
@@ -232,7 +231,10 @@ public class InstructionServiceImpl implements InstructionService {
 
     @Override
     @Transactional
-    public void deleteById(Instruction deleteInstruction) {
+    public void deleteById(Integer instructionId) {
+        LOGGER.info("inside delete instruction method");
+        Instruction deleteInstruction = instructionRepository.getOne(instructionId);
+//        if(deleteInstruction.getInwardId() != null && deleteInstruction.getParentGroupId() != null)
         deleteInstruction.setPacketClassification(null);
         deleteInstruction.setDeliveryDetails(null);
         if (deleteInstruction.getInwardId() != null) {
@@ -543,11 +545,6 @@ public class InstructionServiceImpl implements InstructionService {
         return partDetailsMap;
     }
 
-    @Override
-    public List<CutInstruction> findCutInstructionsByParentGroupId(Integer inwardId, Integer groupId, Integer processId) {
-        return instructionRepository.findCutInstructionsByParentGroupId(inwardId,groupId,processId);
-    }
-
 
     @Override
     @Transactional
@@ -574,12 +571,12 @@ public class InstructionServiceImpl implements InstructionService {
         if (inwardId != null && groupId != null) {
             LOGGER.info("adding instructions from inward "+ inwardId +", group id " + groupId);
             inwardEntry = inwardService.getByInwardEntryId(inwardId);
-            availableWeight = this.sumOfPlannedWeightOfInstructionsHavingGroupId(groupId);
-            availableLength = inwardEntry.getAvailableLength();
+            TotalLengthAndWeight totalLengthAndWeight = sumOfPlannedLengthAndWeightOfInstructionsHavingGroupId(groupId);
+            availableWeight = totalLengthAndWeight.getTotalWeight();
+            availableLength = totalLengthAndWeight.getTotalLength();
             Instruction groupInstruction = instructionRepository.findFirstByGroupId(groupId);
             partDetailsId = groupInstruction.getPartDetails().getPartDetailsId();
             LOGGER.info("available length,weight for instructions with group id "+groupId+ " is "+availableLength+", "+availableWeight);
-
             fromGroup = true;
         } else if (inwardId != null) {
             LOGGER.info("adding instructions from inward id " + inwardId);
@@ -640,6 +637,10 @@ public class InstructionServiceImpl implements InstructionService {
         if (fromInward) {
             LOGGER.info("setting fPresent for inward " + inwardId + " to " + remainingWeight);
             inwardEntry.setFpresent((float) remainingWeight);
+            if (remainingWeight <= 1f){
+                LOGGER.info("setting available length to 0");
+                remainingLength = 0f;
+        }
             LOGGER.info("setting available length for inward " + inwardId + " to " + remainingLength);
             inwardEntry.setAvailableLength((float)remainingLength);
         }

@@ -3,7 +3,6 @@ package com.steel.product.application.service;
 import com.steel.product.application.dto.instruction.*;
 import com.steel.product.application.dto.pdf.InwardEntryPdfDto;
 import com.steel.product.application.entity.Instruction;
-import com.steel.product.application.mapper.CutInstruction;
 import com.steel.product.application.mapper.TotalLengthAndWeight;
 import org.springframework.http.ResponseEntity;
 
@@ -23,7 +22,7 @@ public interface InstructionService {
 
     public List<Instruction> findSlitAndCutInstructionByInwardId(Integer inwardId);
 
-    public void deleteById(Instruction deleteInstruction);
+    public void deleteById(Integer instructionId);
 
     public List<Instruction> findAllByGroupId(Integer groupId);
 
@@ -61,7 +60,6 @@ public interface InstructionService {
 
     InwardEntryPdfDto findInwardJoinFetchInstructionsAndPartDetails(String partDetailsId);
 
-    List<CutInstruction> findCutInstructionsByParentGroupId(Integer inwardId, Integer groupId, Integer processId);
 
 }
 
