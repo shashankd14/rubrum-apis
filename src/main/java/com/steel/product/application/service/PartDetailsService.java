@@ -9,13 +9,17 @@ import java.util.Set;
 
 public interface PartDetailsService {
 
-    public List<PartDetails> saveAll(List<PartDetails> partDetails);
+    List<PartDetails> saveAll(List<PartDetails> partDetails);
 
-    public List<PartDetails> saveAll(Set<PartDetails> partDetails);
+    List<PartDetails> saveAll(Set<PartDetails> partDetails);
 
-    public PartDetails save(PartDetails partDetails);
+    PartDetails save(PartDetails partDetails);
 
-    public List<PartDetailsResponse> getByPartDetailsId(String instructionPlanId);
+    List<PartDetailsResponse> getByPartDetailsId(String instructionPlanId);
 
-    public List<PartDetails> findAllByPartDetailsId(String partDetailsId);
+    List<PartDetails> findAllByPartDetailsId(String partDetailsId);
+
+    PartDetails findById(Long partId);
+
+
 }

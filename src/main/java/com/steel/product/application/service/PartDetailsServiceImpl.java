@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -50,5 +51,14 @@ public class PartDetailsServiceImpl implements PartDetailsService {
     @Override
     public List<PartDetails> findAllByPartDetailsId(String partDetailsId) {
         return null;
+    }
+
+    @Override
+    public PartDetails findById(Long partId) {
+        Optional<PartDetails> partDetailsOptional = partDetailsRepository.findById(partId);
+        if(!partDetailsOptional.isPresent()){
+            throw new RuntimeException("Part details with id "+partId+" not found");
+        }
+        return partDetailsOptional.get();
     }
 }

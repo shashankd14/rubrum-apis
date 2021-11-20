@@ -116,6 +116,16 @@ public class InstructionController {
         return new ResponseEntity<>(instructionService.saveUnprocessedForDelivery(inwardId), HttpStatus.OK);
     }
 
+    @PostMapping("/cut")
+    public ResponseEntity<Object> deleteCut(@RequestBody CutInstructionDeleteRequest cutInstructionDeleteRequest){
+        return instructionService.deleteCut(cutInstructionDeleteRequest);
+    }
+
+    @PostMapping("/slit")
+    public ResponseEntity<Object> deleteSlit(@RequestBody SlitInstructionDeleteRequest slitInstructionDeleteRequest){
+        return instructionService.deleteSlit(slitInstructionDeleteRequest);
+    }
+
 //    @GetMapping("/test/{partDetailsId}")
 //    public void test(@PathVariable("partDetailsId") String partDetailsId){
 //        List<CutInstruction> objects = instructionRepository.findCutInstructionsByParentGroupId(59,3);

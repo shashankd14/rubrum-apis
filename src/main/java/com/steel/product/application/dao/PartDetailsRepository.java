@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface PartDetailsRepository extends JpaRepository<PartDetails, Integer> {
+public interface PartDetailsRepository extends JpaRepository<PartDetails, Long> {
 
     List<PartDetails> getByPartDetailsId(String partDetailsId);
 

@@ -61,5 +61,8 @@ public interface InstructionService {
     InwardEntryPdfDto findInwardJoinFetchInstructionsAndPartDetails(String partDetailsId);
 
 
+    ResponseEntity<Object> deleteCut(CutInstructionDeleteRequest cutInstructionDeleteRequest);
+
+    ResponseEntity<Object> deleteSlit(SlitInstructionDeleteRequest slitInstructionDeleteRequest);
 }
 

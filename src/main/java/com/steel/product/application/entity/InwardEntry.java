@@ -574,7 +574,8 @@ public class InwardEntry {
 		inwardEntryResponseDto.setGrossWeight(inwardEntry.getGrossWeight());
 		inwardEntryResponseDto.setCreatedOn(inwardEntry.getCreatedOn());
 		inwardEntryResponseDto.setInstruction(inwardEntry.getInstructions() != null ?
-				inwardEntry.getInstructions().stream().map(i -> Instruction.valueOf(i)).collect(Collectors.toList()): null);
+				inwardEntry.getInstructions().stream().filter(i -> !i.getIsDeleted())
+						.map(i -> Instruction.valueOf(i)).collect(Collectors.toList()): null);
 		inwardEntryResponseDto.setPurposeType(inwardEntry.getPurposeType());
 		inwardEntryResponseDto.setdReceivedDate(inwardEntry.getdReceivedDate());
 		inwardEntryResponseDto.setvLorryNo(inwardEntry.getvLorryNo());

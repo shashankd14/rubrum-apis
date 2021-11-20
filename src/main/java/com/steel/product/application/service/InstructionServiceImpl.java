@@ -529,14 +529,94 @@ public class InstructionServiceImpl implements InstructionService {
         return inwardEntryPdfDto;
     }
 
+    @Override
+    public ResponseEntity<Object> deleteCut(CutInstructionDeleteRequest cutInstructionDeleteRequest) {
+        LOGGER.info("inside delete cut method for instruction id "+ cutInstructionDeleteRequest.getInstructionId());
+        Instruction instruction = this.findInstructionById(cutInstructionDeleteRequest.getInstructionId());
+        if(instruction.getIsDeleted()){
+            LOGGER.error("instruction with id "+instruction.getInstructionId()+" already deleted");
+            return new ResponseEntity<>("instruction with id "+instruction.getInstructionId()+" is already deleted",HttpStatus.BAD_REQUEST);
+        }
+        if(!instruction.getStatus().getStatusName().equals("IN PROGRESS")){
+            LOGGER.error("instruction is not in in progress status");
+            throw new RuntimeException("Instruction cannot be deleted as it is not in progress status");
+        }
+        if(instruction.getParentGroupId() != null){
+            LOGGER.info("instruction has parent group id "+ instruction.getParentGroupId());
+            List<Instruction> cutInstructions = this.findAllByParentGroupId(instruction.getParentGroupId());
+            LOGGER.info("no of instructions with parent group id "+instruction.getParentGroupId()+" are "+cutInstructions.size());
+            cutInstructions.forEach(ins -> ins.setIsDeleted(true));
+            List<Instruction> slitInstructions = this.findAllByGroupId(instruction.getParentGroupId());
+            Long partId = slitInstructions.get(0).getPartDetails().getId();
+            return deleteSlit(new SlitInstructionDeleteRequest(partId));
+        }
+        InwardEntry inwardEntry = instruction.getInwardId();
+        Float availableLength = inwardEntry.getAvailableLength();
+        Float fPresent = inwardEntry.getFpresent();
+        LOGGER.info("inward available length,fPresent "+availableLength+", "+fPresent);
+        availableLength += instruction.getPlannedLength();
+        fPresent += instruction.getPlannedWeight();
+        LOGGER.info("setting inward available length,fPresent after delete to "+availableLength+", "+fPresent);
+        inwardEntry.setAvailableLength(availableLength);
+        inwardEntry.setFpresent(fPresent);
+        instruction.setIsDeleted(true);
+        inwardService.saveEntry(inwardEntry);
+        return new ResponseEntity<>("delete success !",HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<Object> deleteSlit(SlitInstructionDeleteRequest slitInstructionDeleteRequest) {
+        LOGGER.info("inside delete slit method for instruction id "+ slitInstructionDeleteRequest.getPartId());
+        PartDetails partDetails = partDetailsService.findById(slitInstructionDeleteRequest.getPartId());
+        InwardEntry inwardEntry = null;
+        Integer groupId = null;
+        for(Instruction instruction: partDetails.getInstructions()){
+            if(!instruction.getStatus().getStatusName().equals("IN PROGRESS")){
+                LOGGER.error("instruction is not in in progress status");
+                throw new RuntimeException("Instruction cannot be deleted as it is not in progress status");
+            }
+            if(groupId == null) {
+                groupId = instruction.getGroupId();
+            }
+            if(instruction.getIsDeleted()){
+                LOGGER.error("instruction with id "+instruction.getInstructionId()+" already deleted");
+                return new ResponseEntity<>("instruction with id "+instruction.getInstructionId()+" is already deleted",HttpStatus.BAD_REQUEST);
+            }
+            instruction.setIsDeleted(true);
+            if(inwardEntry == null) {
+                inwardEntry = instruction.getInwardId();
+            }
+        }
+        if(groupId != null){
+            LOGGER.info("slit Instructions have group id "+groupId);
+            List<Instruction> cutInstructions = this.findAllByParentGroupId(groupId);
+            LOGGER.info("no of cut cutInstructions "+cutInstructions.size());
+            for(Instruction ins:cutInstructions){
+                if(!ins.getIsDeleted()){
+                    LOGGER.error("cut instruction with id "+ins.getInstructionId()+" is not deleted");
+                    return new ResponseEntity<>("part cannot be deleted as it has "+cutInstructions.size()+" cut cutInstructions",HttpStatus.BAD_REQUEST);
+                }
+            }
+        }
+        Float availableLength = inwardEntry.getAvailableLength();
+        Float fPresent = inwardEntry.getFpresent();
+        LOGGER.info("inward available length,fPresent "+availableLength+", "+fPresent);
+        availableLength += partDetails.getLength();
+        fPresent += partDetails.getTargetWeight();
+        LOGGER.info("setting inward available length,fPresent after delete to "+availableLength+", "+fPresent);
+        inwardEntry.setAvailableLength(availableLength);
+        inwardEntry.setFpresent(fPresent);
+        partDetails.setIsDeleted(true);
+        partDetailsService.save(partDetails);
+        inwardService.saveEntry(inwardEntry);
+        return new ResponseEntity<>("delete success !",HttpStatus.OK);
+    }
+
     private Map<PartDetailsPdfResponse, List<InstructionResponsePdfDto>> addInstructionToPartDetailsMap(Map<PartDetailsPdfResponse, List<InstructionResponsePdfDto>> partDetailsMap, PartDetailsPdfResponse partDetailsPdfResponse, InstructionResponsePdfDto instructionResponsePdfDto) {
         if (partDetailsMap.isEmpty() || !partDetailsMap.containsKey(partDetailsPdfResponse)) {
             List<InstructionResponsePdfDto> list = new ArrayList<>();
             list.add(instructionResponsePdfDto);
             partDetailsMap.put(partDetailsPdfResponse, list);
-//                    if(processId == 2 && partDetailsPdfResponse.getTargetWeight() != null) {
-//                        totalWeight += partDetailsPdfResponse.getTargetWeight();
-//                    }
         } else {
             List<InstructionResponsePdfDto> list = partDetailsMap.get(partDetailsPdfResponse);
             list.add(instructionResponsePdfDto);
