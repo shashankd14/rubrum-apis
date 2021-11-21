@@ -546,8 +546,9 @@ public class InstructionServiceImpl implements InstructionService {
             List<Instruction> cutInstructions = this.findAllByParentGroupId(instruction.getParentGroupId());
             LOGGER.info("no of instructions with parent group id "+instruction.getParentGroupId()+" are "+cutInstructions.size());
             cutInstructions.forEach(ins -> ins.setIsDeleted(true));
-            List<Instruction> slitInstructions = this.findAllByGroupId(instruction.getParentGroupId());
-            Long partId = slitInstructions.get(0).getPartDetails().getId();
+//            List<Instruction> slitInstructions = this.findAllByGroupId(instruction.getParentGroupId());
+//            Long partId = slitInstructions.get(0).getPartDetails().getId();
+            Long partId = cutInstructions.get(0).getPartDetails().getId();
             return deleteSlit(new SlitInstructionDeleteRequest(partId));
         }
         InwardEntry inwardEntry = instruction.getInwardId();
@@ -567,10 +568,14 @@ public class InstructionServiceImpl implements InstructionService {
     @Override
     public ResponseEntity<Object> deleteSlit(SlitInstructionDeleteRequest slitInstructionDeleteRequest) {
         LOGGER.info("inside delete slit method for instruction id "+ slitInstructionDeleteRequest.getPartId());
-        PartDetails partDetails = partDetailsService.findById(slitInstructionDeleteRequest.getPartId());
+//        PartDetails partDetails = partDetailsService.findById(slitInstructionDeleteRequest.getPartId());
+        Integer slitProcessId = 2;
+        List<Instruction> instructions = instructionRepository.findInstructionsByPartIdAndProcessId(slitInstructionDeleteRequest.getPartId(),slitProcessId);
+        LOGGER.info("no of slit instructions to be deleted "+instructions.size());
+        PartDetails partDetails = instructions.get(0).getPartDetails();
         InwardEntry inwardEntry = null;
         Integer groupId = null;
-        for(Instruction instruction: partDetails.getInstructions()){
+        for(Instruction instruction: instructions){
             if(!instruction.getStatus().getStatusName().equals("IN PROGRESS")){
                 LOGGER.error("instruction is not in in progress status");
                 throw new RuntimeException("Instruction cannot be deleted as it is not in progress status");
@@ -594,7 +599,7 @@ public class InstructionServiceImpl implements InstructionService {
             for(Instruction ins:cutInstructions){
                 if(!ins.getIsDeleted()){
                     LOGGER.error("cut instruction with id "+ins.getInstructionId()+" is not deleted");
-                    return new ResponseEntity<>("part cannot be deleted as it has "+cutInstructions.size()+" cut cutInstructions",HttpStatus.BAD_REQUEST);
+                    return new ResponseEntity<>("part cannot be deleted as it has "+cutInstructions.size()+" parent group instructions(cut)",HttpStatus.BAD_REQUEST);
                 }
             }
         }
@@ -633,7 +638,7 @@ public class InstructionServiceImpl implements InstructionService {
         LOGGER.info("no of requests " + instructionSaveRequestDtos.size());
         Map<PartDetails, List<InstructionRequestDto>> instructionPlanAndListMap = new HashMap<>();
         partDetailsRequest partDetailsRequest;
-        PartDetails slitPartDetails = null;
+        PartDetails cutPartDetails = null;
         InstructionRequestDto instructionRequestDto = instructionSaveRequestDtos.get(0).getInstructionRequestDTOs().get(0);
         Integer inwardId = instructionRequestDto.getInwardId();
         Integer processId = instructionRequestDto.getProcessId();
@@ -655,7 +660,8 @@ public class InstructionServiceImpl implements InstructionService {
             availableWeight = totalLengthAndWeight.getTotalWeight();
             availableLength = totalLengthAndWeight.getTotalLength();
             Instruction groupInstruction = instructionRepository.findFirstByGroupId(groupId);
-            partDetailsId = groupInstruction.getPartDetails().getPartDetailsId();
+            cutPartDetails = groupInstruction.getPartDetails();
+            partDetailsId = null;
             LOGGER.info("available length,weight for instructions with group id "+groupId+ " is "+availableLength+", "+availableWeight);
             fromGroup = true;
         } else if (inwardId != null) {
@@ -686,10 +692,14 @@ public class InstructionServiceImpl implements InstructionService {
             if(processId == 1 || processId == 3) {
                 incomingWeight += instructionSaveRequestDto.getInstructionRequestDTOs().stream().reduce(0f, (sum, dto) -> sum + dto.getPlannedWeight(), Float::sum);
                 incomingLength += instructionSaveRequestDto.getInstructionRequestDTOs().stream().reduce(0f, (sum, dto) -> sum + dto.getPlannedLength(), Float::sum);
-                partDetailsRequest = instructionSaveRequestDto.getPartDetailsRequest();
-                PartDetails partDetails = partDetailsMapper.toEntityForCut(partDetailsRequest);
-                partDetails.setPartDetailsId(partDetailsId);
-                instructionPlanAndListMap.put(partDetails, instructionSaveRequestDto.getInstructionRequestDTOs());
+                if(fromGroup){
+                    instructionPlanAndListMap.put(cutPartDetails, instructionSaveRequestDto.getInstructionRequestDTOs());
+                }else {
+                    partDetailsRequest = instructionSaveRequestDto.getPartDetailsRequest();
+                    PartDetails partDetails = partDetailsMapper.toEntityForCut(partDetailsRequest);
+                    partDetails.setPartDetailsId(partDetailsId);
+                    instructionPlanAndListMap.put(partDetails, instructionSaveRequestDto.getInstructionRequestDTOs());
+                }
             }else{//for slit process
                 incomingWeight += instructionSaveRequestDto.getInstructionRequestDTOs().stream().reduce(0f, (sum, dto) -> sum + dto.getPlannedWeight(), Float::sum);
                 incomingLength += instructionSaveRequestDto.getPartDetailsRequest().getLength();
