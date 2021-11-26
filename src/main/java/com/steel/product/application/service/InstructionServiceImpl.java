@@ -543,25 +543,40 @@ public class InstructionServiceImpl implements InstructionService {
         }
         if(instruction.getParentGroupId() != null){
             LOGGER.info("instruction has parent group id "+ instruction.getParentGroupId());
-            List<Instruction> cutInstructions = this.findAllByParentGroupId(instruction.getParentGroupId());
-            LOGGER.info("no of instructions with parent group id "+instruction.getParentGroupId()+" are "+cutInstructions.size());
-            cutInstructions.forEach(ins -> ins.setIsDeleted(true));
-//            List<Instruction> slitInstructions = this.findAllByGroupId(instruction.getParentGroupId());
-//            Long partId = slitInstructions.get(0).getPartDetails().getId();
-            Long partId = cutInstructions.get(0).getPartDetails().getId();
-            return deleteSlit(new SlitInstructionDeleteRequest(partId));
+            List<Instruction> slitAndCutInstructions = this.findAllByGroupIdOrParentGroupId(instruction.getParentGroupId(),instruction.getParentGroupId());
+            LOGGER.info("instructions with group id or parent group id are "+slitAndCutInstructions.size());
+            for(Instruction ins:slitAndCutInstructions){
+                if(ins.getGroupId() != null){
+                    ins.setGroupId(null);
+                }else{
+                    ins.setIsDeleted(true);
+                }
+            }
+            instructionRepository.saveAll(slitAndCutInstructions);
+        }else if(instruction.getParentInstruction() != null){
+            Instruction parentInstruction = instruction.getParentInstruction();
+            LOGGER.info("instruction has parent instruction id "+parentInstruction.getInstructionId());
+            Set<Instruction> childrenInstructions = parentInstruction.getChildInstructions();
+            LOGGER.info("total children instructions are "+childrenInstructions.size());
+            for(Instruction ins:childrenInstructions){
+                parentInstruction.removeChildInstruction(ins);
+                ins.setIsDeleted(true);
+            }
+            instructionRepository.saveAll(childrenInstructions);
+        }else {
+            InwardEntry inwardEntry = instruction.getInwardId();
+            LOGGER.info("instruction created from inward "+inwardEntry.getInwardEntryId());
+            Float availableLength = inwardEntry.getAvailableLength();
+            Float fPresent = inwardEntry.getFpresent();
+            LOGGER.info("inward available length,fPresent " + availableLength + ", " + fPresent);
+            availableLength += instruction.getPlannedLength();
+            fPresent += instruction.getPlannedWeight();
+            LOGGER.info("setting inward available length,fPresent after delete to " + availableLength + ", " + fPresent);
+            inwardEntry.setAvailableLength(availableLength);
+            inwardEntry.setFpresent(fPresent);
+            instruction.setIsDeleted(true);
+            inwardService.saveEntry(inwardEntry);
         }
-        InwardEntry inwardEntry = instruction.getInwardId();
-        Float availableLength = inwardEntry.getAvailableLength();
-        Float fPresent = inwardEntry.getFpresent();
-        LOGGER.info("inward available length,fPresent "+availableLength+", "+fPresent);
-        availableLength += instruction.getPlannedLength();
-        fPresent += instruction.getPlannedWeight();
-        LOGGER.info("setting inward available length,fPresent after delete to "+availableLength+", "+fPresent);
-        inwardEntry.setAvailableLength(availableLength);
-        inwardEntry.setFpresent(fPresent);
-        instruction.setIsDeleted(true);
-        inwardService.saveEntry(inwardEntry);
         return new ResponseEntity<>("delete success !",HttpStatus.OK);
     }
 
@@ -615,6 +630,11 @@ public class InstructionServiceImpl implements InstructionService {
         partDetailsService.save(partDetails);
         inwardService.saveEntry(inwardEntry);
         return new ResponseEntity<>("delete success !",HttpStatus.OK);
+    }
+
+    @Override
+    public List<Instruction> findAllByGroupIdOrParentGroupId(Integer groupId,Integer parentGroupId) {
+        return instructionRepository.findAllByGroupIdOrParentGroupId(groupId,parentGroupId);
     }
 
     private Map<PartDetailsPdfResponse, List<InstructionResponsePdfDto>> addInstructionToPartDetailsMap(Map<PartDetailsPdfResponse, List<InstructionResponsePdfDto>> partDetailsMap, PartDetailsPdfResponse partDetailsPdfResponse, InstructionResponsePdfDto instructionResponsePdfDto) {

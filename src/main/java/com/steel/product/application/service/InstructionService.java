@@ -64,5 +64,7 @@ public interface InstructionService {
     ResponseEntity<Object> deleteCut(CutInstructionDeleteRequest cutInstructionDeleteRequest);
 
     ResponseEntity<Object> deleteSlit(SlitInstructionDeleteRequest slitInstructionDeleteRequest);
+
+    List<Instruction> findAllByGroupIdOrParentGroupId(Integer groupId,Integer parentGroupId);
 }
 

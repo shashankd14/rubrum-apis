@@ -111,9 +111,11 @@ public class Instruction {
     private Integer updatedBy;
 
     @CreationTimestamp
+	@Column(name="createdon")
     private Date createdOn;
 
     @UpdateTimestamp
+	@Column(name="updatedon")
     private Date updatedOn;
 
     @Column(name = "isdeleted", columnDefinition = "BIT")

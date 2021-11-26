@@ -1,6 +1,7 @@
 package com.steel.product.application.service;
 
 import com.steel.product.application.dao.InwardEntryRepository;
+import com.steel.product.application.dto.inward.InwardEntryResponseDto;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,6 +91,12 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 			throw new RuntimeException("inward with id "+inwardId+" not found");
 		}
 		return inwardEntry;
+	}
+
+	@Override
+	public List<InwardEntryResponseDto> findAllInwards() {
+		return inwdEntryRepo.findAll().stream()
+				.map(inw -> InwardEntry.valueOfResponse(inw)).collect(Collectors.toList());
 	}
 
 	@Override

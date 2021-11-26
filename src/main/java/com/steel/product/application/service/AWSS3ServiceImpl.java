@@ -18,7 +18,7 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 @Service
 public class AWSS3ServiceImpl implements AWSS3Service {
  
-    @Autowired(required = false)
+    @Autowired
     private AmazonS3 amazonS3;
 
 
@@ -40,6 +40,7 @@ public class AWSS3ServiceImpl implements AWSS3Service {
             
             
         } catch (final AmazonServiceException ex) {
+            ex.printStackTrace();
         }
         
         return fileUrl;
@@ -50,6 +51,7 @@ public class AWSS3ServiceImpl implements AWSS3Service {
         try (final FileOutputStream outputStream = new FileOutputStream(file)) {
             outputStream.write(multipartFile.getBytes());
         } catch (final IOException ex) {
+            ex.printStackTrace();
         }
         return file;
     }

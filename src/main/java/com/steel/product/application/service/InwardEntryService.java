@@ -1,5 +1,6 @@
 package com.steel.product.application.service;
 
+import com.steel.product.application.dto.inward.InwardEntryResponseDto;
 import com.steel.product.application.entity.InwardEntry;
 import org.springframework.http.ResponseEntity;
 
@@ -32,4 +33,6 @@ public interface InwardEntryService {
   public List<InwardEntry> saveAll(Set<InwardEntry> inwardEntries);
 
   public InwardEntry getByInwardEntryId(Integer inwardId);
+
+  List<InwardEntryResponseDto> findAllInwards();
 }

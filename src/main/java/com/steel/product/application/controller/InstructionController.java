@@ -126,17 +126,16 @@ public class InstructionController {
         return instructionService.deleteSlit(slitInstructionDeleteRequest);
     }
 
-//    @GetMapping("/test/{partDetailsId}")
-//    public void test(@PathVariable("partDetailsId") String partDetailsId){
-//        List<CutInstruction> objects = instructionRepository.findCutInstructionsByParentGroupId(59,3);
+//    @GetMapping("/test")
+//    public void test(){
+//        List<Instruction> objects = instructionService.findAllByGroupIdOrParentGroupId(112,112);
 //        System.out.println(objects.size());
-//        for(CutInstruction pdf:objects){
-//            Instruction instruction = pdf.getInstruction();
-//            System.out.println(pdf.get+" "+pdf.getLength()+" "+pdf.getPlannedWeight()+" "+pdf.getPlannedWidth()+" "+pdf.getWeightCount()+" "+pdf.getProcessId()
-//            +" "+pdf.getInwardId()+" "+pdf.getPartId());;
-
+//        for(Instruction ins:objects){
+////            Instruction instruction = pdf.getInstruction();
+//            System.out.println(ins.getInstructionId());;
+//
 //        }
-
+//
 //    }
 
 

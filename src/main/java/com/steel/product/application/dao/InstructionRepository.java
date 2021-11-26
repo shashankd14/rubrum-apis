@@ -85,4 +85,5 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
     @Query("select ins from Instruction ins join fetch ins.inwardId inw join ins.partDetails pd where pd.id = :partId and ins.process.processId = :processId")
     List<Instruction> findInstructionsByPartIdAndProcessId(@Param("partId")Long partId,@Param("processId")Integer processId);
 
+    List<Instruction> findAllByGroupIdOrParentGroupId(Integer groupId,Integer parentGroupId);
 }
