@@ -18,7 +18,7 @@ public interface InstructionService {
 
     public Instruction getById(int theId);
 
-    public ResponseEntity<Object> addCutInstruction(List<InstructionSaveRequestDto> cutInstructionSaveRequestDtos);
+//    public ResponseEntity<Object> addCutInstruction(List<InstructionSaveRequestDto> cutInstructionSaveRequestDtos);
 
     public List<Instruction> findSlitAndCutInstructionByInwardId(Integer inwardId);
 
@@ -50,9 +50,9 @@ public interface InstructionService {
 
     public Float sumOfPlannedLengthOfInstructionHavingParentInstructionId(Integer parentInstructionId);
 
-    TotalLengthAndWeight sumOfPlannedLengthAndWeightOfInstructionsHavingParentInstructionId(Integer parentInstructionId);
+    TotalLengthAndWeight sumOfPlannedLengthAndWeightOfInstructionsHavingParentInstructionId(Integer groupId);
 
-    TotalLengthAndWeight sumOfPlannedLengthAndWeightOfInstructionsHavingGroupId(Integer groupId);
+    TotalLengthAndWeight sumOfPlannedLengthAndWeightOfInstructionsHavingGroupId(List<Integer> groupIds);
 
     List<Instruction> getAllByInstructionIdIn(List<Integer> instructionIds);
 
@@ -66,5 +66,7 @@ public interface InstructionService {
     ResponseEntity<Object> deleteSlit(SlitInstructionDeleteRequest slitInstructionDeleteRequest);
 
     List<Instruction> findAllByGroupIdOrParentGroupId(Integer groupId,Integer parentGroupId);
+
+    Instruction findFirstByGroupIdAndIsDeletedFalse(Integer groupId);
 }
 
