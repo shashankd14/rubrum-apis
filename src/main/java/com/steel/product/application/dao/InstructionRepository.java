@@ -70,7 +70,7 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
 
     public List<Instruction> getAllByInstructionIdIn(List<Integer> instructionIds);
 
-    @Query("select pd,ins,COUNT(ins.plannedWeight) from PartDetails pd join fetch pd.instructions ins where pd.partDetailsId = :partDetailsId group by ins.plannedWeight,ins.partDetails order by ins.createdOn")
+    @Query("select pd,ins,COUNT(ins.plannedWeight) from PartDetails pd join fetch pd.instructions ins where pd.partDetailsId = :partDetailsId group by ins.plannedWeight,ins.partDetails,ins.process order by ins.createdOn")
     List<Object[]> findPartDetailsJoinFetchInstructions(@Param("partDetailsId") String partDetailsId);
 
 //    @Query(value = "SELECT ANY_VALUE(pd.target_weight) as targetWeight,ANY_VALUE(pd.length) AS length, ANY_VALUE(ins.inwardId) AS inwardId, ANY_VALUE(ins.processId) as processId" +
