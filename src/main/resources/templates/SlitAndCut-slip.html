@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <style>
+      .m_des {
+        width: 100%;
+        margin: auto;
+        padding: 20px;
+        border-collapse: collapse;
+        border-spacing: 0;
+      }
+      .m_DesTable {
+        border: 1px solid #666;
+        text-align: left;
+        padding: 8px;
+        height: 30px;
+        width: 30px;
+      }
+      input {
+        outline: 0;
+        border-width: 0 0 1px;
+        width: 200px;
+      }
+      input[type="radio"] {
+        width: 20px;
+      }
+      td {
+        line-height: 2.3rem;
+      }
+      .footer {
+        margin: 3% 0;
+      }
+      .footer-left {
+        text-align: center;
+      }
+      .footer-right {
+        text-align: center;
+      }
+      .font-size-x-small {
+            font-size: x-small;
+        }
+
+        .font-size-small {
+            font-size: small;
+        }
+
+        .font-size-md {
+            font-size: medium;
+        }
+
+        .inline-block {
+            display: inline-block;
+        }
+
+        .bold {
+            font-weight: bold;
+        }
+
+        .w-50 {
+            width: 50%;
+        }
+
+        .w-40 {
+            width: 40%;
+        }
+
+        .w-30 {
+            width: 30%;
+        }
+
+        .w-60 {
+            width: 60%;
+        }
+
+        .w-70 {
+            width: 70%;
+        }
+
+        .w-25 {
+            width: 25%;
+        }
+        .mt-10 {
+          margin-top: 10px;
+        }
+
+        .mtb-10 {
+         margin: 10px 0;
+        }
+
+    </style>
+</head>
+<body>
+<div id="slitting-slip" class = "font-size-small">
+    <h2 style="text-align:center;">SLITTING AND CUTTING SLIP</h2>
+    <hr style="text-align:center;color:black; width: 100%;"/>
+    <div>
+        <div style="text-align: center; font-weight: bold;">INWARD DETAILS</div>
+        <div style="padding: 10px 0">
+            <div class = "inline-block w-50">
+                <table>
+                    <tbody>
+                    <tr>
+                        <td>Document id:</td>
+                        <td id="doc-id" th:text="${inward?.partDetailsId}"></td>
+                    </tr>
+                    <tr>
+                        <td>Process Date:</td>
+                        <td id="process-date" th:text="${#dates.format(inward?.createdOn, 'dd/MM/yyyy')}"></td>
+                    </tr>
+                    <tr>
+                        <td>Customer Name:</td>
+                        <td id="customer-name" th:text="${inward?.partyName}"></td>
+                    </tr>
+                    <tr>
+                        <td>ASPEN Coil No:</td>
+                        <td id="coil-number" th:text="${inward?.coilNumber}"></td>
+                    </tr>
+                    <tr>
+                        <td>Customer Batch No:</td>
+                        <td th:text="${inward?.customerBatchId}"></td>
+                    </tr>
+                    <tr>
+                        <td>Machine No: -</td>
+                    </tr>
+                    <tr>
+                        <td>Number of Parts:</td>
+                        <td th:text="${#maps.size(inward?.partDetailsSlitMap)}"></td>
+                    </tr>
+
+
+                    </tbody>
+                </table>
+            </div>
+            <div class = "inline-block w-40" style="margin-left: 20px">
+                <table>
+                    <tbody>
+                    <tr>
+                      <td>Balance coil remove:</td>
+                      <td>
+                        <input type="radio" name='coil' id='yes' value='Yes'/>
+                        <label for="yes">Yes</label>
+                        <input type="radio" name='coil' id='no' value='No'/>
+                        <label for="no">No</label>
+                      </td>
+                    </tr>
+                    <tr>
+                        <th style="text-align:right"></th>
+                    </tr>
+                    <tr>
+                        <td>Shift:</td>
+                        <td> -</td>
+                    </tr>
+                    <tr>
+                        <td>Material Description:</td>
+                        <td th:text="${inward?.matDescription}"></td>
+                    </tr>
+                    <tr>
+                        <td>Material Grade:</td>
+                        <td th:text="${inward?.materialGradeName}"></td>
+                    </tr>
+                    <tr>
+                        <td>Thickness:</td>
+                        <td th:text="${inward?.fThickness}"></td>
+                    </tr>
+                    <tr>
+                        <td>Width:</td>
+                        <td th:text="${inward?.fWidth}"></td>
+                    </tr>
+                    <tr>
+                        <td>Weight:</td>
+                        <td th:text="${#numbers.formatDecimal((inward?.totalWeightCut + inward?.totalWeightSlit),1,2)}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+    </div>
+  <p></p>
+  <div style="text-align: center; font-weight: bold;">PROCESS NAME : SLIT</div>
+        <div class="mt-10" th:each="part: ${inward?.partDetailsSlitMap}" th:with="list=${part.value}">
+          <div class = "font-size-md mtb-10 footer-right">
+          <span class = "bold">Target weight</span>
+          <span class="" th:text="${part.key.targetWeight}"></span>
+          <span class = "bold">Length</span>
+          <span class="" th:text="${part.key.length}"></span>
+          </div>
+            <table class="m_des">
+                <tbody>
+                <tr class="m_tp">
+                    <th class="m_DesTable">Length</th>
+                    <th class="m_DesTable">Thickness</th>
+                    <th class="m_DesTable">Width</th>
+                    <th class="m_DesTable">No Of Slits</th>
+                    <th class="m_DesTable">Weight</th>
+                    <th class="m_DesTable">Tags</th>
+                </tr>
+                <tr class="m_tp" th:each="ins: ${list}">
+                    <td class="m_DesTable" th:text="${ins?.plannedLength}"></td>
+                    <td class="m_DesTable" th:text="${inward?.fThickness}"></td>
+                    <td class="m_DesTable" th:text="${ins?.plannedWidth}"></td>
+                    <td class="m_DesTable" th:text="${ins?.plannedNoOfPieces}"></td>
+                    <td class="m_DesTable" th:text="${ins?.plannedWeight + ' x ' + ins.countOfWeight}"></td>
+                    <td class="m_DesTable" th:text="${ins?.packetClassification?.classificationName}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+
+    <div style="padding: 20px; text-align: center; font-weight: bold; page-break-before: always;">PROCESS NAME : CUT
+    </div>
+    <th:block th:unless="${#maps.isEmpty(inward?.partDetailsCutMap)}">
+        <div>
+            <table class="m_des">
+                <tbody>
+                <tr class="m_tp">
+                    <th class="m_DesTable">Length</th>
+                    <th class="m_DesTable">Thickness</th>
+                    <th class="m_DesTable">Width</th>
+                    <th class="m_DesTable">No Of cuts</th>
+                    <th class="m_DesTable">Weight</th>
+                    <th class="m_DesTable">Tags</th>
+                </tr>
+                <th:block th:each="cut: ${inward?.partDetailsCutMap}" th:with="list=${cut.value}">
+                <tr class="m_tp" th:each="ins: ${list}">
+                    <td class="m_DesTable" th:text="${ins?.plannedLength}"></td>
+                    <td class="m_DesTable" th:text="${inward?.fThickness}"></td>
+                    <td class="m_DesTable" th:text="${ins?.plannedWidth}"></td>
+                    <td class="m_DesTable" th:text="${ins?.plannedNoOfPieces}"></td>
+                    <td class="m_DesTable" th:text="${ins?.plannedWeight + ' x ' + ins.countOfWeight}"></td>
+                    <td class="m_DesTable" th:text="${ins?.packetClassification?.classificationName}"></td>
+                </tr>
+                </th:block>
+                </tbody>
+            </table>
+        </div>
+    </th:block>
+
+    <div class="footer" style="width: 100%;">
+        <table class="m_sign" style="width: 100%;">
+            <tbody>
+            <tr>
+                <td class="footer-left">OPERATOR SIGN PLANNED BY <input type="text"/></td>
+                <td class="footer-right">QC SIGN CHECKED BY <input type="text"/></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>
