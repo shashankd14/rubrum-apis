@@ -552,6 +552,7 @@ public class InstructionServiceImpl implements InstructionService {
                     ins.setIsDeleted(true);
                 }
             }
+            LOGGER.info("updating slit-and-cut instructions after removing group id");
             instructionRepository.saveAll(slitAndCutInstructions);
         }else if(instruction.getParentInstruction() != null){
             Instruction parentInstruction = instruction.getParentInstruction();
@@ -569,12 +570,14 @@ public class InstructionServiceImpl implements InstructionService {
             Float availableLength = inwardEntry.getAvailableLength();
             Float fPresent = inwardEntry.getFpresent();
             LOGGER.info("inward available length,fPresent " + availableLength + ", " + fPresent);
-            availableLength += instruction.getPlannedLength();
+            LOGGER.info("instruction length,noOfCuts,weight: "+instruction.getPlannedLength()+", "+instruction.getPlannedNoOfPieces()+", "+instruction.getPlannedWeight());
+            availableLength += (instruction.getPlannedLength()*instruction.getPlannedNoOfPieces());
             fPresent += instruction.getPlannedWeight();
             LOGGER.info("setting inward available length,fPresent after delete to " + availableLength + ", " + fPresent);
             inwardEntry.setAvailableLength(availableLength);
             inwardEntry.setFpresent(fPresent);
             instruction.setIsDeleted(true);
+            LOGGER.info("updating inward "+inwardEntry.getInwardEntryId());
             inwardService.saveEntry(inwardEntry);
         }
         return new ResponseEntity<>("delete success !",HttpStatus.OK);
@@ -583,7 +586,6 @@ public class InstructionServiceImpl implements InstructionService {
     @Override
     public ResponseEntity<Object> deleteSlit(SlitInstructionDeleteRequest slitInstructionDeleteRequest) {
         LOGGER.info("inside delete slit method for part id "+ slitInstructionDeleteRequest.getPartId());
-//        PartDetails partDetails = partDetailsService.findById(slitInstructionDeleteRequest.getPartId());
         Integer slitProcessId = 2;
         List<Instruction> instructions = instructionRepository.findInstructionsByPartIdAndProcessId(slitInstructionDeleteRequest.getPartId(),slitProcessId);
         LOGGER.info("no of slit instructions to be deleted "+instructions.size());
@@ -628,7 +630,9 @@ public class InstructionServiceImpl implements InstructionService {
         inwardEntry.setAvailableLength(availableLength);
         inwardEntry.setFpresent(fPresent);
         partDetails.setIsDeleted(true);
+        LOGGER.info("updating part "+partDetails.getId());
         partDetailsService.save(partDetails);
+        LOGGER.info("updating inward "+inwardEntry.getInwardEntryId());
         inwardService.saveEntry(inwardEntry);
         return new ResponseEntity<>("delete success !",HttpStatus.OK);
     }
@@ -725,27 +729,13 @@ public class InstructionServiceImpl implements InstructionService {
                 for (InstructionSaveRequestDto instructionSaveRequestDto : instructionSaveRequestDtos) {
                     if(processId == 1 || processId == 3) {//for cut
                         incomingWeight += instructionSaveRequestDto.getInstructionRequestDTOs().stream().reduce(0f, (sum, dto) -> sum + dto.getPlannedWeight(), Float::sum);
-                        incomingLength += instructionSaveRequestDto.getInstructionRequestDTOs().stream().reduce(0f, (sum, dto) -> sum + dto.getPlannedLength(), Float::sum);
+                        incomingLength += instructionSaveRequestDto.getInstructionRequestDTOs().stream().reduce(0f, (sum, dto) -> sum + dto.getPlannedLength()*dto.getPlannedNoOfPieces(), Float::sum);
                             partDetailsRequest = instructionSaveRequestDto.getPartDetailsRequest();
                             PartDetails partDetails = partDetailsMapper.toEntityForCut(partDetailsRequest);
                             partDetails.setPartDetailsId(partDetailsId);
                             instructionPlanAndListMap.put(partDetails, instructionSaveRequestDto.getInstructionRequestDTOs());
 
-                    }else{//for slit and slit-and-cut
-    //                    if(fromGroup){
-    //                        incomingWeight += instructionSaveRequestDto.getInstructionRequestDTOs().stream()
-    //                                .reduce(0f,(sum,dto) -> sum + dto.getPlannedWeight(),Float::sum);
-    //                        incomingLength += instructionSaveRequestDto.getInstructionRequestDTOs().stream()
-    //                                .reduce(0f,(sum,dto) -> sum + dto.getPlannedLength(),Float::sum);
-    //                        if(instructionPlanAndListMap.containsKey(slitPartDetails)){
-    //                            List<InstructionRequestDto> ins = instructionPlanAndListMap.get(slitPartDetails);
-    //                            ins.addAll(instructionSaveRequestDto.getInstructionRequestDTOs());
-    //                            instructionPlanAndListMap.put(slitPartDetails,ins);
-    //                        }else {
-    //                            instructionPlanAndListMap.put(slitPartDetails, instructionSaveRequestDto.getInstructionRequestDTOs());
-    //                        }
-    //                    }
-    //                    else {
+                    }else{
                             incomingWeight += instructionSaveRequestDto.getInstructionRequestDTOs().stream().reduce(0f, (sum, dto) -> sum + dto.getPlannedWeight(), Float::sum);
                             incomingLength += instructionSaveRequestDto.getPartDetailsRequest().getLength();
                             partDetailsRequest = instructionSaveRequestDto.getPartDetailsRequest();
@@ -757,6 +747,7 @@ public class InstructionServiceImpl implements InstructionService {
             LOGGER.info("incoming length,weight "+incomingLength+","+incomingWeight);
             remainingWeight = availableWeight - existingWeight - incomingWeight;
             remainingLength = availableLength - existingLength - incomingLength;
+
             LOGGER.info("remaining length,weight is "+remainingLength+", "+remainingWeight);
             if (fromGroup && Math.abs(remainingWeight) > 1f) {//in case of cut grand children
                 LOGGER.error("remaining weight exceeds available weight");
@@ -772,10 +763,10 @@ public class InstructionServiceImpl implements InstructionService {
             if (fromInward) {
                 LOGGER.info("setting fPresent for inward " + inwardId + " to " + remainingWeight);
                 inwardEntry.setFpresent((float) remainingWeight);
-                if (remainingWeight <= 1f){
-                    LOGGER.info("setting available length to 0");
-                    remainingLength = 0f;
-            }
+//                if (remainingWeight <= 1f){
+//                    LOGGER.info("setting available length to 0");
+//                    remainingLength = 0f;
+//            }
                 LOGGER.info("setting available length for inward " + inwardId + " to " + remainingLength);
                 inwardEntry.setAvailableLength((float)remainingLength);
             }
