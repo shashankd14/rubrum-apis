@@ -41,8 +41,8 @@ public class PdfService {
         return renderPdf(html, "inward");
     }
 
-    public File generatePdf(String partDetailsId,Integer groupId) throws IOException, org.dom4j.DocumentException, DocumentException {
-        Context context = getContext(partDetailsId,groupId);
+    public File generatePdf(PartDto partDto) throws IOException, org.dom4j.DocumentException, DocumentException {
+        Context context = getContext(partDto);
         InwardEntryPdfDto inwardEntryPdfDto = (InwardEntryPdfDto)context.getVariable("inward");
         String html = loadAndFillTemplate(context,Integer.parseInt(inwardEntryPdfDto.getVProcess()));
         return renderPdf(html, "inward");
@@ -117,9 +117,9 @@ public class PdfService {
         return context;
     }
 
-    private Context getContext(String partDetailsId,Integer groupId) {
+    private Context getContext(PartDto partDto) {
         Context context = new Context();
-        InwardEntryPdfDto inwardEntryPdfDto = instructionService.findInwardJoinFetchInstructionsAndPartDetails(partDetailsId,groupId);
+        InwardEntryPdfDto inwardEntryPdfDto = instructionService.findInwardJoinFetchInstructionsAndPartDetails(partDto.getPartDetailsId(), partDto.getGroupIds());
         context.setVariable("inward", inwardEntryPdfDto);
         return context;
     }

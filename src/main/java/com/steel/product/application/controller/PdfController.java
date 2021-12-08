@@ -2,6 +2,7 @@ package com.steel.product.application.controller;
 
 import com.lowagie.text.DocumentException;
 import com.steel.product.application.dto.pdf.DeliveryPdfDto;
+import com.steel.product.application.dto.pdf.PartDto;
 import com.steel.product.application.dto.pdf.PdfDto;
 import com.steel.product.application.dto.pdf.PdfResponseDto;
 import com.steel.product.application.service.AddressService;
@@ -67,13 +68,13 @@ public class PdfController {
         return new ResponseEntity<>(new PdfResponseDto(encodedFile), HttpStatus.OK);
     }
 
-    @GetMapping("{partDetailsId}/{groupId}")
-    public ResponseEntity<PdfResponseDto> downloadPDF(@PathVariable("partDetailsId") String partDetailsId,@PathVariable("groupId")Integer groupId) {
+    @PostMapping
+    public ResponseEntity<PdfResponseDto> downloadPDF(@RequestBody PartDto partDto) {
         Path file;
         byte[] bytes;
         StringBuilder builder = new StringBuilder();
         try {
-            file = Paths.get(pdfService.generatePdf(partDetailsId,groupId).getAbsolutePath());
+            file = Paths.get(pdfService.generatePdf(partDto).getAbsolutePath());
             bytes = Files.readAllBytes(file);
             builder.append(Base64.getEncoder().encodeToString(bytes));
         } catch (IOException | DocumentException | org.dom4j.DocumentException ex) {

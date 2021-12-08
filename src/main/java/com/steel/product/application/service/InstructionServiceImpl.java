@@ -480,12 +480,12 @@ public class InstructionServiceImpl implements InstructionService {
 
 
     @Override
-    public InwardEntryPdfDto findInwardJoinFetchInstructionsAndPartDetails(String partDetailsId,Integer groupId) {
+    public InwardEntryPdfDto findInwardJoinFetchInstructionsAndPartDetails(String partDetailsId,List<Integer> groupIds) {
         List<Object[]> objects;
-        if(groupId == 0) {
+        if(groupIds == null) {
             objects = instructionRepository.findPartDetailsJoinFetchInstructions(partDetailsId);
         }else{
-            objects = instructionRepository.findPartDetailsJoinFetchInstructionsAndGroupId(partDetailsId,groupId);
+            objects = instructionRepository.findPartDetailsJoinFetchInstructionsAndGroupId(partDetailsId,groupIds);
         }
         Integer inwardId = null;
         Integer processId = null;
@@ -503,7 +503,7 @@ public class InstructionServiceImpl implements InstructionService {
             PartDetailsPdfResponse partDetailsPdfResponse = partDetailsMapper.toPartDetailsPdfResponse(partDetails);
             InstructionResponsePdfDto instructionResponsePdfDto = instructionMapper.toResponsePdfDto(instruction);
             instructionResponsePdfDto.setCountOfWeight(count);
-            processId = groupId == 0 ? instruction.getProcess().getProcessId() : 1;
+            processId = groupIds == null ? instruction.getProcess().getProcessId() : 1;
             if(processId == 1 || processId == 3){
                 totalWeightCut += instruction.getPlannedWeight()*count;
                 if(partDetailsCutMap == null) {
@@ -700,7 +700,7 @@ public class InstructionServiceImpl implements InstructionService {
                 LOGGER.info("no of groups are "+groupIds.size());
                 TotalLengthAndWeight totalLengthAndWeight = sumOfPlannedLengthAndWeightOfInstructionsHavingGroupId(groupIds);
                 availableWeight = totalLengthAndWeight.getTotalWeight();
-                availableLength = totalLengthAndWeight.getTotalLength();
+                availableLength = inwardEntry.getfLength();
                 Instruction groupInstruction = this.findFirstByGroupIdAndIsDeletedFalse(groupIds.get(0));
                 slitPartDetails = groupInstruction.getPartDetails();
                 partDetailsId = slitPartDetails.getPartDetailsId();
@@ -760,7 +760,7 @@ public class InstructionServiceImpl implements InstructionService {
                 LOGGER.error("remaining weight is invalid " + remainingWeight);
                 return new ResponseEntity<Object>("inward " + inwardId + " has no available weight for processing.", HttpStatus.BAD_REQUEST);
             }
-            if(remainingLength < 0f){
+            if(!fromGroup && remainingLength < 0f){
                 LOGGER.error("remaining length exceeds available length "+ remainingLength);
                 return new ResponseEntity<Object>("inward " + inwardId + " has no available length for processing.", HttpStatus.BAD_REQUEST);
             }
