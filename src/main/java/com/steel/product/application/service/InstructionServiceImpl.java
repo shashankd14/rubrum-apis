@@ -480,11 +480,15 @@ public class InstructionServiceImpl implements InstructionService {
 
 
     @Override
-    public InwardEntryPdfDto findInwardJoinFetchInstructionsAndPartDetails(String partDetailsId) {
-        List<Object[]> objects = instructionRepository.findPartDetailsJoinFetchInstructions(partDetailsId);
+    public InwardEntryPdfDto findInwardJoinFetchInstructionsAndPartDetails(String partDetailsId,Integer groupId) {
+        List<Object[]> objects;
+        if(groupId == 0) {
+            objects = instructionRepository.findPartDetailsJoinFetchInstructions(partDetailsId);
+        }else{
+            objects = instructionRepository.findPartDetailsJoinFetchInstructionsAndGroupId(partDetailsId,groupId);
+        }
         Integer inwardId = null;
         Integer processId = null;
-        Integer groupId = null;
         float totalWeightSlit = 0f;
         float totalWeightCut = 0f;
         Integer slitAndCutProcessId = 3;
@@ -499,7 +503,7 @@ public class InstructionServiceImpl implements InstructionService {
             PartDetailsPdfResponse partDetailsPdfResponse = partDetailsMapper.toPartDetailsPdfResponse(partDetails);
             InstructionResponsePdfDto instructionResponsePdfDto = instructionMapper.toResponsePdfDto(instruction);
             instructionResponsePdfDto.setCountOfWeight(count);
-            processId = instruction.getProcess().getProcessId();
+            processId = groupId == 0 ? instruction.getProcess().getProcessId() : 1;
             if(processId == 1 || processId == 3){
                 totalWeightCut += instruction.getPlannedWeight()*count;
                 if(partDetailsCutMap == null) {

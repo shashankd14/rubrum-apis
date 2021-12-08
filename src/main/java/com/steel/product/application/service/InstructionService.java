@@ -58,7 +58,7 @@ public interface InstructionService {
 
     ResponseEntity<Object> addInstruction(List<InstructionSaveRequestDto> instructionSaveRequestDtos);
 
-    InwardEntryPdfDto findInwardJoinFetchInstructionsAndPartDetails(String partDetailsId);
+    InwardEntryPdfDto findInwardJoinFetchInstructionsAndPartDetails(String partDetailsId,Integer groupId);
 
 
     ResponseEntity<Object> deleteCut(CutInstructionDeleteRequest cutInstructionDeleteRequest);

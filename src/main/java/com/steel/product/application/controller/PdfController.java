@@ -67,13 +67,13 @@ public class PdfController {
         return new ResponseEntity<>(new PdfResponseDto(encodedFile), HttpStatus.OK);
     }
 
-    @GetMapping("{partDetailsId}")
-    public ResponseEntity<PdfResponseDto> downloadPDF(@PathVariable("partDetailsId") String partDetailsId) {
-        Path file = null;
-        byte[] bytes = null;
+    @GetMapping("{partDetailsId}/{groupId}")
+    public ResponseEntity<PdfResponseDto> downloadPDF(@PathVariable("partDetailsId") String partDetailsId,@PathVariable("groupId")Integer groupId) {
+        Path file;
+        byte[] bytes;
         StringBuilder builder = new StringBuilder();
         try {
-            file = Paths.get(pdfService.generatePdf(partDetailsId).getAbsolutePath());
+            file = Paths.get(pdfService.generatePdf(partDetailsId,groupId).getAbsolutePath());
             bytes = Files.readAllBytes(file);
             builder.append(Base64.getEncoder().encodeToString(bytes));
         } catch (IOException | DocumentException | org.dom4j.DocumentException ex) {

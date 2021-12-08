@@ -73,6 +73,9 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
     @Query("select pd,ins,COUNT(ins.plannedWeight) from PartDetails pd join fetch pd.instructions ins where pd.partDetailsId = :partDetailsId group by ins.plannedWeight,ins.partDetails,ins.process order by ins.createdOn")
     List<Object[]> findPartDetailsJoinFetchInstructions(@Param("partDetailsId") String partDetailsId);
 
+    @Query("select pd,ins,COUNT(ins.plannedWeight) from PartDetails pd join fetch pd.instructions ins where pd.partDetailsId = :partDetailsId and parentGroupId = :groupId group by ins.plannedWeight,ins.partDetails,ins.process order by ins.createdOn")
+    List<Object[]> findPartDetailsJoinFetchInstructionsAndGroupId(@Param("partDetailsId") String partDetailsId,@Param("groupId")Integer groupId);
+
 //    @Query(value = "SELECT ANY_VALUE(pd.target_weight) as targetWeight,ANY_VALUE(pd.length) AS length, ANY_VALUE(ins.inwardId) AS inwardId, ANY_VALUE(ins.processId) as processId" +
 //            ",ANY_VALUE(ins.plannedWeight) AS plannedWeight,ANY_VALUE(ins.plannedWidth) AS plannedWidth,ANY_VALUE(ins.plannedNoOfPieces) AS plannedNoOfPieces" +
 //            ",COUNT(ins.plannedWeight) AS weightCount, ANY_VALUE(ins.plannedLength) as plannedLength, pd.id AS partId" +
