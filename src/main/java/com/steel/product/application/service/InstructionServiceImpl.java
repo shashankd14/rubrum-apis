@@ -753,12 +753,9 @@ public class InstructionServiceImpl implements InstructionService {
             remainingLength = availableLength - existingLength - incomingLength;
 
             LOGGER.info("remaining length,weight is "+remainingLength+", "+remainingWeight);
-            if (fromGroup && Math.abs(remainingWeight) > 1f) {//in case of cut grand children
+            if (Math.abs(remainingWeight) > 1f) {
                 LOGGER.error("remaining weight exceeds available weight");
-                return new ResponseEntity<Object>("Cut instructions total weight must be equal to slit instructions with group ids " + groupIds.stream().map(g -> g+", ").collect(Collectors.joining()), HttpStatus.BAD_REQUEST);
-            } else if (!fromGroup && remainingWeight < 0f) {
-                LOGGER.error("remaining weight is invalid " + remainingWeight);
-                return new ResponseEntity<Object>("inward " + inwardId + " has no available weight for processing.", HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<Object>("Cut instructions total weight must be equal to slit instructions with group ids " + groupIds.stream().map(g -> g + ", ").collect(Collectors.joining()), HttpStatus.BAD_REQUEST);
             }
             if(!fromGroup && remainingLength < 0f){
                 LOGGER.error("remaining length exceeds available length "+ remainingLength);
