@@ -481,11 +481,16 @@ public class InstructionServiceImpl implements InstructionService {
 
     @Override
     public InwardEntryPdfDto findInwardJoinFetchInstructionsAndPartDetails(String partDetailsId,List<Integer> groupIds) {
-        List<Object[]> objects;
-        if(groupIds == null) {
+        List<Object[]> objects = null;
+        if(partDetailsId !=null && groupIds != null) {
+            LOGGER.info("partDetailsid: "+partDetailsId+", groupIds not null");
+            objects = instructionRepository.findPartDetailsJoinFetchInstructionsByPartDetailsIdOrGroupIds(partDetailsId,groupIds);
+        }else if(partDetailsId != null) {
+            LOGGER.info("partDetailsId: "+partDetailsId);
             objects = instructionRepository.findPartDetailsJoinFetchInstructions(partDetailsId);
-        }else{
-            objects = instructionRepository.findPartDetailsJoinFetchInstructionsAndGroupId(partDetailsId,groupIds);
+        }else {
+            LOGGER.info("total groupIds "+groupIds.size());
+                objects = instructionRepository.findPartDetailsJoinFetchInstructionsAndGroupIds(groupIds);
         }
         Integer inwardId = null;
         Integer processId = null;
@@ -503,7 +508,7 @@ public class InstructionServiceImpl implements InstructionService {
             PartDetailsPdfResponse partDetailsPdfResponse = partDetailsMapper.toPartDetailsPdfResponse(partDetails);
             InstructionResponsePdfDto instructionResponsePdfDto = instructionMapper.toResponsePdfDto(instruction);
             instructionResponsePdfDto.setCountOfWeight(count);
-            processId = groupIds == null ? instruction.getProcess().getProcessId() : 1;
+            processId = instruction.getProcess().getProcessId();
             if(processId == 1 || processId == 3){
                 totalWeightCut += instruction.getPlannedWeight()*count;
                 if(partDetailsCutMap == null) {
