@@ -18,6 +18,7 @@
         <java.version>1.8</java.version>
         <org.mapstruct.version>1.5.0.Beta1</org.mapstruct.version>
         <org.projectlombok.version>1.18.20</org.projectlombok.version>
+        <log4j2.version>2.17.0</log4j2.version>
     </properties>
 
 	<dependencies>
