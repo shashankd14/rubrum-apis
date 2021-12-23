@@ -482,6 +482,8 @@ public class InstructionServiceImpl implements InstructionService {
     @Override
     public InwardEntryPdfDto findInwardJoinFetchInstructionsAndPartDetails(String partDetailsId,List<Integer> groupIds) {
         List<Object[]> objects = null;
+        Integer processId = null;
+        Integer cutProcessId = 1;
         if(partDetailsId !=null && groupIds != null) {
             LOGGER.info("partDetailsid: "+partDetailsId+", groupIds not null");
             objects = instructionRepository.findPartDetailsJoinFetchInstructionsByPartDetailsIdOrGroupIds(partDetailsId,groupIds);
@@ -490,13 +492,12 @@ public class InstructionServiceImpl implements InstructionService {
             objects = instructionRepository.findPartDetailsJoinFetchInstructions(partDetailsId);
         }else {
             LOGGER.info("total groupIds "+groupIds.size());
-                objects = instructionRepository.findPartDetailsJoinFetchInstructionsAndGroupIds(groupIds);
+            objects = instructionRepository.findPartDetailsJoinFetchInstructionsAndGroupIds(groupIds);
         }
         Integer inwardId = null;
-        Integer processId = null;
         float totalWeightSlit = 0f;
         float totalWeightCut = 0f;
-        Integer slitAndCutProcessId = 3;
+        String cutPartDetailsId = null;
         Map<PartDetailsPdfResponse, List<InstructionResponsePdfDto>> partDetailsSlitMap = null, partDetailsCutMap = null;
         for (Object[] obj : objects) {
             PartDetails partDetails = (PartDetails) obj[0];
@@ -508,7 +509,8 @@ public class InstructionServiceImpl implements InstructionService {
             PartDetailsPdfResponse partDetailsPdfResponse = partDetailsMapper.toPartDetailsPdfResponse(partDetails);
             InstructionResponsePdfDto instructionResponsePdfDto = instructionMapper.toResponsePdfDto(instruction);
             instructionResponsePdfDto.setCountOfWeight(count);
-            processId = instruction.getProcess().getProcessId();
+            cutPartDetailsId = partDetailsPdfResponse.getPartDetailsId();//added for new cuts created from existing slits
+            processId = partDetailsId == null ? cutProcessId : instruction.getProcess().getProcessId();
             if(processId == 1 || processId == 3){
                 totalWeightCut += instruction.getPlannedWeight()*count;
                 if(partDetailsCutMap == null) {
@@ -533,7 +535,7 @@ public class InstructionServiceImpl implements InstructionService {
         inwardEntryPdfDto.setPartDetailsSlitMap(partDetailsSlitMap);
         inwardEntryPdfDto.setTotalWeightCut(totalWeightCut);
         inwardEntryPdfDto.setTotalWeightSlit(totalWeightSlit);
-        inwardEntryPdfDto.setPartDetailsId(partDetailsId);
+        inwardEntryPdfDto.setPartDetailsId(partDetailsId != null ? partDetailsId : cutPartDetailsId);
         inwardEntryPdfDto.setVProcess(String.valueOf(processId));
         return inwardEntryPdfDto;
     }
