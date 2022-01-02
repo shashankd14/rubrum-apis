@@ -4,20 +4,22 @@ import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.dto.inward.InwardEntryResponseDto;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.time.LocalDate;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class InwardEntryServiceImpl implements InwardEntryService {
-	private InwardEntryRepository inwdEntryRepo;
+
+	private final static Logger LOGGER = LoggerFactory.getLogger("InwardEntryService");
+	private final InwardEntryRepository inwdEntryRepo;
 
 	@Autowired
 	public InwardEntryServiceImpl(InwardEntryRepository theInwdEntryRepo) {
@@ -97,6 +99,11 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 	public List<InwardEntryResponseDto> findAllInwards() {
 		return inwdEntryRepo.findAll().stream()
 				.map(inw -> InwardEntry.valueOfResponse(inw)).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<InwardEntry> findInwardByPartyIdAndCreatedOnBetween(Integer partyId, Date startDate, Date endDate) {
+		return inwdEntryRepo.findInwardByPartyIdAndCreatedOnBetween(partyId,startDate,endDate);
 	}
 
 	@Override

@@ -1,12 +1,12 @@
 package com.steel.product.application.dao;
 
-import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,5 +34,8 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 
     @Query("select inw from InwardEntry inw join fetch inw.party join fetch inw.material join fetch inw.materialGrade join fetch inw.instructions ins join fetch ins.childInstructions")
     List<InwardEntry> findAllInwards();
+
+    @Query("select inw from InwardEntry inw join fetch inw.material join fetch inw.materialGrade join fetch inw.party p where p.id = :partyId and inw.createdOn between :startDate and :endDate order by inw.createdOn")
+    List<InwardEntry> findInwardByPartyIdAndCreatedOnBetween(Integer partyId, Date startDate, Date endDate);
 
 }

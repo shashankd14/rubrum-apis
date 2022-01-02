@@ -4,6 +4,8 @@ import com.steel.product.application.dto.inward.InwardEntryResponseDto;
 import com.steel.product.application.entity.InwardEntry;
 import org.springframework.http.ResponseEntity;
 
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -28,11 +30,13 @@ public interface InwardEntryService {
 
   List<InwardEntry> getAllEntriesPwr();
 
-  public List<InwardEntry> findDeliveryItemsByInstructionIds(List<Integer> instructionIds);
+  List<InwardEntry> findDeliveryItemsByInstructionIds(List<Integer> instructionIds);
 
-  public List<InwardEntry> saveAll(Set<InwardEntry> inwardEntries);
+  List<InwardEntry> saveAll(Set<InwardEntry> inwardEntries);
 
-  public InwardEntry getByInwardEntryId(Integer inwardId);
+  InwardEntry getByInwardEntryId(Integer inwardId);
 
   List<InwardEntryResponseDto> findAllInwards();
+
+  List<InwardEntry> findInwardByPartyIdAndCreatedOnBetween(Integer partyId, Date startDate, Date endDate);
 }

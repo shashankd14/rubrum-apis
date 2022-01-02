@@ -121,7 +121,7 @@ public class InwardEntry {
 	private User updatedBy;
 
 	@CreationTimestamp
-	@Column(name = "createdon", nullable = true)
+	@Column(name = "createdon", nullable = false,updatable = false)
 	private Date createdOn;
 
 	@UpdateTimestamp

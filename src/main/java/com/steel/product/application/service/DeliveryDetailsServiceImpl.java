@@ -90,7 +90,6 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
             LOGGER.info("adding new delivery with id");
             delivery = new DeliveryDetails();
 
-//            delivery.setDeliveryId(0);
             delivery.setCreatedBy(1);
             delivery.setUpdatedBy(1);
             delivery.setCreatedOn(timestamp);
@@ -105,7 +104,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
         Integer deliveredStatusId = 4;
         Status deliveredStatus = statusService.getStatusById(deliveredStatusId);
         Integer readyToDeliverStatusId = 3;
-        Map<Integer, String> instructionRemarksMap = deliveryDto.getDeliveryItemDetails().stream().filter(d -> d.getRemarks() != null)
+        Map<Integer, String> instructionRemarksMap = deliveryItemDetails.stream().filter(d -> d.getRemarks() != null)
                 .collect(Collectors.toMap(d -> d.getInstructionId(), d -> d.getRemarks()));
         List<Instruction> instructions = instructionService.findAllByInstructionIdInAndStatus(deliveryItemDetails.stream()
                 .map(d -> d.getInstructionId()).collect(Collectors.toList()), readyToDeliverStatusId);
@@ -140,15 +139,10 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
                                 groupInstructions = instructionService.findAllByGroupId(parentGroupId);
                                 groupInstructions.forEach(ins -> ins.setStatus(deliveredStatus));
                             }
-
-                            }
-
-//                    parentWeight = groupInstructions.stream().reduce(0f,(sum,ins) -> sum + ins.getActualWeight(),Float::sum);
-
+                        }
                         weightToDeliver = instruction.getActualWeight();
                     } else if (parentInstruction != null) {
                         LOGGER.info("instruction has parent instruction id " + instruction.getParentInstruction().getInstructionId());
-//                    parentWeight = parentInstruction.getActualWeight();
                             weightToDeliver = instruction.getActualWeight();
                             childrenInstructions = parentInstruction.getChildInstructions();
                             LOGGER.info("parent instruction has " + childrenInstructions.size() + " children");
