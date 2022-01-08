@@ -20,4 +20,6 @@ public interface MaterialGradeRepository extends JpaRepository<MaterialGrade, In
     @Modifying
     @Query(nativeQuery = true, value = "delete from product_material_grades where nMatId= :materialId  ")
     void deleteGradesByMaterialId(@Param("materialId") Integer materialId);
+
+    MaterialGrade findByGradeName(String gradeName);
 }

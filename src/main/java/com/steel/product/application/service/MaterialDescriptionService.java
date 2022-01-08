@@ -11,4 +11,6 @@ public interface MaterialDescriptionService {
   List<MaterialResponseDetailsDto> getAllMatDesc();
   
   Material getMatById(int paramInt);
+
+  Material findByDesc(String desc);
 }

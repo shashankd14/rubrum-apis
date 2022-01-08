@@ -32,4 +32,9 @@ public class MaterialGradeServiceImpl implements MaterialGradeService {
 public List<MaterialGrade> getByMaterialId(int materialId) {
 	return materialGradeRepo.getGradesByMaterialId(materialId);
 }
+
+  @Override
+  public MaterialGrade findByGradeName(String gradeName) {
+    return materialGradeRepo.findByGradeName(gradeName);
+  }
 }

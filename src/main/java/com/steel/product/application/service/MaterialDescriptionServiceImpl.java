@@ -80,4 +80,9 @@ public class MaterialDescriptionServiceImpl implements MaterialDescriptionServic
     } 
     return theMatDesc;
   }
+
+  @Override
+  public Material findByDesc(String desc) {
+    return matDescRepo.findByDescription(desc);
+  }
 }

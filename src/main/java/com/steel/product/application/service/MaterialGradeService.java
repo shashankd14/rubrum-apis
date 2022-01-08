@@ -11,4 +11,6 @@ public interface MaterialGradeService {
 	
 	List<MaterialGrade> getByMaterialId(int materialId);
 
+	MaterialGrade findByGradeName(String gradeName);
+
 }
