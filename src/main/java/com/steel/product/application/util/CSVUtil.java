@@ -34,7 +34,7 @@ public class CSVUtil {
             for(InwardEntry inw:inwardEntries){
                 csvPrinter.printRecord(++sno,inw.getCoilNumber(),inw.getCustomerBatchId(),sdf.format(inw.getdReceivedDate()),sdf.format(inw.getCreatedOn()),
                         inw.getMaterial().getDescription(),inw.getMaterialGrade().getGradeName(),inw.getfThickness(),inw.getfWidth(),
-                        inw.getfLength(),inw.getMaterial().getMaterialCode(),inw.getInStockWeight());
+                        inw.getfLength(),inw.getMaterial().getMaterialCode(),inw.getfQuantity());
             }
             csvPrinter.flush();
         }catch (Exception e){

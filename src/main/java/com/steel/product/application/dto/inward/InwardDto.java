@@ -64,6 +64,8 @@ public class InwardDto {
 	
 	private String remarks;
 
+	private String parentCoilNumber;
+
 	public int getInwardId() {
 		return this.inwardId;
 	}
@@ -295,5 +297,13 @@ public class InwardDto {
 
 	public void setValueOfGoods(float valueOfGoods) {
 		this.valueOfGoods = valueOfGoods;
+	}
+
+	public String getParentCoilNumber() {
+		return parentCoilNumber;
+	}
+
+	public void setParentCoilNumber(String parentCoilNumber) {
+		this.parentCoilNumber = parentCoilNumber;
 	}
 }

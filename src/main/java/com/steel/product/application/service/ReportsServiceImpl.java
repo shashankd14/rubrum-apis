@@ -1,29 +1,16 @@
 package com.steel.product.application.service;
 
-import com.steel.product.application.controller.InwardEntryController;
-import com.steel.product.application.dao.MaterialDescriptionRepository;
-import com.steel.product.application.dao.MaterialGradeRepository;
-import com.steel.product.application.dto.inward.InwardDto;
 import com.steel.product.application.dto.report.StockReportRequest;
 import com.steel.product.application.entity.InwardEntry;
-import com.steel.product.application.entity.Material;
 import com.steel.product.application.util.CSVUtil;
 import com.steel.product.application.util.EmailUtil;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.stereotype.Service;
 
-import javax.mail.MessagingException;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -36,27 +23,20 @@ public class ReportsServiceImpl implements ReportsService {
     private final InwardEntryService inwardEntryService;
     private final CSVUtil csvUtil;
     private final EmailUtil emailUtil;
-    private final MaterialDescriptionService materialDescriptionService;
-    private final MaterialGradeRepository materialGradeRepo;
-    private final InwardEntryController inwardEntryController;
-    private final MaterialDescriptionRepository materialDescriptionRepository;
     private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 
     @Value("#{'${stock.report.headers}'.split(',')}")
     private List<String> stockReportHeaders;
 
-    public ReportsServiceImpl(InwardEntryService inwardEntryService, CSVUtil csvUtil, EmailUtil emailUtil, MaterialDescriptionService materialDescriptionService, MaterialGradeRepository materialGradeRepo, InwardEntryController inwardEntryController, MaterialDescriptionRepository materialDescriptionRepository) {
+    @Autowired
+    public ReportsServiceImpl(InwardEntryService inwardEntryService, CSVUtil csvUtil, EmailUtil emailUtil) {
         this.inwardEntryService = inwardEntryService;
         this.csvUtil = csvUtil;
         this.emailUtil = emailUtil;
-        this.materialDescriptionService = materialDescriptionService;
-        this.materialGradeRepo = materialGradeRepo;
-        this.inwardEntryController = inwardEntryController;
-        this.materialDescriptionRepository = materialDescriptionRepository;
     }
 
     @Override
-    public void generateAndMailStockReport(StockReportRequest stockReportRequest) {
+    public String generateAndMailStockReport(StockReportRequest stockReportRequest) {
         LOGGER.info("inside generateAndMailStockReport method");
         String startDate = stockReportRequest.getFromDate()+" 00:00:00";
         String endDate = stockReportRequest.getToDate()+" 23:59:59";
@@ -76,42 +56,49 @@ public class ReportsServiceImpl implements ReportsService {
         String[] headers = stockReportHeaders.toArray(new String[0]);
         File report = csvUtil.generateStockReportCSV(headers,inwardEntries);
         emailUtil.sendEmail(report,email);
-        report.delete();
-        LOGGER.debug("file deleted ok ");
+        if(report.exists()) {
+            report.delete();
+        }
+        return "email sent ok !!";
     }
 
-    @Override
-    public void uploadCSV() throws IOException, ParseException {
-        FileReader in = new FileReader("RM_REPORT_CSV.csv");
-//        CSVParser parser = new CSVParser(br, CSVFormat.DEFAULT);
-        Iterable<CSVRecord> records = CSVFormat.RFC4180.withFirstRecordAsHeader().parse(in);
-        SimpleDateFormat sdf1 = new SimpleDateFormat("dd-MM-yyyy");
-        SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd");
-        for(CSVRecord rec:records){
-            InwardDto dto = new InwardDto();
-            dto.setCoilNumber(rec.get(0));
-            dto.setBatchNumber(rec.get(1));
-            String matDesc = rec.get(2);
-            Material mat = materialDescriptionService.findByDesc(matDesc);
-            dto.setThickness(Float.parseFloat(rec.get(3)));
-            dto.setWidth(Float.parseFloat(rec.get(4)));
-            dto.setPresentWeight(Float.parseFloat(rec.get(5)));
-            dto.setGrossWeight(Float.parseFloat(rec.get(6)));
-            dto.setInvoiceNumber(rec.get(7));
-            dto.setInvoiceDate(rec.get(8));
-//            dto.setParentCoilNumber(rec.get(9));
-            String gradeName = rec.get(10);
+//    @Override
+//    public void uploadCSV() throws IOException, ParseException {
+//        FileReader in = new FileReader("RM-REPORT-CSV.csv");
+////        CSVParser parser = new CSVParser(br, CSVFormat.DEFAULT);
+//        Iterable<CSVRecord> records = CSVFormat.RFC4180.withFirstRecordAsHeader().parse(in);
+////        SimpleDateFormat sdf1 = new SimpleDateFormat("dd-MM-yyyy");
+////        SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd");
+//        for(CSVRecord rec:records){
+//            InwardDto dto = new InwardDto();
+//            dto.setCoilNumber(rec.get(0));
+//            dto.setBatchNumber(rec.get(1));
+//            dto.setCustomerBatchId(rec.get(2));
+//            dto.setInwardDate(rec.get(3)+" 00:00:00");
+//            String matDesc = rec.get(4);
+//            Material mat = materialDescriptionService.findByDesc(matDesc);
+//            dto.setThickness(Float.parseFloat(rec.get(5)));
+//            dto.setWidth(Float.parseFloat(rec.get(6)));
+//            dto.setPresentWeight(Float.parseFloat(rec.get(7)));
+//            float denominator = dto.getThickness() * (dto.getWidth() / 1000f) * 7.85f;
+//            float lengthUnprocessed = dto.getPresentWeight() / denominator;
+//            dto.setLength(lengthUnprocessed);
+//            dto.setGrossWeight(Float.parseFloat(rec.get(8)));
+//            dto.setInvoiceNumber(rec.get(9));
+//            dto.setInvoiceDate(rec.get(10)+" 00:00:00");
+//            dto.setParentCoilNumber(rec.get(11));
+//            String gradeName = rec.get(12);
 //            MaterialGrade mg = materialGradeRepo.findByGradeName(gradeName);
-            dto.setTestCertificateNumber(rec.get(11));
-            dto.setValueOfGoods(Float.parseFloat(rec.get(12)));
-            dto.setPurposeType(rec.get(22));
-            dto.setRemarks(rec.get(23));
-            if(mat == null){
-                mat = new Material();
-                mat.setDescription(matDesc);
-                mat = materialDescriptionRepository.save(mat);
-            }
-            dto.setMaterialId(mat.getMatId());
+//            dto.setTestCertificateNumber(rec.get(13));
+//            dto.setValueOfGoods(Float.parseFloat(rec.get(14)));
+//            dto.setPurposeType(rec.get(15));
+//            dto.setRemarks(rec.get(16));
+//            if(mat == null){
+//                mat = new Material();
+//                mat.setDescription(matDesc);
+//                mat = materialDescriptionRepository.save(mat);
+//            }
+//            dto.setMaterialId(mat.getMatId());
 //            if(mg == null){
 //                mg = new MaterialGrade();
 //                mg.setGradeName(gradeName);
@@ -119,17 +106,76 @@ public class ReportsServiceImpl implements ReportsService {
 //                materialGradeRepo.save(mg);
 //            }
 //            dto.setMaterialGradeId(mg.getGradeId());
-            dto.setPartyId(1);
-            String d = "2022-01-06"+" 00:00:00";
-            dto.setInwardDate(d);
-            dto.setBillDate(d);
-            dto.setCreatedBy(1);
-            dto.setUpdatedBy(1);
-            inwardEntryController.saveInwardEntry(dto);
-
-
-        }
-    }
+//            dto.setPartyId(8);
+////            String d = "2022-01-06"+" 00:00:00";
+////            dto.setInwardDate(d);
+////            dto.setBillDate(d);
+//            dto.setCreatedBy(1);
+//            dto.setUpdatedBy(1);
+//            this.saveInwardEntry(dto);
+//
+//
+//        }
+//    }
+//
+//    public void saveInwardEntry(@ModelAttribute InwardDto inward) throws ParseException {
+//        InwardEntry inwardEntry = new InwardEntry();
+//            inwardEntry.setInwardEntryId(0);
+//            inwardEntry.setPurposeType(inward.getPurposeType());
+//            inwardEntry.setParty(this.partyDetailsService.getPartyById(inward.getPartyId()));
+//            inwardEntry.setCoilNumber(inward.getCoilNumber());
+//            inwardEntry.setBatchNumber(inward.getBatchNumber());
+//            inwardEntry.setdReceivedDate(sdf.parse(inward.getInwardDate()));
+//            inwardEntry.setInStockWeight(inward.getPresentWeight());
+//
+//            if(inward.getBillDate()!=null)
+//                inwardEntry.setdBillDate(Timestamp.valueOf(inward.getBillDate()));
+//
+//            inwardEntry.setvLorryNo(inward.getVehicleNumber());
+//            inwardEntry.setvInvoiceNo(inward.getInvoiceNumber());
+//            inwardEntry.setdInvoiceDate(sdf.parse(inward.getInvoiceDate()));
+//
+//            inwardEntry.setCustomerCoilId(String.valueOf(inward.getPartyId()));
+//            inwardEntry.setCustomerInvoiceNo(inward.getInvoiceNumber());
+//            inwardEntry.setCustomerBatchId(inward.getCustomerBatchId());
+//
+//
+//            //inwardEntry.setCustomerInvoiceDate(Timestamp.valueOf(inward.getCustomerInvoiceDate()));
+//
+//            inwardEntry.setMaterial(this.matDescService.getMatById(inward.getMaterialId()));
+//            inwardEntry.setMaterialGrade(matGradeService.getById(inward.getMaterialGradeId()));
+//
+//            inwardEntry.setfWidth(inward.getWidth());
+//            inwardEntry.setfThickness(inward.getThickness());
+//            inwardEntry.setfLength(inward.getLength());
+//            inwardEntry.setAvailableLength(inward.getLength());
+//            inwardEntry.setfQuantity(inward.getPresentWeight());
+//            inwardEntry.setGrossWeight(inward.getGrossWeight());
+//            inwardEntry.setTestCertificateNumber(inward.getTestCertificateNumber());
+//
+//            //inwardEntry.setStatus(this.statusService.getStatusById(inward.getStatusId()));
+//            inwardEntry.setStatus(this.statusService.getStatusById(1));
+//
+//            inwardEntry.setvProcess(inward.getProcess());
+//            inwardEntry.setFpresent(inward.getPresentWeight());
+//            inwardEntry.setValueOfGoods(inward.getValueOfGoods());
+//
+//            inwardEntry.setBilledweight(0);
+//            inwardEntry.setvParentBundleNumber(0);
+//
+//            inwardEntry.setRemarks(inward.getRemarks());
+//            inwardEntry.setParentCoilNumber(inward.getParentCoilNumber());
+//
+//            inwardEntry.setIsDeleted(Boolean.valueOf(false));
+//            inwardEntry.setCreatedOn(new Date());
+//            inwardEntry.setUpdatedOn(new Date());
+//
+//            inwardEntry.setCreatedBy(this.userService.getUserById(inward.getCreatedBy()));
+//            inwardEntry.setUpdatedBy(this.userService.getUserById(inward.getUpdatedBy()));
+//            inwardEntryService.saveEntry(inwardEntry);
+//
+//
+//    }
 
 
 }

@@ -5,9 +5,8 @@ import com.steel.product.application.service.ReportsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-
 @RestController
-@RequestMapping("/api/report")
+@RequestMapping("/api/reports")
 @CrossOrigin
 public class ReportsController {
 
@@ -20,13 +19,12 @@ public class ReportsController {
 
     @PostMapping("")
     public String generateAndMailStockReport(@RequestBody StockReportRequest stockReportRequest){
-        try {
-            reportsService.generateAndMailStockReport(stockReportRequest);
-            return "Sent email ok !!";
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-        return "Error in sending mail";
+        return reportsService.generateAndMailStockReport(stockReportRequest);
     }
+
+//    @GetMapping("test")
+//    public void importCSV() throws IOException, ParseException {
+//        reportsService.uploadCSV();
+//    }
 
 }

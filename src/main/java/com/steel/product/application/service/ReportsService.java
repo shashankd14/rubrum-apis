@@ -9,7 +9,7 @@ import java.text.ParseException;
 
 public interface ReportsService {
 
-    void generateAndMailStockReport(StockReportRequest stockReportRequest);
+    String generateAndMailStockReport(StockReportRequest stockReportRequest);
 
-    void uploadCSV() throws IOException, ParseException;
+//    void uploadCSV() throws IOException, ParseException;
 }
