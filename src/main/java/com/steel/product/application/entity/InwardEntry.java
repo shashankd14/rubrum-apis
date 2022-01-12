@@ -561,7 +561,7 @@ public class InwardEntry {
 
 	public static InwardEntryResponseDto valueOfResponse(InwardEntry inwardEntry) {
 		InwardEntryResponseDto inwardEntryResponseDto = new InwardEntryResponseDto();
-		inwardEntryResponseDto.setInwardEntryId(inwardEntry.getInwardEntryId());
+//		inwardEntryResponseDto.setInwardEntryId(inwardEntry.getInwardEntryId());
 		inwardEntryResponseDto.setParty(inwardEntry.getParty() != null ? Party.valueOf(inwardEntry.getParty()) : null);
 		inwardEntryResponseDto.setCoilNumber(inwardEntry.getCoilNumber());
 		inwardEntryResponseDto.setBatchNumber(inwardEntry.getBatchNumber());

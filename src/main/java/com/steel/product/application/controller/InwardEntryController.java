@@ -55,7 +55,6 @@
 		@PostMapping("/addNew")
 		public ResponseEntity<Object> saveInwardEntry(@ModelAttribute InwardDto inward) {
 			InwardEntry inwardEntry = new InwardEntry();
-			// InwardDoc inwardDoc = new InwardDoc();
 			System.out.println("DTO details " + inward);
 			try {
 				inwardEntry.setInwardEntryId(0);
@@ -119,7 +118,7 @@
 					inwardEntry.setTestCertificateFileUrl(fileUrl);
 				}
 				inwardEntry.setTestCertificateNumber(inward.getTestCertificateNumber());
-//				InwardEntry savedInwardEntry = inwdEntrySvc.saveEntry(inwardEntry);
+				InwardEntry savedInwardEntry = inwdEntrySvc.saveEntry(inwardEntry);
 
 				if (inward.getInwardFiles() != null) {
 
@@ -135,7 +134,7 @@
 					}
 				}
 
-				return new ResponseEntity<Object>(InwardEntry.valueOfResponse(null), HttpStatus.OK);
+				return new ResponseEntity<Object>(InwardEntry.valueOfResponse(inwardEntry), HttpStatus.OK);
 			} catch (Exception e) {
 				e.printStackTrace();
 				return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
