@@ -2,6 +2,8 @@ package com.steel.product.application.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.steel.product.application.dto.delivery.DeliveryResponseDto;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.util.*;
@@ -27,11 +29,11 @@ public class DeliveryDetails {
     @Column(name = "updatedby")
     private Integer updatedBy;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "createdon")
+    @CreationTimestamp
+    @Column(name = "createdon",updatable = false)
     private Date createdOn;
 
-    @Temporal(TemporalType.TIMESTAMP)
+    @UpdateTimestamp
     @Column(name = "updatedon")
     private Date updatedOn;
 
@@ -53,13 +55,26 @@ public class DeliveryDetails {
         if(this.instructions == null){
             this.instructions = new HashSet<>();
         }
-        this.getInstructions().add(instruction);
+        this.instructions.add(instruction);
         instruction.setDeliveryDetails(this);
+    }
+
+    public void addAllInstructions(Collection<Instruction> instructions){
+        if(this.instructions == null){
+            this.instructions = new HashSet<>();
+        }
+        this.instructions.addAll(instructions);
+        instructions.forEach(ins -> ins.setDeliveryDetails(this));
     }
 
     public void removeInstruction(Instruction instruction){
         this.getInstructions().remove(instruction);
         instruction.setDeliveryDetails(null);
+    }
+
+    @PrePersist
+    private void setIsDeleted(){
+        this.isDeleted = false;
     }
 
     public Integer getDeliveryId() {
