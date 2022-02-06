@@ -2,7 +2,6 @@ package com.steel.product.application.service;
 
 import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.dto.inward.InwardEntryResponseDto;
-import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -102,8 +100,8 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 	}
 
 	@Override
-	public List<InwardEntry> findInwardByPartyIdAndCreatedOnBetween(Integer partyId, Date startDate, Date endDate) {
-		return inwdEntryRepo.findInwardByPartyIdAndCreatedOnBetween(partyId,startDate,endDate);
+	public List<InwardEntry> findInwardByPartyId(Integer partyId) {
+		return inwdEntryRepo.findInwardByPartyId(partyId);
 	}
 
 	@Override

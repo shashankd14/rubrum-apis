@@ -6,6 +6,7 @@ import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.mapper.TotalLengthAndWeight;
 import org.springframework.http.ResponseEntity;
 
+import java.util.HashMap;
 import java.util.List;
 
 public interface InstructionService {
@@ -68,5 +69,7 @@ public interface InstructionService {
     List<Instruction> findAllByGroupIdOrParentGroupId(Integer groupId,Integer parentGroupId);
 
     Instruction findFirstByGroupIdAndIsDeletedFalse(Integer groupId);
+
+    HashMap<Integer,Double> findSumOfPlannedWeightAndActualWeightForUnprocessed();
 }
 

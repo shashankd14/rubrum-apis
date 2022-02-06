@@ -3,12 +3,16 @@ package com.steel.product.application.dao;
 import com.steel.product.application.entity.InwardEntry;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.Date;
+import javax.persistence.QueryHint;
 import java.util.List;
 import java.util.Optional;
+
+import static org.hibernate.jpa.QueryHints.HINT_FETCH_SIZE;
+import static org.hibernate.jpa.QueryHints.HINT_PASS_DISTINCT_THROUGH;
 
 @Repository
 public interface InwardEntryRepository extends JpaRepository<InwardEntry, Integer> {
@@ -35,7 +39,10 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
     @Query("select inw from InwardEntry inw join fetch inw.party join fetch inw.material join fetch inw.materialGrade join fetch inw.instructions ins join fetch ins.childInstructions")
     List<InwardEntry> findAllInwards();
 
-    @Query("select inw from InwardEntry inw join fetch inw.material join fetch inw.materialGrade join fetch inw.party p where p.id = :partyId and inw.createdOn between :startDate and :endDate order by inw.createdOn")
-    List<InwardEntry> findInwardByPartyIdAndCreatedOnBetween(Integer partyId, Date startDate, Date endDate);
-
+    @Query("select distinct inw from InwardEntry inw left join fetch inw.instructions ins left join fetch inw.party left join fetch inw.material left join fetch inw.materialGrade where inw.party.id = :partyId and inw.status.statusId < 4 and ins.isDeleted is false and ins.status.statusId < 4 or ins is null order by inw.inwardEntryId")
+    @QueryHints(value = {
+            @QueryHint(name = HINT_FETCH_SIZE, value = "10"),
+            @QueryHint(name = HINT_PASS_DISTINCT_THROUGH,value = "false")
+    })
+    List<InwardEntry> findInwardByPartyId(Integer partyId);
 }

@@ -129,7 +129,6 @@
 						String str = awsS3Service.uploadFile(file);
 						inwardDoc.setDocUrl(str);
 
-						System.out.println("inwardDoc: "+inwardDoc);
 						inwardDocService.save(inwardDoc);
 					}
 				}

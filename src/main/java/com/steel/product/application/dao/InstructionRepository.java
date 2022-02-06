@@ -92,4 +92,9 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
     List<Instruction> findInstructionsByPartIdAndProcessId(@Param("partId")Long partId,@Param("processId")Integer processId);
 
     List<Instruction> findAllByGroupIdOrParentGroupId(Integer groupId,Integer parentGroupId);
+
+    @Query(value = "select inwardId,sum(case when actualWeight is null then plannedWeight else actualWeight end) as sum " +
+            " from product_instruction where status < 4 and groupId is null and isDeleted is false group by inwardId order by inwardId",nativeQuery = true)
+    List<Object[]> findSumOfPlannedWeightAndActualWeightForUnprocessed();
+
 }

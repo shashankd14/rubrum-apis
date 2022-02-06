@@ -595,6 +595,8 @@ public class InwardEntry {
 		inwardEntryResponseDto.setDeleted(inwardEntry.getDeleted());
 		inwardEntryResponseDto.setfLength(inwardEntry.getfLength());
 		inwardEntryResponseDto.setAvailableLength(inwardEntry.getAvailableLength());
+		inwardEntryResponseDto.setCustomerInvoiceNo(inwardEntry.getCustomerInvoiceNo());
+		inwardEntryResponseDto.setParentCoilNumber(inwardEntry.getParentCoilNumber());
 		return inwardEntryResponseDto;
 	}
 

@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 @Service
@@ -21,6 +21,7 @@ public class ReportsServiceImpl implements ReportsService {
     private final static Logger LOGGER = LoggerFactory.getLogger(ReportsServiceImpl.class);
 
     private final InwardEntryService inwardEntryService;
+    private final InstructionService instructionService;
     private final CSVUtil csvUtil;
     private final EmailUtil emailUtil;
     private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
@@ -29,8 +30,9 @@ public class ReportsServiceImpl implements ReportsService {
     private List<String> stockReportHeaders;
 
     @Autowired
-    public ReportsServiceImpl(InwardEntryService inwardEntryService, CSVUtil csvUtil, EmailUtil emailUtil) {
+    public ReportsServiceImpl(InwardEntryService inwardEntryService, InstructionService instructionService, CSVUtil csvUtil, EmailUtil emailUtil) {
         this.inwardEntryService = inwardEntryService;
+        this.instructionService = instructionService;
         this.csvUtil = csvUtil;
         this.emailUtil = emailUtil;
     }
@@ -38,23 +40,18 @@ public class ReportsServiceImpl implements ReportsService {
     @Override
     public String generateAndMailStockReport(StockReportRequest stockReportRequest) {
         LOGGER.info("inside generateAndMailStockReport method");
-        String startDate = stockReportRequest.getFromDate()+" 00:00:00";
-        String endDate = stockReportRequest.getToDate()+" 23:59:59";
-
-        Date d1 = null,d2 = null;
-        try {
-            d1 = sdf.parse(startDate);
-            d2 = sdf.parse(endDate);
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-        List<InwardEntry> inwardEntries = inwardEntryService.findInwardByPartyIdAndCreatedOnBetween(stockReportRequest.getPartyId(),d1,d2);
+        List<InwardEntry> inwardEntries = inwardEntryService.findInwardByPartyId(stockReportRequest.getPartyId());
         if(inwardEntries.isEmpty()){
-            throw new RuntimeException("No inwards found between "+startDate+" and "+endDate+" for party id "+stockReportRequest.getPartyId());
+            throw new RuntimeException("No inwards found for party id "+stockReportRequest.getPartyId());
         }
+        HashMap<Integer,Double> unprocessedWeights = instructionService.findSumOfPlannedWeightAndActualWeightForUnprocessed();
+        LOGGER.info("unprocessed weights "+unprocessedWeights.size());
         String email = inwardEntries.get(0).getParty().getEmail1();
         String[] headers = stockReportHeaders.toArray(new String[0]);
-        File report = csvUtil.generateStockReportCSV(headers,inwardEntries);
+        File report = csvUtil.generateStockReportCSV(headers,inwardEntries,unprocessedWeights);
+        if(report == null){
+            return "error in generating csv";
+        }
         emailUtil.sendEmail(report,email);
         if(report.exists()) {
             report.delete();

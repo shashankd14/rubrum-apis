@@ -2,6 +2,7 @@ package com.steel.product.application.controller;
 
 import com.steel.product.application.dto.instruction.*;
 import com.steel.product.application.entity.Instruction;
+import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -128,14 +129,20 @@ public class InstructionController {
 
 //    @GetMapping("/test")
 //    public void test(){
-//        List<Instruction> objects = instructionService.findAllByGroupIdOrParentGroupId(112,112);
-//        System.out.println(objects.size());
-//        for(Instruction ins:objects){
-////            Instruction instruction = pdf.getInstruction();
-//            System.out.println(ins.getInstructionId());;
-//
-//        }
-//
+////        List<Object[]> objects = instructionService.findSumOfPlannedWeightAndActualWeightForUnprocessed();
+////        System.out.println(objects.size());
+////        for(Object[] obj:objects){
+////            System.out.println((int)obj[0]+" "+(double)obj[1]);;
+////
+////        }
+////        List<InwardEntry> inwards = inwardService.findInwardByPartyId(8);
+////        for(InwardEntry inw:inwards){
+////            System.out.println("inwardid "+inw.getInwardEntryId()+" "+inw.getInstructions().size());
+////            for(Instruction ins:inw.getInstructions()){
+////                System.out.println(ins.getInstructionId());
+////            }
+////        }
+////        System.out.println(inwards.size());
 //    }
 
 

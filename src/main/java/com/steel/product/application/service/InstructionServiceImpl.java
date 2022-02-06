@@ -662,6 +662,16 @@ public class InstructionServiceImpl implements InstructionService {
         return instructionOptional.get();
     }
 
+    @Override
+    public HashMap<Integer,Double> findSumOfPlannedWeightAndActualWeightForUnprocessed() {
+        List<Object[]> unprocessedWeights = instructionRepository.findSumOfPlannedWeightAndActualWeightForUnprocessed();
+        HashMap<Integer,Double> inwardUnprocessedWeights = new HashMap<>();
+        for(Object[] obj:unprocessedWeights){
+            inwardUnprocessedWeights.put((Integer)obj[0],(double)obj[1]);
+        }
+        return inwardUnprocessedWeights;
+    }
+
     private Map<PartDetailsPdfResponse, List<InstructionResponsePdfDto>> addInstructionToPartDetailsMap(Map<PartDetailsPdfResponse, List<InstructionResponsePdfDto>> partDetailsMap, PartDetailsPdfResponse partDetailsPdfResponse, InstructionResponsePdfDto instructionResponsePdfDto) {
         if (partDetailsMap.isEmpty() || !partDetailsMap.containsKey(partDetailsPdfResponse)) {
             List<InstructionResponsePdfDto> list = new ArrayList<>();

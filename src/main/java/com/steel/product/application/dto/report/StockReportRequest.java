@@ -8,7 +8,5 @@ import lombok.Setter;
 public class StockReportRequest {
 
     private Integer partyId;
-    private String fromDate;
-    private String toDate;
     private String reportName;
 }
