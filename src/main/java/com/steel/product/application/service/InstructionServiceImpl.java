@@ -533,7 +533,7 @@ public class InstructionServiceImpl implements InstructionService {
         inwardEntryPdfDto = InwardEntry.valueOf(inwardEntry, null);
         inwardEntryPdfDto.setPartDetailsCutMap(partDetailsCutMap);
         inwardEntryPdfDto.setPartDetailsSlitMap(partDetailsSlitMap);
-        inwardEntryPdfDto.setTotalWeightCut(totalWeightCut);
+        inwardEntryPdfDto.setTotalWeightCut(partDetailsSlitMap == null ? totalWeightCut : 0f);
         inwardEntryPdfDto.setTotalWeightSlit(totalWeightSlit);
         inwardEntryPdfDto.setPartDetailsId(partDetailsId != null ? partDetailsId : cutPartDetailsId);
         inwardEntryPdfDto.setVProcess(String.valueOf(processId));
