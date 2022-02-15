@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class PacketClassificationServiceImpl implements PacketClassificationService{
@@ -35,5 +36,10 @@ public class PacketClassificationServiceImpl implements PacketClassificationServ
     @Override
     public List<PacketClassification> findAllByPacketClassificationIdIn(List<Integer> packetClassificationIds) {
         return packetClassificationRepository.findAllByClassificationIdIn(packetClassificationIds);
+    }
+
+    @Override
+    public Set<PacketClassification> findByClassificationName(List<String> classificationNames) {
+        return packetClassificationRepository.findAllByClassificationNameIn(classificationNames);
     }
 }

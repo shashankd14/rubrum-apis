@@ -2,10 +2,14 @@ package com.steel.product.application.entity;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.steel.product.application.dto.party.PartyDto;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "product_tblpartydetails")
@@ -16,7 +20,7 @@ public class Party {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "npartyid")
-	private int nPartyId;
+	private Integer nPartyId;
 
 	@Column(name = "partyname")
 	private String partyName;
@@ -51,11 +55,11 @@ public class Party {
 	@Column(name = "phone2")
 	private String phone2;
 
-	@ManyToOne(cascade = { CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH },fetch = FetchType.LAZY)
+	@ManyToOne(cascade = { CascadeType.PERSIST,CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH },fetch = FetchType.LAZY)
 	@JoinColumn(name = "address1")
 	private Address address1;
 
-	@ManyToOne(cascade = { CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH },fetch = FetchType.LAZY)
+	@ManyToOne(cascade = { CascadeType.PERSIST,CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH },fetch = FetchType.LAZY)
 	@JoinColumn(name = "address2")
 	private Address address2;
 
@@ -65,15 +69,15 @@ public class Party {
 	@Column(name = "updatedby")
 	private int updatedBy;
 
-	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name = "createdon")
+	@Column(name = "createdon",updatable = false)
+	@CreationTimestamp
 	private Date createdOn;
 
-	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "updatedon")
+	@UpdateTimestamp
 	private Date updatedOn;
 
-	@Column(name = "isdeleted", columnDefinition = "BIT")
+	@Column(name = "isdeleted", columnDefinition = "BIT DEFAULT 0")
 	private Boolean isDeleted;
 
 	@JsonManagedReference(value = "party-inward")
@@ -84,11 +88,27 @@ public class Party {
 	@JsonManagedReference(value = "party-rates")
 	private List<Rates> rates;
 
-	public int getnPartyId() {
+	@ManyToMany(cascade = {CascadeType.PERSIST,CascadeType.MERGE,CascadeType.REFRESH})
+	@JoinTable(name="product_classification_party",
+	joinColumns = @JoinColumn(name="party_id"),
+	inverseJoinColumns = @JoinColumn(name="classificationId"))
+	private Set<PacketClassification> packetClassificationTags = new HashSet<>();
+
+	public void addPacketClassification(PacketClassification packetClassification){
+		this.packetClassificationTags.add(packetClassification);
+		packetClassification.getParties().add(this);
+	}
+
+	public void removePacketClassification(PacketClassification packetClassification){
+		this.packetClassificationTags.remove(packetClassification);
+		packetClassification.getParties().remove(this);
+	}
+
+	public Integer getnPartyId() {
 		return nPartyId;
 	}
 
-	public void setnPartyId(int nPartyId) {
+	public void setnPartyId(Integer nPartyId) {
 		this.nPartyId = nPartyId;
 	}
 
@@ -252,10 +272,17 @@ public class Party {
 		return address2;
 	}
 
+	public Set<PacketClassification> getPacketClassificationTags() {
+		return packetClassificationTags;
+	}
+
+	public void setPacketClassificationTags(Set<PacketClassification> packetClassificationTags) {
+		this.packetClassificationTags = packetClassificationTags;
+	}
+
 	public static PartyDto valueOf(Party party){
 		PartyDto partyDto = new PartyDto();
 		partyDto.setPartyName(party.getPartyName());
-		partyDto.setnPartyId(party.getnPartyId());
 		partyDto.setPartyNickname(party.getPartyNickname());
 		if(party.getAddress1() != null) {
 			partyDto.setAddress1(Address.valueOf(party.getAddress1()));
