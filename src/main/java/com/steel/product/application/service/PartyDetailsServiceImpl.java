@@ -40,7 +40,7 @@ public class PartyDetailsServiceImpl implements PartyDetailsService {
   }
 
   public Party saveParty(PartyDto partyDto) {
-    LOGGER.info("saving party details");
+    LOGGER.info("inside saveParty method");
     Party party = partyMapper.toEntity(partyDto);
     Map<String,PacketClassification> savedPacketClassifications = packetClassificationService
             .findByClassificationName(partyDto.getTags())
@@ -48,7 +48,7 @@ public class PartyDetailsServiceImpl implements PartyDetailsService {
     List<PacketClassification> packetClassifications = packetClassificationMapper.toEntities(partyDto.getTags());
     packetClassifications.forEach(pc -> {
       if(savedPacketClassifications.containsKey(pc.getClassificationName())){
-        savedPacketClassifications.get(pc.getClassificationName()).addParty(party);
+        party.addPacketClassification(savedPacketClassifications.get(pc.getClassificationName()));
       }else {
         party.addPacketClassification(pc);
       }

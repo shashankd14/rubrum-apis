@@ -746,7 +746,7 @@ public class InstructionServiceImpl implements InstructionService {
             else {
                 return new ResponseEntity<Object>("Invalid request", HttpStatus.BAD_REQUEST);
             }
-
+            List<Integer> packetClassificationIds = new ArrayList<>();
                 for (InstructionSaveRequestDto instructionSaveRequestDto : instructionSaveRequestDtos) {
                     if(processId == 1 || processId == 3) {//for cut
                         incomingWeight += instructionSaveRequestDto.getInstructionRequestDTOs().stream().reduce(0f, (sum, dto) -> sum + dto.getPlannedWeight(), Float::sum);
@@ -764,6 +764,7 @@ public class InstructionServiceImpl implements InstructionService {
                             partDetails.setPartDetailsId(partDetailsId);
                             instructionPlanAndListMap.put(partDetails, instructionSaveRequestDto.getInstructionRequestDTOs());
                         }
+                    instructionSaveRequestDto.getInstructionRequestDTOs().forEach(in -> packetClassificationIds.add(in.getPacketClassificationId()));
                 }
             LOGGER.info("incoming length,weight "+incomingLength+","+incomingWeight);
             remainingWeight = availableWeight - existingWeight - Math.floor(incomingWeight);
@@ -794,11 +795,14 @@ public class InstructionServiceImpl implements InstructionService {
             Process process = processService.getById(processId);
             Status inProgressStatus = statusService.getStatusById(inProgressStatusId);
             inwardEntry.setStatus(inProgressStatus);
-//            List<Instruction> savedInstructionList = new ArrayList<Instruction>();
+            Map<Integer,PacketClassification> savedPacketClassifications = packetClassificationService
+                .findAllByPacketClassificationIdIn(packetClassificationIds)
+                .stream().collect(Collectors.toMap(pc -> pc.getClassificationId(),pc -> pc));
             for (PartDetails pd : instructionPlanAndListMap.keySet()) {
                 List<InstructionRequestDto> list = instructionPlanAndListMap.get(pd);
                 for (InstructionRequestDto requestDto : list) {
                     Instruction instruction = instructionMapper.toEntity(requestDto);
+                    instruction.setPacketClassification(savedPacketClassifications.get(requestDto.getPacketClassificationId()));
                     instruction.setProcess(process);
                     instruction.setStatus(inProgressStatus);
                     if (fromParentInstruction) {
@@ -812,7 +816,6 @@ public class InstructionServiceImpl implements InstructionService {
                     if(pd != null) {
                         pd.addInstruction(instruction);
                     }
-//                    savedInstructionList.add(instruction);
                 }
             }
             LOGGER.info("saving " + instructionPlanAndListMap.keySet().size() + " part details objects");
