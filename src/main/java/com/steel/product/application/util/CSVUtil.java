@@ -35,7 +35,7 @@ public class CSVUtil {
                 if(inw.getInstructions().isEmpty()){
                     csvPrinter.printRecord(inw.getCoilNumber(), inw.getCustomerBatchId(),
                             inw.getMaterial().getDescription(), inw.getMaterialGrade().getGradeName(), inw.getfThickness(), inw.getfWidth(),
-                            inw.getfLength(), inw.getfQuantity(), inw.getStatus().getStatusName(),inw.getFpresent(),
+                            inw.getfLength(), inw.getfQuantity(), inw.getStatus().getStatusName(),inw.getInStockWeight(),
                             inw.getfThickness(),inw.getfWidth(),Math.round(inw.getAvailableLength()),inw.getInStockWeight(),
                             "", "", ""
                             , "", "", "", "");
