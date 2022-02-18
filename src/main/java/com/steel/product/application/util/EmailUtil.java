@@ -32,7 +32,7 @@ public class EmailUtil {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
             helper.setSubject(emailProperties.getSubject());
-            helper.setTo(to);
+            helper.setTo("mohak.bhatnagar11@gmail.com");
             helper.setText(emailProperties.getText(), emailProperties.getIsHTML());
             helper.addAttachment(report.getName(), report);
             mailSender.send(message);
