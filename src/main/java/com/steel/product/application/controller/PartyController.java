@@ -17,10 +17,9 @@ import java.util.stream.Collectors;
 @CrossOrigin
 @RequestMapping({"/api/party"})
 public class PartyController {
+
   private PartyDetailsService partySvc;
-  
-  Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-  
+
   public PartyController(PartyDetailsService thePartySvc) {
     this.partySvc = thePartySvc;
   }
@@ -28,12 +27,10 @@ public class PartyController {
   @PostMapping({"/save"})
   public ResponseEntity<Object> saveParty(@RequestBody PartyDto partyDto) {
     try{
-      partyDto.setnPartyId(0);
       Party party = partySvc.saveParty(partyDto);
-      if(party==null)
-        return new ResponseEntity<>("Error in saving party!!!", HttpStatus.INTERNAL_SERVER_ERROR);
       return new ResponseEntity<>("Party saved successfully!!!", HttpStatus.OK);
     }catch (Exception e){
+      e.printStackTrace();
       return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }

@@ -1,10 +1,13 @@
 package com.steel.product.application.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
-import java.util.List;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 @Entity
 @Table(name = "product_packet_classification")
@@ -18,9 +21,28 @@ public class PacketClassification {
     @Column(name = "classification_name")
     private String classificationName;
 
-    @JsonBackReference
-    @OneToMany(mappedBy = "packetClassification")
-    private List<Instruction> instructionClass;
+    @ManyToMany(mappedBy = "packetClassificationTags")
+    private Set<Party> parties = new HashSet<>();
+
+    @Column(name = "created_on",updatable = false)
+    @CreationTimestamp
+    private Date createdOn;
+
+    @Column(name = "updated_on")
+    @UpdateTimestamp
+    private Date updatedOn;
+
+    public PacketClassification() {
+    }
+
+    public PacketClassification(String classificationName) {
+        this.classificationName = classificationName;
+    }
+
+    public void addParty(Party party){
+        this.getParties().add(party);
+        party.getPacketClassificationTags().add(this);
+    }
 
     public Integer getClassificationId() {
         return classificationId;
@@ -38,21 +60,28 @@ public class PacketClassification {
         this.classificationName = classificationName;
     }
 
-    public List<Instruction> getInstructionClass() {
-        return instructionClass;
+    public Date getCreatedOn() {
+        return createdOn;
     }
 
-    public void setInstructionClass(List<Instruction> instructionClass) {
-        this.instructionClass = instructionClass;
+    public void setCreatedOn(Date createdOn) {
+        this.createdOn = createdOn;
     }
 
-    public void addInstruction(Instruction instruction){
-        this.getInstructionClass().add(instruction);
-        instruction.setPacketClassification(this);
+    public Date getUpdatedOn() {
+        return updatedOn;
     }
 
-    public void removeInstruction(Instruction instruction){
-        this.getInstructionClass().remove(instruction);
-        instruction.setPacketClassification(null);
+    public void setUpdatedOn(Date updatedOn) {
+        this.updatedOn = updatedOn;
     }
+
+    public Set<Party> getParties() {
+        return parties;
+    }
+
+    public void setParties(Set<Party> parties) {
+        this.parties = parties;
+    }
+
 }
