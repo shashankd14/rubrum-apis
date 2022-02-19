@@ -1,7 +1,10 @@
 package com.steel.product.application.service;
 
 import com.steel.product.application.dao.PacketClassificationRepository;
+import com.steel.product.application.dto.packetClassification.PacketClassificationRequest;
+import com.steel.product.application.dto.packetClassification.PacketClassificationResponse;
 import com.steel.product.application.entity.PacketClassification;
+import com.steel.product.application.mapper.PacketClassificationMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,12 +15,20 @@ import java.util.Set;
 @Service
 public class PacketClassificationServiceImpl implements PacketClassificationService{
 
-    @Autowired
     private PacketClassificationRepository packetClassificationRepository;
 
+    private PacketClassificationMapper packetClassificationMapper;
+
+    @Autowired
+    public PacketClassificationServiceImpl(PacketClassificationRepository packetClassificationRepository, PacketClassificationMapper packetClassificationMapper) {
+        this.packetClassificationRepository = packetClassificationRepository;
+        this.packetClassificationMapper = packetClassificationMapper;
+    }
+
     @Override
-    public List<PacketClassification> getAllPacketClassification() {
-        return packetClassificationRepository.findAll();
+    public List<PacketClassificationResponse> getAllPacketClassification() {
+        List<PacketClassification> list = packetClassificationRepository.findAll();
+        return packetClassificationMapper.toList(list);
     }
 
     @Override
@@ -42,4 +53,18 @@ public class PacketClassificationServiceImpl implements PacketClassificationServ
     public Set<PacketClassification> findByClassificationName(List<String> classificationNames) {
         return packetClassificationRepository.findAllByClassificationNameIn(classificationNames);
     }
+
+    @Override
+    public List<PacketClassificationResponse> getAllPacketClassificationByPartyId(Integer partyId) {
+        List<PacketClassification> list = packetClassificationRepository.findByPartyId(partyId);
+        return packetClassificationMapper.toList(list);
+    }
+
+    @Override
+    public String savePacketClassifications(List<PacketClassificationRequest> packetClassificationRequests) {
+        List<PacketClassification> packetClassifications = packetClassificationMapper.requestToEntity(packetClassificationRequests);
+        packetClassificationRepository.saveAll(packetClassifications);
+        return "saved ok !!";
+    }
+
 }
