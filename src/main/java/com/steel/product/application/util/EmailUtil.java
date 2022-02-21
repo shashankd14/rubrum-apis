@@ -32,11 +32,12 @@ public class EmailUtil {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
             helper.setSubject(emailProperties.getSubject());
-            helper.setTo("mohak.bhatnagar11@gmail.com");
+            helper.setTo(to);
             helper.setText(emailProperties.getText(), emailProperties.getIsHTML());
             helper.addAttachment(report.getName(), report);
             mailSender.send(message);
         }catch (MessagingException e){
+            LOGGER.error("error in sending email "+e.getMessage());
             e.printStackTrace();
         }
         LOGGER.info("email sent ok ");

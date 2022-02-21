@@ -131,10 +131,10 @@ public class InwardEntry {
 	@Column(name = "isdeleted", columnDefinition = "BIT")
 	private Boolean isDeleted;
 
-	@OneToMany(mappedBy = "inwardEntry", fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "inwardEntry")
 	private List<InwardDoc> docs;
 	
-	@OneToMany(mappedBy = "inwardId", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST,CascadeType.MERGE},orphanRemoval = true)
+	@OneToMany(mappedBy = "inwardId", cascade = {CascadeType.PERSIST,CascadeType.MERGE},orphanRemoval = true)
 	private Set<Instruction> instructions;
 
 	@Column(name = "in_stock_weight")
