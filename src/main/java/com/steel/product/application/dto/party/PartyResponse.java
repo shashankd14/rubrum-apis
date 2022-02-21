@@ -14,7 +14,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PartyDto {
+public class PartyResponse {
 
     private String partyName;
     private String partyNickname;
@@ -29,6 +29,5 @@ public class PartyDto {
     private String phone2;
     private AddressDto address1;
     private AddressDto address2;
-    private List<PacketClassificationRequest> tags;
-
+    private List<PacketClassificationResponse> packetClassificationTags;
 }

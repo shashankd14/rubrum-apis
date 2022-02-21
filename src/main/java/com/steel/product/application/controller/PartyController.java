@@ -1,6 +1,7 @@
 package com.steel.product.application.controller;
 
 import com.steel.product.application.dto.party.PartyDto;
+import com.steel.product.application.dto.party.PartyResponse;
 import com.steel.product.application.entity.Party;
 import com.steel.product.application.service.PartyDetailsService;
 import org.springframework.http.HttpStatus;
@@ -46,8 +47,8 @@ public class PartyController {
   }
   
   @GetMapping({"/list"})
-  public List<PartyDto> getAllParties() {
-    return this.partySvc.getAllParties().stream().map(p -> Party.valueOf(p)).collect(Collectors.toList());
+  public List<PartyResponse> getAllParties() {
+    return partySvc.findAllParties();
   }
   
   @GetMapping({"/getById/{partyId}"})

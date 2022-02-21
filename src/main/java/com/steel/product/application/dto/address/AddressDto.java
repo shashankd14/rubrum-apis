@@ -1,7 +1,7 @@
 package com.steel.product.application.dto.address;
 
 public class AddressDto {
-    private int addressId;
+    private Integer addressId;
 
     private String details;
 
@@ -11,11 +11,11 @@ public class AddressDto {
 
     private int pincode;
 
-    public int getAddressId() {
+    public Integer getAddressId() {
         return addressId;
     }
 
-    public void setAddressId(int addressId) {
+    public void setAddressId(Integer addressId) {
         this.addressId = addressId;
     }
 

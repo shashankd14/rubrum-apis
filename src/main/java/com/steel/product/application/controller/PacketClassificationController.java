@@ -1,5 +1,7 @@
 package com.steel.product.application.controller;
 
+import com.steel.product.application.dto.packetClassification.PacketClassificationRequest;
+import com.steel.product.application.dto.packetClassification.PacketClassificationResponse;
 import com.steel.product.application.entity.PacketClassification;
 import com.steel.product.application.service.PacketClassificationService;
 import org.springframework.http.HttpStatus;
@@ -19,11 +21,9 @@ public class PacketClassificationController {
     private PacketClassificationService packetClassificationService;
 
     @GetMapping({"/list"})
-    public ResponseEntity<Object> getAllAddress() {
+    public ResponseEntity<Object> getAllTags() {
         try {
-            List<PacketClassification> packetClassificationList = new ArrayList<>();
-            packetClassificationList = packetClassificationService.getAllPacketClassification();
-            return new ResponseEntity(packetClassificationList, HttpStatus.OK);
+            return new ResponseEntity(packetClassificationService.getAllPacketClassification(), HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -39,4 +39,15 @@ public class PacketClassificationController {
             return new ResponseEntity(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @GetMapping("/getByPartyId/{partyId}")
+    public List<PacketClassificationResponse> getAddressById(@PathVariable("partyId") Integer partyId) {
+        return packetClassificationService.getAllPacketClassificationByPartyId(partyId);
+    }
+
+    @PostMapping("/save")
+    public String savePacketClassification(@RequestBody List<PacketClassificationRequest> packetClassificationRequests){
+        return packetClassificationService.savePacketClassifications(packetClassificationRequests);
+    }
+
 }

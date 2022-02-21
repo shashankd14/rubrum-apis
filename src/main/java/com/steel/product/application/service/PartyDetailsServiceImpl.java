@@ -2,7 +2,7 @@ package com.steel.product.application.service;
 
 import com.steel.product.application.dao.PartyDetailsRepository;
 import com.steel.product.application.dto.party.PartyDto;
-import com.steel.product.application.entity.Address;
+import com.steel.product.application.dto.party.PartyResponse;
 import com.steel.product.application.entity.PacketClassification;
 import com.steel.product.application.entity.Party;
 import com.steel.product.application.mapper.PacketClassificationMapper;
@@ -42,18 +42,21 @@ public class PartyDetailsServiceImpl implements PartyDetailsService {
   public Party saveParty(PartyDto partyDto) {
     LOGGER.info("inside saveParty method");
     Party party = partyMapper.toEntity(partyDto);
-    Map<String,PacketClassification> savedPacketClassifications = packetClassificationService
-            .findByClassificationName(partyDto.getTags())
-            .stream().collect(Collectors.toMap(pc -> pc.getClassificationName(),pc -> pc));
-    List<PacketClassification> packetClassifications = packetClassificationMapper.toEntities(partyDto.getTags());
-    packetClassifications.forEach(pc -> {
-      if(savedPacketClassifications.containsKey(pc.getClassificationName())){
-        party.addPacketClassification(savedPacketClassifications.get(pc.getClassificationName()));
-      }else {
-        party.addPacketClassification(pc);
-      }
-    });
-
+//    Map<String,PacketClassification> savedPacketClassifications = packetClassificationService
+//            .findAllByPacketClassificationIdIn(partyDto.getTags().stream().map(tag -> tag.getClassificationId()).collect(Collectors.toList()))
+//            .stream().collect(Collectors.toMap(pc -> pc.getClassificationName(),pc -> pc));
+//    List<PacketClassification> packetClassifications = packetClassificationMapper.toEntities(partyDto.getTags());
+//    packetClassifications.forEach(pc -> {
+//      if(savedPacketClassifications.containsKey(pc.getClassificationName())){
+//        party.addPacketClassification(savedPacketClassifications.get(pc.getClassificationName()));
+//      }else {
+//        party.addPacketClassification(pc);
+//      }
+//    });
+    List<PacketClassification> savedPacketClassifications = packetClassificationService.findAllByPacketClassificationIdIn(
+            partyDto.getTags().stream().map(tag -> tag.getClassificationId()).collect(Collectors.toList())
+    );
+    savedPacketClassifications.forEach(pc -> party.addPacketClassification(pc));
     if(party.getAddress1() != null){
       addressService.saveAddress(party.getAddress1());
     }
@@ -83,6 +86,12 @@ public class PartyDetailsServiceImpl implements PartyDetailsService {
       throw new RuntimeException("Did not find party id - " + partyId);
     } 
     return party;
+  }
+
+  @Override
+  public List<PartyResponse> findAllParties() {
+    List<Party> parties = partyRepo.findAllParties();
+    return partyMapper.toResponseList(parties);
   }
 
 }
