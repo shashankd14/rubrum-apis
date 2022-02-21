@@ -16,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 public class PartyResponse {
 
-    private Integer nPartyId;
+    private Integer NPartyId;
     private String partyName;
     private String partyNickname;
     private String contactName;

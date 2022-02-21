@@ -12,6 +12,7 @@ import java.util.List;
 public interface PartyMapper {
 
     Party toEntity(PartyDto partyDto);
+    @Mapping(target="NPartyId",source="nPartyId")
     PartyResponse toResponse(Party party);
     List<PartyResponse> toResponseList(List<Party> party);
 }
