@@ -1,5 +1,6 @@
 package com.steel.product.application.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -21,7 +22,8 @@ public class PacketClassification {
     @Column(name = "classification_name")
     private String classificationName;
 
-    @ManyToMany(mappedBy = "packetClassificationTags")
+    @JsonIgnore
+    @ManyToMany(mappedBy = "packetClassificationTags",fetch = FetchType.LAZY)
     private Set<Party> parties = new HashSet<>();
 
     @Column(name = "created_on",updatable = false)
