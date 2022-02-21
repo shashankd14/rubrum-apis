@@ -35,20 +35,20 @@ public class CSVUtil {
                 if(inw.getInstructions().isEmpty()){
                     csvPrinter.printRecord(inw.getCoilNumber(), inw.getCustomerBatchId(),
                             inw.getMaterial().getDescription(), inw.getMaterialGrade().getGradeName(), inw.getfThickness(), inw.getfWidth(),
-                            inw.getfLength(), inw.getfQuantity(), inw.getStatus().getStatusName(),inw.getFpresent(),
+                            inw.getfLength(), inw.getfQuantity(), inw.getStatus().getStatusName(),inw.getInStockWeight(),
                             inw.getfThickness(),inw.getfWidth(),Math.round(inw.getAvailableLength()),inw.getInStockWeight(),
                             "", "", ""
                             , "", "", "", "");
                 }
                 for(Instruction ins:inw.getInstructions()){
                     if(firstEntry) {
-                        csvPrinter.printRecord(inw.getCoilNumber(), inw.getCustomerBatchId(),
-                                inw.getMaterial().getDescription(), inw.getMaterialGrade().getGradeName(), inw.getfThickness(), inw.getfWidth(),
-                                inw.getfLength(), inw.getfQuantity(), inw.getStatus().getStatusName(),inw.getFpresent(),
-                                inw.getfThickness(),inw.getfWidth(),Math.round(inw.getAvailableLength()),unprocessedWeights.get(inw.getInwardEntryId()) != null ?
-                                        Math.round(inw.getInStockWeight() - unprocessedWeights.get(inw.getInwardEntryId())) : 0,
-                                ins.getInstructionId(), inw.getfThickness(), ins.getPlannedWeight()
-                                , ins.getPlannedLength(), ins.getPlannedWeight(), ins.getStatus().getStatusName(), ins.getPacketClassification() != null ? ins.getPacketClassification().getClassificationName() : "");
+                            csvPrinter.printRecord(inw.getCoilNumber(), inw.getCustomerBatchId(),
+                                    inw.getMaterial().getDescription(), inw.getMaterialGrade().getGradeName(), inw.getfThickness(), inw.getfWidth(),
+                                    inw.getfLength(), inw.getfQuantity(), inw.getStatus().getStatusName(), inw.getInStockWeight(),
+                                    inw.getfThickness(), inw.getfWidth(), Math.round(inw.getAvailableLength()), unprocessedWeights.get(inw.getInwardEntryId()) != null ?
+                                            Math.round(inw.getInStockWeight() - unprocessedWeights.get(inw.getInwardEntryId())) : 0,
+                                    ins.getInstructionId(), inw.getfThickness(), ins.getPlannedWeight()
+                                    , ins.getPlannedLength(), ins.getPlannedWeight(), ins.getStatus().getStatusName(), ins.getPacketClassification() != null ? ins.getPacketClassification().getClassificationName() : "");
                         firstEntry = false;
                     }else{
                         csvPrinter.printRecord("", "",

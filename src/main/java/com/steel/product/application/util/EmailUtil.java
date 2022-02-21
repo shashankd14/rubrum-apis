@@ -37,6 +37,7 @@ public class EmailUtil {
             helper.addAttachment(report.getName(), report);
             mailSender.send(message);
         }catch (MessagingException e){
+            LOGGER.error("error in sending email "+e.getMessage());
             e.printStackTrace();
         }
         LOGGER.info("email sent ok ");
