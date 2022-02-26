@@ -31,30 +31,19 @@ public class CSVUtil {
         try(BufferedWriter bufferedWriter = Files.newBufferedWriter(csvPath)) {
             CSVPrinter csvPrinter = new CSVPrinter(bufferedWriter, CSVFormat.EXCEL.withHeader(headers));
             for(InwardEntry inw:inwardEntries){
-                boolean firstEntry = true;
-                if(inw.getInstructions().isEmpty()){
                     csvPrinter.printRecord(inw.getCoilNumber(), inw.getCustomerBatchId(),
                             inw.getMaterial().getDescription(), inw.getMaterialGrade().getGradeName(), inw.getfThickness(), inw.getfWidth(),
                             inw.getfLength(), inw.getfQuantity(), inw.getStatus().getStatusName(),inw.getInStockWeight(),
-                            inw.getfThickness(),inw.getfWidth(),Math.round(inw.getAvailableLength()),inw.getInStockWeight(),
+                            inw.getfThickness(),inw.getfWidth(),Math.round(inw.getAvailableLength()),unprocessedWeights.get(inw.getInwardEntryId()) != null ?
+                                    Math.round(inw.getInStockWeight() - unprocessedWeights.get(inw.getInwardEntryId())) : inw.getInStockWeight(),
                             "", "", ""
                             , "", "", "", "");
-                }
                 for(Instruction ins:inw.getInstructions()){
-                    if(firstEntry) {
+                        if (ins.getStatus().getStatusId() < 4 && !ins.getIsDeleted()) {
                             csvPrinter.printRecord(inw.getCoilNumber(), inw.getCustomerBatchId(),
-                                    inw.getMaterial().getDescription(), inw.getMaterialGrade().getGradeName(), inw.getfThickness(), inw.getfWidth(),
-                                    inw.getfLength(), inw.getfQuantity(), inw.getStatus().getStatusName(), inw.getInStockWeight(),
-                                    inw.getfThickness(), inw.getfWidth(), Math.round(inw.getAvailableLength()), unprocessedWeights.get(inw.getInwardEntryId()) != null ?
-                                            Math.round(inw.getInStockWeight() - unprocessedWeights.get(inw.getInwardEntryId())) : 0,
-                                    ins.getInstructionId(), inw.getfThickness(), ins.getPlannedWeight()
-                                    , ins.getPlannedLength(), ins.getPlannedWeight(), ins.getStatus().getStatusName(), ins.getPacketClassification() != null ? ins.getPacketClassification().getClassificationName() : "");
-                        firstEntry = false;
-                    }else{
-                        csvPrinter.printRecord("", "",
-                                "", "", "", "",
-                                "", "", "","","","","","", ins.getInstructionId(), inw.getfThickness(), ins.getPlannedWidth()
-                                , ins.getPlannedLength(), ins.getPlannedWeight(), ins.getStatus().getStatusName(), ins.getPacketClassification() != null ? ins.getPacketClassification().getClassificationName() : "");
+                                    inw.getMaterial().getDescription(), inw.getMaterialGrade().getGradeName(), "", "",
+                                    "", "", "","","","","","", ins.getInstructionId(), inw.getfThickness(), ins.getStatus().getStatusId() > 2 ? ins.getActualWidth() : ins.getPlannedWidth()
+                                    , ins.getStatus().getStatusId() > 2 ? ins.getActualLength() : ins.getPlannedLength(), ins.getStatus().getStatusId() > 2 ? ins.getActualWeight() : ins.getPlannedWeight(), ins.getStatus().getStatusName(), ins.getPacketClassification() != null ? ins.getPacketClassification().getClassificationName() : "");
                     }
                 }
             }
