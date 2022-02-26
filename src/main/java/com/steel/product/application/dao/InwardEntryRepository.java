@@ -41,13 +41,14 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 
     @Query("select distinct inw from InwardEntry inw left join fetch inw.party party left join fetch inw.material mat " +
             "left join fetch inw.materialGrade matG left join fetch inw.instructions ins left join fetch ins.packetClassification " +
-            "where party.nPartyId = :partyId and inw.isDeleted is false and inw.status < 4 and ins.isDeleted is false " +
-            "and inw.inStockWeight > 0 or ins is null order by inw.inwardEntryId")
+            "where party.nPartyId = :partyId and inw.isDeleted is false and inw.status < 4 and inw.inStockWeight > 0 and ins.groupId is null" +
+            " or ins is null order by inw.inwardEntryId")
     @QueryHints(value = {
             @QueryHint(name = HINT_FETCH_SIZE, value = "10"),
             @QueryHint(name = HINT_PASS_DISTINCT_THROUGH,value = "false")
     })
     List<InwardEntry> findInwardByPartyId(Integer partyId);
+//    and ins.isDeleted is false
 }
 
 //@Query("select distinct inw,mat,grade from InwardEntry inw left join fetch inw.party left join fetch inw.instructions ins left join" +
