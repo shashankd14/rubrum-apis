@@ -1,20 +1,19 @@
 package com.steel.product.application.entity;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.steel.product.application.dto.packetClassification.PacketClassificationRequest;
 import com.steel.product.application.dto.party.PartyDto;
+import com.steel.product.application.mapper.PacketClassificationMapper;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.*;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Table(name = "product_tblpartydetails")
 public class Party {
-
 
 
 	@Id
@@ -299,6 +298,14 @@ public class Party {
 		partyDto.setPhone1(party.getPhone1());
 		partyDto.setPhone2(party.getPhone2());
 		partyDto.setTanNumber(party.getTanNumber());
+		List<PacketClassificationRequest> list = new ArrayList<>();
+		for(PacketClassification pc: party.getPacketClassificationTags()){
+			PacketClassificationRequest req = new PacketClassificationRequest();
+			req.setClassificationId(pc.getClassificationId());
+			req.setClassificationName(pc.getClassificationName());
+			list.add(req);
+		}
+		partyDto.setTags(list);
 		return partyDto;
 	}
 }
