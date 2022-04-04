@@ -2,6 +2,9 @@ package com.steel.product.application.controller;
 
 import com.steel.product.application.entity.Process;
 import com.steel.product.application.service.ProcessService;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,7 +14,8 @@ import java.util.List;
 
 @CrossOrigin
 @RestController
-@RequestMapping("/api/process")
+@Tag(name = "Process", description = "Process")
+@RequestMapping("/process")
 public class ProcessController {
 
     @Autowired

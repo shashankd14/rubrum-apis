@@ -4,19 +4,21 @@ import com.steel.product.application.dto.party.PartyDto;
 import com.steel.product.application.dto.party.PartyResponse;
 import com.steel.product.application.entity.Party;
 import com.steel.product.application.service.PartyDetailsService;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.sql.Timestamp;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 //@CrossOrigin(origins = {"http://localhost:3001"})
 //@CrossOrigin(origins = {"http://rubrum-frontend.s3-website.ap-south-1.amazonaws.com"})
 @CrossOrigin
-@RequestMapping({"/api/party"})
+@Tag(name = "Party", description = "Party")
+@RequestMapping({"/party"})
 public class PartyController {
 
   private PartyDetailsService partySvc;

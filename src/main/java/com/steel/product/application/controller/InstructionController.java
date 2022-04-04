@@ -2,8 +2,10 @@ package com.steel.product.application.controller;
 
 import com.steel.product.application.dto.instruction.*;
 import com.steel.product.application.entity.Instruction;
-import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.service.*;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +16,8 @@ import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin
-@RequestMapping("/api/instruction")
+@Tag(name = "Instruction Details", description = "Instruction Details")
+@RequestMapping("/instruction")
 public class InstructionController {
 
     private InstructionService instructionService;
