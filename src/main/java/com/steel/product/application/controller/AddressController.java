@@ -26,7 +26,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RequestMapping({ "/address" })
 public class AddressController {
 	
-	
 	private AddressService addressSvc;
 
 	public AddressController(AddressService theAddressSvc) {
