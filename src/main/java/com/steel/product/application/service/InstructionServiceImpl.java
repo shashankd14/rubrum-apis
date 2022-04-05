@@ -299,11 +299,21 @@ public class InstructionServiceImpl implements InstructionService {
         List<InstructionRequestDto> InstructionRequestDtos = instructionFinishDto.getInstructionDtos();
         List<Instruction> updatedInstructionList = new ArrayList<Instruction>();
         Instruction instruction;
-        Integer inProgressStatusId = 2, readyToDeliverStatusId = 3;
+        Integer inProgressStatusId = 2, readyToDeliverStatusId = 3, statusId = 0;
         Status inProgressStatus = statusService.getStatusById(inProgressStatusId);
         Status readyToDeliverStatus = statusService.getStatusById(readyToDeliverStatusId);
+        Status currentStatus;
+        
+        if(instructionFinishDto.getIsFinishTask()) {
+        	statusId = inProgressStatusId;
+        	currentStatus= readyToDeliverStatus;
+        } else {
+        	statusId = readyToDeliverStatusId;
+        	currentStatus = inProgressStatus;
+        }
         List<Instruction> instructions = this.findAllByInstructionIdInAndStatus(InstructionRequestDtos.stream()
-                .map(ins -> ins.getInstructionId()).collect(Collectors.toList()), inProgressStatusId);
+                .map(ins -> ins.getInstructionId()).collect(Collectors.toList()), statusId);
+        
         Map<Integer, Instruction> instructionsMap = instructions.stream().collect(Collectors.toMap(ins -> ins.getInstructionId(), ins -> ins));
         if(instructionsMap.isEmpty()){
         	LOGGER.error("no instructions found in progress status");
@@ -325,10 +335,7 @@ public class InstructionServiceImpl implements InstructionService {
             instruction.setActualWeight(ins.getActualWeight());
             instruction.setActualNoOfPieces(ins.getActualNoOfPieces());
             instruction.setPacketClassification(packetClassificationMap.get(ins.getPacketClassificationId()));
-
-            instruction.setStatus(readyToDeliverStatus);
-
-
+            instruction.setStatus(currentStatus);
             updatedInstructionList.add(instruction);
         }
         instructionRepository.saveAll(updatedInstructionList);
