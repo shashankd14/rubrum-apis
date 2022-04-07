@@ -149,11 +149,14 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
                             }
                             LOGGER.info("no status change for parent instruction " + parentInstruction.getInstructionId() + " as all children not delivered");
 
-
                     } else {
                         LOGGER.info("instruction has inward id " + inwardEntry.getInwardEntryId());
-//                    parentWeight = inwardEntry.getInStockWeight();
-                        weightToDeliver = instruction.getActualWeight();
+                    	//parentWeight = inwardEntry.getInStockWeight();
+                        if(instruction.getProcess().getProcessId() == 7 ) {
+                            weightToDeliver = instruction.getPlannedWeight();
+                        } else {
+                            weightToDeliver = instruction.getActualWeight();
+                        }
                         childrenInstructions = instruction.getChildInstructions();
                         if (childrenInstructions != null && !childrenInstructions.isEmpty()) {
                             LOGGER.info("inward id" + inwardEntry.getInwardEntryId() + " is a parent instruction with " + childrenInstructions.size() + " children");
