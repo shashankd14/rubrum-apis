@@ -12,5 +12,4 @@ public interface PartyDetailsRepository extends JpaRepository<Party, Integer> {
 	List<Party> findAllParties();
 
 	List<Party> findByPartyName(String partyName);
-
 }

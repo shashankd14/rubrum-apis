@@ -16,19 +16,33 @@ import java.util.List;
 public class PartyDto {
 
 	private String partyId;
+
 	private String partyName;
+
 	private String partyNickname;
+
 	private String contactName;
+
 	private String contactNumber;
+
 	private String gstNumber;
+
 	private String panNumber;
+
 	private String tanNumber;
+
 	private String email1;
+
 	private String email2;
+
 	private String phone1;
+
 	private String phone2;
+
 	private AddressDto address1;
+
 	private AddressDto address2;
+
 	private List<PacketClassificationRequest> tags;
 
 }

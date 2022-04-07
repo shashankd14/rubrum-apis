@@ -48,6 +48,7 @@ public class PartyDetailsServiceImpl implements PartyDetailsService {
 		if(partyDto.getPartyId() !=null && partyDto.getPartyId().length()>0) {
 			party.setnPartyId(Integer.parseInt( partyDto.getPartyId()));
 		}
+		
 		List<Party> partyList = partyRepo.findByPartyName(party.getPartyName());
 		if (partyList != null && partyList.size() >0 ) {
 			Party partyEntity = partyList.get(0);

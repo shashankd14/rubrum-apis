@@ -47,7 +47,6 @@ public class PartyController {
 	@PutMapping({ "/update" })
 	public ResponseEntity<Object> updateParty(@RequestBody PartyDto partyDto) {
 		try {
-			
 			boolean stts = partySvc.checkPartyName(partyDto);
 			if(stts) {
 				Party party = partySvc.saveParty(partyDto);
