@@ -150,6 +150,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
                             LOGGER.info("no status change for parent instruction " + parentInstruction.getInstructionId() + " as all children not delivered");
 
                     } else {
+                    	
                         LOGGER.info("instruction has inward id " + inwardEntry.getInwardEntryId());
                     	//parentWeight = inwardEntry.getInStockWeight();
                         if(instruction.getProcess().getProcessId() == 7 ) {
