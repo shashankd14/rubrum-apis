@@ -6,15 +6,12 @@ import com.steel.product.application.dto.party.PartyDto;
 import com.steel.product.application.mapper.PacketClassificationMapper;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import javax.persistence.*;
 import java.util.*;
 
 @Entity
 @Table(name = "product_tblpartydetails")
 public class Party {
-
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
