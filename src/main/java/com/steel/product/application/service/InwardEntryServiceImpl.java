@@ -6,6 +6,9 @@ import com.steel.product.application.entity.InwardEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -16,7 +19,7 @@ import java.util.stream.Collectors;
 @Service
 public class InwardEntryServiceImpl implements InwardEntryService {
 
-	private final static Logger LOGGER = LoggerFactory.getLogger("InwardEntryService");
+	private final static Logger LOGGER = LoggerFactory.getLogger("InwardEntryServiceImpl");
 	private final InwardEntryRepository inwdEntryRepo;
 
 	@Autowired
@@ -93,6 +96,13 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 		return inwardEntry;
 	}
 
+	@Override
+	public Page<InwardEntry> findAllInwardsList(int pageNo, int pageSize) {
+		Pageable pageable = PageRequest.of(pageNo, pageSize);
+		Page<InwardEntry> pageResult = inwdEntryRepo.findAll(pageable);
+		return pageResult;
+	}
+	
 	@Override
 	public List<InwardEntryResponseDto> findAllInwards() {
 		return inwdEntryRepo.findAll().stream()

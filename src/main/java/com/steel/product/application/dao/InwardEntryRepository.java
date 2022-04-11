@@ -1,6 +1,9 @@
 package com.steel.product.application.dao;
 
 import com.steel.product.application.entity.InwardEntry;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.QueryHints;
@@ -17,10 +20,12 @@ import static org.hibernate.jpa.QueryHints.HINT_PASS_DISTINCT_THROUGH;
 @Repository
 public interface InwardEntryRepository extends JpaRepository<InwardEntry, Integer> {
 
-	
     @Query(nativeQuery = true, value = "select * from aspen.product_tblinwardentry where nPartyId= :partyId order by dReceivedDate ")
     List<InwardEntry> getInwardEntriesByPartyId(@Param("partyId") Integer paramInteger);
 
+    @Query("select inw from InwardEntry inw order by inwardEntryId desc")
+    Page<InwardEntry> findAll(Pageable pageable);
+    
     @Query("select inw from InwardEntry inw order by inwardEntryId desc")
     List<InwardEntry> findAll();
 

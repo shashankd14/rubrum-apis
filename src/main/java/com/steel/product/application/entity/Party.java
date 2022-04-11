@@ -3,7 +3,6 @@ package com.steel.product.application.entity;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.steel.product.application.dto.packetClassification.PacketClassificationRequest;
 import com.steel.product.application.dto.party.PartyDto;
-import com.steel.product.application.mapper.PacketClassificationMapper;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import javax.persistence.*;

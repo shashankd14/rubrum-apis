@@ -9,13 +9,16 @@ import com.steel.product.application.service.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.sql.Timestamp;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -222,11 +225,26 @@ public class InwardEntryController {
 		}
 	}
 
-	@GetMapping({ "/list" })
-	public ResponseEntity<Object> findAll() {
+	@GetMapping({ "/list/{pageNo}/{pageSize}" })
+	public ResponseEntity<Object> findAll(@PathVariable int pageNo, @PathVariable int pageSize) {
+
+		Map<String, Object> response = new HashMap<>();
+		Page<InwardEntry> pageResult = inwdEntrySvc.findAllInwardsList(pageNo, pageSize);
+		List<Object> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponse(inw)).collect(Collectors.toList());
+		response.put("content", inwardList);
+		response.put("currentPage", pageResult.getNumber());
+		response.put("totalItems", pageResult.getTotalElements());
+		response.put("totalPages", pageResult.getTotalPages());
+		return new ResponseEntity<Object>(response, HttpStatus.OK);
+	}
+
+	@GetMapping({ "/listold" })
+	public ResponseEntity<Object> listold() {
 		try {
+			
 			List<InwardEntryResponseDto> inwardEntries = inwdEntrySvc.findAllInwards();
 			return new ResponseEntity<Object>(inwardEntries, HttpStatus.OK);
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
