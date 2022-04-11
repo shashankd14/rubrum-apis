@@ -1,14 +1,10 @@
 package com.steel.product.application.entity;
 
-
-
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.steel.product.application.dto.instruction.InstructionResponseDto;
 import com.steel.product.application.dto.pdf.InstructionResponsePdfDto;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.FetchMode;
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -194,7 +190,13 @@ public class Instruction {
 		instructionResponsePdfDto.setDeliveryDetails(instruction.getDeliveryDetails() != null ? DeliveryDetails.valueOf(instruction.getDeliveryDetails()) : null);
 		instructionResponsePdfDto.setRemarks(instruction.getRemarks());
 		if (inwardEntry != null) {
-			instructionResponsePdfDto.setValueOfGoods((float) ((instruction.getActualWeight() / inwardEntry.getfQuantity()) * inwardEntry.getValueOfGoods()));
+			Float actualWeight;
+			if(instruction.getProcess().getProcessId() == 7 ) {
+				actualWeight = instruction.getPlannedWeight();
+            } else {
+            	actualWeight = instruction.getActualWeight();
+            }
+			instructionResponsePdfDto.setValueOfGoods((float) ((actualWeight / inwardEntry.getfQuantity()) * inwardEntry.getValueOfGoods()));
 		}
 		return instructionResponsePdfDto;
 	}

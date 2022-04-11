@@ -21,23 +21,22 @@ import java.util.stream.Collectors;
 public class InstructionController {
 
     private InstructionService instructionService;
-    private InwardEntryService inwardService;
-    private StatusService statusService;
-    private ProcessService processService;
-    private CompanyDetailsService companyDetailsService;
-    private PacketClassificationService packetClassificationService;
-    private PdfService pdfService;
-
+    //private InwardEntryService inwardService;
+   // private StatusService statusService;
+    //private ProcessService processService;
+    //private CompanyDetailsService companyDetailsService;
+   // private PacketClassificationService packetClassificationService;
+    //private PdfService pdfService;
 
     @Autowired
     public InstructionController(InstructionService instructionService, InwardEntryService inwardService, StatusService statusService, ProcessService processService, CompanyDetailsService companyDetailsService, PacketClassificationService packetClassificationService, PdfService pdfService) {
         this.instructionService = instructionService;
-        this.inwardService = inwardService;
-        this.statusService = statusService;
-        this.processService = processService;
-        this.companyDetailsService = companyDetailsService;
-        this.packetClassificationService = packetClassificationService;
-        this.pdfService = pdfService;
+        //this.inwardService = inwardService;
+        //this.statusService = statusService;
+        //this.processService = processService;
+        //this.companyDetailsService = companyDetailsService;
+       // this.packetClassificationService = packetClassificationService;
+        //this.pdfService = pdfService;
     }
 
     @GetMapping("/list")

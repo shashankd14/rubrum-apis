@@ -67,7 +67,7 @@ public class InstructionServiceImpl implements InstructionService {
 
     @Override
     public List<Instruction> getAll() {
-        return instructionRepository.findAll();
+        return instructionRepository.getAll();
     }
 
     @Override
@@ -360,16 +360,8 @@ public class InstructionServiceImpl implements InstructionService {
                 instructionRepository.saveAll(groupInstructions);
             }
             LOGGER.info("group instructions with group id " + parentGroupId + " is in progress");
-        } else if (inwardEntry != null) {
-            LOGGER.info("instruction has inward " + savedInstruction.getInwardId().getInwardEntryId());
-            isAnyInstructionInProgress = inwardEntry.getInstructions().stream().anyMatch(cin -> cin.getStatus().equals(inProgressStatus));
-            if (!isAnyInstructionInProgress) {
-                LOGGER.info("inward " + inwardEntry + " ready to deliver");
-                inwardEntry.setStatus(readyToDeliverStatus);
-                inwardService.saveEntry(inwardEntry);
-            }
-            LOGGER.info("inward " + inwardEntry + " is in progress");
-        } else if (parentInstruction != null) {
+            
+        } else if (inwardEntry != null && parentInstruction != null) {
             LOGGER.info("instruction has parent instruction " + savedInstruction.getParentInstruction().getInstructionId());
             Set<Instruction> childrenInstructions = parentInstruction.getChildInstructions();
             LOGGER.info("parent instruction has children "+childrenInstructions.size());
@@ -383,6 +375,15 @@ public class InstructionServiceImpl implements InstructionService {
                 LOGGER.info("saving parent instruction id " + parentInstruction.getInstructionId());
                 instructionRepository.save(parentInstruction);
             }
+        } else if (inwardEntry != null) {
+            LOGGER.info("instruction has inward " + savedInstruction.getInwardId().getInwardEntryId());
+            isAnyInstructionInProgress = inwardEntry.getInstructions().stream().anyMatch(cin -> cin.getStatus().equals(inProgressStatus));
+            if (!isAnyInstructionInProgress) {
+                LOGGER.info("inward " + inwardEntry + " ready to deliver");
+                inwardEntry.setStatus(readyToDeliverStatus);
+                inwardService.saveEntry(inwardEntry);
+            }
+            LOGGER.info("inward " + inwardEntry + " is in progress");
         } else {
             LOGGER.error("no inwardId, parentInstructionId or parentGroupId found");
             throw new RuntimeException("Invalid request");

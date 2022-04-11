@@ -23,6 +23,9 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
                                                   @Param("deliveryId") int deliveryId,
                                                   @Param("remarks") String remarks);
 
+    @Query(" from Instruction order by instructionId desc")
+    public List<Instruction> getAll();
+
     @Query(" from Instruction where processId !=7")
     public List<Instruction> getAllWIP();
 
