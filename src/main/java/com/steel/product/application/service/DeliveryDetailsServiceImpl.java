@@ -7,10 +7,14 @@ import com.steel.product.application.dto.delivery.DeliveryPacketsDto;
 import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
+import com.steel.product.application.entity.Party;
 import com.steel.product.application.entity.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -271,7 +275,14 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
         List<DeliveryDetails> inwardEntryList = deliveryDetailsRepo.findAllDeliveries();
         LOGGER.info("Delivery details list size "+inwardEntryList.size());
         return inwardEntryList.stream().map(inw -> new DeliveryPacketsDto(inw)).collect(Collectors.toList());
-
+    }
+    
+    @Override
+    public Page<DeliveryDetails> deliveryListPagination(int pageNo, int pageSize) {
+    	Pageable pageable = PageRequest.of(pageNo, pageSize);
+    	Page<DeliveryDetails> deliveryList = deliveryDetailsRepo.findAllDeliveries(pageable);
+        LOGGER.info("Delivery details list size "+deliveryList.getSize());
+        return deliveryList;
     }
 
     @Override

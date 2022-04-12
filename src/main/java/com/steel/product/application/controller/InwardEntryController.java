@@ -22,8 +22,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
-// @CrossOrigin(origins =
-// {"http://rubrum-frontend.s3-website.ap-south-1.amazonaws.com"})
 @CrossOrigin
 @Tag(name = "Inward Entry", description = "Inward Entry")
 @RequestMapping({ "/inwardEntry" })
@@ -44,9 +42,7 @@ public class InwardEntryController {
 
 	private InwardDocService inwardDocService;
 
-	private Timestamp timestamp = new Timestamp(
-
-			System.currentTimeMillis());
+	private Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 
 	@Autowired
 	public InwardEntryController(InwardEntryService inwdEntrySvc, PartyDetailsService partyDetailsService,
@@ -226,10 +222,10 @@ public class InwardEntryController {
 	}
 
 	@GetMapping({ "/list/{pageNo}/{pageSize}" })
-	public ResponseEntity<Object> findAll(@PathVariable int pageNo, @PathVariable int pageSize) {
+	public ResponseEntity<Object> findAllWithPagination(@PathVariable int pageNo, @PathVariable int pageSize) {
 
 		Map<String, Object> response = new HashMap<>();
-		Page<InwardEntry> pageResult = inwdEntrySvc.findAllInwardsList(pageNo, pageSize);
+		Page<InwardEntry> pageResult = inwdEntrySvc.findAllWithPagination(pageNo, pageSize);
 		List<Object> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponse(inw)).collect(Collectors.toList());
 		response.put("content", inwardList);
 		response.put("currentPage", pageResult.getNumber());
@@ -238,7 +234,7 @@ public class InwardEntryController {
 		return new ResponseEntity<Object>(response, HttpStatus.OK);
 	}
 
-	@GetMapping({ "/listold" })
+	@GetMapping({ "/list" })
 	public ResponseEntity<Object> listold() {
 		try {
 			

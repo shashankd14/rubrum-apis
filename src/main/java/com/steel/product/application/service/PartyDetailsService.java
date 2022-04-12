@@ -5,6 +5,8 @@ import com.steel.product.application.dto.party.PartyResponse;
 import com.steel.product.application.entity.Party;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+
 public interface PartyDetailsService {
 	
 	boolean checkPartyName(PartyDto partyDto);
@@ -16,4 +18,6 @@ public interface PartyDetailsService {
 	Party getPartyById(int paramInt);
 
 	List<PartyResponse> findAllParties();
+
+	Page<Party> findAllWithPagination(int pageNo, int pageSize);
 }

@@ -3,19 +3,22 @@ package com.steel.product.application.controller;
 import com.steel.product.application.dto.party.PartyDto;
 import com.steel.product.application.dto.party.PartyResponse;
 import com.steel.product.application.entity.Party;
+import com.steel.product.application.mapper.PartyMapper;
 import com.steel.product.application.service.PartyDetailsService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 
 @RestController
-//@CrossOrigin(origins = {"http://localhost:3001"})
-//@CrossOrigin(origins = {"http://rubrum-frontend.s3-website.ap-south-1.amazonaws.com"})
 @CrossOrigin
 @Tag(name = "Party", description = "Party")
 @RequestMapping({ "/party" })
@@ -23,8 +26,11 @@ public class PartyController {
 
 	private PartyDetailsService partySvc;
 
-	public PartyController(PartyDetailsService thePartySvc) {
+	private PartyMapper partyMapper;
+
+	public PartyController(PartyDetailsService thePartySvc, PartyMapper partyMapper) {
 		this.partySvc = thePartySvc;
+		this.partyMapper = partyMapper;
 	}
 
 	@PostMapping({ "/save" })
@@ -57,6 +63,20 @@ public class PartyController {
 		} catch (Exception e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+	}
+	
+	@GetMapping({ "/list/{pageNo}/{pageSize}" })
+	public ResponseEntity<Object> findAllWithPagination(@PathVariable int pageNo, @PathVariable int pageSize) {
+
+		Map<String, Object> response = new HashMap<>();
+		Page<Party> pageResult = partySvc.findAllWithPagination(pageNo, pageSize);
+		List<Party> partyList = pageResult.getContent();
+		List<PartyResponse> responseList =  partyMapper.toResponseList(partyList);
+		response.put("content", responseList);
+		response.put("currentPage", pageResult.getNumber());
+		response.put("totalItems", pageResult.getTotalElements());
+		response.put("totalPages", pageResult.getTotalPages());
+		return new ResponseEntity<Object>(response, HttpStatus.OK);
 	}
 
 	@GetMapping({ "/list" })

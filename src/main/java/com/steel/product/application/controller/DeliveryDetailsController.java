@@ -5,16 +5,17 @@ import com.steel.product.application.dto.delivery.DeliveryPacketsDto;
 import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.service.DeliveryDetailsService;
-import com.steel.product.application.service.InstructionService;
-
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -26,9 +27,19 @@ public class DeliveryDetailsController {
     @Autowired
     private DeliveryDetailsService deliveryDetailsService;
 
-    @Autowired
-    private InstructionService instructionService;
+	@GetMapping({ "/list/{pageNo}/{pageSize}" })
+	public ResponseEntity<Object> findAllWithPagination(@PathVariable int pageNo, @PathVariable int pageSize) {
 
+		Map<String, Object> response = new HashMap<>();
+		Page<DeliveryDetails> pageResult = deliveryDetailsService.deliveryListPagination(pageNo, pageSize);
+		List<DeliveryPacketsDto> list = pageResult.getContent().stream().map(inw -> new DeliveryPacketsDto(inw)).collect(Collectors.toList());
+		response.put("content", list);
+		response.put("currentPage", pageResult.getNumber());
+		response.put("totalItems", pageResult.getTotalElements());
+		response.put("totalPages", pageResult.getTotalPages());
+		return new ResponseEntity<Object>(response, HttpStatus.OK);
+	}
+	
     @GetMapping("/list")
     public ResponseEntity<Object> getAll(){
         try{

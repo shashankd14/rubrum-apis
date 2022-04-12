@@ -97,7 +97,7 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 	}
 
 	@Override
-	public Page<InwardEntry> findAllInwardsList(int pageNo, int pageSize) {
+	public Page<InwardEntry> findAllWithPagination(int pageNo, int pageSize) {
 		Pageable pageable = PageRequest.of(pageNo, pageSize);
 		Page<InwardEntry> pageResult = inwdEntryRepo.findAll(pageable);
 		return pageResult;

@@ -8,6 +8,8 @@ import com.steel.product.application.entity.Instruction;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+
 public interface DeliveryDetailsService {
 
     public List<Instruction> getAll();
@@ -25,4 +27,6 @@ public interface DeliveryDetailsService {
     public List<Instruction> findInstructionsByDeliveryId(Integer deliveryId);
 
     public Float findInstructionByInwardIdAndInstructionId(Integer inwardId,Integer instructionId);
+
+	Page<DeliveryDetails> deliveryListPagination(int pageNo, int pageSize);
 }

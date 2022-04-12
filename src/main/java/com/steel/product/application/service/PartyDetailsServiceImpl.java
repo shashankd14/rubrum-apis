@@ -10,6 +10,9 @@ import com.steel.product.application.mapper.PartyMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -27,8 +30,6 @@ public class PartyDetailsServiceImpl implements PartyDetailsService {
 	private final PacketClassificationService packetClassificationService;
 
 	private final PartyMapper partyMapper;
-
-	//private final PacketClassificationMapper packetClassificationMapper;
 
 	@Autowired
 	public PartyDetailsServiceImpl(PartyDetailsRepository partyRepo, AddressService addressService,
@@ -120,6 +121,13 @@ public class PartyDetailsServiceImpl implements PartyDetailsService {
 			throw new RuntimeException("Did not find party id - " + partyId);
 		}
 		return party;
+	}
+
+	@Override
+	public Page<Party> findAllWithPagination(int pageNo, int pageSize) {
+		Pageable pageable = PageRequest.of(pageNo, pageSize);
+		Page<Party> pageResult = partyRepo.findAllParties(pageable);
+		return pageResult;
 	}
 
 	@Override
