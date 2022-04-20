@@ -95,7 +95,7 @@ public class Address {
     addressDto.setAddressId(address.getAddressId());
     addressDto.setCity(address.getCity());
     addressDto.setPincode(address.getPincode());
-    addressDto.setState(address.state);
+    addressDto.setState(address.getState());
     addressDto.setDetails(address.getDetails());
     return addressDto;
   }

@@ -278,6 +278,7 @@ public class Party {
 	public static PartyDto valueOf(Party party){
 		PartyDto partyDto = new PartyDto();
 		partyDto.setPartyName(party.getPartyName());
+		partyDto.setPartyId(party.getnPartyId().toString());
 		partyDto.setPartyNickname(party.getPartyNickname());
 		if(party.getAddress1() != null) {
 			partyDto.setAddress1(Address.valueOf(party.getAddress1()));

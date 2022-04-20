@@ -12,7 +12,7 @@ import java.util.List;
 @Repository
 public interface PartyDetailsRepository extends JpaRepository<Party, Integer> {
 
-	@Query("select p,add1,add2 from Party p left join fetch p.packetClassificationTags left join p.address1 add1 left join p.address2 add2 order by p.nPartyId desc")
+	@Query("select p,add1 from Party p left join fetch p.packetClassificationTags left join p.address1 add1 order by p.nPartyId desc")
 	List<Party> findAllParties();
 
 	@Query("select party from Party party order by nPartyId desc")
