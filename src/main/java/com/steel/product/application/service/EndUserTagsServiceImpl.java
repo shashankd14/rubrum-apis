@@ -62,9 +62,38 @@ public class EndUserTagsServiceImpl implements EndUserTagsService {
 
 	@Override
 	public String saveEndUserTags(List<EndUserTagsRequest> endUserTagsRequests) {
-		List<EndUserTagsEntity> packetClassifications = endUserTagsMapper.requestToEntity(endUserTagsRequests);
-		endUserTagsRepository.saveAll(packetClassifications);
+		List<EndUserTagsEntity> list = endUserTagsMapper.requestToEntity(endUserTagsRequests);
+
+		for (EndUserTagsEntity entity : list) {
+			EndUserTagsEntity oldEndUserTagsEntity = endUserTagsRepository.findByTagName(entity.getTagName());
+			if (oldEndUserTagsEntity != null && oldEndUserTagsEntity.getTagName() != null && oldEndUserTagsEntity.getTagName().equals(entity.getTagName())) {
+				return "Entered End user TagName already exists";
+			}
+			endUserTagsRepository.save(entity);
+		}
 		return "saved ok !!";
+	}
+
+	@Override
+	public String updateEndUserTags(EndUserTagsRequest endUserTagsRequest) {
+		EndUserTagsEntity oldEndUserTagsEntity = endUserTagsRepository.findByTagName(endUserTagsRequest.getTagName());
+		if (oldEndUserTagsEntity != null && oldEndUserTagsEntity.getTagName() != null && endUserTagsRequest.getTagId() != oldEndUserTagsEntity.getTagId()) {
+			return "Entered End user TagName already exists";
+		}
+		
+		EndUserTagsEntity endUserTagsEntity = endUserTagsMapper.toEntity(endUserTagsRequest);
+		endUserTagsRepository.save(endUserTagsEntity);
+		return "Udated Successfully..!";
+	}
+
+	@Override
+	public String deleteEndUserTags(int tagId) {
+		try {
+			endUserTagsRepository.deleteById(tagId);
+		} catch (Exception e) {
+			return "Please enter valid data.";
+		}
+		return "Deleted Successfully..!";
 	}
 
 }

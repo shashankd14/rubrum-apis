@@ -18,5 +18,6 @@ public interface EndUserTagsMapper {
     List<EndUserTagsResponse> toList(List<EndUserTagsEntity> endUserTagsEntity);
 
     EndUserTagsRequest toEntity(EndUserTagsEntity packetClassification);
+    EndUserTagsEntity toEntity(EndUserTagsRequest packetClassification);
     List<EndUserTagsEntity> requestToEntity(List<EndUserTagsRequest> endUserTagsRequest);
 }

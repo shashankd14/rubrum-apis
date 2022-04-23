@@ -21,4 +21,8 @@ public interface EndUserTagsService {
 
     String saveEndUserTags(List<EndUserTagsRequest> packetClassificationRequests);
 
+    String updateEndUserTags(EndUserTagsRequest packetClassificationRequests);
+
+    String deleteEndUserTags(int tagId);
+
 }

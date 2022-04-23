@@ -11,10 +11,12 @@ import java.util.Set;
 
 @Repository
 public interface EndUserTagsRepository extends JpaRepository<EndUserTagsEntity, Integer> {
-	
+
 	List<EndUserTagsEntity> findAllByTagIdIn(List<Integer> tagIds);
 
 	Set<EndUserTagsEntity> findAllByTagNameIn(List<String> tagNames);
+
+	EndUserTagsEntity findByTagName(String tagName);
 
 	@Query("select pc from EndUserTagsEntity pc left join fetch pc.parties p where p.nPartyId = :partyId")
 	List<EndUserTagsEntity> findByPartyId(@Param("partyId") Integer partyId);

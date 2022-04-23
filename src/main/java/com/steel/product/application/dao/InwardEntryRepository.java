@@ -23,7 +23,9 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
     @Query(nativeQuery = true, value = "select * from aspen.product_tblinwardentry where nPartyId= :partyId order by dReceivedDate ")
     List<InwardEntry> getInwardEntriesByPartyId(@Param("partyId") Integer paramInteger);
 
-    @Query("select inw from InwardEntry inw where inw.coilNumber like %:searchText% order by inwardEntryId desc")
+    @Query("select inw from InwardEntry inw where (inw.coilNumber like %:searchText% or "
+    		+ " inw.batchNumber like %:searchText% or inw.vInvoiceNo like %:searchText% or inw.party.partyName like %:searchText% ) "
+    		+ " order by inwardEntryId desc")
     Page<InwardEntry> findAll(@Param("searchText") String searchText, Pageable pageable);
     
     @Query("select inw from InwardEntry inw order by inwardEntryId desc")

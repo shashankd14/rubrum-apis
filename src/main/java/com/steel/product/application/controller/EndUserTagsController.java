@@ -53,8 +53,13 @@ public class EndUserTagsController {
 	}
 
 	@PutMapping("/update")
-	public String updateEndUserTags(@RequestBody List<EndUserTagsRequest> endUserTagsRequests) {
-		return endUserTagsService.saveEndUserTags(endUserTagsRequests);
+	public String updateEndUserTags(@RequestBody EndUserTagsRequest endUserTagsRequests) {
+		return endUserTagsService.updateEndUserTags(endUserTagsRequests);
+	}
+
+	@DeleteMapping("/delete/{tagId}")
+	public String deleteEndUserTags(@PathVariable("tagId") int tagId) {
+		return endUserTagsService.deleteEndUserTags(tagId);
 	}
 
 }
