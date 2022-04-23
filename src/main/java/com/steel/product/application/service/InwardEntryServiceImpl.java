@@ -97,10 +97,10 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 	}
 
 	@Override
-	public Page<InwardEntry> findAllWithPagination(int pageNo, int pageSize, String coilNumber) {
+	public Page<InwardEntry> findAllWithPagination(int pageNo, int pageSize, String searchText) {
 		LOGGER.info("In pagination page ");
 		Pageable pageable = PageRequest.of(pageNo, pageSize);
-		Page<InwardEntry> pageResult = inwdEntryRepo.findAll(coilNumber, pageable);
+		Page<InwardEntry> pageResult = inwdEntryRepo.findAll(searchText, pageable);
 		return pageResult;
 	}
 	

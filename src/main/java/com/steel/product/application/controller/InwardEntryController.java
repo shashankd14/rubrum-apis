@@ -223,10 +223,10 @@ public class InwardEntryController {
 
 	@GetMapping({ "/list/{pageNo}/{pageSize}" })
 	public ResponseEntity<Object> findAllWithPagination(@PathVariable int pageNo, @PathVariable int pageSize,
-			@RequestParam(required = false, name = "coilNumber") String coilNumber) {
+			@RequestParam(required = false, name = "searchText") String searchText) {
 
 		Map<String, Object> response = new HashMap<>();
-		Page<InwardEntry> pageResult = inwdEntrySvc.findAllWithPagination(pageNo, pageSize, coilNumber);
+		Page<InwardEntry> pageResult = inwdEntrySvc.findAllWithPagination(pageNo, pageSize, searchText);
 		List<Object> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponse(inw)).collect(Collectors.toList());
 		response.put("content", inwardList);
 		response.put("currentPage", pageResult.getNumber());

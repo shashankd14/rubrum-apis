@@ -19,8 +19,8 @@ public interface DeliveryDetailsRepository extends JpaRepository<DeliveryDetails
     @Query(" from Instruction where deliveryId =:deliveryId")
     public List<Instruction> deliveredItemsById(@Param("deliveryId") int deliveryId);
 
-    @Query("select dd from DeliveryDetails dd join dd.instructions ins join ins.inwardId inw where ins.deliveryDetails is not null and coilNumber like %:coilNumber% group by inw")
-    public Page<DeliveryDetails> findAllDeliveries(@Param("coilNumber") String coilNumber, Pageable pageable);
+    @Query("select dd from DeliveryDetails dd join dd.instructions ins join ins.inwardId inw where ins.deliveryDetails is not null and coilNumber like %:searchText% group by inw")
+    public Page<DeliveryDetails> findAllDeliveries(@Param("searchText") String searchText, Pageable pageable);
     
     @Query("select dd from DeliveryDetails dd join dd.instructions ins join ins.inwardId inw where ins.deliveryDetails is not null group by inw")
     public List<DeliveryDetails> findAllDeliveries();

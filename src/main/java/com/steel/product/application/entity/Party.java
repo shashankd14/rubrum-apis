@@ -1,6 +1,7 @@
 package com.steel.product.application.entity;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.steel.product.application.dto.endusertags.EndUserTagsRequest;
 import com.steel.product.application.dto.packetClassification.PacketClassificationRequest;
 import com.steel.product.application.dto.party.PartyDto;
 import org.hibernate.annotations.CreationTimestamp;
@@ -89,6 +90,22 @@ public class Party {
 	inverseJoinColumns = @JoinColumn(name="classificationId"))
 	private Set<PacketClassification> packetClassificationTags = new HashSet<>();
 
+	@ManyToMany(cascade = {CascadeType.PERSIST,CascadeType.MERGE,CascadeType.REFRESH})
+	@JoinTable(name="product_endusertag_party",
+	joinColumns = @JoinColumn(name="party_id"),
+	inverseJoinColumns = @JoinColumn(name="tagId"))
+	private Set<EndUserTagsEntity> endUserTags = new HashSet<>();
+
+	public void addEndUserTags(EndUserTagsEntity endUserTagsEntity){
+		this.endUserTags.add(endUserTagsEntity);
+		endUserTagsEntity.getParties().add(this);
+	}
+
+	public void removeEndUserTags(EndUserTagsEntity endUserTagsEntity){
+		this.endUserTags.remove(endUserTagsEntity);
+		endUserTagsEntity.getParties().remove(this);
+	}
+	
 	public void addPacketClassification(PacketClassification packetClassification){
 		this.packetClassificationTags.add(packetClassification);
 		packetClassification.getParties().add(this);
@@ -275,6 +292,14 @@ public class Party {
 		this.packetClassificationTags = packetClassificationTags;
 	}
 
+	public Set<EndUserTagsEntity> getPacketEndUserTags() {
+		return endUserTags;
+	}
+
+	public void setPacketEndUserTags(Set<EndUserTagsEntity> endUserTags) {
+		this.endUserTags = endUserTags;
+	}
+
 	public static PartyDto valueOf(Party party){
 		PartyDto partyDto = new PartyDto();
 		partyDto.setPartyName(party.getPartyName());
@@ -303,6 +328,15 @@ public class Party {
 			list.add(req);
 		}
 		partyDto.setTags(list);
+		
+		List<EndUserTagsRequest> endUserTagsList = new ArrayList<>();
+		for(EndUserTagsEntity pc: party.getPacketEndUserTags()){
+			EndUserTagsRequest req = new EndUserTagsRequest();
+			req.setTagId(pc.getTagId());
+			req.setTagName( pc.getTagName());
+			endUserTagsList.add(req);
+		}
+		partyDto.setEndUserTags(endUserTagsList);
 		return partyDto;
 	}
 }

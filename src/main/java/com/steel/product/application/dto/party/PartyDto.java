@@ -1,6 +1,7 @@
 package com.steel.product.application.dto.party;
 
 import com.steel.product.application.dto.address.AddressDto;
+import com.steel.product.application.dto.endusertags.EndUserTagsRequest;
 import com.steel.product.application.dto.packetClassification.PacketClassificationRequest;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -44,5 +45,7 @@ public class PartyDto {
 	private AddressDto address2;
 
 	private List<PacketClassificationRequest> tags;
+
+	private List<EndUserTagsRequest> endUserTags;
 
 }

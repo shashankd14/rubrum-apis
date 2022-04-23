@@ -3,9 +3,9 @@ package com.steel.product.application.service;
 import com.steel.product.application.dao.PartyDetailsRepository;
 import com.steel.product.application.dto.party.PartyDto;
 import com.steel.product.application.dto.party.PartyResponse;
+import com.steel.product.application.entity.EndUserTagsEntity;
 import com.steel.product.application.entity.PacketClassification;
 import com.steel.product.application.entity.Party;
-import com.steel.product.application.mapper.PacketClassificationMapper;
 import com.steel.product.application.mapper.PartyMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,17 +29,19 @@ public class PartyDetailsServiceImpl implements PartyDetailsService {
 
 	private final PacketClassificationService packetClassificationService;
 
+	private final EndUserTagsService endUserTagsService;
+
 	private final PartyMapper partyMapper;
 
 	@Autowired
 	public PartyDetailsServiceImpl(PartyDetailsRepository partyRepo, AddressService addressService,
 			PacketClassificationService packetClassificationService, PartyMapper partyMapper,
-			PacketClassificationMapper packetClassificationMapper) {
+			EndUserTagsService endUserTagsService) {
 		this.partyRepo = partyRepo;
 		this.addressService = addressService;
 		this.packetClassificationService = packetClassificationService;
 		this.partyMapper = partyMapper;
-		//this.packetClassificationMapper = packetClassificationMapper;
+		this.endUserTagsService = endUserTagsService;
 	}
 
 	public boolean checkPartyName(PartyDto partyDto) {
@@ -87,11 +89,16 @@ public class PartyDetailsServiceImpl implements PartyDetailsService {
 	      }
 	    });
 	    */
-    
+
 		List<PacketClassification> savedPacketClassifications = packetClassificationService.findAllByPacketClassificationIdIn(
-						partyDto.getTags().stream().map(tag -> tag.getClassificationId()).collect(Collectors.toList()));
-		
+				partyDto.getTags().stream().map(tag -> tag.getClassificationId()).collect(Collectors.toList()));
+
+		List<EndUserTagsEntity> savedEndUserTags = endUserTagsService.findAllByTagIdIn(
+				partyDto.getEndUserTags().stream().map(tag -> tag.getTagId()).collect(Collectors.toList()));
+
 		savedPacketClassifications.forEach(pc -> party.addPacketClassification(pc));
+		savedEndUserTags.forEach(pc -> party.addEndUserTags(pc));
+
 		if (party.getAddress1() != null) {
 			addressService.saveAddress(party.getAddress1());
 		}

@@ -305,7 +305,7 @@ public class InstructionServiceImpl implements InstructionService {
         Status currentStatus;
         
         if(instructionFinishDto.getIsFinishTask()) {
-        	statusId = inProgressStatusId;
+        	statusId = readyToDeliverStatusId;
         	currentStatus= readyToDeliverStatus;
         } else {
         	statusId = readyToDeliverStatusId;
