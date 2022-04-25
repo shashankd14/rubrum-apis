@@ -39,7 +39,7 @@ public class PartyController {
 			boolean stts = partySvc.checkPartyName(partyDto);
 			if(stts) {
 				Party party = partySvc.saveParty(partyDto);
-				return new ResponseEntity<>("Party updated successfully!!!", HttpStatus.OK);
+				return new ResponseEntity<>("Party Saved successfully!!!", HttpStatus.OK);
 			} else {
 				return new ResponseEntity<>("Entered Party Name already Exists, " + partyDto.getPartyName(), HttpStatus.BAD_REQUEST);
 			}

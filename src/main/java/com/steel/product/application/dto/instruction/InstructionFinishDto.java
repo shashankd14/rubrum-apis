@@ -6,7 +6,7 @@ public class InstructionFinishDto {
 
     private List<InstructionRequestDto> instructionDtos;
 
-    private boolean isFinishTask;
+    private String taskType;
 
     public List<InstructionRequestDto> getInstructionDtos() {
         return instructionDtos;
@@ -16,12 +16,13 @@ public class InstructionFinishDto {
         this.instructionDtos = InstructionRequestDtos;
     }
 
-    public boolean getIsFinishTask() {
-        return isFinishTask;
-    }
+	public String getTaskType() {
+		return taskType;
+	}
 
-    public void setFinishTask(boolean finishTask) {
-        isFinishTask = finishTask;
-    }
+	public void setTaskType(String taskType) {
+		this.taskType = taskType;
+	}
+
 
 }

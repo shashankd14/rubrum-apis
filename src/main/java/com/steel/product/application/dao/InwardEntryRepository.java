@@ -24,7 +24,7 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
     List<InwardEntry> getInwardEntriesByPartyId(@Param("partyId") Integer paramInteger);
 
     @Query("select inw from InwardEntry inw where (inw.coilNumber like %:searchText% or "
-    		+ " inw.batchNumber like %:searchText% or inw.vInvoiceNo like %:searchText% or inw.party.partyName like %:searchText% ) "
+    		+ " inw.customerBatchId like %:searchText% or inw.customerInvoiceNo like %:searchText% or inw.party.partyName like %:searchText% ) "
     		+ " order by inwardEntryId desc")
     Page<InwardEntry> findAll(@Param("searchText") String searchText, Pageable pageable);
     

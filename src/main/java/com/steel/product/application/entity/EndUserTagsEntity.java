@@ -42,7 +42,7 @@ public class EndUserTagsEntity {
 
 	public void addParty(Party party) {
 		this.getParties().add(party);
-		party.getPacketEndUserTags().add(this);
+		party.getEndUserTags().add(this);
 	}
 
 	public Integer getTagId() {

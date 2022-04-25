@@ -292,11 +292,11 @@ public class Party {
 		this.packetClassificationTags = packetClassificationTags;
 	}
 
-	public Set<EndUserTagsEntity> getPacketEndUserTags() {
+	public Set<EndUserTagsEntity> getEndUserTags() {
 		return endUserTags;
 	}
 
-	public void setPacketEndUserTags(Set<EndUserTagsEntity> endUserTags) {
+	public void setEndUserTags(Set<EndUserTagsEntity> endUserTags) {
 		this.endUserTags = endUserTags;
 	}
 
@@ -330,7 +330,7 @@ public class Party {
 		partyDto.setTags(list);
 		
 		List<EndUserTagsRequest> endUserTagsList = new ArrayList<>();
-		for(EndUserTagsEntity pc: party.getPacketEndUserTags()){
+		for(EndUserTagsEntity pc: party.getEndUserTags()){
 			EndUserTagsRequest req = new EndUserTagsRequest();
 			req.setTagId(pc.getTagId());
 			req.setTagName( pc.getTagName());

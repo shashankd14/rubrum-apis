@@ -265,7 +265,6 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
             deliveryDetails.removeInstruction(ins);
         }
         deliveryDetailsRepo.deleteById(deliveryId);
-
     }
 
     @Override

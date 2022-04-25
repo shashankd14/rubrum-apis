@@ -60,11 +60,43 @@ public class PacketClassificationServiceImpl implements PacketClassificationServ
         return packetClassificationMapper.toList(list);
     }
 
-    @Override
-    public String savePacketClassifications(List<PacketClassificationRequest> packetClassificationRequests) {
-        List<PacketClassification> packetClassifications = packetClassificationMapper.requestToEntity(packetClassificationRequests);
-        packetClassificationRepository.saveAll(packetClassifications);
-        return "saved ok !!";
-    }
+	@Override
+	public String savePacketClassifications(List<PacketClassificationRequest> packetClassificationRequest) {
+		List<PacketClassification> list = packetClassificationMapper.requestToEntity(packetClassificationRequest);
+
+		for (PacketClassification entity : list) {
+			PacketClassification oldPacketClassificationEntity = packetClassificationRepository.findByClassificationName(entity.getClassificationName());
+			if (oldPacketClassificationEntity != null && oldPacketClassificationEntity.getClassificationName() != null
+					&& oldPacketClassificationEntity.getClassificationName().equalsIgnoreCase(entity.getClassificationName())) {
+				return "Entered TagName already exists";
+			}
+			packetClassificationRepository.save(entity);
+		}
+		return "Saved Successfully !!";
+	}
+
+	@Override
+	public String deleteEndUserTags(int classificationId) {
+		try {
+			packetClassificationRepository.deleteById(classificationId);
+		} catch (Exception e) {
+			return "Selected Tag is being used..!";
+		}
+		return "Deleted Successfully..!";
+	}
+
+	@Override
+	public String updatePacketClassifications(PacketClassificationRequest packetClassificationRequest) {
+		PacketClassification oldPacketClassificationEntity = packetClassificationRepository.findByClassificationName(packetClassificationRequest.getClassificationName());
+		if (oldPacketClassificationEntity != null && oldPacketClassificationEntity.getClassificationName() != null 
+				 && packetClassificationRequest.getClassificationId() != oldPacketClassificationEntity.getClassificationId()) {
+			return "Entered End user TagName already exists";
+		}
+		
+		PacketClassification endUserTagsEntity = packetClassificationMapper.toEntity(packetClassificationRequest);
+		packetClassificationRepository.save(endUserTagsEntity);
+		return "Udated Successfully..!";
+	}
+	
 
 }

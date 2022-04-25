@@ -1,6 +1,7 @@
 package com.steel.product.application.dto.party;
 
 import com.steel.product.application.dto.address.AddressDto;
+import com.steel.product.application.dto.endusertags.EndUserTagsResponse;
 import com.steel.product.application.dto.packetClassification.PacketClassificationRequest;
 import com.steel.product.application.dto.packetClassification.PacketClassificationResponse;
 import lombok.AllArgsConstructor;
@@ -30,6 +31,7 @@ public class PartyResponse {
     private AddressDto address1;
     private AddressDto address2;
     private List<PacketClassificationResponse> packetClassificationTags;
+    private List<EndUserTagsResponse> endUserTags;
 
     public Integer getnPartyId() {
         return nPartyId;
@@ -150,4 +152,15 @@ public class PartyResponse {
     public void setPacketClassificationTags(List<PacketClassificationResponse> packetClassificationTags) {
         this.packetClassificationTags = packetClassificationTags;
     }
+
+	public List<EndUserTagsResponse> getEndUserTags() {
+		return endUserTags;
+	}
+
+	public void setEndUserTags(List<EndUserTagsResponse> endUserTags) {
+		this.endUserTags = endUserTags;
+	}
+    
+    
+    
 }

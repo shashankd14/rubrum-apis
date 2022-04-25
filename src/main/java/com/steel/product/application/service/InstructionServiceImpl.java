@@ -304,12 +304,15 @@ public class InstructionServiceImpl implements InstructionService {
         Status readyToDeliverStatus = statusService.getStatusById(readyToDeliverStatusId);
         Status currentStatus;
         
-        if(instructionFinishDto.getIsFinishTask()) {
-        	statusId = readyToDeliverStatusId;
+        if("WIPtoFG".equalsIgnoreCase(instructionFinishDto.getTaskType())) {    // WIPtoFG
+        	statusId = inProgressStatusId;
         	currentStatus= readyToDeliverStatus;
-        } else {
+        } else  if("FGtoWIP".equalsIgnoreCase(instructionFinishDto.getTaskType())) {    // FGtoWIP   .... cancel finish
         	statusId = readyToDeliverStatusId;
         	currentStatus = inProgressStatus;
+        } else {             // FGtoFG   .... edit finish
+        	statusId = readyToDeliverStatusId;
+        	currentStatus = readyToDeliverStatus;
         }
         List<Instruction> instructions = this.findAllByInstructionIdInAndStatus(InstructionRequestDtos.stream()
                 .map(ins -> ins.getInstructionId()).collect(Collectors.toList()), statusId);

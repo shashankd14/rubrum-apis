@@ -21,4 +21,8 @@ public interface PacketClassificationService {
 
     String savePacketClassifications(List<PacketClassificationRequest> packetClassificationRequests);
 
+    String deleteEndUserTags(int classificationId);
+
+    String updatePacketClassifications(PacketClassificationRequest packetClassificationRequest);
+
 }

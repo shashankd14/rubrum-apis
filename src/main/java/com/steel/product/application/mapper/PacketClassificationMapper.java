@@ -11,11 +11,15 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface PacketClassificationMapper {
 
-    @Mapping(target = "createdOn",dateFormat = "dd-MM-yyyy HH:mm:ss")
-    @Mapping(target = "updatedOn",dateFormat = "dd-MM-yyyy HH:mm:ss")
-    PacketClassificationResponse toResponse(PacketClassification packetClassification);
-    List<PacketClassificationResponse> toList(List<PacketClassification> packetClassification);
+	@Mapping(target = "createdOn", dateFormat = "dd-MM-yyyy HH:mm:ss")
+	@Mapping(target = "updatedOn", dateFormat = "dd-MM-yyyy HH:mm:ss")
+	PacketClassificationResponse toResponse(PacketClassification packetClassification);
 
-    PacketClassificationRequest toEntity(PacketClassification packetClassification);
-    List<PacketClassification> requestToEntity(List<PacketClassificationRequest> packetClassificationRequest);
+	List<PacketClassificationResponse> toList(List<PacketClassification> packetClassification);
+
+	PacketClassificationRequest toEntity(PacketClassification packetClassification);
+	
+	PacketClassification toEntity(PacketClassificationRequest PacketClassificationRequest);
+
+	List<PacketClassification> requestToEntity(List<PacketClassificationRequest> packetClassificationRequest);
 }

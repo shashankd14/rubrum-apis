@@ -66,7 +66,8 @@ public class EndUserTagsServiceImpl implements EndUserTagsService {
 
 		for (EndUserTagsEntity entity : list) {
 			EndUserTagsEntity oldEndUserTagsEntity = endUserTagsRepository.findByTagName(entity.getTagName());
-			if (oldEndUserTagsEntity != null && oldEndUserTagsEntity.getTagName() != null && oldEndUserTagsEntity.getTagName().equals(entity.getTagName())) {
+			if (oldEndUserTagsEntity != null && oldEndUserTagsEntity.getTagName() != null
+					&& oldEndUserTagsEntity.getTagName().equalsIgnoreCase(entity.getTagName())) {
 				return "Entered End user TagName already exists";
 			}
 			endUserTagsRepository.save(entity);
@@ -91,7 +92,7 @@ public class EndUserTagsServiceImpl implements EndUserTagsService {
 		try {
 			endUserTagsRepository.deleteById(tagId);
 		} catch (Exception e) {
-			return "Please enter valid data.";
+			return "Selected End User Tag is being used..!";
 		}
 		return "Deleted Successfully..!";
 	}
