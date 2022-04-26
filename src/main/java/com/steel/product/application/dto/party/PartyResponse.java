@@ -2,13 +2,9 @@ package com.steel.product.application.dto.party;
 
 import com.steel.product.application.dto.address.AddressDto;
 import com.steel.product.application.dto.endusertags.EndUserTagsResponse;
-import com.steel.product.application.dto.packetClassification.PacketClassificationRequest;
 import com.steel.product.application.dto.packetClassification.PacketClassificationResponse;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 import java.util.List;
 
 

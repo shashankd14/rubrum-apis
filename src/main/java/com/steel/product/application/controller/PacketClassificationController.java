@@ -54,7 +54,7 @@ public class PacketClassificationController {
     }
 
 	@DeleteMapping("/delete/{classificationId}")
-	public String deleteEndUserTags(@PathVariable("classificationId") int tagId) {
+	public ResponseEntity<Object> deleteEndUserTags(@PathVariable("classificationId") int tagId) {
 		return packetClassificationService.deleteEndUserTags(tagId);
 	}
 	

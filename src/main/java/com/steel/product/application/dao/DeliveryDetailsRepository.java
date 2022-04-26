@@ -21,7 +21,7 @@ public interface DeliveryDetailsRepository extends JpaRepository<DeliveryDetails
 
     @Query("select dd from DeliveryDetails dd join dd.instructions ins join ins.inwardId inw where ins.deliveryDetails is not null and "
     		+ " ( inw.coilNumber like %:searchText% or inw.customerBatchId like %:searchText% or "
-    		+ " inw.customerInvoiceNo like %:searchText% or inw.party.partyName like %:searchText% ) group by inw")
+    		+ " inw.customerInvoiceNo like %:searchText% or inw.party.partyName like %:searchText% ) group by inw, dd")
     public Page<DeliveryDetails> findAllDeliveries(@Param("searchText") String searchText, Pageable pageable);
     
     @Query("select dd from DeliveryDetails dd join dd.instructions ins join ins.inwardId inw where ins.deliveryDetails is not null group by inw, dd")

@@ -6,6 +6,8 @@ import com.steel.product.application.dto.packetClassification.PacketClassificati
 import com.steel.product.application.entity.PacketClassification;
 import com.steel.product.application.mapper.PacketClassificationMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -76,13 +78,13 @@ public class PacketClassificationServiceImpl implements PacketClassificationServ
 	}
 
 	@Override
-	public String deleteEndUserTags(int classificationId) {
+	public ResponseEntity<Object> deleteEndUserTags(int classificationId) {
 		try {
 			packetClassificationRepository.deleteById(classificationId);
 		} catch (Exception e) {
-			return "Selected Tag is being used..!";
+			return new ResponseEntity("Selected Tag is being used..!", HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		return "Deleted Successfully..!";
+		return new ResponseEntity("Deleted Successfully..!", HttpStatus.OK);
 	}
 
 	@Override

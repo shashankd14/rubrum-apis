@@ -6,6 +6,8 @@ import com.steel.product.application.dto.endusertags.EndUserTagsResponse;
 import com.steel.product.application.entity.EndUserTagsEntity;
 import com.steel.product.application.mapper.EndUserTagsMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -88,13 +90,13 @@ public class EndUserTagsServiceImpl implements EndUserTagsService {
 	}
 
 	@Override
-	public String deleteEndUserTags(int tagId) {
+	public ResponseEntity<Object> deleteEndUserTags(int tagId) {
 		try {
 			endUserTagsRepository.deleteById(tagId);
 		} catch (Exception e) {
-			return "Selected End User Tag is being used..!";
+			return new ResponseEntity("Selected End User Tag is being used..!", HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		return "Deleted Successfully..!";
+		return new ResponseEntity("Deleted Successfully..!", HttpStatus.OK);
 	}
 
 }

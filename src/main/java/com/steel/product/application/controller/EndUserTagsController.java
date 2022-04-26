@@ -58,7 +58,7 @@ public class EndUserTagsController {
 	}
 
 	@DeleteMapping("/delete/{tagId}")
-	public String deleteEndUserTags(@PathVariable("tagId") int tagId) {
+	public ResponseEntity<Object> deleteEndUserTags(@PathVariable("tagId") int tagId) {
 		return endUserTagsService.deleteEndUserTags(tagId);
 	}
 

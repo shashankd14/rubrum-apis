@@ -22,7 +22,7 @@ public class EndUserTagsEntity {
 	private String tagName;
 
 	@JsonIgnore
-	@ManyToMany(mappedBy = "packetClassificationTags", fetch = FetchType.LAZY)
+	@ManyToMany(mappedBy = "endUserTags", fetch = FetchType.LAZY)
 	private Set<Party> parties = new HashSet<>();
 
 	@Column(name = "created_on", updatable = false)

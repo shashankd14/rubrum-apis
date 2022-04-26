@@ -7,6 +7,8 @@ import com.steel.product.application.entity.EndUserTagsEntity;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.http.ResponseEntity;
+
 public interface EndUserTagsService {
 
     List<EndUserTagsResponse> getAllEndUserTags();
@@ -23,6 +25,6 @@ public interface EndUserTagsService {
 
     String updateEndUserTags(EndUserTagsRequest packetClassificationRequests);
 
-    String deleteEndUserTags(int tagId);
+    ResponseEntity<Object> deleteEndUserTags(int tagId);
 
 }

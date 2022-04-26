@@ -7,6 +7,8 @@ import com.steel.product.application.entity.PacketClassification;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.http.ResponseEntity;
+
 public interface PacketClassificationService {
 
     List<PacketClassificationResponse> getAllPacketClassification();
@@ -21,7 +23,7 @@ public interface PacketClassificationService {
 
     String savePacketClassifications(List<PacketClassificationRequest> packetClassificationRequests);
 
-    String deleteEndUserTags(int classificationId);
+    ResponseEntity<Object> deleteEndUserTags(int classificationId);
 
     String updatePacketClassifications(PacketClassificationRequest packetClassificationRequest);
 
