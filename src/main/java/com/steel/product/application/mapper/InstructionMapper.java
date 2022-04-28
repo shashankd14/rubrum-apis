@@ -4,15 +4,10 @@ import com.steel.product.application.dto.instruction.InstructionRequestDto;
 import com.steel.product.application.dto.instruction.InstructionResponseDto;
 import com.steel.product.application.dto.pdf.InstructionResponsePdfDto;
 import com.steel.product.application.entity.Instruction;
-import com.steel.product.application.entity.InwardEntry;
-import org.mapstruct.IterableMapping;
-import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.Named;
-
 import java.util.List;
 
-@Mapper(componentModel = "spring")
+//@Mapper(componentModel = "spring")
 public interface InstructionMapper {
 
     @Mapping(target = "inwardId", ignore = true)

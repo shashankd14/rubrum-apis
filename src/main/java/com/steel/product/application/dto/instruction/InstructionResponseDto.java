@@ -6,6 +6,7 @@ import com.steel.product.application.dto.inward.InwardEntryResponseDto;
 import com.steel.product.application.dto.partDetails.PartDetailsResponse;
 import com.steel.product.application.dto.process.ProcessDto;
 import com.steel.product.application.dto.status.StatusDto;
+import com.steel.product.application.entity.EndUserTagsEntity;
 import com.steel.product.application.entity.PacketClassification;
 import lombok.Getter;
 import lombok.Setter;
@@ -46,6 +47,8 @@ public class InstructionResponseDto {
     private StatusDto status;
 
     private PacketClassification packetClassification;
+
+    private EndUserTagsEntity endUserTagsentity;
 
     private Integer groupId ;
 

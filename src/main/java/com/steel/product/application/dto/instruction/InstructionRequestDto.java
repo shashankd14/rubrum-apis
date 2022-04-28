@@ -40,6 +40,8 @@ public class InstructionRequestDto {
 
     private Integer packetClassificationId;
 
+    private Integer endUserTagId;
+
     private Integer groupId ;
 
     private Integer parentGroupId ;

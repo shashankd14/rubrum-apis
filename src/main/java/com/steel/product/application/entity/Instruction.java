@@ -67,6 +67,11 @@ public class Instruction {
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "packet_classification_id")
 	private PacketClassification packetClassification;
+
+	@JsonManagedReference
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "enduser_tag_id")
+	private EndUserTagsEntity endUserTagsEntity;
 	
 	@Column(name = "groupid")
 	private Integer groupId ;
@@ -138,10 +143,9 @@ public class Instruction {
 	public static InstructionResponseDto valueOf(Instruction instruction){
 		InstructionResponseDto instructionResponseDto = new InstructionResponseDto();
 		instructionResponseDto.setStatus(Status.valueOf(instruction.getStatus()));
-		instructionResponseDto.setParentInstructionId(instruction.getParentInstruction() != null ?
-				instruction.getParentInstruction().getInstructionId() : null);
-		instructionResponseDto.setPacketClassification(instruction.getPacketClassification() != null ?
-				instruction.getPacketClassification(): null);
+		instructionResponseDto.setParentInstructionId(instruction.getParentInstruction() != null ? instruction.getParentInstruction().getInstructionId() : null);
+		instructionResponseDto.setPacketClassification(instruction.getPacketClassification() != null ? instruction.getPacketClassification(): null);
+		instructionResponseDto.setEndUserTagsentity( instruction.getEndUserTagsEntity() != null ? instruction.getEndUserTagsEntity(): null);		
 		instructionResponseDto.setInstructionDate(instruction.getInstructionDate());
         instructionResponseDto.setInstructionId(instruction.getInstructionId());
         instructionResponseDto.setProcess(instruction.getProcess() != null ? Process.valueOf(instruction.getProcess()) : null);

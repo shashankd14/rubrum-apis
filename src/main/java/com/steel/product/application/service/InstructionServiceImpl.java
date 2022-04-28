@@ -46,6 +46,8 @@ public class InstructionServiceImpl implements InstructionService {
 
     private PacketClassificationService packetClassificationService;
 
+    private EndUserTagsService endUserTagsService;
+
     private PartDetailsService partDetailsService;
 
     private PartDetailsMapper partDetailsMapper;
@@ -53,13 +55,19 @@ public class InstructionServiceImpl implements InstructionService {
     private InstructionMapper instructionMapper;
 
     @Autowired
-    public InstructionServiceImpl(InstructionRepository instructionRepository, InwardEntryRepository inwardEntryRepository, InwardEntryService inwardService, ProcessService processService, StatusService statusService, PacketClassificationService packetClassificationService, PartDetailsService partDetailsService, PartDetailsMapper partDetailsMapper, InstructionMapper instructionMapper) {
+	public InstructionServiceImpl(InstructionRepository instructionRepository,
+			InwardEntryRepository inwardEntryRepository, InwardEntryService inwardService,
+			ProcessService processService, StatusService statusService,
+			PacketClassificationService packetClassificationService, EndUserTagsService endUserTagsService,
+			PartDetailsService partDetailsService, PartDetailsMapper partDetailsMapper,
+			InstructionMapper instructionMapper) {
         this.instructionRepository = instructionRepository;
         this.inwardEntryRepository = inwardEntryRepository;
         this.inwardService = inwardService;
         this.processService = processService;
         this.statusService = statusService;
         this.packetClassificationService = packetClassificationService;
+        this.endUserTagsService = endUserTagsService;
         this.partDetailsService = partDetailsService;
         this.partDetailsMapper = partDetailsMapper;
         this.instructionMapper = instructionMapper;
@@ -764,25 +772,27 @@ public class InstructionServiceImpl implements InstructionService {
                 return new ResponseEntity<Object>("Invalid request", HttpStatus.BAD_REQUEST);
             }
             List<Integer> packetClassificationIds = new ArrayList<>();
-                for (InstructionSaveRequestDto instructionSaveRequestDto : instructionSaveRequestDtos) {
-                    if(processId == 1 || processId == 3) {//for cut
-                        incomingWeight += instructionSaveRequestDto.getInstructionRequestDTOs().stream().reduce(0f, (sum, dto) -> sum + dto.getPlannedWeight(), Float::sum);
-                        incomingLength += instructionSaveRequestDto.getInstructionRequestDTOs().stream().reduce(0f, (sum, dto) -> sum + dto.getPlannedLength()*dto.getPlannedNoOfPieces(), Float::sum);
-                            partDetailsRequest = instructionSaveRequestDto.getPartDetailsRequest();
-                            PartDetails partDetails = partDetailsMapper.toEntityForCut(partDetailsRequest);
-                            partDetails.setPartDetailsId(partDetailsId);
-                            instructionPlanAndListMap.put(partDetails, instructionSaveRequestDto.getInstructionRequestDTOs());
+            List<Integer> endUserTagIds = new ArrayList<>();
+            for (InstructionSaveRequestDto instructionSaveRequestDto : instructionSaveRequestDtos) {
+                if(processId == 1 || processId == 3) {//for cut
+                    incomingWeight += instructionSaveRequestDto.getInstructionRequestDTOs().stream().reduce(0f, (sum, dto) -> sum + dto.getPlannedWeight(), Float::sum);
+                    incomingLength += instructionSaveRequestDto.getInstructionRequestDTOs().stream().reduce(0f, (sum, dto) -> sum + dto.getPlannedLength()*dto.getPlannedNoOfPieces(), Float::sum);
+                    partDetailsRequest = instructionSaveRequestDto.getPartDetailsRequest();
+                    PartDetails partDetails = partDetailsMapper.toEntityForCut(partDetailsRequest);
+                    partDetails.setPartDetailsId(partDetailsId);
+                    instructionPlanAndListMap.put(partDetails, instructionSaveRequestDto.getInstructionRequestDTOs());
 
-                    }else{
-                            incomingWeight += instructionSaveRequestDto.getInstructionRequestDTOs().stream().reduce(0f, (sum, dto) -> sum + dto.getPlannedWeight(), Float::sum);
-                            incomingLength += instructionSaveRequestDto.getPartDetailsRequest().getLength();
-                            partDetailsRequest = instructionSaveRequestDto.getPartDetailsRequest();
-                            PartDetails partDetails = partDetailsMapper.toEntityForSlit(partDetailsRequest);
-                            partDetails.setPartDetailsId(partDetailsId);
-                            instructionPlanAndListMap.put(partDetails, instructionSaveRequestDto.getInstructionRequestDTOs());
-                        }
-                    instructionSaveRequestDto.getInstructionRequestDTOs().forEach(in -> packetClassificationIds.add(in.getPacketClassificationId()));
+                }else {
+                    incomingWeight += instructionSaveRequestDto.getInstructionRequestDTOs().stream().reduce(0f, (sum, dto) -> sum + dto.getPlannedWeight(), Float::sum);
+                    incomingLength += instructionSaveRequestDto.getPartDetailsRequest().getLength();
+                    partDetailsRequest = instructionSaveRequestDto.getPartDetailsRequest();
+                    PartDetails partDetails = partDetailsMapper.toEntityForSlit(partDetailsRequest);
+                    partDetails.setPartDetailsId(partDetailsId);
+                    instructionPlanAndListMap.put(partDetails, instructionSaveRequestDto.getInstructionRequestDTOs());
                 }
+                instructionSaveRequestDto.getInstructionRequestDTOs().forEach(in -> packetClassificationIds.add(in.getPacketClassificationId()));
+                instructionSaveRequestDto.getInstructionRequestDTOs().forEach(in -> endUserTagIds.add(in.getEndUserTagId()));
+            }
             LOGGER.info("incoming length,weight "+incomingLength+","+incomingWeight);
             remainingWeight = availableWeight - existingWeight - Math.floor(incomingWeight);
             remainingLength = availableLength - existingLength - incomingLength;
@@ -813,13 +823,19 @@ public class InstructionServiceImpl implements InstructionService {
             Status inProgressStatus = statusService.getStatusById(inProgressStatusId);
             inwardEntry.setStatus(inProgressStatus);
             Map<Integer,PacketClassification> savedPacketClassifications = packetClassificationService
-                .findAllByPacketClassificationIdIn(packetClassificationIds)
-                .stream().collect(Collectors.toMap(pc -> pc.getClassificationId(),pc -> pc));
-            for (PartDetails pd : instructionPlanAndListMap.keySet()) {
+                    .findAllByPacketClassificationIdIn(packetClassificationIds)
+                    .stream().collect(Collectors.toMap(pc -> pc.getClassificationId(),pc -> pc));
+                
+            Map<Integer, EndUserTagsEntity> savedEndUserTagsEntities = endUserTagsService
+                    .findAllByTagIdIn( endUserTagIds)
+                    .stream().collect(Collectors.toMap(pc -> pc.getTagId(),pc -> pc));
+                
+                for (PartDetails pd : instructionPlanAndListMap.keySet()) {
                 List<InstructionRequestDto> list = instructionPlanAndListMap.get(pd);
                 for (InstructionRequestDto requestDto : list) {
                     Instruction instruction = instructionMapper.toEntity(requestDto);
                     instruction.setPacketClassification(savedPacketClassifications.get(requestDto.getPacketClassificationId()));
+                    instruction.setEndUserTagsEntity(savedEndUserTagsEntities.get(requestDto.getEndUserTagId()));
                     instruction.setProcess(process);
                     instruction.setStatus(inProgressStatus);
                     if (fromParentInstruction) {

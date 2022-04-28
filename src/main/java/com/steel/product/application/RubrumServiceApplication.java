@@ -19,10 +19,10 @@ import io.swagger.v3.oas.models.info.License;
 @EnableCaching
 @EnableAutoConfiguration
 @OpenAPIDefinition(info = @Info(title = "Rubrum APIs", version = "1.0", description = "API v1.0"))
-public class Application {
+public class RubrumServiceApplication {
 	
 	public static void main(String[] args) {
-		SpringApplication.run(com.steel.product.application.Application.class, args);
+		SpringApplication.run(RubrumServiceApplication.class, args);
         System.out.println("RubrumApplication Started");
 	}
 	
