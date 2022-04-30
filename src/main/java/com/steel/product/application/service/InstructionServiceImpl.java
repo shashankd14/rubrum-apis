@@ -333,6 +333,9 @@ public class InstructionServiceImpl implements InstructionService {
         Map<Integer, PacketClassification> packetClassificationMap = packetClassificationService.findAllByPacketClassificationIdIn(InstructionRequestDtos.stream()
                 .map(ins -> ins.getPacketClassificationId()).collect(Collectors.toList())).stream().collect(Collectors.toMap(p -> p.getClassificationId(), p -> p));
 
+        Map<Integer, EndUserTagsEntity> endUserTagsEntityMap = endUserTagsService.findAllByTagIdIn(InstructionRequestDtos.stream()
+                .map(ins -> ins.getEndUserTagId()).collect(Collectors.toList())).stream().collect(Collectors.toMap(p -> p.getTagId(), p -> p));
+
         for (InstructionRequestDto ins : InstructionRequestDtos) {
             instruction = instructionsMap.get(ins.getInstructionId());
             if (instruction == null) {
@@ -346,6 +349,7 @@ public class InstructionServiceImpl implements InstructionService {
             instruction.setActualWeight(ins.getActualWeight());
             instruction.setActualNoOfPieces(ins.getActualNoOfPieces());
             instruction.setPacketClassification(packetClassificationMap.get(ins.getPacketClassificationId()));
+            instruction.setEndUserTagsEntity(endUserTagsEntityMap.get(ins.getEndUserTagId()));
             instruction.setStatus(currentStatus);
             updatedInstructionList.add(instruction);
         }
