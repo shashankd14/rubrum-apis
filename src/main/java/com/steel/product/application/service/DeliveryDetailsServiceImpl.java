@@ -276,7 +276,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
     
     @Override
     public Page<DeliveryDetails> deliveryListPagination(int pageNo, int pageSize, String searchText) {
-    	Pageable pageable = PageRequest.of(pageNo, pageSize);
+    	Pageable pageable = PageRequest.of((pageNo-1), pageSize);
     	Page<DeliveryDetails> deliveryList = deliveryDetailsRepo.findAllDeliveries(searchText, pageable);
         LOGGER.info("Delivery details list size "+deliveryList.getSize());
         return deliveryList;
