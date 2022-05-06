@@ -28,6 +28,10 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
     		+ " order by inwardEntryId desc")
     Page<InwardEntry> findAll(@Param("searchText") String searchText, Pageable pageable);
     
+	@Query("select inw from InwardEntry inw where (inw.coilNumber like %:searchText% or inw.customerBatchId like %:searchText% or "
+			+ " inw.customerInvoiceNo like %:searchText% or inw.party.partyName like %:searchText% ) and inw.party.nPartyId=:partyId order by inwardEntryId desc")
+	Page<InwardEntry> findAll(@Param("searchText") String searchText, @Param("partyId") int partyId, Pageable pageable);
+    
     @Query("select inw from InwardEntry inw order by inwardEntryId desc")
     List<InwardEntry> findAll();
 

@@ -463,13 +463,17 @@ public class InstructionServiceImpl implements InstructionService {
     }
 
     @Override
-    public InstructionResponseDto saveUnprocessedForDelivery(Integer inwardId) {
+    public InstructionResponseDto saveUnprocessedForDelivery(Integer inwardId, String taskType) {
         LOGGER.info("inside saveUnprocessedForDelivery method");
         Date date = new Date();
         Instruction unprocessedInstruction = new Instruction();
         InwardEntry inward = inwardService.getByInwardEntryId(inwardId);
         LOGGER.info("inward with id " + inwardId + " has fPresent " + inward.getFpresent());
         Integer handlingProcessId = 7, readyToDeliverStatusId = 3;
+        
+        if(taskType!=null && "FULL_HANDLING".equalsIgnoreCase(taskType)) {
+            handlingProcessId = 8;
+        }
         Process handlingProcess = processService.getById(handlingProcessId);
         Status readyToDeliverStatus = statusService.getStatusById(readyToDeliverStatusId);
 

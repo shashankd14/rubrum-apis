@@ -38,7 +38,7 @@ public interface InwardEntryService {
 
 	List<InwardEntryResponseDto> findAllInwards();
 
-	Page<InwardEntry> findAllWithPagination(int pageNo, int pageSize, String searchText);
+	Page<InwardEntry> findAllWithPagination(int pageNo, int pageSize, String searchText, String partyId);
 
 	List<InwardEntry> findInwardByPartyId(Integer partyId);
 }

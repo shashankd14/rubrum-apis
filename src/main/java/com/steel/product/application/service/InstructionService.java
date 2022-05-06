@@ -39,7 +39,7 @@ public interface InstructionService {
 
     public Instruction save(Instruction instruction);
 
-    public InstructionResponseDto saveUnprocessedForDelivery(Integer inwardId);
+    public InstructionResponseDto saveUnprocessedForDelivery(Integer inwardId, String taskType);
 
     ResponseEntity<Object> updateInstruction(InstructionFinishDto instructionFinishDto);
 
