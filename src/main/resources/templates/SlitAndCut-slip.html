@@ -193,7 +193,7 @@
                     <th class="m_DesTable">Width</th>
                     <th class="m_DesTable">No Of Slits</th>
                     <th class="m_DesTable">Weight</th>
-                    <th class="m_DesTable">Tags</th>
+                    <th class="m_DesTable">End User Tags</th>
                 </tr>
                 <tr class="m_tp" th:each="ins: ${list}">
                     <td class="m_DesTable" th:text="${ins?.plannedLength}"></td>
@@ -201,7 +201,7 @@
                     <td class="m_DesTable" th:text="${ins?.plannedWidth}"></td>
                     <td class="m_DesTable" th:text="${ins?.plannedNoOfPieces}"></td>
                     <td class="m_DesTable" th:text="${ins?.plannedWeight + ' x ' + ins.countOfWeight}"></td>
-                    <td class="m_DesTable" th:text="${ins?.packetClassification?.classificationName}"></td>
+                    <td class="m_DesTable" th:text="${ins?.endUserTagsEntity?.tagName}"></td>
                 </tr>
                 </tbody>
             </table>

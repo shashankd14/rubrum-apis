@@ -28,5 +28,5 @@ public interface DeliveryDetailsService {
 
     public Float findInstructionByInwardIdAndInstructionId(Integer inwardId,Integer instructionId);
 
-	Page<DeliveryDetails> deliveryListPagination(int pageNo, int pageSize, String searchText);
+	Page<DeliveryDetails> deliveryListPagination(int pageNo, int pageSize, String searchText, String partyId);
 }

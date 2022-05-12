@@ -75,23 +75,23 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
         LOGGER.info("in save delivery api");
         List<DeliveryItemDetails> deliveryItemDetails;
         DeliveryDetails delivery;
-            if(deliveryDto.getDeliveryId() != null){
-                LOGGER.info("Updating delivery with id "+deliveryDto.getDeliveryId());
-                delivery = getById(deliveryDto.getDeliveryId());
-                if(deliveryDto.getCustomerInvoiceNo() != null) {
-                    delivery.setCustomerInvoiceNo(deliveryDto.getCustomerInvoiceNo());
-                }
-                if(deliveryDto.getCustomerInvoiceDate() != null){
-                    delivery.setCustomerInvoiceDate(deliveryDto.getCustomerInvoiceDate());
-                }
-                deliveryDetailsRepo.save(delivery);
-                return delivery;
+        if(deliveryDto.getDeliveryId() != null){
+            LOGGER.info("Updating delivery with id "+deliveryDto.getDeliveryId());
+            delivery = getById(deliveryDto.getDeliveryId());
+            if(deliveryDto.getCustomerInvoiceNo() != null) {
+                delivery.setCustomerInvoiceNo(deliveryDto.getCustomerInvoiceNo());
             }
-            LOGGER.info("adding new delivery with id");
-            delivery = new DeliveryDetails();
+            if(deliveryDto.getCustomerInvoiceDate() != null){
+                delivery.setCustomerInvoiceDate(deliveryDto.getCustomerInvoiceDate());
+            }
+            deliveryDetailsRepo.save(delivery);
+            return delivery;
+        }
+        LOGGER.info("adding new delivery with id");
+        delivery = new DeliveryDetails();
 
-            delivery.setCreatedBy(1);
-            delivery.setUpdatedBy(1);
+        delivery.setCreatedBy(1);
+        delivery.setUpdatedBy(1);
         delivery.setVehicleNo(deliveryDto.getVehicleNo());
 
         deliveryItemDetails = deliveryDto.getDeliveryItemDetails();
@@ -100,6 +100,9 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
         Integer deliveredStatusId = 4;
         Status deliveredStatus = statusService.getStatusById(deliveredStatusId);
         Integer readyToDeliverStatusId = 3;
+        if("FULL_HANDLING".equalsIgnoreCase(deliveryDto.getTaskType())) {
+            readyToDeliverStatusId = 4;
+        }
         Map<Integer, String> instructionRemarksMap = deliveryItemDetails.stream().filter(d -> d.getRemarks() != null)
                 .collect(Collectors.toMap(d -> d.getInstructionId(), d -> d.getRemarks()));
         List<Instruction> instructions = instructionService.findAllByInstructionIdInAndStatus(deliveryItemDetails.stream()
@@ -275,11 +278,18 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
     }
     
     @Override
-    public Page<DeliveryDetails> deliveryListPagination(int pageNo, int pageSize, String searchText) {
+    public Page<DeliveryDetails> deliveryListPagination(int pageNo, int pageSize, String searchText, String partyId) {
     	Pageable pageable = PageRequest.of((pageNo-1), pageSize);
-    	Page<DeliveryDetails> deliveryList = deliveryDetailsRepo.findAllDeliveries(searchText, pageable);
-        LOGGER.info("Delivery details list size "+deliveryList.getSize());
-        return deliveryList;
+    	
+		if(partyId!=null && partyId.length()>0) {
+	    	Page<DeliveryDetails> deliveryList = deliveryDetailsRepo.findAllDeliveries(searchText, Integer.parseInt(partyId), pageable);
+	        LOGGER.info("Delivery details list size "+deliveryList.getSize());
+	        return deliveryList;
+		} else {
+	    	Page<DeliveryDetails> deliveryList = deliveryDetailsRepo.findAllDeliveries(searchText, pageable);
+	        LOGGER.info("Delivery details list size "+deliveryList.getSize());
+	        return deliveryList;
+		}
     }
 
     @Override

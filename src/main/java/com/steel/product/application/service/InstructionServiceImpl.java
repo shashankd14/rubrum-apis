@@ -463,17 +463,54 @@ public class InstructionServiceImpl implements InstructionService {
     }
 
     @Override
-    public InstructionResponseDto saveUnprocessedForDelivery(Integer inwardId, String taskType) {
+    public InstructionResponseDto saveFullHandlingDispatch(Integer inwardId) {
+        LOGGER.info("inside saveUnprocessedForDelivery method");
+        Date date = new Date();
+        Instruction unprocessedInstruction = new Instruction();
+        InwardEntry inward = inwardService.getByInwardEntryId(inwardId);
+        LOGGER.info("inward with id " + inwardId + " has fPresent " + inward.getFpresent());
+        Integer handlingProcessId = 8, readyToDeliverStatusId = 4;
+        Process handlingProcess = processService.getById(handlingProcessId);
+        Status readyToDeliverStatus = statusService.getStatusById(readyToDeliverStatusId);
+
+        float denominator = inward.getfThickness() * (inward.getfWidth() / 1000f) * 7.85f;
+        float lengthUnprocessed = inward.getFpresent() / denominator;
+        LOGGER.info("calculated length of instruction " + lengthUnprocessed);
+
+        unprocessedInstruction.setPlannedLength(lengthUnprocessed);
+        unprocessedInstruction.setPlannedWidth(inward.getfWidth());
+        unprocessedInstruction.setPlannedWeight(inward.getFpresent());
+        unprocessedInstruction.setActualLength(lengthUnprocessed);
+        unprocessedInstruction.setActualWidth(inward.getfWidth());
+        unprocessedInstruction.setActualWeight(inward.getFpresent());
+        unprocessedInstruction.setProcess(handlingProcess);
+        unprocessedInstruction.setStatus(readyToDeliverStatus);
+        unprocessedInstruction.setInstructionDate(date);
+        unprocessedInstruction.setCreatedBy(1);
+        unprocessedInstruction.setUpdatedBy(1);
+        unprocessedInstruction.setCreatedOn(date);
+        unprocessedInstruction.setUpdatedOn(date);
+        unprocessedInstruction.setIsDeleted(false);
+        unprocessedInstruction.setIsSlitAndCut(false);
+
+        inward.setFpresent(0f);
+        inward.setStatus(readyToDeliverStatus);
+        inward.addInstruction(unprocessedInstruction);
+        inward = inwardService.saveEntry(inward);
+        Optional<InstructionResponseDto> savedInstruction = inward.getInstructions().stream().filter(ins -> ins.getProcess().getProcessId() == 8)
+                .map(ins -> Instruction.valueOf(ins)).findFirst();
+
+        return savedInstruction.orElse(null);
+    }
+
+    @Override
+    public InstructionResponseDto saveUnprocessedForDelivery(Integer inwardId) {
         LOGGER.info("inside saveUnprocessedForDelivery method");
         Date date = new Date();
         Instruction unprocessedInstruction = new Instruction();
         InwardEntry inward = inwardService.getByInwardEntryId(inwardId);
         LOGGER.info("inward with id " + inwardId + " has fPresent " + inward.getFpresent());
         Integer handlingProcessId = 7, readyToDeliverStatusId = 3;
-        
-        if(taskType!=null && "FULL_HANDLING".equalsIgnoreCase(taskType)) {
-            handlingProcessId = 8;
-        }
         Process handlingProcess = processService.getById(handlingProcessId);
         Status readyToDeliverStatus = statusService.getStatusById(readyToDeliverStatusId);
 
@@ -504,7 +541,6 @@ public class InstructionServiceImpl implements InstructionService {
                 .map(ins -> Instruction.valueOf(ins)).findFirst();
 
         return savedInstruction.orElse(null);
-
     }
 
     @Override

@@ -67,7 +67,6 @@ public class PdfService {
         return context;
     }
 
-
     private File renderPdf(String html,String filename) throws IOException, DocumentException {
         File file = File.createTempFile("aspen-steel-"+filename, ".pdf");
         OutputStream outputStream = new FileOutputStream(file);

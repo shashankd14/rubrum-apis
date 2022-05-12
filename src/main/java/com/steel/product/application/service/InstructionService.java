@@ -39,7 +39,7 @@ public interface InstructionService {
 
     public Instruction save(Instruction instruction);
 
-    public InstructionResponseDto saveUnprocessedForDelivery(Integer inwardId, String taskType);
+    public InstructionResponseDto saveUnprocessedForDelivery(Integer inwardId);
 
     ResponseEntity<Object> updateInstruction(InstructionFinishDto instructionFinishDto);
 
@@ -70,5 +70,8 @@ public interface InstructionService {
     Instruction findFirstByGroupIdAndIsDeletedFalse(Integer groupId);
 
     HashMap<Integer,Double> findSumOfPlannedWeightAndActualWeightForUnprocessed();
+
+    InstructionResponseDto saveFullHandlingDispatch(Integer inwardId);
+
 }
 

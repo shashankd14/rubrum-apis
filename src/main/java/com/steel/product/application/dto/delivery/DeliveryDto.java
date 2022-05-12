@@ -11,6 +11,8 @@ public class DeliveryDto {
 
     private Integer deliveryId;
 
+    private String taskType;
+
     private String customerInvoiceNo;
 
     private Date customerInvoiceDate;
@@ -54,4 +56,16 @@ public class DeliveryDto {
     public void setDeliveryId(Integer deliveryId) {
         this.deliveryId = deliveryId;
     }
+
+	public String getTaskType() {
+		return taskType;
+	}
+
+	public void setTaskType(String taskType) {
+		this.taskType = taskType;
+	}
+
+
 }
+
+

@@ -29,10 +29,11 @@ public class DeliveryDetailsController {
 
 	@GetMapping({ "/list/{pageNo}/{pageSize}" })
 	public ResponseEntity<Object> findAllWithPagination(@PathVariable int pageNo, @PathVariable int pageSize,
-			@RequestParam(required = false, name = "searchText") String searchText) {
+			@RequestParam(required = false, name = "searchText") String searchText,
+			@RequestParam(required = false, name = "partyId") String partyId) {
 
 		Map<String, Object> response = new HashMap<>();
-		Page<DeliveryDetails> pageResult = deliveryDetailsService.deliveryListPagination(pageNo, pageSize, searchText);
+		Page<DeliveryDetails> pageResult = deliveryDetailsService.deliveryListPagination(pageNo, pageSize, searchText, partyId);
 		List<DeliveryPacketsDto> list = pageResult.getContent().stream().map(inw -> new DeliveryPacketsDto(inw)).collect(Collectors.toList());
 		response.put("content", list);
 		response.put("currentPage", pageResult.getNumber());

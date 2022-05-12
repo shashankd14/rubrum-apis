@@ -142,6 +142,7 @@ public class InstructionMapperImpl implements InstructionMapper {
         instructionResponsePdfDto.setActualNoOfPieces( instruction.getActualNoOfPieces() );
         instructionResponsePdfDto.setRemarks( instruction.getRemarks() );
         instructionResponsePdfDto.setPacketClassification( instruction.getPacketClassification() );
+        instructionResponsePdfDto.setEndUserTagsEntity( instruction.getEndUserTagsEntity());
         instructionResponsePdfDto.setDeliveryDetails( deliveryDetailsToDeliveryResponseDto( instruction.getDeliveryDetails() ) );
 
         return instructionResponsePdfDto;

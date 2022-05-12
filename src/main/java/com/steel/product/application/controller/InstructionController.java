@@ -97,9 +97,13 @@ public class InstructionController {
 	}
 
 	@PostMapping("/saveUnprocessedForDelivery/{inwardId}")
-	public ResponseEntity<Object> saveUnprocessedForDelivery(@PathVariable int inwardId,
-			@RequestParam(required = false, name = "taskType") String taskType) {
-		return new ResponseEntity<>(instructionService.saveUnprocessedForDelivery(inwardId, taskType), HttpStatus.OK);
+	public ResponseEntity<Object> saveUnprocessedForDelivery(@PathVariable int inwardId) {
+		return new ResponseEntity<>(instructionService.saveUnprocessedForDelivery(inwardId), HttpStatus.OK);
+	}
+
+	@PostMapping("/saveFullHandlingDispatch/{inwardId}")
+	public ResponseEntity<Object> saveFullHandlingDispatch(@PathVariable int inwardId) {
+		return new ResponseEntity<>(instructionService.saveFullHandlingDispatch(inwardId ), HttpStatus.OK);
 	}
 	
 	@PostMapping("/cut")
