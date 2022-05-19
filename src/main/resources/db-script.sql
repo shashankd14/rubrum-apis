@@ -1,3 +1,9 @@
+
+INSERT INTO users(userid, user_name, `password`, email_id, role_id, enabled) VALUES(1, 'testuser', '$2a$10$WQdZcCN7rE8hauAhm00sC.gHhT/zKMGfTgy8IeX1kVVGXjFeUiMry', 'techurate@gmail.com', 'admin', 1);
+commit;
+
+#pwd : admin@123
+
 # CREATE TABLE IF NOT EXISTS `product_company_details` (
 #   `id` int NOT NULL AUTO_INCREMENT,
 #   `company_name` varchar(255) DEFAULT NULL,
