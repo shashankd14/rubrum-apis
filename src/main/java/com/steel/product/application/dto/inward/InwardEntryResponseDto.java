@@ -71,9 +71,9 @@ public class InwardEntryResponseDto {
 
     private String remarks;
 
-    private User createdBy;
+    private UserEntity createdBy;
 
-    private User updatedBy;
+    private UserEntity updatedBy;
 
     private Date createdOn;
 
@@ -329,19 +329,19 @@ public class InwardEntryResponseDto {
         this.remarks = remarks;
     }
 
-    public User getCreatedBy() {
+    public UserEntity getCreatedBy() {
         return createdBy;
     }
 
-    public void setCreatedBy(User createdBy) {
+    public void setCreatedBy(UserEntity createdBy) {
         this.createdBy = createdBy;
     }
 
-    public User getUpdatedBy() {
+    public UserEntity getUpdatedBy() {
         return updatedBy;
     }
 
-    public void setUpdatedBy(User updatedBy) {
+    public void setUpdatedBy(UserEntity updatedBy) {
         this.updatedBy = updatedBy;
     }
 

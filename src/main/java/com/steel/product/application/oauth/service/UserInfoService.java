@@ -9,7 +9,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.steel.product.application.dao.UserRepository;
-import com.steel.product.application.entity.User;
+import com.steel.product.application.entity.UserEntity;
 
 @Service
 @Transactional
@@ -19,37 +19,37 @@ public class UserInfoService
     @Autowired
     private UserRepository userDetailsRepository;
 
-    public User getUserInfoByEmail( String email )
+    public UserEntity getUserInfoByEmail( String email )
     {
         return userDetailsRepository.findByEmail( email );
     }
 
-    public User getUserInfoByUserName( String userName )
+    public UserEntity getUserInfoByUserName( String userName )
     {
         short enabled = 1;
         return userDetailsRepository.findByUserNameAndEnabled( userName, enabled );
     }
 
-    public List< User > getAllActiveUserInfo()
+    public List< UserEntity > getAllActiveUserInfo()
     {
         return userDetailsRepository.findAllByEnabled( ( short ) 1 );
     }
 
-    public User getUserInfoById( Integer id )
+    public UserEntity getUserInfoById( Integer id )
     {
         return userDetailsRepository.findByUserId( id );
     }
 
-    public User addUser( User userInfo )
+    public UserEntity addUser( UserEntity userInfo )
     {
         userInfo.setPassword( new BCryptPasswordEncoder().encode( userInfo.getPassword() ) );
 //    	userInfo.setPassword(  userInfo.getPassword() );
         return userDetailsRepository.save( userInfo );
     }
 
-    public User updateUser( Integer id, User userRecord )
+    public UserEntity updateUser( Integer id, UserEntity userRecord )
     {
-    	User userInfo = userDetailsRepository.findByUserId( id );
+    	UserEntity userInfo = userDetailsRepository.findByUserId( id );
         userInfo.setUserName( userRecord.getUserName() );
         userInfo.setPassword( userRecord.getPassword() );
         userInfo.setRole( userRecord.getRole() );
@@ -62,16 +62,16 @@ public class UserInfoService
         userDetailsRepository.deleteById( id );
     }
 
-    public User updatePassword( Integer id, User userRecord )
+    public UserEntity updatePassword( Integer id, UserEntity userRecord )
     {
-    	User userInfo = userDetailsRepository.findByUserId( id );
+    	UserEntity userInfo = userDetailsRepository.findByUserId( id );
         userInfo.setPassword( userRecord.getPassword() );
         return userDetailsRepository.save( userInfo );
     }
 
-    public User updateRole( Integer id, User userRecord )
+    public UserEntity updateRole( Integer id, UserEntity userRecord )
     {
-    	User userInfo = userDetailsRepository.findByUserId( id );
+    	UserEntity userInfo = userDetailsRepository.findByUserId( id );
         userInfo.setRole( userRecord.getRole() );
         return userDetailsRepository.save( userInfo );
     }

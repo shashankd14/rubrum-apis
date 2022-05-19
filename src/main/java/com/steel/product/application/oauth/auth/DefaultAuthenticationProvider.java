@@ -11,7 +11,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import com.steel.product.application.dao.UserRepository;
-import com.steel.product.application.entity.User;
+import com.steel.product.application.entity.UserEntity;
 
 public class DefaultAuthenticationProvider implements AuthenticationProvider
 {
@@ -42,11 +42,11 @@ public class DefaultAuthenticationProvider implements AuthenticationProvider
             return null;
         }
 
-        final Optional< User > appUser = this.userDetailsRepository.findByUserName( authentication.getName() );
+        final Optional< UserEntity > appUser = this.userDetailsRepository.findByUserName( authentication.getName() );
 
         if ( appUser.isPresent() )
         {
-            final User user = appUser.get();
+            final UserEntity user = appUser.get();
             final String userName = authentication.getName();
             final Object providedUserPassword = authentication.getCredentials();
 

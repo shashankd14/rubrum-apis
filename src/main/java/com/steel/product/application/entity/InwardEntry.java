@@ -113,12 +113,12 @@ public class InwardEntry {
 	@JsonManagedReference
 	@ManyToOne
 	@JoinColumn(name = "createdby")
-	private User createdBy;
+	private UserEntity createdBy;
 
 	@JsonManagedReference
 	@ManyToOne
 	@JoinColumn(name = "updatedby")
-	private User updatedBy;
+	private UserEntity updatedBy;
 
 	@CreationTimestamp
 	@Column(name = "createdon", nullable = false,updatable = false)
@@ -335,19 +335,19 @@ public class InwardEntry {
 		this.status = status;
 	}
 
-	public User getCreatedBy() {
+	public UserEntity getCreatedBy() {
 		return this.createdBy;
 	}
 
-	public void setCreatedBy(User createdBy) {
+	public void setCreatedBy(UserEntity createdBy) {
 		this.createdBy = createdBy;
 	}
 
-	public User getUpdatedBy() {
+	public UserEntity getUpdatedBy() {
 		return this.updatedBy;
 	}
 
-	public void setUpdatedBy(User updatedBy) {
+	public void setUpdatedBy(UserEntity updatedBy) {
 		this.updatedBy = updatedBy;
 	}
 

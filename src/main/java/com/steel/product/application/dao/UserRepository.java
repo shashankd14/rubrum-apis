@@ -1,6 +1,6 @@
 package com.steel.product.application.dao;
 
-import com.steel.product.application.entity.User;
+import com.steel.product.application.entity.UserEntity;
 
 import java.util.List;
 import java.util.Optional;
@@ -12,17 +12,17 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @Transactional
-public interface UserRepository extends CrudRepository< User, Integer >
+public interface UserRepository extends CrudRepository< UserEntity, Integer >
 {
-    public User findByUserNameAndEnabled( String userName, short enabled );
+    public UserEntity findByUserNameAndEnabled( String userName, short enabled );
 
-    public User findByEmail( String email );
+    public UserEntity findByEmail( String email );
 
-    public List< User > findAllByEnabled( short enabled );
+    public List< UserEntity > findAllByEnabled( short enabled );
 
     public void deleteById( Integer id );
 
-    public Optional<User> findByUserName( String name );
+    public Optional<UserEntity> findByUserName( String name );
 
-    public User findByUserId( Integer userId );
+    public UserEntity findByUserId( Integer userId );
 }
