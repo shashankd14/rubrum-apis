@@ -25,7 +25,7 @@ public class UserDetailsServiceImpl implements UserDetailsService
         UserEntity userInfo = userInfoDAO.getUserInfoByUserName( username );
         if(userInfo!=null) {
         	GrantedAuthority authority = new SimpleGrantedAuthority( userInfo.getRole() );
-            return new User( userInfo.getEmail(), userInfo.getPassword(), Arrays.asList( authority ) );
+            return new User( userInfo.getUserName(), userInfo.getPassword(), Arrays.asList( authority ) );
         } else {
         	throw new UsernameNotFoundException("Could not find user with name :: "+username);
         }

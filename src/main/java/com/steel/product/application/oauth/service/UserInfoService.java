@@ -19,11 +19,6 @@ public class UserInfoService
     @Autowired
     private UserRepository userDetailsRepository;
 
-    public UserEntity getUserInfoByEmail( String email )
-    {
-        return userDetailsRepository.findByEmail( email );
-    }
-
     public UserEntity getUserInfoByUserName( String userName )
     {
         short enabled = 1;

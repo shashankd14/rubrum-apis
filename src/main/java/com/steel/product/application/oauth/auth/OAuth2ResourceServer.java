@@ -29,7 +29,7 @@ public class OAuth2ResourceServer extends ResourceServerConfigurerAdapter
                                             "/swagger-resources/**",  // swagger-ui resources
                                             "/configuration/**"      // swagger configuration
                                             ).permitAll()
-                            				// .antMatchers("/**").authenticated()
+                            				//.antMatchers("/**").authenticated() // If we commented this then token is not required to access any service
 				.and().exceptionHandling().accessDeniedHandler(new OAuth2AccessDeniedHandler());
 	}
 

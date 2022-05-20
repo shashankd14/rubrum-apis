@@ -31,7 +31,7 @@ public class AuthenticationEntryPoint extends BasicAuthenticationEntryPoint impl
     @Override
     public void afterPropertiesSet()
     {
-        setRealmName( "APIMANAGER-ADMIN" );
+        setRealmName( "STEELPRODUCT-ADMIN" );
         super.afterPropertiesSet();
     }
 }
