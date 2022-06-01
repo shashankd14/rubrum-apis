@@ -6,6 +6,7 @@ import com.steel.product.application.entity.InwardEntry;
 
 import lombok.Data;
 
+import java.util.Date;
 import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -40,7 +41,16 @@ public class UserEntity {
 
 	@Column(name = "enabled")
 	private short enabled;
+	
+	@Column(name = "fail_lgn_counter")
+	private int failLgnCounter;
+	
+	@Column(name = "current_login_time")
+	private Date currentLoginTime;
 
+	@Column(name = "last_login_time")
+	private Date lastLoginTime;
+	
 	@JsonBackReference
 	@OneToMany(mappedBy = "createdBy", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH })
 	@JsonIgnoreProperties({ "createdBy" })

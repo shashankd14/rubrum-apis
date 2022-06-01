@@ -42,7 +42,7 @@ public class DeliveryDetailsController {
 		return new ResponseEntity<Object>(response, HttpStatus.OK);
 	}
 	
-    @GetMapping("/list")
+    @GetMapping("/listold")
     public ResponseEntity<Object> getAll(){
         try{
             List<DeliveryPacketsDto> deliveryDetailsList = deliveryDetailsService.deliveryList();

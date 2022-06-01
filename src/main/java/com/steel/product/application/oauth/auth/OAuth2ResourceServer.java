@@ -25,9 +25,11 @@ public class OAuth2ResourceServer extends ResourceServerConfigurerAdapter
 		http.authorizeRequests().antMatchers("/swagger-ui.html", 
 		                                    "/swagger-resources/**", 
 		                                    "/v2/**",
-                                            "/webjars/**",            // swagger-ui webjars
-                                            "/swagger-resources/**",  // swagger-ui resources
-                                            "/configuration/**"      // swagger configuration
+                                            "/webjars/**",            	// swagger-ui webjars
+                                            "/swagger-resources/**",  	// swagger-ui resources
+                                            "/configuration/**",      	// swagger configuration
+                                            "/oauth/**",      	// swagger configuration
+                                            "/login/**"      			// login controller
                                             ).permitAll()
                             				//.antMatchers("/**").authenticated() // If we commented this then token is not required to access any service
 				.and().exceptionHandling().accessDeniedHandler(new OAuth2AccessDeniedHandler());

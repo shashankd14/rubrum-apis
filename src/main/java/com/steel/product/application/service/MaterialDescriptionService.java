@@ -6,11 +6,12 @@ import com.steel.product.application.entity.Material;
 import java.util.List;
 
 public interface MaterialDescriptionService {
-  Material saveMatDesc(MaterialRequestDto materialRequestDto);
-  
-  List<MaterialResponseDetailsDto> getAllMatDesc();
-  
-  Material getMatById(int paramInt);
+	
+	Material saveMatDesc(MaterialRequestDto materialRequestDto);
 
-  Material findByDesc(String desc);
+	List<MaterialResponseDetailsDto> getAllMatDesc();
+
+	Material getMatById(int paramInt);
+
+	Material findByDesc(String desc);
 }

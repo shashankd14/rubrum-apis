@@ -236,7 +236,7 @@ public class InwardEntryController {
 		return new ResponseEntity<Object>(response, HttpStatus.OK);
 	}
 
-	@GetMapping({ "/list" })
+	@GetMapping({ "/listold" })
 	public ResponseEntity<Object> listold() {
 		try {
 			
