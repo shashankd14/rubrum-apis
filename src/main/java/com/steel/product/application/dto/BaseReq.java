@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class BaseReq {
 
-	private String userName;
+	private int userId;
 
 	private String ipAddress;
 	

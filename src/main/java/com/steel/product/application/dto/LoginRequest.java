@@ -20,6 +20,8 @@ import lombok.Data;
  */
 @Data
 public class LoginRequest extends BaseReq {
+	
+	private String userName;
 
 	private String password;
 }
