@@ -1,11 +1,13 @@
 package com.steel.product.application.dto.partDetails;
 
+import com.steel.product.application.dto.BaseReq;
+
 import lombok.*;
 
 
 @Getter
 @Setter
-public class partDetailsRequest {
+public class partDetailsRequest extends BaseReq {
 
     private Float targetWeight;
     private Float length;

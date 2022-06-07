@@ -5,9 +5,11 @@ import lombok.Setter;
 
 import java.util.List;
 
+import com.steel.product.application.dto.BaseReq;
+
 @Getter
 @Setter
-public class PartDto {
+public class PartDto extends BaseReq {
 
     private String partDetailsId;
     private List<Integer> groupIds;

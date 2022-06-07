@@ -1,6 +1,5 @@
 package com.steel.product.application.oauth.service;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -8,7 +7,6 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
-import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -27,9 +25,6 @@ import com.steel.product.application.entity.UserEntity;
 import com.steel.product.application.exception.MockException;
 import com.steel.product.application.response.LoginResponse;
 import com.steel.product.application.response.OAuthResponse;
-import com.steel.product.application.util.AdvancedEncryptionStandard;
-import com.steel.product.application.util.ApplicationConstants;
-
 import lombok.extern.log4j.Log4j2;
 
 @Service
@@ -69,8 +64,12 @@ public class UserInfoService
 				// .filter(logRequest())
 				.build();
 	}
+	
+	public UserEntity getUserEntityByEmail(String email) {
+		return userDetailsRepository.findByEmail(email);
+	}
 
-    public UserEntity getUserInfoByUserName( String userName )
+    public UserEntity getUserEntityByUserName( String userName )
     {
         short enabled = 1;
         return userDetailsRepository.findByUserNameAndEnabled( userName, enabled );
@@ -88,14 +87,16 @@ public class UserInfoService
 
     public UserEntity addUser( UserEntity userInfo )
     {
+    	userInfo.setFailLgnCounter(0);
+    	userInfo.setEnabled((short)1);
+    	userInfo.setRole("admin");
         userInfo.setPassword( new BCryptPasswordEncoder().encode( userInfo.getPassword() ) );
-//    	userInfo.setPassword(  userInfo.getPassword() );
         return userDetailsRepository.save( userInfo );
     }
 
-    public UserEntity updateUser( Integer id, UserEntity userRecord )
+    public UserEntity updateUser( UserEntity userRecord )
     {
-    	UserEntity userInfo = userDetailsRepository.findByUserId( id );
+    	UserEntity userInfo = userDetailsRepository.findByUserId( userRecord.getUserId() );
         userInfo.setUserName( userRecord.getUserName() );
         userInfo.setPassword( userRecord.getPassword() );
         userInfo.setRole( userRecord.getRole() );
@@ -108,10 +109,10 @@ public class UserInfoService
         userDetailsRepository.deleteById( id );
     }
 
-    public UserEntity updatePassword( Integer id, UserEntity userRecord )
+    public UserEntity updatePassword(UserEntity userRecord )
     {
-    	UserEntity userInfo = userDetailsRepository.findByUserId( id );
-        userInfo.setPassword( userRecord.getPassword() );
+    	UserEntity userInfo = userDetailsRepository.findByUserId( userRecord.getUserId() );
+        userInfo.setPassword (new BCryptPasswordEncoder().encode( userRecord.getPassword()) );
         return userDetailsRepository.save( userInfo );
     }
 
@@ -122,32 +123,18 @@ public class UserInfoService
         return userDetailsRepository.save( userInfo );
     }
     
-
 	public LoginResponse login(LoginRequest loginReq) throws MockException {
 
 		log.info("*** login processing started ***" + loginReq.getUserName());
 
 		LoginResponse response = null;
 		OAuthResponse oauthResp = null;
-		boolean isUserAuthorized = false;
-		String decodedpwd = "";
 
 		try {
 
-			String pwd = loginReq.getPassword();
-
-			try {
-				AdvancedEncryptionStandard advancedEncryptionStandard = new AdvancedEncryptionStandard(ApplicationConstants.AES_KEY.getBytes(StandardCharsets.UTF_8));
-				byte[] rawEncryptedPassword = Base64.decodeBase64(pwd);
-				byte[] decryptedCipherText = advancedEncryptionStandard.decrypt(rawEncryptedPassword);
-				decodedpwd = new String(decryptedCipherText);
-			} catch (Exception e) {
-				log.info("AES Decrytion exception catch:--" + e);
-			}
-
 			oauthResp = webClient.post().uri(authBasePath + "/oauth/token")
 					.header("Authorization", "Basic " + Base64Utils.encodeToString((clientId + ":" + clientPwd).getBytes("UTF-8")))
-					.body(BodyInserters.fromFormData("username", loginReq.getUserName()).with("password", decodedpwd).with("grant_type", "password"))
+					.body(BodyInserters.fromFormData("username", loginReq.getUserName()).with("password", loginReq.getPassword()).with("grant_type", "password"))
 					.retrieve().bodyToMono(OAuthResponse.class).block();
 
 			log.debug("OAuth response:" + oauthResp);
@@ -156,7 +143,6 @@ public class UserInfoService
 			log.error("error occurred during login", e);
 			if (e instanceof WebClientResponseException.Unauthorized
 					|| e instanceof WebClientResponseException.BadRequest) {
-				isUserAuthorized = false;
 			} else {
 				
 				List<String> errors = new ArrayList<>();
@@ -194,9 +180,6 @@ public class UserInfoService
 
 		return response;
 	}
-	
-	
-	
 	
 	
 }

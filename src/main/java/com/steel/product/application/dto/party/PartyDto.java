@@ -1,5 +1,6 @@
 package com.steel.product.application.dto.party;
 
+import com.steel.product.application.dto.BaseReq;
 import com.steel.product.application.dto.address.AddressDto;
 import com.steel.product.application.dto.endusertags.EndUserTagsRequest;
 import com.steel.product.application.dto.packetClassification.PacketClassificationRequest;
@@ -14,7 +15,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PartyDto {
+public class PartyDto extends BaseReq {
 
 	private String partyId;
 

@@ -36,8 +36,6 @@ public class InwardEntryController {
 
 	private MaterialGradeService matGradeService;
 
-	private UserService userSerive;
-
 	private AWSS3Service awsS3Service;
 
 	private InwardDocService inwardDocService;
@@ -54,7 +52,6 @@ public class InwardEntryController {
 		this.statusService = statusService;
 		this.matDescService = matDescService;
 		this.matGradeService = matGradeService;
-		this.userSerive = userSerive;
 		this.awsS3Service = awsS3Service;
 		this.inwardDocService = inwardDocService;
 	}
@@ -64,6 +61,7 @@ public class InwardEntryController {
 		InwardEntry inwardEntry = new InwardEntry();
 		System.out.println("DTO details " + inward);
 		try {
+			
 			inwardEntry.setInwardEntryId(0);
 			inwardEntry.setPurposeType(inward.getPurposeType());
 			inwardEntry.setParty(this.partyDetailsService.getPartyById(inward.getPartyId()));
@@ -115,8 +113,8 @@ public class InwardEntryController {
 			inwardEntry.setCreatedOn(this.timestamp);
 			inwardEntry.setUpdatedOn(this.timestamp);
 
-			inwardEntry.setCreatedBy(this.userSerive.getUserById(inward.getCreatedBy()));
-			inwardEntry.setUpdatedBy(this.userSerive.getUserById(inward.getUpdatedBy()));
+			inwardEntry.setCreatedBy( inward.getUserId() );
+			inwardEntry.setUpdatedBy( inward.getUserId());
 
 			if (inward.getTestCertificateFile() != null) {
 
@@ -151,6 +149,7 @@ public class InwardEntryController {
 		InwardEntry inwardEntry = new InwardEntry();
 		System.out.println("DTO details " + inward);
 		try {
+			
 			inwardEntry = inwdEntrySvc.getByEntryId(inward.getInwardId());
 
 			inwardEntry.setPurposeType(inward.getPurposeType());
@@ -187,8 +186,8 @@ public class InwardEntryController {
 
 			inwardEntry.setIsDeleted(Boolean.valueOf(false));
 
-			inwardEntry.setCreatedBy(this.userSerive.getUserById(inward.getCreatedBy()));
-			inwardEntry.setUpdatedBy(this.userSerive.getUserById(inward.getUpdatedBy()));
+			//inwardEntry.setCreatedBy( inward.getCreatedBy());
+			inwardEntry.setUpdatedBy( inward.getUserId());
 
 			if (inward.getTestCertificateFile() != null) {
 

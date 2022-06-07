@@ -351,6 +351,7 @@ public class InstructionServiceImpl implements InstructionService {
             instruction.setPacketClassification(packetClassificationMap.get(ins.getPacketClassificationId()));
             instruction.setEndUserTagsEntity(endUserTagsEntityMap.get(ins.getEndUserTagId()));
             instruction.setStatus(currentStatus);
+            instruction.setUpdatedBy(ins.getUserId());
             updatedInstructionList.add(instruction);
         }
         instructionRepository.saveAll(updatedInstructionList);
@@ -762,6 +763,7 @@ public class InstructionServiceImpl implements InstructionService {
             partDetailsRequest partDetailsRequest;
             PartDetails slitPartDetails = null;
             InstructionRequestDto instructionRequestDto = instructionSaveRequestDtos.get(0).getInstructionRequestDTOs().get(0);
+            int userId = instructionRequestDto.getUserId();
             Integer inwardId = instructionRequestDto.getInwardId();
             Integer processId = instructionRequestDto.getProcessId();
             LOGGER.info("saving instructions for process id "+processId);
@@ -882,6 +884,8 @@ public class InstructionServiceImpl implements InstructionService {
                     instruction.setEndUserTagsEntity(savedEndUserTagsEntities.get(requestDto.getEndUserTagId()));
                     instruction.setProcess(process);
                     instruction.setStatus(inProgressStatus);
+                    instruction.setCreatedBy(userId);
+                    instruction.setUpdatedBy(userId);
                     if (fromParentInstruction) {
                     	//instruction.setInwardId(inwardEntry);
                         parentInstruction.addChildInstruction(instruction);
@@ -901,8 +905,10 @@ public class InstructionServiceImpl implements InstructionService {
             List<PartDetailsResponse> partDetailsResponseList = partDetailsMapper.toResponseDto(partDetailsList);
 
             if (fromParentInstruction) {
+            	parentInstruction.setUpdatedBy(userId);
                 instructionRepository.save(parentInstruction);
             } else if (fromInward) {
+            	inwardEntry.setUpdatedBy(userId);
                 inwardService.saveEntry(inwardEntry);
             }
             return new ResponseEntity<Object>(partDetailsResponseList, HttpStatus.CREATED);

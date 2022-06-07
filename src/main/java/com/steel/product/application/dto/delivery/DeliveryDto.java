@@ -3,7 +3,9 @@ package com.steel.product.application.dto.delivery;
 import java.util.Date;
 import java.util.List;
 
-public class DeliveryDto {
+import com.steel.product.application.dto.BaseReq;
+
+public class DeliveryDto extends BaseReq {
 
     private List<DeliveryItemDetails> deliveryItemDetails;
 

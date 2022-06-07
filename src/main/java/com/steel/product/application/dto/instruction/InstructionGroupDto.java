@@ -2,7 +2,9 @@ package com.steel.product.application.dto.instruction;
 
 import java.util.List;
 
-public class InstructionGroupDto {
+import com.steel.product.application.dto.BaseReq;
+
+public class InstructionGroupDto extends BaseReq {
 
     List<Integer> instructionId;
     int count;

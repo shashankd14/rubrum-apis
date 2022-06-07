@@ -2,9 +2,11 @@ package com.steel.product.application.dto.inward;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import com.steel.product.application.dto.BaseReq;
+
 import java.util.ArrayList;
 
-public class InwardDto {
+public class InwardDto extends BaseReq {
 	
 	private int inwardId;
 
@@ -51,10 +53,6 @@ public class InwardDto {
 	private float presentWeight;
 
 	private float valueOfGoods;
-
-	private int createdBy;
-
-	private int updatedBy;
 
 	private ArrayList<MultipartFile> inwardFiles;
 	
@@ -193,22 +191,6 @@ public class InwardDto {
 
 	public void setMaterialGradeId(int materialGradeId) {
 		this.materialGradeId = materialGradeId;
-	}
-
-	public int getCreatedBy() {
-		return this.createdBy;
-	}
-
-	public void setCreatedBy(int createdBy) {
-		this.createdBy = createdBy;
-	}
-
-	public int getUpdatedBy() {
-		return this.updatedBy;
-	}
-
-	public void setUpdatedBy(int updatedBy) {
-		this.updatedBy = updatedBy;
 	}
 
 	public ArrayList<MultipartFile> getInwardFiles() {

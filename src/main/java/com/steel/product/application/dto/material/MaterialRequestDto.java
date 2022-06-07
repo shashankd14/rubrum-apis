@@ -4,7 +4,9 @@ package com.steel.product.application.dto.material;
 import java.util.Date;
 import java.util.List;
 
-public class MaterialRequestDto {
+import com.steel.product.application.dto.BaseReq;
+
+public class MaterialRequestDto extends BaseReq {
     private int matId;
     private String material;
     private List<String> grade;

@@ -58,7 +58,7 @@ public class AdvancedEncryptionStandard {
 	 * Test method
 	 */
 
-	public static void main(String[] args) throws Exception {
+	public static void mainss(String[] args) throws Exception {
 
 		String encodedCaptcha = "";
 		String decodedCaptcha = "";

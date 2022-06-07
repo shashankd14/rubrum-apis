@@ -53,30 +53,31 @@ public class DeliveryDetailsController {
     }
 
     @GetMapping("/getById/{deliveryId}")
-    public ResponseEntity<Object> getById(@PathVariable("deliveryId") int deliveryId){
-        try{
-            List<Instruction> deliveredInstructionsById = deliveryDetailsService.getInstructionsByDeliveryId(deliveryId);
-            return new ResponseEntity<>(deliveredInstructionsById.stream().map(ins -> Instruction.valueOf(ins)).collect(Collectors.toList()), HttpStatus.OK);
-        }catch (Exception e){
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+	public ResponseEntity<Object> getById(@PathVariable("deliveryId") int deliveryId) {
+		try {
+			List<Instruction> deliveredInstructionsById = deliveryDetailsService
+					.getInstructionsByDeliveryId(deliveryId);
+			return new ResponseEntity<>(deliveredInstructionsById.stream().map(ins -> Instruction.valueOf(ins))
+					.collect(Collectors.toList()), HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
     @PostMapping("/save")
-    public ResponseEntity<Object> save(@RequestBody DeliveryDto deliveryDto) {
-        ResponseEntity<Object> result = null;
+	public ResponseEntity<Object> save(@RequestBody DeliveryDto deliveryDto) {
+		ResponseEntity<Object> result = null;
 
-        DeliveryDetails deliveryDetails = new DeliveryDetails();
-            try {
-                deliveryDetails = deliveryDetailsService.save(deliveryDto);
-                result = new ResponseEntity<>("Delivery details saved successfully!", HttpStatus.OK);
-                } catch (Exception e) {
-                result = new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-            }
+		DeliveryDetails deliveryDetails = new DeliveryDetails();
+		try {
+			deliveryDetails = deliveryDetailsService.save(deliveryDto);
+			result = new ResponseEntity<>("Delivery details saved successfully!", HttpStatus.OK);
+		} catch (Exception e) {
+			result = new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 
-
-        return result;
-    }
+		return result;
+	}
 
 //    @PutMapping("/update/{deliveryId}")
 //    public ResponseEntity<Object> update(@PathVariable int deliveryId){
@@ -98,13 +99,13 @@ public class DeliveryDetailsController {
 //    }
 
     @DeleteMapping("/deleteById/{deliveryId}")
-    public ResponseEntity<Object> deleteById(@PathVariable("deliveryId") Integer id){
-        try{
-            deliveryDetailsService.deleteById(id);
-            return new ResponseEntity<>("Delete successful!", HttpStatus.OK);
-        }catch (Exception e){
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+	public ResponseEntity<Object> deleteById(@PathVariable("deliveryId") Integer id) {
+		try {
+			deliveryDetailsService.deleteById(id);
+			return new ResponseEntity<>("Delete successful!", HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
 }

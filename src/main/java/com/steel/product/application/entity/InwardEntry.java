@@ -1,6 +1,5 @@
 package com.steel.product.application.entity;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.steel.product.application.dto.inward.InwardEntryResponseDto;
 import com.steel.product.application.dto.pdf.InstructionResponsePdfDto;
 import com.steel.product.application.dto.pdf.InwardEntryPdfDto;
@@ -110,15 +109,11 @@ public class InwardEntry {
 	@Column(name = "remarks")
 	private String remarks;
 
-	@JsonManagedReference
-	@ManyToOne
-	@JoinColumn(name = "createdby")
-	private UserEntity createdBy;
+	@Column(name = "createdby")
+	private int createdBy;
 
-	@JsonManagedReference
-	@ManyToOne
-	@JoinColumn(name = "updatedby")
-	private UserEntity updatedBy;
+	@Column(name = "updatedby")
+	private int updatedBy;
 
 	@CreationTimestamp
 	@Column(name = "createdon", nullable = false,updatable = false)
@@ -335,19 +330,19 @@ public class InwardEntry {
 		this.status = status;
 	}
 
-	public UserEntity getCreatedBy() {
+	public int getCreatedBy() {
 		return this.createdBy;
 	}
 
-	public void setCreatedBy(UserEntity createdBy) {
+	public void setCreatedBy(int createdBy) {
 		this.createdBy = createdBy;
 	}
 
-	public UserEntity getUpdatedBy() {
+	public int getUpdatedBy() {
 		return this.updatedBy;
 	}
 
-	public void setUpdatedBy(UserEntity updatedBy) {
+	public void setUpdatedBy(int updatedBy) {
 		this.updatedBy = updatedBy;
 	}
 

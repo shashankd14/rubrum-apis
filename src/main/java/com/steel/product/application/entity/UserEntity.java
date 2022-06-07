@@ -51,14 +51,4 @@ public class UserEntity {
 	@Column(name = "last_login_time")
 	private Date lastLoginTime;
 	
-	@JsonBackReference
-	@OneToMany(mappedBy = "createdBy", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH })
-	@JsonIgnoreProperties({ "createdBy" })
-	private List<InwardEntry> inwardEntry;
-
-	@JsonBackReference
-	@OneToMany(mappedBy = "updatedBy", cascade = { CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH })
-	@JsonIgnoreProperties({ "updatedBy" })
-	private List<InwardEntry> inwardEntry1;
-
 }
