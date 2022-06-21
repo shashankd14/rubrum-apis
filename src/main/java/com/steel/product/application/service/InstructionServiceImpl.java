@@ -351,7 +351,7 @@ public class InstructionServiceImpl implements InstructionService {
             instruction.setPacketClassification(packetClassificationMap.get(ins.getPacketClassificationId()));
             instruction.setEndUserTagsEntity(endUserTagsEntityMap.get(ins.getEndUserTagId()));
             instruction.setStatus(currentStatus);
-            instruction.setUpdatedBy(ins.getUserId());
+            instruction.setUpdatedBy(1);
             updatedInstructionList.add(instruction);
         }
         instructionRepository.saveAll(updatedInstructionList);
@@ -763,7 +763,7 @@ public class InstructionServiceImpl implements InstructionService {
             partDetailsRequest partDetailsRequest;
             PartDetails slitPartDetails = null;
             InstructionRequestDto instructionRequestDto = instructionSaveRequestDtos.get(0).getInstructionRequestDTOs().get(0);
-            int userId = instructionRequestDto.getUserId();
+            int userId = 1;//instructionRequestDto.getUserId();
             Integer inwardId = instructionRequestDto.getInwardId();
             Integer processId = instructionRequestDto.getProcessId();
             LOGGER.info("saving instructions for process id "+processId);

@@ -61,7 +61,7 @@ public class InwardEntryController {
 		InwardEntry inwardEntry = new InwardEntry();
 		System.out.println("DTO details " + inward);
 		try {
-			
+			inward.setUserId(1);
 			inwardEntry.setInwardEntryId(0);
 			inwardEntry.setPurposeType(inward.getPurposeType());
 			inwardEntry.setParty(this.partyDetailsService.getPartyById(inward.getPartyId()));
@@ -149,7 +149,7 @@ public class InwardEntryController {
 		InwardEntry inwardEntry = new InwardEntry();
 		System.out.println("DTO details " + inward);
 		try {
-			
+			inward.setUserId(1);
 			inwardEntry = inwdEntrySvc.getByEntryId(inward.getInwardId());
 
 			inwardEntry.setPurposeType(inward.getPurposeType());
