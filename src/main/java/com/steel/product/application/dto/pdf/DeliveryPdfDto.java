@@ -2,9 +2,7 @@ package com.steel.product.application.dto.pdf;
 
 import java.util.List;
 
-import com.steel.product.application.dto.BaseReq;
-
-public class DeliveryPdfDto extends BaseReq {
+public class DeliveryPdfDto {
 
     private List<Integer> instructionIds;
 

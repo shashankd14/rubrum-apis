@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.servlet.http.HttpServletRequest;
+
 @RestController
 @CrossOrigin
 @Tag(name = "Inward Entry", description = "Inward Entry")
@@ -57,11 +59,14 @@ public class InwardEntryController {
 	}
 
 	@PostMapping("/addNew")
-	public ResponseEntity<Object> saveInwardEntry(@ModelAttribute InwardDto inward) {
+	public ResponseEntity<Object> saveInwardEntry(@ModelAttribute InwardDto inward, HttpServletRequest request) {
 		InwardEntry inwardEntry = new InwardEntry();
 		System.out.println("DTO details " + inward);
 		try {
-			inward.setUserId(1);
+			
+			int userId = (request.getHeader("userId")==null ? 1: Integer.parseInt(request.getHeader("userId")));
+
+			//inward.setUserId(userId);
 			inwardEntry.setInwardEntryId(0);
 			inwardEntry.setPurposeType(inward.getPurposeType());
 			inwardEntry.setParty(this.partyDetailsService.getPartyById(inward.getPartyId()));
@@ -113,8 +118,8 @@ public class InwardEntryController {
 			inwardEntry.setCreatedOn(this.timestamp);
 			inwardEntry.setUpdatedOn(this.timestamp);
 
-			inwardEntry.setCreatedBy( inward.getUserId() );
-			inwardEntry.setUpdatedBy( inward.getUserId());
+			inwardEntry.setCreatedBy(userId);
+			inwardEntry.setUpdatedBy(userId);
 
 			if (inward.getTestCertificateFile() != null) {
 
@@ -145,11 +150,13 @@ public class InwardEntryController {
 	}
 
 	@PutMapping({ "/update" })
-	public ResponseEntity<Object> updateEntry(@RequestBody InwardDto inward) {
+	public ResponseEntity<Object> updateEntry(@RequestBody InwardDto inward, HttpServletRequest request) {
 		InwardEntry inwardEntry = new InwardEntry();
 		System.out.println("DTO details " + inward);
 		try {
-			inward.setUserId(1);
+			int userId = (request.getHeader("userId")==null ? 1: Integer.parseInt(request.getHeader("userId")));
+
+			//inward.setUserId(userId);
 			inwardEntry = inwdEntrySvc.getByEntryId(inward.getInwardId());
 
 			inwardEntry.setPurposeType(inward.getPurposeType());
@@ -187,7 +194,7 @@ public class InwardEntryController {
 			inwardEntry.setIsDeleted(Boolean.valueOf(false));
 
 			//inwardEntry.setCreatedBy( inward.getCreatedBy());
-			inwardEntry.setUpdatedBy( inward.getUserId());
+			inwardEntry.setUpdatedBy( userId );
 
 			if (inward.getTestCertificateFile() != null) {
 

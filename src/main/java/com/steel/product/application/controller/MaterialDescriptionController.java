@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
 @RestController
 //@CrossOrigin(origins = {"http://localhost:3001"})
 //@CrossOrigin(origins = {"http://rubrum-frontend.s3-website.ap-south-1.amazonaws.com"})
@@ -26,13 +28,15 @@ public class MaterialDescriptionController {
 	private MaterialDescriptionService matDescSvc;
 
 	@PostMapping({ "/save" })
-	public ResponseEntity<Object> saveMatDesc(@RequestBody MaterialRequestDto materialRequestDto) {
+	public ResponseEntity<Object> saveMatDesc(@RequestBody MaterialRequestDto materialRequestDto, HttpServletRequest request) {
 		try {
+			int userId = (request.getHeader("userId")==null ? 1: Integer.parseInt(request.getHeader("userId")));
+
 			Material material = matDescSvc.findByDesc(materialRequestDto.getMaterial());
 			if(material!=null && material.getDescription().equalsIgnoreCase(materialRequestDto.getMaterial())) {
 				return new ResponseEntity<>("Material Desc Already exists.", HttpStatus.BAD_REQUEST);
 			}
-			matDescSvc.saveMatDesc(materialRequestDto);
+			matDescSvc.saveMatDesc(materialRequestDto, userId);
 			return new ResponseEntity<>("Material Saved Successfully", HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -41,20 +45,21 @@ public class MaterialDescriptionController {
 	}
 
 	@PutMapping({ "/update" })
-	public ResponseEntity<Object> updateMaterial(@RequestBody MaterialRequestDto materialRequestDto) {
+	public ResponseEntity<Object> updateMaterial(@RequestBody MaterialRequestDto materialRequestDto, HttpServletRequest request) {
 		try {
-			
+			int userId = (request.getHeader("userId")==null ? 1: Integer.parseInt(request.getHeader("userId")));
+
 			Material material = matDescSvc.findByDesc(materialRequestDto.getMaterial());
 			if(material!=null && materialRequestDto.getMaterial().equalsIgnoreCase(material.getDescription())  
 					 && material.getMatId() != materialRequestDto.getMatId() ) {
 				return new ResponseEntity<>("Material Desc Already exists.", HttpStatus.BAD_REQUEST);
 			}
 			
-			matDescSvc.saveMatDesc(materialRequestDto);
+			matDescSvc.saveMatDesc(materialRequestDto, userId);
 			return new ResponseEntity<>("Material Updated Successfully", HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return new ResponseEntity<>("Unknown error", HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 

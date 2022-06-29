@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface MaterialDescriptionService {
 	
-	Material saveMatDesc(MaterialRequestDto materialRequestDto);
+	Material saveMatDesc(MaterialRequestDto materialRequestDto, int userId);
 
 	List<MaterialResponseDetailsDto> getAllMatDesc();
 

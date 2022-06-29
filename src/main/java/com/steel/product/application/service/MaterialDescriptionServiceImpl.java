@@ -29,7 +29,7 @@ public class MaterialDescriptionServiceImpl implements MaterialDescriptionServic
 	}
 
 	@Override
-	public Material saveMatDesc(MaterialRequestDto materialRequestDto) {
+	public Material saveMatDesc(MaterialRequestDto materialRequestDto, int userId) {
 
 		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 		Material material = new Material();
@@ -38,8 +38,8 @@ public class MaterialDescriptionServiceImpl implements MaterialDescriptionServic
 			material = getMatById(materialRequestDto.getMatId());
 		}
 		material.setDescription(materialRequestDto.getMaterial());
-		material.setCreatedBy(1);
-		material.setUpdatedBy(1);
+		material.setCreatedBy(userId);
+		material.setUpdatedBy(userId);
 		material.setCreatedOn(timestamp);
 		material.setUpdatedOn(timestamp);
 		material.setIsDeleted(false);

@@ -4,13 +4,12 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 
-import com.steel.product.application.dto.pricemaster.PriceMasterRequest;
 import com.steel.product.application.dto.pricemaster.PriceMasterResponse;
-import com.steel.product.application.entity.PriceMasterEntity;
+import com.steel.product.application.dto.pricemaster.PriceMasterRequest;
 
 public interface PriceMasterService {
 
-	ResponseEntity<Object> save(List<PriceMasterRequest> priceMasterRequestList);
+	ResponseEntity<Object> save(List<PriceMasterRequest> priceMasterRequestList, int userId);
 
 	ResponseEntity<Object> delete(int id);
 
@@ -18,6 +17,7 @@ public interface PriceMasterService {
 
 	List<PriceMasterResponse> getAllPriceDetails();
 
+	/*
 	List<PriceMasterResponse> getCustProcessMaterialId(int partyId, int processId, int matGradeId);
 
 	List<PriceMasterResponse> getProcessPriceDetails(int processId);
@@ -31,5 +31,5 @@ public interface PriceMasterService {
 	List<PriceMasterEntity> copyCustProcessDetails(PriceMasterRequest priceMasterRequest);
 
 	List<PriceMasterEntity> copyMatGradeDetails(PriceMasterRequest priceMasterRequest);
-
+	 */
 }

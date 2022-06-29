@@ -2,14 +2,12 @@ package com.steel.product.application.dto.additionalpricemaster;
 
 import java.math.BigDecimal;
 
-import com.steel.product.application.dto.BaseReq;
-
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class AdditionalPriceMasterRequest extends BaseReq {
+public class AdditionalPriceMasterRequest {
 
 	private Integer id;
 

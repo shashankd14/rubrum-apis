@@ -71,7 +71,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 
     @Override
     @Transactional
-    public DeliveryDetails save(DeliveryDto deliveryDto) {
+    public DeliveryDetails save(DeliveryDto deliveryDto, int userId) {
         LOGGER.info("in save delivery api");
         List<DeliveryItemDetails> deliveryItemDetails;
         DeliveryDetails delivery;
@@ -90,8 +90,8 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
         LOGGER.info("adding new delivery with id");
         delivery = new DeliveryDetails();
 
-        delivery.setCreatedBy(1);
-        delivery.setUpdatedBy(1);
+        delivery.setCreatedBy(userId);
+        delivery.setUpdatedBy(userId);
         delivery.setVehicleNo(deliveryDto.getVehicleNo());
 
         deliveryItemDetails = deliveryDto.getDeliveryItemDetails();

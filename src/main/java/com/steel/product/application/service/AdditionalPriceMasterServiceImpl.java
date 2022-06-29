@@ -4,16 +4,14 @@ import com.steel.product.application.dao.AdditionalPriceMasterRepository;
 import com.steel.product.application.dao.AdditionalPriceStaticRepository;
 import com.steel.product.application.dto.additionalpricemaster.AdditionalPriceMasterRequest;
 import com.steel.product.application.dto.additionalpricemaster.AdditionalPriceMasterResponse;
-import com.steel.product.application.dto.pricemaster.PriceMasterResponse;
 import com.steel.product.application.entity.AdditionalPriceMasterEntity;
 import com.steel.product.application.entity.AdditionalPriceStaticEntity;
-import com.steel.product.application.entity.PriceMasterEntity;
-
 import lombok.extern.log4j.Log4j2;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +38,7 @@ public class AdditionalPriceMasterServiceImpl implements AdditionalPriceMasterSe
 	}
 	
 	@Override
-	public ResponseEntity<Object> save(List<AdditionalPriceMasterRequest> priceMasterRequestList) {
+	public ResponseEntity<Object> save(List<AdditionalPriceMasterRequest> priceMasterRequestList, int userId) {
 
 		ResponseEntity<Object> response = null;
 		
@@ -86,8 +84,8 @@ public class AdditionalPriceMasterServiceImpl implements AdditionalPriceMasterSe
 			priceMasterEntity.setPrice( priceMasterRequest.getPrice() );
 			priceMasterEntity.setRangeFrom( priceMasterRequest.getRangeFrom() );
 			priceMasterEntity.setRangeTo( priceMasterRequest.getRangeTo() );
-			priceMasterEntity.setCreatedBy( priceMasterRequest.getUserId() );
-			priceMasterEntity.setUpdatedBy( priceMasterRequest.getUserId() );
+			priceMasterEntity.setCreatedBy(userId);
+			priceMasterEntity.setUpdatedBy(userId);
 			priceMasterEntity.setCreatedOn( new Date() );
 			priceMasterEntity.setUpdatedOn( new Date() );
 			try {
@@ -116,16 +114,75 @@ public class AdditionalPriceMasterServiceImpl implements AdditionalPriceMasterSe
 
 	@Override
 	public AdditionalPriceMasterResponse getById(int id) {
-		
-		AdditionalPriceMasterResponse priceMasterResponse=new AdditionalPriceMasterResponse();
-		Optional<AdditionalPriceMasterEntity> list = additionalPriceMasterRepository.findById(id);
-		if(list.isPresent()){
-			AdditionalPriceMasterEntity priceMasterEntity=list.get();
-			priceMasterResponse = AdditionalPriceMasterEntity.valueOf(priceMasterEntity);
-		}
-		return priceMasterResponse;
+
+		List<Object[]> list = additionalPriceMasterRepository.findById1(id);
+		return prepareData(list);
+
 	}
 
+	@Override
+	public List<AdditionalPriceMasterResponse> getAllPriceDetails() {
+		List<Object[]> list = additionalPriceMasterRepository.findAll1();
+		return prepareDataList(list);
+	}
+		
+	private List<AdditionalPriceMasterResponse> prepareDataList(List<Object[]> results) {
+		List<AdditionalPriceMasterResponse> list = new ArrayList<>();
+		try {
+			if (results != null && !results.isEmpty()) {
+				for (Object[] result : results) {
+					AdditionalPriceMasterResponse additionalPriceMasterResponse = new AdditionalPriceMasterResponse();
+					additionalPriceMasterResponse.setId(result[0] != null ? (Integer) result[0] : null);
+					additionalPriceMasterResponse.setPartyId(result[1] != null ? (Integer) result[1] : null);
+					additionalPriceMasterResponse.setProcessId(result[2] != null ? (Integer) result[2] : null);
+					additionalPriceMasterResponse.setAdditionalPriceId(result[3] != null ? (Integer) result[3] : null);
+					additionalPriceMasterResponse.setRangeFrom(result[4] != null ? (BigDecimal) result[4] : null);
+					additionalPriceMasterResponse.setRangeTo(result[5] != null ? (BigDecimal) result[5] : null);
+					additionalPriceMasterResponse.setPrice(result[6] != null ? (BigDecimal) result[6] : null);
+					additionalPriceMasterResponse.setCreatedBy(result[7] != null ? (Integer) result[7] : null);
+					additionalPriceMasterResponse.setUpdatedBy(result[8] != null ? (Integer) result[8] : null);
+					additionalPriceMasterResponse.setCreatedOn(result[9] != null ? (Date) result[9] : null);
+					additionalPriceMasterResponse.setUpdatedOn(result[10] != null ? (Date) result[10] : null);
+					additionalPriceMasterResponse.setPartyName(result[11] != null ? (String) result[11] : null);
+					additionalPriceMasterResponse.setProcessName(result[12] != null ? (String) result[12] : null);
+					additionalPriceMasterResponse.setAdditionalPriceDesc( result[13] != null ? (String) result[13] : null);
+					list.add(additionalPriceMasterResponse);
+				}
+			}
+		} catch (Exception e) {
+			log.error("Unable to get services due to :: ", e);
+		}
+		return list;
+	}
+	
+	private AdditionalPriceMasterResponse prepareData (List<Object[]> results) {
+		AdditionalPriceMasterResponse additionalPriceMasterResponse = null;
+		try {
+			if (results != null && !results.isEmpty()) {
+				for (Object[] result : results) {
+					additionalPriceMasterResponse = new AdditionalPriceMasterResponse();
+					additionalPriceMasterResponse.setId(result[0] != null ? (Integer) result[0] : null);
+					additionalPriceMasterResponse.setPartyId(result[1] != null ? (Integer) result[1] : null);
+					additionalPriceMasterResponse.setProcessId(result[2] != null ? (Integer) result[2] : null);
+					additionalPriceMasterResponse.setAdditionalPriceId(result[3] != null ? (Integer) result[3] : null);
+					additionalPriceMasterResponse.setRangeFrom(result[4] != null ? (BigDecimal) result[4] : null);
+					additionalPriceMasterResponse.setRangeTo(result[5] != null ? (BigDecimal) result[5] : null);
+					additionalPriceMasterResponse.setPrice(result[6] != null ? (BigDecimal) result[6] : null);
+					additionalPriceMasterResponse.setCreatedBy(result[7] != null ? (Integer) result[7] : null);
+					additionalPriceMasterResponse.setUpdatedBy(result[8] != null ? (Integer) result[8] : null);
+					additionalPriceMasterResponse.setCreatedOn(result[9] != null ? (Date) result[9] : null);
+					additionalPriceMasterResponse.setUpdatedOn(result[10] != null ? (Date) result[10] : null);
+					additionalPriceMasterResponse.setPartyName(result[11] != null ? (String) result[11] : null);
+					additionalPriceMasterResponse.setProcessName(result[12] != null ? (String) result[12] : null);
+					additionalPriceMasterResponse.setAdditionalPriceDesc( result[13] != null ? (String) result[13] : null);
+				}
+			}
+		} catch (Exception e) {
+			log.error("Unable to get services due to :: ", e);
+		}
+		return additionalPriceMasterResponse;
+	}
+	
 	@Override
 	public List<AdditionalPriceMasterResponse> getCustProcessAdditionalPriceId(int partyId, int processId,
 			int additionalPriceId) {
@@ -136,12 +193,13 @@ public class AdditionalPriceMasterServiceImpl implements AdditionalPriceMasterSe
 
 		return list;
 	}
-	
+
 	@Override
 	public List<AdditionalPriceMasterResponse> getCustProcess(int partyId, int processId) {
 
-		List<AdditionalPriceMasterResponse> list = additionalPriceMasterRepository.findByPartyIdAndProcessId(partyId, processId).stream()
-				.map(i -> AdditionalPriceMasterEntity.valueOf(i)).collect(Collectors.toList());
+		List<AdditionalPriceMasterResponse> list = additionalPriceMasterRepository
+				.findByPartyIdAndProcessId(partyId, processId).stream().map(i -> AdditionalPriceMasterEntity.valueOf(i))
+				.collect(Collectors.toList());
 
 		return list;
 	}
@@ -163,15 +221,6 @@ public class AdditionalPriceMasterServiceImpl implements AdditionalPriceMasterSe
 
 		return list;
 	}
-
-
-	@Override
-	public List<AdditionalPriceMasterResponse> getAllPriceDetails() {
-
-		List<AdditionalPriceMasterResponse> list = additionalPriceMasterRepository.findAll().stream()
-				.map(i -> AdditionalPriceMasterEntity.valueOf(i)).collect(Collectors.toList());
-
-		return list;
-	}
+	
 
 }

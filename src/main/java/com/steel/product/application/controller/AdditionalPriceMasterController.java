@@ -7,6 +7,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,15 +29,16 @@ public class AdditionalPriceMasterController {
 	}
 	
 	@PostMapping(value = "/save", produces = "application/json")
-	public ResponseEntity<Object> save(@RequestBody List<AdditionalPriceMasterRequest> priceMasterRequest) {
+	public ResponseEntity<Object> save(@RequestBody List<AdditionalPriceMasterRequest> priceMasterRequest, HttpServletRequest request) {
+		int userId = (request.getHeader("userId")==null ? 1: Integer.parseInt(request.getHeader("userId")));
 
-		return additionalPriceMasterService.save(priceMasterRequest);
+		return additionalPriceMasterService.save(priceMasterRequest, userId);
 	}
 	
 	@PutMapping(value = "/update", produces = "application/json")
-	public ResponseEntity<Object> update(@RequestBody List<AdditionalPriceMasterRequest> priceMasterRequest) {
-
-		return additionalPriceMasterService.save(priceMasterRequest);
+	public ResponseEntity<Object> update(@RequestBody List<AdditionalPriceMasterRequest> priceMasterRequest, HttpServletRequest request) {
+		int userId = (request.getHeader("userId")==null ? 1: Integer.parseInt(request.getHeader("userId")));
+		return additionalPriceMasterService.save(priceMasterRequest, userId);
 	}
 	
 	@DeleteMapping(value = "/{id}", produces = "application/json" )
@@ -48,6 +51,13 @@ public class AdditionalPriceMasterController {
 		AdditionalPriceMasterResponse resp = additionalPriceMasterService.getById(id);
 		return new ResponseEntity<Object>(resp, HttpStatus.OK);
 	}
+
+	@GetMapping(produces = "application/json")
+	public List<AdditionalPriceMasterResponse> getAllPriceDetails() {
+		List<AdditionalPriceMasterResponse> list = additionalPriceMasterService.getAllPriceDetails();
+		return list;
+	}
+	/*
 
 	@GetMapping(value = "/{partyId}/{processId}/{matGradeId}", produces = "application/json")
 	public ResponseEntity<Object> getCustProcessMaterialId(@PathVariable("partyId") int partyId,
@@ -74,13 +84,7 @@ public class AdditionalPriceMasterController {
 	public ResponseEntity<Object> getProcessPriceDetails(@PathVariable("processId") int processId) {
 		List<AdditionalPriceMasterResponse> list = additionalPriceMasterService.getProcessPriceDetails( processId);
 		return new ResponseEntity<Object>(list, HttpStatus.OK);
-	}
-
-	@GetMapping(produces = "application/json")
-	public List<AdditionalPriceMasterResponse> getAllPriceDetails() {
-		List<AdditionalPriceMasterResponse> list = additionalPriceMasterService.getAllPriceDetails();
-		return list;
-	}
+	}*/
 
 
 }

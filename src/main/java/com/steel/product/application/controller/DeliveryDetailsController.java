@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.servlet.http.HttpServletRequest;
+
 @RestController
 @CrossOrigin
 @Tag(name = "Delivery Details", description = "Delivery Details")
@@ -65,12 +67,14 @@ public class DeliveryDetailsController {
 	}
 
     @PostMapping("/save")
-	public ResponseEntity<Object> save(@RequestBody DeliveryDto deliveryDto) {
+	public ResponseEntity<Object> save(@RequestBody DeliveryDto deliveryDto, HttpServletRequest request) {
 		ResponseEntity<Object> result = null;
 
 		DeliveryDetails deliveryDetails = new DeliveryDetails();
 		try {
-			deliveryDetails = deliveryDetailsService.save(deliveryDto);
+			int userId = (request.getHeader("userId")==null ? 1: Integer.parseInt(request.getHeader("userId")));
+
+			deliveryDetails = deliveryDetailsService.save(deliveryDto, userId);
 			result = new ResponseEntity<>("Delivery details saved successfully!", HttpStatus.OK);
 		} catch (Exception e) {
 			result = new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);

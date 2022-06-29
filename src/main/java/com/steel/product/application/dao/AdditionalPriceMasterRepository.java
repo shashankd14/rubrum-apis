@@ -29,5 +29,21 @@ public interface AdditionalPriceMasterRepository extends JpaRepository<Additiona
 
 	List<AdditionalPriceMasterEntity> findByPartyIdAndProcessIdAndAdditionalPriceId(Integer partyId, Integer processId, Integer additionalPriceId);
 
-	List<AdditionalPriceMasterEntity> findAll();
+	//List<AdditionalPriceMasterEntity> findAll();
+	
+	@Query("select id, partyId, processId, additionalPriceId, rangeFrom, rangeTo, price, createdBy, updatedBy, createdOn, updatedOn, "
+            + " (SELECT partyName from Party party where party.nPartyId=pc.partyId) as partyName, "
+            + " (SELECT processName from Process process where process.processId=pc.processId) as processName, "
+            + " (SELECT priceDesc from AdditionalPriceStaticEntity ap where ap.id = pc.additionalPriceId) as additionalPriceDesc"
+			+ " from AdditionalPriceMasterEntity pc where pc.id = :id")
+	List<Object[]> findById1(@Param("id") Integer id);
+	
+	
+	@Query("select id, partyId, processId, additionalPriceId, rangeFrom, rangeTo, price, createdBy, updatedBy, createdOn, updatedOn, "
+            + " (SELECT partyName from Party party where party.nPartyId=pc.partyId) as partyName, "
+            + " (SELECT processName from Process process where process.processId=pc.processId) as processName, "
+            + " (SELECT priceDesc from AdditionalPriceStaticEntity ap where ap.id = pc.additionalPriceId) as additionalPriceDesc"
+			+ " from AdditionalPriceMasterEntity pc")
+	List<Object[]> findAll1();
+	
 }

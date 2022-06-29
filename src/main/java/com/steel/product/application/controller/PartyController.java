@@ -17,6 +17,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 @RestController
 @CrossOrigin
 @Tag(name = "Party", description = "Party")
@@ -33,12 +35,13 @@ public class PartyController {
 	}
 
 	@PostMapping({ "/save" })
-	public ResponseEntity<Object> saveParty(@RequestBody PartyDto partyDto) {
+	public ResponseEntity<Object> saveParty(@RequestBody PartyDto partyDto, HttpServletRequest request) {
 		try {
-			
+			int userId = (request.getHeader("userId")==null ? 1: Integer.parseInt(request.getHeader("userId")));
+
 			boolean stts = partySvc.checkPartyName(partyDto);
 			if(stts) {
-				Party party = partySvc.saveParty(partyDto);
+				Party party = partySvc.saveParty(partyDto, userId);
 				return new ResponseEntity<>("Party Saved successfully!!!", HttpStatus.OK);
 			} else {
 				return new ResponseEntity<>("Entered Party Name already Exists, " + partyDto.getPartyName(), HttpStatus.BAD_REQUEST);
@@ -50,11 +53,12 @@ public class PartyController {
 	}
 
 	@PutMapping({ "/update" })
-	public ResponseEntity<Object> updateParty(@RequestBody PartyDto partyDto) {
+	public ResponseEntity<Object> updateParty(@RequestBody PartyDto partyDto, HttpServletRequest request) {
 		try {
+			int userId = (request.getHeader("userId")==null ? 1: Integer.parseInt(request.getHeader("userId")));
 			boolean stts = partySvc.checkPartyName(partyDto);
 			if(stts) {
-				Party party = partySvc.saveParty(partyDto);
+				Party party = partySvc.saveParty(partyDto, userId);
 				return new ResponseEntity<>("Party updated successfully!!!", HttpStatus.OK);
 			} else {
 				return new ResponseEntity<>("Entered Party Name already Exists, " + partyDto.getPartyName(), HttpStatus.BAD_REQUEST);

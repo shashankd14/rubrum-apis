@@ -15,6 +15,16 @@ public class PriceMasterResponse {
 	private Integer processId;
 
 	private Integer matGradeId;
+	
+	private String partyName;
+
+	private String processName;
+
+	private String matGradeName;
+	
+	private String materialDescription;
+	
+	private Integer matId;
 
 	private BigDecimal thicknessFrom;
 

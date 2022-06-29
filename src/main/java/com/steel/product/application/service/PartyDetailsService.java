@@ -11,7 +11,7 @@ public interface PartyDetailsService {
 	
 	boolean checkPartyName(PartyDto partyDto);
 
-	Party saveParty(PartyDto partyDto);
+	Party saveParty(PartyDto partyDto, int userId);
 
 	List<Party> getAllParties();
 

@@ -1,8 +1,6 @@
 package com.steel.product.application.dto.pdf;
 
-import com.steel.product.application.dto.BaseReq;
-
-public class PdfDto extends BaseReq {
+public class PdfDto {
 
     private Integer inwardId;
     private Integer processId;

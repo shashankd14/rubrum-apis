@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.servlet.http.HttpServletRequest;
+
 @RestController
 @CrossOrigin
 @Tag(name = "Instruction Details", description = "Instruction Details")
@@ -73,15 +75,18 @@ public class InstructionController {
 
 	@PostMapping("/save")
 	public ResponseEntity<Object> saveInstruction(
-			@RequestBody List<InstructionSaveRequestDto> instructionSaveRequestDtos) {
-		return instructionService.addInstruction(instructionSaveRequestDtos);
+			@RequestBody List<InstructionSaveRequestDto> instructionSaveRequestDtos, HttpServletRequest request) {
+		int userId = (request.getHeader("userId")==null ? 1: Integer.parseInt(request.getHeader("userId")));
+
+		return instructionService.addInstruction(instructionSaveRequestDtos, userId);
 
 	}
 
 	@PutMapping("/update")
-	public ResponseEntity<Object> update(@RequestBody InstructionFinishDto instructionFinishDto) {
+	public ResponseEntity<Object> update(@RequestBody InstructionFinishDto instructionFinishDto, HttpServletRequest request) {
 
-		return instructionService.updateInstruction(instructionFinishDto);
+		int userId = (request.getHeader("userId")==null ? 1: Integer.parseInt(request.getHeader("userId")));
+		return instructionService.updateInstruction(instructionFinishDto, userId);
 	}
 
 	@PostMapping("{instructionId}")
@@ -97,13 +102,15 @@ public class InstructionController {
 	}
 
 	@PostMapping("/saveUnprocessedForDelivery/{inwardId}")
-	public ResponseEntity<Object> saveUnprocessedForDelivery(@PathVariable int inwardId) {
-		return new ResponseEntity<>(instructionService.saveUnprocessedForDelivery(inwardId), HttpStatus.OK);
+	public ResponseEntity<Object> saveUnprocessedForDelivery(@PathVariable int inwardId, HttpServletRequest request) {
+		int userId = (request.getHeader("userId")==null ? 1: Integer.parseInt(request.getHeader("userId")));
+		return new ResponseEntity<>(instructionService.saveUnprocessedForDelivery(inwardId, userId), HttpStatus.OK);
 	}
 
 	@PostMapping("/saveFullHandlingDispatch/{inwardId}")
-	public ResponseEntity<Object> saveFullHandlingDispatch(@PathVariable int inwardId) {
-		return new ResponseEntity<>(instructionService.saveFullHandlingDispatch(inwardId ), HttpStatus.OK);
+	public ResponseEntity<Object> saveFullHandlingDispatch(@PathVariable int inwardId, HttpServletRequest request) {
+		int userId = (request.getHeader("userId")==null ? 1: Integer.parseInt(request.getHeader("userId")));
+		return new ResponseEntity<>(instructionService.saveFullHandlingDispatch(inwardId, userId ), HttpStatus.OK);
 	}
 	
 	@PostMapping("/cut")

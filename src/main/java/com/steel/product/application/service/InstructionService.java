@@ -39,9 +39,9 @@ public interface InstructionService {
 
     public Instruction save(Instruction instruction);
 
-    public InstructionResponseDto saveUnprocessedForDelivery(Integer inwardId);
+    public InstructionResponseDto saveUnprocessedForDelivery(Integer inwardId, int userId);
 
-    ResponseEntity<Object> updateInstruction(InstructionFinishDto instructionFinishDto);
+    ResponseEntity<Object> updateInstruction(InstructionFinishDto instructionFinishDto, int userId);
 
     public List<Instruction> findAllByInstructionIdInAndStatus(List<Integer> instructionIds, Integer statusId);
 
@@ -57,7 +57,7 @@ public interface InstructionService {
 
     List<Instruction> getAllByInstructionIdIn(List<Integer> instructionIds);
 
-    ResponseEntity<Object> addInstruction(List<InstructionSaveRequestDto> instructionSaveRequestDtos);
+    ResponseEntity<Object> addInstruction(List<InstructionSaveRequestDto> instructionSaveRequestDtos, int userId);
 
     InwardEntryPdfDto findInwardJoinFetchInstructionsAndPartDetails(String partDetailsId,List<Integer> groupIds);
 
@@ -71,7 +71,7 @@ public interface InstructionService {
 
     HashMap<Integer,Double> findSumOfPlannedWeightAndActualWeightForUnprocessed();
 
-    InstructionResponseDto saveFullHandlingDispatch(Integer inwardId);
+    InstructionResponseDto saveFullHandlingDispatch(Integer inwardId, int userId);
 
 }
 

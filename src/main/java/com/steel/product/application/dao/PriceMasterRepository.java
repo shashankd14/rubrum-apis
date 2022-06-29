@@ -4,8 +4,6 @@ import com.steel.product.application.entity.PriceMasterEntity;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -19,7 +17,16 @@ public interface PriceMasterRepository extends JpaRepository<PriceMasterEntity, 
 	List<PriceMasterEntity> validateRange(@Param("partyId") Integer partyId, @Param("processId") Integer processId,
 			@Param("matGradeId") Integer matGradeId, @Param("rangeValue") BigDecimal rangeValue);
 
-	Optional<PriceMasterEntity> findById(Integer id);
+	//Optional<PriceMasterEntity> findById(Integer id);
+	
+	@Query("select id, partyId, processId, matGradeId, thicknessFrom, thicknessTo, price, createdBy, updatedBy, createdOn, updatedOn, "
+            + " (SELECT partyName from Party party where party.nPartyId=pc.partyId) as partyName, "
+            + " (SELECT processName from Process process where process.processId=pc.processId) as processName, "
+            + " (SELECT gradeName from MaterialGrade mg where mg.gradeId=pc.matGradeId) as gradeName, "
+            + " (SELECT mg.parentMaterial.description from MaterialGrade mg where mg.gradeId=pc.matGradeId) as description, "
+            + " (SELECT mg.parentMaterial.matId from MaterialGrade mg where mg.gradeId=pc.matGradeId) as matId "
+			+ " from PriceMasterEntity pc where pc.id = :id")
+	List<Object[]> findById1(@Param("id") Integer id);
 
 	List<PriceMasterEntity> findByPartyId(Integer partyId);
 
@@ -29,5 +36,12 @@ public interface PriceMasterRepository extends JpaRepository<PriceMasterEntity, 
 
 	List<PriceMasterEntity> findByPartyIdAndProcessIdAndMatGradeId(Integer partyId, Integer processId, Integer matGradeId);
 
-	List<PriceMasterEntity> findAll();
+	@Query("select id, partyId, processId, matGradeId, thicknessFrom, thicknessTo, price, createdBy, updatedBy, createdOn, updatedOn, "
+            + " (SELECT partyName from Party party where party.nPartyId=pc.partyId) as partyName, "
+            + " (SELECT processName from Process process where process.processId=pc.processId) as processName, "
+            + " (SELECT gradeName from MaterialGrade mg where mg.gradeId=pc.matGradeId) as gradeName, "
+            + " (SELECT mg.parentMaterial.description from MaterialGrade mg where mg.gradeId=pc.matGradeId) as description, "
+            + " (SELECT mg.parentMaterial.matId from MaterialGrade mg where mg.gradeId=pc.matGradeId) as matId "
+			+ " from PriceMasterEntity pc")
+	List<Object[]> findAll1();
 }

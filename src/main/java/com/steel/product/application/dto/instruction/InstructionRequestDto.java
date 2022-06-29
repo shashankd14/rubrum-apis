@@ -1,8 +1,6 @@
 package com.steel.product.application.dto.instruction;
 
-
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.steel.product.application.dto.BaseReq;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -11,7 +9,7 @@ import java.util.Date;
 
 @Getter
 @Setter
-public class InstructionRequestDto extends BaseReq {
+public class InstructionRequestDto {
 
     private int instructionId;
 

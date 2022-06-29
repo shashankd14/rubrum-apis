@@ -15,6 +15,12 @@ public class AdditionalPriceMasterResponse {
 	private Integer processId;
 
 	private Integer additionalPriceId;
+	
+	private String partyName;
+
+	private String processName;
+
+	private String additionalPriceDesc;
 
 	private BigDecimal rangeFrom;
 

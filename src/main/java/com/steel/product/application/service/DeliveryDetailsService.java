@@ -18,7 +18,7 @@ public interface DeliveryDetailsService {
 
     public DeliveryDetails getById(int theId);
 
-    public DeliveryDetails save(DeliveryDto deliveryDto);
+    public DeliveryDetails save(DeliveryDto deliveryDto, int userId);
 
     public void deleteById(Integer id);
 

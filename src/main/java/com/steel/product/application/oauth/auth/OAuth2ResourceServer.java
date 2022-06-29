@@ -25,8 +25,9 @@ public class OAuth2ResourceServer extends ResourceServerConfigurerAdapter
 		http.authorizeRequests().antMatchers("/swagger-ui.html", 
 		                                    "/swagger-resources/**", 
 		                                    "/v2/**",
-                                            "/webjars/**",            	// swagger-ui webjars
+                                            "/webjars/**",            	// webjars
                                             "/swagger-resources/**",  	// swagger-ui resources
+                                            "/swagger-ui/**",  			// swagger-ui resources
                                             "/configuration/**",      	// swagger configuration
                                             "/oauth/**",      			// swagger configuration
                                             "/user/signup",     		// user controller

@@ -302,7 +302,7 @@ public class InstructionServiceImpl implements InstructionService {
 
     @Override
     @Transactional
-    public ResponseEntity<Object> updateInstruction(InstructionFinishDto instructionFinishDto) {
+    public ResponseEntity<Object> updateInstruction(InstructionFinishDto instructionFinishDto, int userId) {
         LOGGER.info("in finish instruction method");
         List<InstructionRequestDto> InstructionRequestDtos = instructionFinishDto.getInstructionDtos();
         List<Instruction> updatedInstructionList = new ArrayList<Instruction>();
@@ -315,7 +315,7 @@ public class InstructionServiceImpl implements InstructionService {
         if("WIPtoFG".equalsIgnoreCase(instructionFinishDto.getTaskType())) {    // WIPtoFG
         	statusId = inProgressStatusId;
         	currentStatus= readyToDeliverStatus;
-        } else  if("FGtoWIP".equalsIgnoreCase(instructionFinishDto.getTaskType())) {    // FGtoWIP   .... cancel finish
+        } else if("FGtoWIP".equalsIgnoreCase(instructionFinishDto.getTaskType())) {    // FGtoWIP   .... cancel finish
         	statusId = readyToDeliverStatusId;
         	currentStatus = inProgressStatus;
         } else {             // FGtoFG   .... edit finish
@@ -351,7 +351,7 @@ public class InstructionServiceImpl implements InstructionService {
             instruction.setPacketClassification(packetClassificationMap.get(ins.getPacketClassificationId()));
             instruction.setEndUserTagsEntity(endUserTagsEntityMap.get(ins.getEndUserTagId()));
             instruction.setStatus(currentStatus);
-            instruction.setUpdatedBy(1);
+            instruction.setUpdatedBy(userId);
             updatedInstructionList.add(instruction);
         }
         instructionRepository.saveAll(updatedInstructionList);
@@ -464,7 +464,7 @@ public class InstructionServiceImpl implements InstructionService {
     }
 
     @Override
-    public InstructionResponseDto saveFullHandlingDispatch(Integer inwardId) {
+    public InstructionResponseDto saveFullHandlingDispatch(Integer inwardId, int userId) {
         LOGGER.info("inside saveUnprocessedForDelivery method");
         Date date = new Date();
         Instruction unprocessedInstruction = new Instruction();
@@ -487,8 +487,8 @@ public class InstructionServiceImpl implements InstructionService {
         unprocessedInstruction.setProcess(handlingProcess);
         unprocessedInstruction.setStatus(readyToDeliverStatus);
         unprocessedInstruction.setInstructionDate(date);
-        unprocessedInstruction.setCreatedBy(1);
-        unprocessedInstruction.setUpdatedBy(1);
+        unprocessedInstruction.setCreatedBy(userId);
+        unprocessedInstruction.setUpdatedBy(userId);
         unprocessedInstruction.setCreatedOn(date);
         unprocessedInstruction.setUpdatedOn(date);
         unprocessedInstruction.setIsDeleted(false);
@@ -505,7 +505,7 @@ public class InstructionServiceImpl implements InstructionService {
     }
 
     @Override
-    public InstructionResponseDto saveUnprocessedForDelivery(Integer inwardId) {
+    public InstructionResponseDto saveUnprocessedForDelivery(Integer inwardId, int userId) {
         LOGGER.info("inside saveUnprocessedForDelivery method");
         Date date = new Date();
         Instruction unprocessedInstruction = new Instruction();
@@ -528,8 +528,8 @@ public class InstructionServiceImpl implements InstructionService {
         unprocessedInstruction.setProcess(handlingProcess);
         unprocessedInstruction.setStatus(readyToDeliverStatus);
         unprocessedInstruction.setInstructionDate(date);
-        unprocessedInstruction.setCreatedBy(1);
-        unprocessedInstruction.setUpdatedBy(1);
+        unprocessedInstruction.setCreatedBy(userId);
+        unprocessedInstruction.setUpdatedBy(userId);
         unprocessedInstruction.setCreatedOn(date);
         unprocessedInstruction.setUpdatedOn(date);
         unprocessedInstruction.setIsDeleted(false);
@@ -756,14 +756,13 @@ public class InstructionServiceImpl implements InstructionService {
 
     @Override
     @Transactional
-    public ResponseEntity<Object> addInstruction(List<InstructionSaveRequestDto> instructionSaveRequestDtos) {
+    public ResponseEntity<Object> addInstruction(List<InstructionSaveRequestDto> instructionSaveRequestDtos, int userId) {
             LOGGER.info("no of requests " + instructionSaveRequestDtos.size());
             Map<PartDetails, List<InstructionRequestDto>> instructionPlanAndListMap = new HashMap<>();
             LOGGER.info("inside save instruction method");
             partDetailsRequest partDetailsRequest;
             PartDetails slitPartDetails = null;
             InstructionRequestDto instructionRequestDto = instructionSaveRequestDtos.get(0).getInstructionRequestDTOs().get(0);
-            int userId = 1;//instructionRequestDto.getUserId();
             Integer inwardId = instructionRequestDto.getInwardId();
             Integer processId = instructionRequestDto.getProcessId();
             LOGGER.info("saving instructions for process id "+processId);

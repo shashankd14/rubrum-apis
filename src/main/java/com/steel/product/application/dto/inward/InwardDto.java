@@ -2,11 +2,9 @@ package com.steel.product.application.dto.inward;
 
 import org.springframework.web.multipart.MultipartFile;
 
-import com.steel.product.application.dto.BaseReq;
-
 import java.util.ArrayList;
 
-public class InwardDto extends BaseReq {
+public class InwardDto {
 	
 	private int inwardId;
 

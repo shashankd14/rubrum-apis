@@ -1,23 +1,22 @@
 package com.steel.product.application.dto.pricemaster;
 
 import java.math.BigDecimal;
-
-import com.steel.product.application.dto.BaseReq;
+import java.util.List;
 
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class PriceMasterRequest extends BaseReq {
+public class PriceMasterRequest  {
 
 	private Integer id;
 
-	private Integer partyId;
+	private List<Integer> partyId;
 
 	private Integer processId;
 
-	private Integer matGradeId;
+	private List<Integer> matGradeId;
 	
 	private BigDecimal thicknessFrom;
 
