@@ -48,8 +48,8 @@ public class PartyDetailsServiceImpl implements PartyDetailsService {
 		LOGGER.info("inside saveParty method");
 		boolean stts = true;
 		Party party = partyMapper.toEntity(partyDto);
-		if(partyDto.getNPartyId() !=null && partyDto.getNPartyId().length()>0) {
-			party.setnPartyId(Integer.parseInt( partyDto.getNPartyId()));
+		if(partyDto.getNPartyId() !=null && partyDto.getNPartyId()>0) {
+			party.setnPartyId( partyDto.getNPartyId());
 		}
 		
 		List<Party> partyList = partyRepo.findByPartyName(party.getPartyName());
@@ -73,8 +73,8 @@ public class PartyDetailsServiceImpl implements PartyDetailsService {
 	public Party saveParty(PartyDto partyDto, int userId) {
 		LOGGER.info("inside saveParty method");
 		Party party = partyMapper.toEntity(partyDto);
-		if(partyDto.getNPartyId() !=null && partyDto.getNPartyId().length()>0) {
-			party.setnPartyId(Integer.parseInt( partyDto.getNPartyId()));
+		if(partyDto.getNPartyId() !=null && partyDto.getNPartyId() >0) {
+			party.setnPartyId( partyDto.getNPartyId());
 		}
 		/*
 	    Map<String,PacketClassification> savedPacketClassifications = packetClassificationService

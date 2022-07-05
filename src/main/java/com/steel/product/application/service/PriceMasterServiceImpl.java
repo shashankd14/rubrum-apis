@@ -68,18 +68,17 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 				} else {
 					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered From Range Already Exists.\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 				}
-			}else {
-				List<PriceMasterEntity> toList = priceMasterRepository.validateRange(entity.getPartyId(),
-						entity.getProcessId(), entity.getMatGradeId(), entity.getThicknessTo());
-				if(toList!=null && toList.size()>0) {
-					if(toList.size()==1) {
-						PriceMasterEntity duplicateEntity=toList.get(0);
-						if(entity.getId() != duplicateEntity.getId() ) {
-							return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered To Range Already Exists.\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
-						}
-					} else {
+			} 
+			List<PriceMasterEntity> toList = priceMasterRepository.validateRange(entity.getPartyId(),
+					entity.getProcessId(), entity.getMatGradeId(), entity.getThicknessTo());
+			if(toList!=null && toList.size()>0) {
+				if(toList.size()==1) {
+					PriceMasterEntity duplicateEntity=toList.get(0);
+					if(entity.getId() != duplicateEntity.getId() ) {
 						return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered To Range Already Exists.\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 					}
+				} else {
+					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered To Range Already Exists.\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 				}
 			}
 		}

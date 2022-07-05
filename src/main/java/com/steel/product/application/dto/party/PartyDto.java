@@ -1,22 +1,20 @@
 package com.steel.product.application.dto.party;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.steel.product.application.dto.address.AddressDto;
 import com.steel.product.application.dto.endusertags.EndUserTagsRequest;
 import com.steel.product.application.dto.packetClassification.PacketClassificationRequest;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
 
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
 public class PartyDto {
 
-	private String nPartyId;
+	@JsonProperty("nPartyId")
+	private Integer nPartyId;
 
 	private String partyName;
 

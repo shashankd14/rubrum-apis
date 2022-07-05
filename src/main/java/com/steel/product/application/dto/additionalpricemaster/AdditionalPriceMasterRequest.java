@@ -1,6 +1,7 @@
 package com.steel.product.application.dto.additionalpricemaster;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -11,11 +12,11 @@ public class AdditionalPriceMasterRequest {
 
 	private Integer id;
 
-	private Integer partyId;
+	private List<Integer> partyId;
 
 	private Integer processId;
 
-	private Integer additionalPriceId;
+	private List<Integer> additionalPriceId;
 	
 	private BigDecimal rangeFrom;
 

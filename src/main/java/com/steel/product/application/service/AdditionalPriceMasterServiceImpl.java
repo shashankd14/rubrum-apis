@@ -38,65 +38,67 @@ public class AdditionalPriceMasterServiceImpl implements AdditionalPriceMasterSe
 	}
 	
 	@Override
-	public ResponseEntity<Object> save(List<AdditionalPriceMasterRequest> priceMasterRequestList, int userId) {
+	public ResponseEntity<Object> save(List<AdditionalPriceMasterRequest> addiPriceMasterRequestList, int userId) {
 
 		ResponseEntity<Object> response = null;
+		List<AdditionalPriceMasterEntity> list=new ArrayList<>();
 		
-		for (AdditionalPriceMasterRequest priceMasterRequest : priceMasterRequestList) {
-			List<AdditionalPriceMasterEntity> fromList = additionalPriceMasterRepository.validateRange(priceMasterRequest.getPartyId(),
-					priceMasterRequest.getProcessId(), priceMasterRequest.getAdditionalPriceId(), 
-					priceMasterRequest.getRangeFrom());
+		for (AdditionalPriceMasterRequest additionalPriceMasterRequest : addiPriceMasterRequestList) {
+
+			for (Integer partyId : additionalPriceMasterRequest.getPartyId()) {
+
+				for (Integer matGradeId : additionalPriceMasterRequest.getAdditionalPriceId()) {
+					AdditionalPriceMasterEntity priceMasterEntity = new AdditionalPriceMasterEntity();
+					if (additionalPriceMasterRequest.getId() != null && additionalPriceMasterRequest.getId() > 0) {
+						priceMasterEntity.setId(additionalPriceMasterRequest.getId());
+					}
+					priceMasterEntity.setPartyId(partyId);
+					priceMasterEntity.setProcessId(additionalPriceMasterRequest.getProcessId());
+					priceMasterEntity.setAdditionalPriceId(matGradeId);
+					priceMasterEntity.setPrice(additionalPriceMasterRequest.getPrice());
+					priceMasterEntity.setRangeFrom(additionalPriceMasterRequest.getRangeFrom());
+					priceMasterEntity.setRangeTo(additionalPriceMasterRequest.getRangeTo());
+					priceMasterEntity.setCreatedBy(userId);
+					priceMasterEntity.setUpdatedBy(userId);
+					priceMasterEntity.setCreatedOn(new Date());
+					priceMasterEntity.setUpdatedOn(new Date());
+					list.add(priceMasterEntity);
+				}
+			}
+		}
+		
+		for (AdditionalPriceMasterEntity entity : list) {
+			List<AdditionalPriceMasterEntity> fromList = additionalPriceMasterRepository.validateRange(entity.getPartyId(),
+					entity.getProcessId(), entity.getAdditionalPriceId(), 
+					entity.getRangeFrom());
 			
 			if(fromList!=null && fromList.size()>0) {
 				if(fromList.size()==1) {
 					AdditionalPriceMasterEntity duplicateEntity=fromList.get(0);
-					if(priceMasterRequest.getId() != duplicateEntity.getId() ) {
+					if(entity.getId() != duplicateEntity.getId() ) {
 						return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered From Range Already Exists.\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 					}
 				} else {
 					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered From Range Already Exists.\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 				}
-			}else {
-				List<AdditionalPriceMasterEntity> toList = additionalPriceMasterRepository.validateRange(priceMasterRequest.getPartyId(),
-						priceMasterRequest.getProcessId(), priceMasterRequest.getAdditionalPriceId(),
-						priceMasterRequest.getRangeTo());
-				if(toList!=null && toList.size()>0) {
-					if(toList.size()==1) {
-						AdditionalPriceMasterEntity duplicateEntity=toList.get(0);
-						if(priceMasterRequest.getId() != duplicateEntity.getId() ) {
-							return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered To Range Already Exists.\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
-						}
-					} else {
+			} 
+			List<AdditionalPriceMasterEntity> toList = additionalPriceMasterRepository.validateRange(entity.getPartyId(),
+					entity.getProcessId(), entity.getAdditionalPriceId(),
+					entity.getRangeTo());
+			if(toList!=null && toList.size()>0) {
+				if(toList.size()==1) {
+					AdditionalPriceMasterEntity duplicateEntity=toList.get(0);
+					if(entity.getId() != duplicateEntity.getId() ) {
 						return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered To Range Already Exists.\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 					}
+				} else {
+					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered To Range Already Exists.\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 				}
 			}
 		}
-		for (AdditionalPriceMasterRequest priceMasterRequest : priceMasterRequestList) {
+		additionalPriceMasterRepository.saveAll(list);
 
-			AdditionalPriceMasterEntity priceMasterEntity = new AdditionalPriceMasterEntity();
-			if(priceMasterRequest.getId()!=null && priceMasterRequest.getId()>0) {
-				priceMasterEntity.setId( priceMasterRequest.getId() );
-			}
-			priceMasterEntity.setPartyId( priceMasterRequest.getPartyId() );
-			priceMasterEntity.setProcessId( priceMasterRequest.getProcessId() );
-			priceMasterEntity.setAdditionalPriceId( priceMasterRequest.getAdditionalPriceId() );
-			priceMasterEntity.setPrice( priceMasterRequest.getPrice() );
-			priceMasterEntity.setRangeFrom( priceMasterRequest.getRangeFrom() );
-			priceMasterEntity.setRangeTo( priceMasterRequest.getRangeTo() );
-			priceMasterEntity.setCreatedBy(userId);
-			priceMasterEntity.setUpdatedBy(userId);
-			priceMasterEntity.setCreatedOn( new Date() );
-			priceMasterEntity.setUpdatedOn( new Date() );
-			try {
-				
-				additionalPriceMasterRepository.save(priceMasterEntity);
-	
-				response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Additional Price Master details saved successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
-			} catch (Exception e) {
-				response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"" + e.getMessage() + "\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
-			}
-		}
+		response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Additional Price Master details saved successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
 		return response;
 	}
 
