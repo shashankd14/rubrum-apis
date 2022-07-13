@@ -73,5 +73,7 @@ public interface InstructionService {
 
     InstructionResponseDto saveFullHandlingDispatch(Integer inwardId, int userId);
 
+	int getPartCount(Long theId);
+
 }
 

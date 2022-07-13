@@ -913,5 +913,11 @@ public class InstructionServiceImpl implements InstructionService {
             return new ResponseEntity<Object>(partDetailsResponseList, HttpStatus.CREATED);
     }
 
+	@Override
+	public int getPartCount(Long theId) {
+
+		int result = instructionRepository.getPartCount(theId);
+		return result;
+	}
 
 }

@@ -13,13 +13,18 @@ import java.util.List;
 @Repository
 public interface MaterialGradeRepository extends JpaRepository<MaterialGrade, Integer> {
 
-    @Query(nativeQuery = true, value = "select * from product_material_grades where nMatId= :materialId  ")
-    List<MaterialGrade> getGradesByMaterialId(@Param("materialId") Integer materialId);
+	@Query(nativeQuery = true, value = "select * from product_material_grades where nMatId= :materialId  ")
+	List<MaterialGrade> getGradesByMaterialId(@Param("materialId") Integer materialId);
 
-    @Transactional
-    @Modifying
-    @Query(nativeQuery = true, value = "delete from product_material_grades where nMatId= :materialId  ")
-    void deleteGradesByMaterialId(@Param("materialId") Integer materialId);
+	@Transactional
+	@Modifying
+	@Query(nativeQuery = true, value = "delete from product_material_grades where nMatId= :materialId  ")
+	void deleteGradesByMaterialId(@Param("materialId") Integer materialId);
 
-    MaterialGrade findByGradeName(String gradeName);
+	MaterialGrade findByGradeName(String gradeName);
+	
+	@Query("select matg from MaterialGrade matg where matg.parentMaterial.matId = :materialId and upper(gradeName) = upper(:matGradeName) ")
+	MaterialGrade getGradesByMaterialIdName(@Param("materialId") Integer materialId,
+			@Param("matGradeName") String matGradeName);
+
 }

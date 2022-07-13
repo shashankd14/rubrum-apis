@@ -2,10 +2,15 @@ package com.steel.product.application.service;
 
 import com.steel.product.application.dao.PriceMasterRepository;
 import com.steel.product.application.dto.pricemaster.PriceMasterResponse;
+import com.steel.product.application.dto.additionalpricemaster.AdditionalPriceMasterResponse;
+import com.steel.product.application.dto.pricemaster.CalculatePriceRequest;
 import com.steel.product.application.dto.pricemaster.PriceMasterRequest;
+import com.steel.product.application.entity.Instruction;
+import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.entity.PriceMasterEntity;
 
 import lombok.extern.log4j.Log4j2;
+import net.minidev.json.JSONObject;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -23,6 +28,12 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 
 	@Autowired
 	PriceMasterRepository priceMasterRepository;
+
+	@Autowired
+	InstructionService instructionService;
+
+	@Autowired
+	AdditionalPriceMasterService additionalPriceMasterService;
 
 	@Override
 	public ResponseEntity<Object> save(List<PriceMasterRequest> priceMasterRequestList, int userId) {
@@ -114,118 +125,6 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 		return prepareDataList(list);
 	}
 	
-	/*
-	@Override
-	public List<PriceMasterResponse> getCustProcessMaterialId(int partyId, int processId, int matGradeId) {
-
-		List<PriceMasterResponse> list = priceMasterRepository
-				.findByPartyIdAndProcessIdAndMatGradeId(partyId, processId, matGradeId).stream()
-				.map(i -> PriceMasterEntity.valueOf(i)).collect(Collectors.toList());
-
-		return list;
-	}
-
-	@Override
-	public List<PriceMasterResponse> getCustProcess(int partyId, int processId) {
-
-		List<PriceMasterResponse> list = priceMasterRepository.findByPartyIdAndProcessId(partyId, processId).stream()
-				.map(i -> PriceMasterEntity.valueOf(i)).collect(Collectors.toList());
-
-		return list;
-	}
-
-	@Override
-	public List<PriceMasterEntity> copyCustomerDetails(PriceMasterRequest priceMasterRequest) {
-
-		log.info("getPartyId  " + priceMasterRequest.getPartyId() + " == ==   " + priceMasterRequest.getToPartyId());
-		List<PriceMasterEntity> list = priceMasterRepository.findByPartyId(priceMasterRequest.getPartyId());
-		for (PriceMasterEntity ins : list) {
-			PriceMasterEntity kk = new PriceMasterEntity();
-			kk.setPartyId(priceMasterRequest.getToPartyId());
-			kk.setProcessId(ins.getProcessId());
-			kk.setMatGradeId(ins.getMatGradeId());
-			kk.setThicknessFrom(ins.getThicknessFrom());
-			kk.setThicknessTo(ins.getThicknessTo());
-			kk.setPrice(ins.getPrice());
-			kk.setCreatedBy(ins.getCreatedBy());
-			kk.setUpdatedBy(ins.getUpdatedBy());
-			kk.setCreatedOn(ins.getCreatedOn());
-			kk.setUpdatedOn(ins.getUpdatedOn());
-			priceMasterRepository.save(kk);
-		}
-		log.info("copyCustomerDetails ");
-
-		return list;
-	}
-	
-	@Override
-	public List<PriceMasterEntity> copyCustProcessDetails(PriceMasterRequest priceMasterRequest) {
-
-		log.info("getPartyId  " + priceMasterRequest.getPartyId() + " == ==   " + priceMasterRequest.getToProcessId());
-		List<PriceMasterEntity> list = priceMasterRepository.findByPartyIdAndProcessId(priceMasterRequest.getPartyId(), priceMasterRequest.getProcessId());
-		for (PriceMasterEntity ins : list) {
-			PriceMasterEntity kk = new PriceMasterEntity();
-			kk.setPartyId(ins.getPartyId());
-			kk.setProcessId(priceMasterRequest.getToProcessId());
-			kk.setMatGradeId(ins.getMatGradeId());
-			kk.setThicknessFrom(ins.getThicknessFrom());
-			kk.setThicknessTo(ins.getThicknessTo());
-			kk.setPrice(ins.getPrice());
-			kk.setCreatedBy(ins.getCreatedBy());
-			kk.setUpdatedBy(ins.getUpdatedBy());
-			kk.setCreatedOn(ins.getCreatedOn());
-			kk.setUpdatedOn(ins.getUpdatedOn());
-			priceMasterRepository.save(kk);
-		}
-		log.info("copyCustProcessDetails ");
-
-		return list;
-	}
-
-	@Override
-	public List<PriceMasterEntity> copyMatGradeDetails(PriceMasterRequest priceMasterRequest) {
-
-		log.info("getPartyId  " + priceMasterRequest.getPartyId() + " == ==   " + priceMasterRequest.getToMatGradeId());
-		List<PriceMasterEntity> list = priceMasterRepository.findByPartyIdAndProcessIdAndMatGradeId(
-				priceMasterRequest.getPartyId(), priceMasterRequest.getProcessId(), priceMasterRequest.getMatGradeId());
-		for (PriceMasterEntity ins : list) {
-			PriceMasterEntity kk = new PriceMasterEntity();
-			kk.setPartyId(ins.getPartyId());
-			kk.setProcessId(ins.getProcessId());
-			kk.setMatGradeId(priceMasterRequest.getToMatGradeId());
-			kk.setThicknessFrom(ins.getThicknessFrom());
-			kk.setThicknessTo(ins.getThicknessTo());
-			kk.setPrice(ins.getPrice());
-			kk.setCreatedBy(ins.getCreatedBy());
-			kk.setUpdatedBy(ins.getUpdatedBy());
-			kk.setCreatedOn(ins.getCreatedOn());
-			kk.setUpdatedOn(ins.getUpdatedOn());
-			priceMasterRepository.save(kk);
-		}
-		log.info("copyMatGradeDetails ");
-
-		return list;
-	}
-
-	@Override
-	public List<PriceMasterResponse> getCustPriceDetails(int partyId) {
-
-		List<PriceMasterResponse> list = priceMasterRepository.findByPartyId(partyId).stream()
-				.map(i -> PriceMasterEntity.valueOf(i)).collect(Collectors.toList());
-
-		return list;
-	}
-
-	@Override
-	public List<PriceMasterResponse> getProcessPriceDetails(int processId) {
-
-		List<PriceMasterResponse> list = priceMasterRepository.findByProcessId(processId).stream()
-				.map(i -> PriceMasterEntity.valueOf(i)).collect(Collectors.toList());
-
-		return list;
-	}
-	*/
-	
 	private List<PriceMasterResponse> prepareDataList(List<Object[]> results) {
 		List<PriceMasterResponse> list = new ArrayList<>();
 		try {
@@ -285,6 +184,101 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 			log.error("Unable to get services due to :: ", e);
 		}
 		return priceMasterResponse;
+	}
+
+	@Override
+	public ResponseEntity<Object> calculatePrice(CalculatePriceRequest calculatePriceRequest ) {
+		JSONObject obj=new JSONObject();
+		JSONObject basePrice=new JSONObject();
+		JSONObject additionalPrice=new JSONObject();
+		BigDecimal totalPrice = new BigDecimal("0.00");
+		obj.put("BasePrice", basePrice);
+		obj.put("AdditionalPrice", additionalPrice);
+
+		List<PriceMasterResponse> basePriceList = getAllPriceDetails();
+		List<AdditionalPriceMasterResponse> addPriceList = additionalPriceMasterService.getAllPriceDetails();
+
+		for (Integer instructionId : calculatePriceRequest.getInstructionIds()) {
+			System.out.println("instructionId == " + instructionId);
+			Instruction instruction = instructionService.getById(instructionId);
+			InwardEntry inwardEntry = instruction.getInwardId();
+			BigDecimal fThickness = new BigDecimal(Float.toString(inwardEntry.getfThickness()));
+			BigDecimal plannedNoOfPieces = new BigDecimal(Float.toString(instruction.getPlannedNoOfPieces()));
+			BigDecimal bundleWeight = new BigDecimal(Float.toString(instruction.getActualWeight()==null ? instruction.getPlannedWeight():instruction.getActualWeight()));
+			BigDecimal noofPlans = BigDecimal.valueOf( inwardEntry.getInstructions().size() );
+			
+			System.out.println("InwardEntryId == " + inwardEntry.getInwardEntryId());
+			System.out.println("inwardEntry getPartyId == " + inwardEntry.getParty().getnPartyId());
+			System.out.println("instruction ProcessId() == " + instruction.getProcess().getProcessId());
+			System.out.println("inwardEntry GradeId == " + inwardEntry.getMaterialGrade().getGradeId());
+			System.out.println("Inward fThickness == " + fThickness);
+			System.out.println("Inward bundleWeight == " + bundleWeight);
+			
+			for (PriceMasterResponse priceMasterResponse : basePriceList) {
+				
+				System.out.println("PartyId == " + priceMasterResponse.getPartyId());
+				System.out.println("GradeId == " + priceMasterResponse.getMatGradeId() );
+				System.out.println("ProcessId == " + priceMasterResponse.getProcessId());
+				
+				if (inwardEntry.getMaterialGrade().getGradeId() == priceMasterResponse.getMatGradeId()
+					&& inwardEntry.getParty().getnPartyId() == priceMasterResponse.getPartyId()
+					&& instruction.getProcess().getProcessId() == priceMasterResponse.getProcessId()
+					&& fThickness.compareTo(priceMasterResponse.getThicknessFrom()) == 1
+					&& priceMasterResponse.getThicknessTo().compareTo(fThickness) == 1) {
+					
+					System.out.println("ThicknessFrom  == " + priceMasterResponse.getThicknessFrom()+" ...ThicknessTo == "+priceMasterResponse.getThicknessTo());
+					System.out.println("Price  == " + priceMasterResponse.getPrice());
+					basePrice.put(inwardEntry.getMaterial().getDescription()+" - "+inwardEntry.getMaterialGrade().getGradeName(), priceMasterResponse.getPrice());
+					totalPrice = totalPrice.add(priceMasterResponse.getPrice());
+				}
+			}
+			
+			for (AdditionalPriceMasterResponse additionalPriceMasterResponse : addPriceList) {
+				
+				if (inwardEntry.getParty().getnPartyId() == additionalPriceMasterResponse.getPartyId()
+				&& instruction.getProcess().getProcessId() == additionalPriceMasterResponse.getProcessId()) {
+					
+					if (additionalPriceMasterResponse.getProcessId() == 2 ) {
+								
+						int partCount = instructionService.getPartCount(instruction.getPartDetails().getId());
+						
+						if (additionalPriceMasterResponse.getAdditionalPriceId() == 1  
+							&& BigDecimal.valueOf(partCount).compareTo(additionalPriceMasterResponse.getRangeFrom()) == 1
+							&& additionalPriceMasterResponse.getRangeTo().compareTo(BigDecimal.valueOf(partCount)) == 1) {
+
+							additionalPrice.put(additionalPriceMasterResponse.getAdditionalPriceDesc(), additionalPriceMasterResponse.getPrice());
+							totalPrice = totalPrice.add(additionalPriceMasterResponse.getPrice());
+						}
+						
+						if (additionalPriceMasterResponse.getAdditionalPriceId() == 2  
+							&& plannedNoOfPieces.compareTo(additionalPriceMasterResponse.getRangeFrom()) == 1
+							&& additionalPriceMasterResponse.getRangeTo().compareTo(plannedNoOfPieces) == 1) {
+
+							additionalPrice.put(additionalPriceMasterResponse.getAdditionalPriceDesc(), additionalPriceMasterResponse.getPrice());
+							totalPrice = totalPrice.add(additionalPriceMasterResponse.getPrice());
+						}
+						
+						if (additionalPriceMasterResponse.getAdditionalPriceId() == 3  
+							&& bundleWeight.compareTo(additionalPriceMasterResponse.getRangeFrom()) == 1
+							&& additionalPriceMasterResponse.getRangeTo().compareTo(bundleWeight) == 1) {
+
+							additionalPrice.put(additionalPriceMasterResponse.getAdditionalPriceDesc(), additionalPriceMasterResponse.getPrice());
+							totalPrice = totalPrice.add(additionalPriceMasterResponse.getPrice());
+						}
+						
+						if (additionalPriceMasterResponse.getAdditionalPriceId() == 5  
+							&& noofPlans.compareTo(additionalPriceMasterResponse.getRangeFrom()) == 1
+							&& additionalPriceMasterResponse.getRangeTo().compareTo(noofPlans) == 1) {
+
+							additionalPrice.put(additionalPriceMasterResponse.getAdditionalPriceDesc(), additionalPriceMasterResponse.getPrice());
+							totalPrice = totalPrice.add(additionalPriceMasterResponse.getPrice());
+						}
+					}
+				}
+			}
+		}
+		obj.put("TotalPrice", totalPrice);
+		return new ResponseEntity<Object>(obj, HttpStatus.OK);
 	}
 
 }

@@ -100,4 +100,7 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
             " from product_instruction where status < 4 and groupId is null and isDeleted is false group by inwardId order by inwardId",nativeQuery = true)
     List<Object[]> findSumOfPlannedWeightAndActualWeightForUnprocessed();
 
+    @Query("select count(ins.instructionId) from Instruction ins where ins.partDetails.id = :partDetailsId")
+    int getPartCount(@Param("partDetailsId") Long partDetailsId);
+
 }

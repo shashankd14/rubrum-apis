@@ -16,7 +16,7 @@ public class AdditionalPriceMasterRequest {
 
 	private Integer processId;
 
-	private List<Integer> additionalPriceId;
+	private Integer additionalPriceId;
 	
 	private BigDecimal rangeFrom;
 

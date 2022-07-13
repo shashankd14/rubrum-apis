@@ -47,23 +47,21 @@ public class AdditionalPriceMasterServiceImpl implements AdditionalPriceMasterSe
 
 			for (Integer partyId : additionalPriceMasterRequest.getPartyId()) {
 
-				for (Integer matGradeId : additionalPriceMasterRequest.getAdditionalPriceId()) {
-					AdditionalPriceMasterEntity priceMasterEntity = new AdditionalPriceMasterEntity();
-					if (additionalPriceMasterRequest.getId() != null && additionalPriceMasterRequest.getId() > 0) {
-						priceMasterEntity.setId(additionalPriceMasterRequest.getId());
-					}
-					priceMasterEntity.setPartyId(partyId);
-					priceMasterEntity.setProcessId(additionalPriceMasterRequest.getProcessId());
-					priceMasterEntity.setAdditionalPriceId(matGradeId);
-					priceMasterEntity.setPrice(additionalPriceMasterRequest.getPrice());
-					priceMasterEntity.setRangeFrom(additionalPriceMasterRequest.getRangeFrom());
-					priceMasterEntity.setRangeTo(additionalPriceMasterRequest.getRangeTo());
-					priceMasterEntity.setCreatedBy(userId);
-					priceMasterEntity.setUpdatedBy(userId);
-					priceMasterEntity.setCreatedOn(new Date());
-					priceMasterEntity.setUpdatedOn(new Date());
-					list.add(priceMasterEntity);
+				AdditionalPriceMasterEntity priceMasterEntity = new AdditionalPriceMasterEntity();
+				if (additionalPriceMasterRequest.getId() != null && additionalPriceMasterRequest.getId() > 0) {
+					priceMasterEntity.setId(additionalPriceMasterRequest.getId());
 				}
+				priceMasterEntity.setPartyId(partyId);
+				priceMasterEntity.setProcessId(additionalPriceMasterRequest.getProcessId());
+				priceMasterEntity.setAdditionalPriceId(additionalPriceMasterRequest.getAdditionalPriceId());
+				priceMasterEntity.setPrice(additionalPriceMasterRequest.getPrice());
+				priceMasterEntity.setRangeFrom(additionalPriceMasterRequest.getRangeFrom());
+				priceMasterEntity.setRangeTo(additionalPriceMasterRequest.getRangeTo());
+				priceMasterEntity.setCreatedBy(userId);
+				priceMasterEntity.setUpdatedBy(userId);
+				priceMasterEntity.setCreatedOn(new Date());
+				priceMasterEntity.setUpdatedOn(new Date());
+				list.add(priceMasterEntity);
 			}
 		}
 		

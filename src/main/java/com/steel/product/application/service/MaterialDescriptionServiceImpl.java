@@ -48,13 +48,26 @@ public class MaterialDescriptionServiceImpl implements MaterialDescriptionServic
 
 		savedMaterial = matDescRepo.save(material);
 
-		if (materialRequestDto.getMatId() != 0) {
-			materialGradeRepository.deleteGradesByMaterialId(materialRequestDto.getMatId());
+		//if (materialRequestDto.getMatId() != 0) {
+			//materialGradeRepository.deleteGradesByMaterialId(materialRequestDto.getMatId());
+		//}
+		List<MaterialGrade> materialGradeList = materialGradeRepository.getGradesByMaterialId( materialRequestDto.getMatId());
+		for (MaterialGrade materialGradeEntity : materialGradeList) {
+			if(materialGradeEntity.getInwardEntry().size() ==0) {
+				materialGradeRepository.deleteById( materialGradeEntity.getGradeId());
+			}
 		}
+		
 		for (String grade : materialRequestDto.getGrade()) {
-			MaterialGrade materialGrade = new MaterialGrade();
-			materialGrade.setParentMaterial(savedMaterial);
-			materialGrade.setGradeName(grade);
+			MaterialGrade materialGrade = materialGradeRepository.getGradesByMaterialIdName( materialRequestDto.getMatId(), grade);
+			if(materialGrade!=null && materialGrade.getGradeId()>0) {
+				materialGrade.setParentMaterial(savedMaterial);
+				materialGrade.setGradeName(grade);
+			} else {
+				materialGrade = new MaterialGrade();
+				materialGrade.setParentMaterial(savedMaterial);
+				materialGrade.setGradeName(grade);
+			}
 			materialGradeRepository.save(materialGrade);
 		}
 

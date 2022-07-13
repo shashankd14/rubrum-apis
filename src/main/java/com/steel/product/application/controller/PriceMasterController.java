@@ -1,6 +1,7 @@
 package com.steel.product.application.controller;
 
 import com.steel.product.application.dto.pricemaster.PriceMasterResponse;
+import com.steel.product.application.dto.pricemaster.CalculatePriceRequest;
 import com.steel.product.application.dto.pricemaster.PriceMasterRequest;
 import com.steel.product.application.service.PriceMasterService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -52,47 +53,10 @@ public class PriceMasterController {
 		List<PriceMasterResponse> list = priceMasterService.getAllPriceDetails();
 		return list;
 	}
-	/*
-	
-	@GetMapping(value = "/{partyId}/{processId}/{matGradeId}", produces = "application/json")
-	public ResponseEntity<Object> getCustProcessMaterialId(@PathVariable("partyId") int partyId,
-			@PathVariable("processId") int processId, @PathVariable("matGradeId") int matGradeId) {
-		List<PriceMasterResponse> list = priceMasterService.getCustProcessMaterialId(partyId, processId, matGradeId);
-		return new ResponseEntity<Object>(list, HttpStatus.OK);
+
+	@PostMapping(value = "/calculatePrice", produces = "application/json")
+	public ResponseEntity<Object> calculatePrice(@RequestBody CalculatePriceRequest calculatePriceRequest) {
+		return priceMasterService.calculatePrice(calculatePriceRequest);
 	}
 
-	@GetMapping(value = "/{partyId}/{processId}", produces = "application/json")
-	public ResponseEntity<Object> getCustProcess(@PathVariable("partyId") int partyId,
-			@PathVariable("processId") int processId) {
-		List<PriceMasterResponse> list = priceMasterService.getCustProcess(partyId, processId);
-		return new ResponseEntity<Object>(list, HttpStatus.OK);
-	}
-
-	@GetMapping(value = "/party/{partyId}", produces = "application/json")
-	public ResponseEntity<Object> getCust(@PathVariable("partyId") int partyId ) {
-		List<PriceMasterResponse> list = priceMasterService.getCustPriceDetails(partyId);
-		return new ResponseEntity<Object>(list, HttpStatus.OK);
-	}
-
-	@GetMapping(value = "/process/{processId}", produces = "application/json")
-	public ResponseEntity<Object> getProcessPriceDetails(@PathVariable("processId") int processId) {
-		List<PriceMasterResponse> list = priceMasterService.getProcessPriceDetails( processId);
-		return new ResponseEntity<Object>(list, HttpStatus.OK);
-	}
-
-	@PostMapping(value = "/copyCustomerDetails", produces = "application/json")
-	public List<PriceMasterEntity> copyCustomerDetails(@RequestBody PriceMasterRequest priceMasterRequest) {
-		return priceMasterService.copyCustomerDetails(priceMasterRequest);
-	}
-
-	@PostMapping(value = "/copyProcessDetails", produces = "application/json")
-	public List<PriceMasterEntity> copyCustProcessDetails(@RequestBody PriceMasterRequest priceMasterRequest) {
-		return priceMasterService.copyCustProcessDetails(priceMasterRequest);
-	}
-
-	@PostMapping(value = "/copyMatGradeDetails", produces = "application/json")
-	public List<PriceMasterEntity> copyMatGradeDetails(@RequestBody PriceMasterRequest priceMasterRequest) {
-		return priceMasterService.copyMatGradeDetails( priceMasterRequest);
-	}
-  */
 }
