@@ -920,4 +920,10 @@ public class InstructionServiceImpl implements InstructionService {
 		return result;
 	}
 
+	@Override
+	public void updateS3PlanPDF(String partDetailsId, String url) {
+		instructionRepository.updateS3PlanPDF(partDetailsId, url);
+	}
+    
+
 }

@@ -92,7 +92,7 @@
     <div>
         <div class="inline-block w-60 font-size-small">
             <p>
-                <strong>DC date : </strong>
+                <strong>DC Date : </strong>
                 <th:block th:each="inw : ${deliveryChallan.inwardPdfDtos}">
                     <span th:if="${inwStat.first}"
                           th:text="${#dates.format(inw.instructions[0].deliveryDetails?.createdOn,'dd/MM/yyyy')}"></span>
@@ -117,13 +117,15 @@
         <table style="width:100%">
             <tr>
                 <th class="t-head font-size-small">Coil No</th>
-                <th class="t-head font-size-small">Customer Batch No</th>
+                <th class="t-head font-size-small">Cust Batch No</th>
                 <th class="t-head font-size-small">TxWxL (mm)</th>
-                <th class="t-head font-size-small">Inward date (DD/MM/YYYY)</th>
+                <th class="t-head font-size-small">Inward Date (dd/mm/yyyy)</th>
                 <th class="t-head font-size-small">Material Grade</th>
-                <th class="t-head font-size-small">Description</th>
+                <th class="t-head font-size-small">Material Desc</th>
                 <th class="t-head font-size-small">Delivery Weight (Kg)</th>
-                <th class="t-head font-size-small">Value of goods (Rs)</th>
+                <th class="t-head font-size-small">Value of Goods (Rs)</th>
+                <th class="t-head font-size-small">Base Price (Rs)</th>
+                <th class="t-head font-size-small">Addtnl Price (Rs)</th>
             </tr>
             <th:block th:each="inw : ${deliveryChallan.inwardPdfDtos}">
                 <tr th:each="ins : ${inw.instructions}">
@@ -141,6 +143,8 @@
                     <td class="t-head font-size-small" th:text="${inw?.matDescription}"></td>
                     <td class="t-head font-size-small" th:text="${ins?.actualWeight}"></td>
                     <td class="t-head font-size-small" th:text="${#numbers.formatDecimal(ins?.valueOfGoods,1,2)}"></td>
+                    <td class="t-head font-size-small" th:text="${#numbers.formatDecimal(ins?.baseTotalPrice,1,2)}"></td>
+                    <td class="t-head font-size-small" th:text="${#numbers.formatDecimal(ins?.additionalTotalPrice,1,2)}"></td>
                 </tr>
 
             </th:block>
@@ -148,6 +152,8 @@
                 <td class="t-head" colspan="6" style="text-align: center; font-weight: bold;">Total</td>
                 <td class="t-head font-size-small" th:text="${#numbers.formatDecimal(deliveryChallan?.totalDeliveryWeight,2,2)}"></td>
                 <td class="t-head font-size-small" th:text="${#numbers.formatDecimal(deliveryChallan?.totalValueOfGoods,2,2)}"></td>
+                <td class="t-head font-size-small" th:text="${#numbers.formatDecimal(deliveryChallan?.totalBasePrice,2,2)}"></td>
+                <td class="t-head font-size-small" th:text="${#numbers.formatDecimal(deliveryChallan?.totalAdditionalPrice,2,2)}"></td>
             </tr>
         </table>
     </div>

@@ -21,24 +21,23 @@ public class AWSS3ServiceImpl implements AWSS3Service {
     @Autowired
     private AmazonS3 amazonS3;
 
-
+    @Value("${aws.url}")
+    private String url;
+    
     @Value("${aws.s3.bucket}")
     private String bucketName;
     
-    String fileUrl = "";
- 
     @Override
     // @Async annotation ensures that the method is executed in a different background thread 
     // but not consume the main thread.
     @Async
     public String uploadFile(final MultipartFile multipartFile) {
+    	 String fileUrl="";
         try {
             final File file = convertMultiPartFileToFile(multipartFile);
             uploadFileToS3Bucket(bucketName, file);
             file.delete();  // To remove the file locally created in the project folder.
-            fileUrl = "https://rubrum-uploads.s3.ap-south-1.amazonaws.com" + "/" + bucketName + "/" + file;
-            
-            
+            fileUrl = url + "/" + bucketName + "/" + file;
         } catch (final AmazonServiceException ex) {
             ex.printStackTrace();
         }
@@ -56,9 +55,24 @@ public class AWSS3ServiceImpl implements AWSS3Service {
         return file;
     }
  
-    private void uploadFileToS3Bucket(final String bucketName, final File file) {
+    public void uploadFileToS3Bucket(final String bucketName, final File file) {
         final String uniqueFileName = LocalDateTime.now() + "_" + file.getName();
         final PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, uniqueFileName, file);
         amazonS3.putObject(putObjectRequest);
     }
+    
+	@Override
+	@Async
+	public String uploadPDFFileToS3Bucket(final String bucketName, final File file, String partDetailsId) {
+		String uniqueFileName = file.getName();
+		if (partDetailsId != null && partDetailsId.length() > 0) {
+			uniqueFileName = partDetailsId;
+		}
+		final PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, uniqueFileName, file);
+		amazonS3.putObject(putObjectRequest);
+		String fileUrl = url + "/" + bucketName + "/" + uniqueFileName;
+		return fileUrl;
+	}
+    
+    
 }

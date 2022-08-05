@@ -33,12 +33,17 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 
     private InwardEntryService inwardEntryService;
 
+    private PriceMasterService priceMasterService;
+
     @Autowired
-    public DeliveryDetailsServiceImpl(DeliveryDetailsRepository deliveryDetailsRepo, InstructionService instructionService, StatusService statusService, InwardEntryService inwardEntryService) {
+	public DeliveryDetailsServiceImpl(DeliveryDetailsRepository deliveryDetailsRepo,
+			InstructionService instructionService, StatusService statusService, InwardEntryService inwardEntryService,
+			PriceMasterService priceMasterService) {
         this.deliveryDetailsRepo = deliveryDetailsRepo;
         this.instructionService = instructionService;
         this.statusService = statusService;
         this.inwardEntryService = inwardEntryService;
+        this.priceMasterService = priceMasterService;
     }
 
     @Override
@@ -108,6 +113,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
         List<Instruction> instructions = instructionService.findAllByInstructionIdInAndStatus(deliveryItemDetails.stream()
                 .map(d -> d.getInstructionId()).collect(Collectors.toList()), readyToDeliverStatusId);
         instructions.forEach(ins -> ins.setStatus(deliveredStatus));
+        instructions.forEach(ins -> ins.setPriceDetails( priceMasterService.calculateInstructionPrice(ins.getInstructionId())));
         instructions = instructionService.saveAll(instructions);
 
         InwardEntry inwardEntry;
@@ -115,63 +121,63 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
         List<Instruction> groupInstructions = null;
         Set<Instruction> parentGroupInstructions = null;
         Set<Instruction> childrenInstructions;
-            Set<InwardEntry> inwardEntryList = new HashSet<>();
-            Integer parentGroupId;
-            boolean isAnyInstructionNotDelivered = true;
-            try {
-                for (Instruction instruction : instructions) {
-                    inwardEntry = instruction.getInwardId();
-                    parentInstruction = instruction.getParentInstruction();
-                    if (inwardEntry == null) {
-                        inwardEntry = parentInstruction.getInwardId();
+        Set<InwardEntry> inwardEntryList = new HashSet<>();
+        Integer parentGroupId;
+        boolean isAnyInstructionNotDelivered = true;
+        try {
+            for (Instruction instruction : instructions) {
+                inwardEntry = instruction.getInwardId();
+                parentInstruction = instruction.getParentInstruction();
+                if (inwardEntry == null) {
+                    inwardEntry = parentInstruction.getInwardId();
+                }
+                parentGroupId = instruction.getParentGroupId();
+                inStockWeight = inwardEntry.getInStockWeight();
+                if (parentGroupId != null) {
+                    LOGGER.info("instruction has inward id,parentGroupId " + inwardEntry.getInwardEntryId() + " " + parentGroupId);
+                    if(parentGroupInstructions == null || !parentGroupInstructions.contains(instruction)) {
+                        parentGroupInstructions = new HashSet<>();
+                        parentGroupInstructions.addAll(instructionService.findAllByParentGroupId(parentGroupId));
+                        LOGGER.info("total parent group instructions "+parentGroupInstructions.size());
                     }
-                    parentGroupId = instruction.getParentGroupId();
-                    inStockWeight = inwardEntry.getInStockWeight();
-                    if (parentGroupId != null) {
-                        LOGGER.info("instruction has inward id,parentGroupId " + inwardEntry.getInwardEntryId() + " " + parentGroupId);
-                        if(parentGroupInstructions == null || !parentGroupInstructions.contains(instruction)) {
-                            parentGroupInstructions = new HashSet<>();
-                            parentGroupInstructions.addAll(instructionService.findAllByParentGroupId(parentGroupId));
-                            LOGGER.info("total parent group instructions "+parentGroupInstructions.size());
+                    isAnyInstructionNotDelivered = parentGroupInstructions.stream().anyMatch(ins -> !ins.getStatus().equals(deliveredStatus));
+                    if (!isAnyInstructionNotDelivered) {
+                        if(groupInstructions == null || (groupInstructions != null && !groupInstructions.isEmpty() &&!groupInstructions.get(0).getGroupId().equals(parentGroupId))) {
+                            groupInstructions = instructionService.findAllByGroupId(parentGroupId);
+                            groupInstructions.forEach(ins -> ins.setStatus(deliveredStatus));
                         }
-                        isAnyInstructionNotDelivered = parentGroupInstructions.stream().anyMatch(ins -> !ins.getStatus().equals(deliveredStatus));
-                        if (!isAnyInstructionNotDelivered) {
-                            if(groupInstructions == null || (groupInstructions != null && !groupInstructions.isEmpty() &&!groupInstructions.get(0).getGroupId().equals(parentGroupId))) {
-                                groupInstructions = instructionService.findAllByGroupId(parentGroupId);
-                                groupInstructions.forEach(ins -> ins.setStatus(deliveredStatus));
-                            }
-                        }
+                    }
+                    weightToDeliver = instruction.getActualWeight();
+                } else if (parentInstruction != null) {
+                    LOGGER.info("instruction has parent instruction id " + instruction.getParentInstruction().getInstructionId());
                         weightToDeliver = instruction.getActualWeight();
-                    } else if (parentInstruction != null) {
-                        LOGGER.info("instruction has parent instruction id " + instruction.getParentInstruction().getInstructionId());
-                            weightToDeliver = instruction.getActualWeight();
-                            childrenInstructions = parentInstruction.getChildInstructions();
-                            LOGGER.info("parent instruction has " + childrenInstructions.size() + " children");
-                            isAnyInstructionNotDelivered = childrenInstructions.stream().anyMatch(ins -> !ins.getStatus().equals(deliveredStatus));
-                            if (!isAnyInstructionNotDelivered) {
-                                LOGGER.info("setting parent instruction status delivered as all children of parent instruction " + parentInstruction.getInstructionId() + " have status delivered");
-                                parentInstruction.setStatus(deliveredStatus);
-                            }
-                            LOGGER.info("no status change for parent instruction " + parentInstruction.getInstructionId() + " as all children not delivered");
+                        childrenInstructions = parentInstruction.getChildInstructions();
+                        LOGGER.info("parent instruction has " + childrenInstructions.size() + " children");
+                        isAnyInstructionNotDelivered = childrenInstructions.stream().anyMatch(ins -> !ins.getStatus().equals(deliveredStatus));
+                        if (!isAnyInstructionNotDelivered) {
+                            LOGGER.info("setting parent instruction status delivered as all children of parent instruction " + parentInstruction.getInstructionId() + " have status delivered");
+                            parentInstruction.setStatus(deliveredStatus);
+                        }
+                        LOGGER.info("no status change for parent instruction " + parentInstruction.getInstructionId() + " as all children not delivered");
 
+                } else {
+                	
+                    LOGGER.info("instruction has inward id " + inwardEntry.getInwardEntryId());
+                	//parentWeight = inwardEntry.getInStockWeight();
+                    if(instruction.getProcess().getProcessId() == 7 ) {
+                        weightToDeliver = instruction.getPlannedWeight();
                     } else {
-                    	
-                        LOGGER.info("instruction has inward id " + inwardEntry.getInwardEntryId());
-                    	//parentWeight = inwardEntry.getInStockWeight();
-                        if(instruction.getProcess().getProcessId() == 7 ) {
-                            weightToDeliver = instruction.getPlannedWeight();
-                        } else {
-                            weightToDeliver = instruction.getActualWeight();
-                        }
-                        childrenInstructions = instruction.getChildInstructions();
-                        if (childrenInstructions != null && !childrenInstructions.isEmpty()) {
-                            LOGGER.info("inward id" + inwardEntry.getInwardEntryId() + " is a parent instruction with " + childrenInstructions.size() + " children");
-                            if (childrenInstructions.stream().anyMatch(ins -> !ins.getStatus().equals(deliveredStatus))) {
-                                throw new RuntimeException("instruction with id " + instruction.getInstructionId() + " has undelivered children instructions");
-                            }
-
-                        }
+                        weightToDeliver = instruction.getActualWeight();
                     }
+                    childrenInstructions = instruction.getChildInstructions();
+                    if (childrenInstructions != null && !childrenInstructions.isEmpty()) {
+                        LOGGER.info("inward id" + inwardEntry.getInwardEntryId() + " is a parent instruction with " + childrenInstructions.size() + " children");
+                        if (childrenInstructions.stream().anyMatch(ins -> !ins.getStatus().equals(deliveredStatus))) {
+                            throw new RuntimeException("instruction with id " + instruction.getInstructionId() + " has undelivered children instructions");
+                        }
+
+                    }
+                }
 //                    else {
 //                        LOGGER.error("No inward id or parent instruction id found in instruction with id " + instruction.getInstructionId());
 //                        throw new RuntimeException("No inward id or parent instruction id found in instruction with id " + instruction.getInstructionId());
@@ -180,29 +186,28 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 //                    LOGGER.error("weight to deliver "+weightToDeliver+" exceeds parent weight "+parentWeight);
 //                    throw new RuntimeException("weight to deliver "+weightToDeliver+" exceeds parent weight "+parentWeight);
 //                }
-                    if (weightToDeliver > inStockWeight) {
-                        LOGGER.error("weight to deliver " + weightToDeliver + " exceeds in stock weight " + inStockWeight);
-                        throw new RuntimeException("weight to deliver " + weightToDeliver + " exceeds in stock weight " + inStockWeight);
-                    }
-                    inwardEntry.setInStockWeight(inStockWeight - weightToDeliver);
-                    if (Math.abs(inwardEntry.getInStockWeight()) < 1f) {
-                        inwardEntry.setStatus(deliveredStatus);
-                    }
-                    inwardEntryList.add(inwardEntry);
-                    instruction.setRemarks(instructionRemarksMap.get(instruction.getInstructionId()));
-
+                if (weightToDeliver > inStockWeight) {
+                    LOGGER.error("weight to deliver " + weightToDeliver + " exceeds in stock weight " + inStockWeight);
+                    throw new RuntimeException("weight to deliver " + weightToDeliver + " exceeds in stock weight " + inStockWeight);
                 }
-            }catch (Exception e){
-                e.printStackTrace();
-                throw e;
+                inwardEntry.setInStockWeight(inStockWeight - weightToDeliver);
+                if (Math.abs(inwardEntry.getInStockWeight()) < 1f) {
+                    inwardEntry.setStatus(deliveredStatus);
+                }
+                inwardEntryList.add(inwardEntry);
+                instruction.setRemarks(instructionRemarksMap.get(instruction.getInstructionId()));
             }
-            delivery.addAllInstructions(instructions);
-            float totalWeight = deliveryItemDetails.stream().reduce(0f,(sum,d) -> sum + d.getWeight().floatValue(),Float::sum);
-            delivery.setTotalWeight(totalWeight);
-            LOGGER.info("saving "+inwardEntryList.size()+" inward entries");
-            inwardEntryService.saveAll(inwardEntryList);
-            LOGGER.info("saving delivery details");
-            deliveryDetailsRepo.save(delivery);
+        }catch (Exception e){
+            e.printStackTrace();
+            throw e;
+        }
+        delivery.addAllInstructions(instructions);
+        float totalWeight = deliveryItemDetails.stream().reduce(0f,(sum,d) -> sum + d.getWeight().floatValue(),Float::sum);
+        delivery.setTotalWeight(totalWeight);
+        LOGGER.info("saving "+inwardEntryList.size()+" inward entries");
+        inwardEntryService.saveAll(inwardEntryList);
+        LOGGER.info("saving delivery details");
+        deliveryDetailsRepo.save(delivery);
         return delivery;
     }
 

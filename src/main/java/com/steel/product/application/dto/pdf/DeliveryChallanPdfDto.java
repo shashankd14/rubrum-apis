@@ -16,6 +16,8 @@ public class DeliveryChallanPdfDto {
     private List<InwardEntryPdfDto> inwardPdfDtos;
     private Float totalDeliveryWeight;
     private Float totalValueOfGoods;
+    private Float totalBasePrice;
+    private Float totalAdditionalPrice;
 
     public DeliveryChallanPdfDto() {
     }
@@ -31,13 +33,19 @@ public class DeliveryChallanPdfDto {
         }
         this.inwardPdfDtos = inwardEntries.stream().map(inw -> InwardEntry.valueOf(inw, inw.getInstructions()
                 .stream().map(ins -> Instruction.valueOfInstructionPdf(ins, inw)).collect(Collectors.toList()))).collect(Collectors.toList());
-        
+
         this.totalDeliveryWeight = inwardPdfDtos.stream().flatMap(inw -> inw.getInstructions().stream())
                 .reduce(0f, (sum, ins) -> sum + (ins.getProcess().getProcessId() == 7 ? ins.getPlannedWeight():ins.getActualWeight()) , Float::sum);
         
         this.totalValueOfGoods = inwardPdfDtos.stream().flatMap(inw -> inw.getInstructions().stream())
                 .reduce(0f,(sum,ins) -> sum+ins.getValueOfGoods(),Float::sum);
 
+        this.totalBasePrice = inwardPdfDtos.stream().flatMap(inw -> inw.getInstructions().stream())
+                .reduce(0f,(sum,ins) -> sum+Float.parseFloat( ins.getBaseTotalPrice()) ,Float::sum);
+
+        this.totalAdditionalPrice = inwardPdfDtos.stream().flatMap(inw -> inw.getInstructions().stream())
+                .reduce(0f,(sum,ins) -> sum+Float.parseFloat( ins.getAdditionalTotalPrice() ) ,Float::sum);
+        
     }
 
     public String getCompanyName() {
@@ -103,4 +111,22 @@ public class DeliveryChallanPdfDto {
     public void setTotalValueOfGoods(Float totalValueOfGoods) {
         this.totalValueOfGoods = totalValueOfGoods;
     }
+
+	public Float getTotalBasePrice() {
+		return totalBasePrice;
+	}
+
+	public void setTotalBasePrice(Float totalBasePrice) {
+		this.totalBasePrice = totalBasePrice;
+	}
+
+	public Float getTotalAdditionalPrice() {
+		return totalAdditionalPrice;
+	}
+
+	public void setTotalAdditionalPrice(Float totalAdditionalPrice) {
+		this.totalAdditionalPrice = totalAdditionalPrice;
+	}
+    
+    
 }

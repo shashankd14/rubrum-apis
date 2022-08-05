@@ -60,6 +60,12 @@ public class PdfController {
             file = Paths.get(pdfService.generateDeliveryPdf(deliveryPdfDto).getAbsolutePath());
             bytes = Files.readAllBytes(file);
             builder.append(Base64.getEncoder().encodeToString(bytes));
+            
+            /*File fileaa = new File("D:/newfile.pdf");
+            FileOutputStream fos = new FileOutputStream(fileaa);
+            fos.write(bytes);
+            System.out.println("PDF File Saved");*/
+            
         } catch (IOException | DocumentException | org.dom4j.DocumentException ex) {
             ex.printStackTrace();
         }

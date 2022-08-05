@@ -5,10 +5,15 @@ import com.steel.product.application.dto.instruction.InstructionResponseDto;
 import com.steel.product.application.dto.pdf.InstructionResponsePdfDto;
 import lombok.Getter;
 import lombok.Setter;
+import net.minidev.json.JSONObject;
+import net.minidev.json.parser.JSONParser;
+import net.minidev.json.parser.ParseException;
+
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
+
 import java.util.Date;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -106,6 +111,9 @@ public class Instruction {
     @Column(name = "remarks")
     private String remarks;
 
+    @Column(name = "price_details", length=1500)
+    private String priceDetails;
+
     @Column(name = "createdby")
     private Integer createdBy;
 
@@ -129,6 +137,9 @@ public class Instruction {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "part_Details_id")
     private PartDetails partDetails;
+    
+    @Column(name = "pdf_s3_url")
+    private String pdfS3Url;
 
     public void addChildInstruction(Instruction instruction) {
         this.getChildInstructions().add(instruction);
@@ -175,6 +186,7 @@ public class Instruction {
         instructionResponseDto.setIsSlitAndCut(instruction.getIsSlitAndCut());
 		instructionResponseDto.setPartId(instruction.getPartDetails() != null ? instruction.getPartDetails().getId() : null);
 		instructionResponseDto.setPartDetailsId(instruction.getPartDetails() != null ? instruction.getPartDetails().getPartDetailsId(): null);
+		instructionResponseDto.setPdfS3Url(instruction.getPdfS3Url());
         return instructionResponseDto;
     }
 
@@ -191,6 +203,22 @@ public class Instruction {
 		instructionResponsePdfDto.setActualNoOfPieces(instruction.getActualNoOfPieces());
 		instructionResponsePdfDto.setActualWeight(instruction.getActualWeight());
 		instructionResponsePdfDto.setActualWidth(instruction.getActualWidth());
+		
+		String baseTotalPrice = "0.00";
+		String additionalTotalPrice = "0.00";
+		try {
+			JSONParser parser = new JSONParser();
+			JSONObject json = (JSONObject) parser.parse(instruction.getPriceDetails());
+			if (json.containsKey("BasePrice")) {
+				baseTotalPrice = json.get("BasePrice").toString();
+			}
+			if (json.containsKey("AdditionalTotalPrice")) {
+				additionalTotalPrice = json.get("AdditionalTotalPrice").toString();
+			}
+		} catch (ParseException e) {
+		}
+		instructionResponsePdfDto.setBaseTotalPrice( baseTotalPrice );
+		instructionResponsePdfDto.setAdditionalTotalPrice( additionalTotalPrice );
 		instructionResponsePdfDto.setDeliveryDetails(instruction.getDeliveryDetails() != null ? DeliveryDetails.valueOf(instruction.getDeliveryDetails()) : null);
 		instructionResponsePdfDto.setRemarks(instruction.getRemarks());
 		if (inwardEntry != null) {

@@ -1,5 +1,7 @@
 package com.steel.product.application.dto.pdf;
 
+import javax.persistence.Transient;
+
 import com.steel.product.application.dto.delivery.DeliveryResponseDto;
 import com.steel.product.application.dto.partDetails.PartDetailsResponse;
 import com.steel.product.application.dto.process.ProcessDto;
@@ -44,6 +46,9 @@ public class InstructionResponsePdfDto {
     private Float valueOfGoods;
 
     private Long countOfWeight;
+    
+    private String baseTotalPrice;
 
+    private String additionalTotalPrice;
 
 }

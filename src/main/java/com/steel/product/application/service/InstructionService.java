@@ -75,5 +75,7 @@ public interface InstructionService {
 
 	int getPartCount(Long theId);
 
+	public void updateS3PlanPDF(String partDetailsId, String url);
+
 }
 

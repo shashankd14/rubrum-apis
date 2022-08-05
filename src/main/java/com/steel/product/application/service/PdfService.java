@@ -6,6 +6,7 @@ import com.steel.product.application.entity.CompanyDetails;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
@@ -26,13 +27,19 @@ public class PdfService {
     private CompanyDetailsService companyDetailsService;
     private SpringTemplateEngine templateEngine;
     private InstructionService instructionService;
+	private AWSS3Service awsS3Service;
+
+    @Value("${aws.s3.bucketPDFs}")
+    private String bucketName;
 
     @Autowired
-    public PdfService(InwardEntryService inwardEntryService, CompanyDetailsService companyDetailsService, SpringTemplateEngine templateEngine, InstructionService instructionService) {
+	public PdfService(InwardEntryService inwardEntryService, CompanyDetailsService companyDetailsService,
+			SpringTemplateEngine templateEngine, InstructionService instructionService, AWSS3Service awsS3Service) {
         this.inwardEntryService = inwardEntryService;
         this.companyDetailsService = companyDetailsService;
         this.templateEngine = templateEngine;
         this.instructionService = instructionService;
+        this.awsS3Service = awsS3Service;
     }
 
     public File generatePdf(PdfDto pdfDto) throws IOException, org.dom4j.DocumentException, DocumentException {
@@ -45,7 +52,7 @@ public class PdfService {
         Context context = getContext(partDto);
         InwardEntryPdfDto inwardEntryPdfDto = (InwardEntryPdfDto)context.getVariable("inward");
         String html = loadAndFillTemplate(context,Integer.parseInt(inwardEntryPdfDto.getVProcess()));
-        return renderPdf(html, "inward");
+        return renderPdfInstruction(html, "inward", partDto.getPartDetailsId());
     }
 
     public File generateDeliveryPdf(DeliveryPdfDto deliveryPdfDto) throws IOException, org.dom4j.DocumentException, DocumentException {
@@ -73,7 +80,28 @@ public class PdfService {
         ITextRenderer renderer = new ITextRenderer(20f * 4f / 3f, 20);
         renderer.setDocumentFromString(html, new ClassPathResource("/").getURL().toExternalForm());
         renderer.layout();
+        renderer.createPDF(outputStream);        
+        outputStream.close();
+        file.deleteOnExit();
+        return file;
+    }
+
+    private File renderPdfInstruction(String html,String filename, String partDetailsId) throws IOException, DocumentException {
+        File file = File.createTempFile("aspen-steel-"+filename, ".pdf");
+        OutputStream outputStream = new FileOutputStream(file);
+        ITextRenderer renderer = new ITextRenderer(20f * 4f / 3f, 20);
+        renderer.setDocumentFromString(html, new ClassPathResource("/").getURL().toExternalForm());
+        renderer.layout();
         renderer.createPDF(outputStream);
+    
+		try {
+			String fileUrl = awsS3Service.uploadPDFFileToS3Bucket(bucketName, file, partDetailsId);
+			System.out.println("fileUrl == "+fileUrl);
+			instructionService.updateS3PlanPDF(partDetailsId, fileUrl);
+		} catch (Exception e) {
+			System.out.println("Error while uploading pdf - " + e.getMessage());
+		}
+       
         outputStream.close();
         file.deleteOnExit();
         return file;

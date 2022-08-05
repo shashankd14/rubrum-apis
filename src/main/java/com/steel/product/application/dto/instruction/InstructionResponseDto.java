@@ -84,6 +84,9 @@ public class InstructionResponseDto {
 
     private Long partId;
 
-    private String partDetailsId;
+    private String partDetailsId;   
+    
+    private String pdfS3Url;
+
 
 }

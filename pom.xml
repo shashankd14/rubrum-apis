@@ -65,12 +65,11 @@
 			<artifactId>springdoc-openapi-ui</artifactId>
 			<version>1.5.8</version>
 		</dependency>
-		
+
 		<!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-s3 -->
 		<dependency>
-		    <groupId>com.amazonaws</groupId>
-		    <artifactId>aws-java-sdk-s3</artifactId>
-		    <version>1.12.121</version>
+			<groupId>com.amazonaws</groupId>
+			<artifactId>aws-java-sdk-s3</artifactId>
 		</dependency>
 		
 		<!-- Aws dependency>
@@ -153,6 +152,14 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+			
+			<dependency>
+		        <groupId>com.amazonaws</groupId>
+		        <artifactId>aws-java-sdk-bom</artifactId>
+		        <version>1.10.10</version>
+		        <type>pom</type>
+		        <scope>import</scope>
+		      </dependency>
 		</dependencies>
 	</dependencyManagement>
 	

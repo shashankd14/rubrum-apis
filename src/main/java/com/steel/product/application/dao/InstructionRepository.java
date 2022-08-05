@@ -15,13 +15,12 @@ import java.util.Optional;
 
 @Repository
 public interface InstructionRepository extends JpaRepository<Instruction, Integer> {
-    @Modifying
-    @Transactional
-    @Query("update Instruction set deliveryId =:deliveryId, remarks =:remarks, status=4 " +
-            " where instructionId =:instructionId")
-    public void updateInstructionWithDeliveryRemarks(@Param("instructionId") int instructionId,
-                                                  @Param("deliveryId") int deliveryId,
-                                                  @Param("remarks") String remarks);
+	
+	@Modifying
+	@Transactional
+	@Query("update Instruction set deliveryId =:deliveryId, remarks =:remarks, status=4 where instructionId =:instructionId")
+	public void updateInstructionWithDeliveryRemarks(@Param("instructionId") int instructionId,
+			@Param("deliveryId") int deliveryId, @Param("remarks") String remarks);
 
     @Query(" from Instruction order by instructionId desc")
     public List<Instruction> getAll();
@@ -102,5 +101,10 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
 
     @Query("select count(ins.instructionId) from Instruction ins where ins.partDetails.id = :partDetailsId")
     int getPartCount(@Param("partDetailsId") Long partDetailsId);
+    
+	@Modifying
+	@Transactional
+	@Query(value = "update product_instruction set pdf_s3_url=:url where part_details_id in (select id from product_part_details where part_details_id=:partDetailsId)", nativeQuery = true)
+	public void updateS3PlanPDF(@Param("partDetailsId") String partDetailsId, @Param("url") String url);
 
 }

@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 
 import com.steel.product.application.dto.pricemaster.PriceMasterResponse;
-import com.steel.product.application.dto.pricemaster.CalculatePriceRequest;
 import com.steel.product.application.dto.pricemaster.PriceMasterRequest;
 
 public interface PriceMasterService {
@@ -18,7 +17,9 @@ public interface PriceMasterService {
 
 	List<PriceMasterResponse> getAllPriceDetails();
 
-	ResponseEntity<Object> calculatePrice(CalculatePriceRequest calculatePriceRequest);
+	//ResponseEntity<Object> calculatePrice(CalculatePriceRequest calculatePriceRequest);
+
+	String calculateInstructionPrice(int instructionId);
 
 
 }
