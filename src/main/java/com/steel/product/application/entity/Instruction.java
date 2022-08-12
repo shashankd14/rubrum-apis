@@ -137,9 +137,6 @@ public class Instruction {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "part_Details_id")
     private PartDetails partDetails;
-    
-    @Column(name = "pdf_s3_url")
-    private String pdfS3Url;
 
     public void addChildInstruction(Instruction instruction) {
         this.getChildInstructions().add(instruction);
@@ -186,7 +183,7 @@ public class Instruction {
         instructionResponseDto.setIsSlitAndCut(instruction.getIsSlitAndCut());
 		instructionResponseDto.setPartId(instruction.getPartDetails() != null ? instruction.getPartDetails().getId() : null);
 		instructionResponseDto.setPartDetailsId(instruction.getPartDetails() != null ? instruction.getPartDetails().getPartDetailsId(): null);
-		instructionResponseDto.setPdfS3Url(instruction.getPdfS3Url());
+		instructionResponseDto.setPdfS3Url(instruction.getPartDetails() != null ? instruction.getPartDetails().getPdfS3Url() : null);
         return instructionResponseDto;
     }
 

@@ -104,7 +104,7 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
     
 	@Modifying
 	@Transactional
-	@Query(value = "update product_instruction set pdf_s3_url=:url where part_details_id in (select id from product_part_details where part_details_id=:partDetailsId)", nativeQuery = true)
+	@Query("update PartDetails set pdfS3Url=:url where partDetailsId= :partDetailsId ")
 	public void updateS3PlanPDF(@Param("partDetailsId") String partDetailsId, @Param("url") String url);
 
 }
