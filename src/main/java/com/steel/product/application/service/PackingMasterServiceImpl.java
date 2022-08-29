@@ -2,13 +2,18 @@ package com.steel.product.application.service;
 
 import com.steel.product.application.dao.PackingBucketRepository;
 import com.steel.product.application.dao.PackingItemRepository;
+import com.steel.product.application.dao.PackingRateRepository;
 import com.steel.product.application.dto.packingmaster.PackingBucketRequest;
 import com.steel.product.application.dto.packingmaster.PackingBucketResponse;
 import com.steel.product.application.dto.packingmaster.PackingItemRequest;
 import com.steel.product.application.dto.packingmaster.PackingItemResponse;
+import com.steel.product.application.dto.packingmaster.PackingRateMasterRequest;
+import com.steel.product.application.dto.packingmaster.PackingRateMasterResponse;
 import com.steel.product.application.entity.PackingBucketChildEntity;
 import com.steel.product.application.entity.PackingBucketEntity;
 import com.steel.product.application.entity.PackingItemEntity;
+import com.steel.product.application.entity.PackingRateEntity;
+
 import lombok.extern.log4j.Log4j2;
 import java.util.Date;
 import java.util.List;
@@ -27,6 +32,9 @@ public class PackingMasterServiceImpl implements PackingMasterService {
 
 	@Autowired
 	PackingItemRepository packingItemRepository;
+
+	@Autowired
+	PackingRateRepository packingRateRepository;
 
 	@Autowired
 	PackingBucketRepository packingBucketRepository;
@@ -179,6 +187,90 @@ public class PackingMasterServiceImpl implements PackingMasterService {
 
 		List<PackingBucketResponse> instructionList = packingBucketRepository.findAll().stream()
 				.map(i -> PackingBucketEntity.valueOf(i)).collect(Collectors.toList());
+
+		return instructionList;
+	}
+
+	@Override
+	public ResponseEntity<Object> save(PackingRateMasterRequest packingRateMasterRequest, int userId) {
+
+		ResponseEntity<Object> response = null;
+
+		List<PackingRateEntity> list = packingRateRepository.findByPartyIdAndBucketId(packingRateMasterRequest.getPackingBucketId(), packingRateMasterRequest.getPartyId());
+		PackingRateEntity checkpackingItemEntity=null;
+		
+		PackingRateEntity packingRateEntity = new PackingRateEntity();
+		if (packingRateMasterRequest.getPackingRateId() != null && packingRateMasterRequest.getPackingRateId() > 0) {
+			packingRateEntity.setPackingRateId(packingRateMasterRequest.getPackingRateId());
+			
+			if(list!=null && list.size()>0) {
+				checkpackingItemEntity=list.get(0);
+				if (checkpackingItemEntity != null
+					&& packingRateMasterRequest.getPackingBucketId() != checkpackingItemEntity.getBucketEntity().getBucketId()   
+					&& packingRateMasterRequest.getPartyId() != checkpackingItemEntity.getParty().getnPartyId()   
+					) {
+					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Packing Rate already exists..! \"}", new HttpHeaders(), HttpStatus.BAD_REQUEST);
+				}
+			}
+		} else {
+			if(list!=null && list.size()>0) {
+				return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Packing Rate already exists..! \"}", new HttpHeaders(), HttpStatus.BAD_REQUEST);
+			}
+		}
+		packingRateEntity.getBucketEntity().setBucketId(packingRateMasterRequest.getPackingBucketId());
+		packingRateEntity.setPackingRate( packingRateMasterRequest.getPackingRate() );
+		packingRateEntity.setPackingRateDesc( packingRateMasterRequest.getPackingRateDesc());
+		packingRateEntity.getParty().setnPartyId( packingRateMasterRequest.getPartyId() );
+		packingRateEntity.setCreatedBy(userId);
+		packingRateEntity.setUpdatedBy(userId);
+		packingRateEntity.setCreatedOn(new Date());
+		packingRateEntity.setUpdatedOn(new Date());
+		packingRateRepository.save (packingRateEntity);
+		if (packingRateMasterRequest.getPackingRateId() != null && packingRateMasterRequest.getPackingRateId() > 0) {
+			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Packing Rate details updated successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
+		} else {
+			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Packing Rate details saved successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
+		}
+		return response;
+	}
+
+	@Override
+	public ResponseEntity<Object> deleteRate(int id) {
+		ResponseEntity<Object> response = null;
+		try {
+			packingRateRepository.deleteById(id);
+			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Packing Rate details deleted successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
+		} catch (Exception e) {
+			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"" + e.getMessage() + "\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return response;
+	}
+
+	@Override
+	public PackingRateMasterResponse getByIdRate(int id) {
+		PackingRateMasterResponse resp = new PackingRateMasterResponse();
+		Optional<PackingRateEntity> list = packingRateRepository.findById(id);
+		if (list.isPresent()) {
+			PackingRateEntity entity = list.get();
+			resp = PackingRateEntity.valueOf(entity) ;
+		}
+		return resp;
+	}
+
+	@Override
+	public List<PackingRateMasterResponse> getAllRateList() {
+
+		List<PackingRateMasterResponse> instructionList = packingRateRepository.findAll().stream()
+				.map(i -> PackingRateEntity.valueOf(i)).collect(Collectors.toList());
+
+		return instructionList;
+	}
+
+	@Override
+	public List<PackingRateMasterResponse> getAllRateListPartyWise(int partyId) {
+
+		List<PackingRateMasterResponse> instructionList = packingRateRepository.findByPartyId(partyId).stream()
+				.map(i -> PackingRateEntity.valueOf(i)).collect(Collectors.toList());
 
 		return instructionList;
 	}

@@ -8,6 +8,8 @@ import com.steel.product.application.dto.packingmaster.PackingBucketRequest;
 import com.steel.product.application.dto.packingmaster.PackingBucketResponse;
 import com.steel.product.application.dto.packingmaster.PackingItemRequest;
 import com.steel.product.application.dto.packingmaster.PackingItemResponse;
+import com.steel.product.application.dto.packingmaster.PackingRateMasterRequest;
+import com.steel.product.application.dto.packingmaster.PackingRateMasterResponse;
 
 public interface PackingMasterService {
 
@@ -26,5 +28,15 @@ public interface PackingMasterService {
 	ResponseEntity<Object> deleteBucket(int id);
 
 	List<PackingBucketResponse> getAllBucketList();
+
+	ResponseEntity<Object> save(PackingRateMasterRequest packingRateMasterRequest, int userId);
+
+	ResponseEntity<Object> deleteRate(int id);
+
+	PackingRateMasterResponse getByIdRate(int id);
+
+	List<PackingRateMasterResponse> getAllRateList();
+
+	List<PackingRateMasterResponse> getAllRateListPartyWise(int partyId);
 
 }

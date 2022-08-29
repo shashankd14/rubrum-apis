@@ -138,6 +138,8 @@ public class InwardEntry {
 	@Column(name = "available_length")
 	private Float availableLength;
 
+    @Column(name = "pdf_s3_url")
+    private String pdfS3Url;
 
 	public void addInstruction(Instruction instruction){
 		if(this.instructions == null){

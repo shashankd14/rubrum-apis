@@ -315,8 +315,8 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 				if (inwardEntry.getMaterialGrade().getGradeId() == priceMasterResponse.getMatGradeId()
 					&& inwardEntry.getParty().getnPartyId() == priceMasterResponse.getPartyId()
 					&& instruction.getProcess().getProcessId() == priceMasterResponse.getProcessId()
-					&& fThickness.compareTo(priceMasterResponse.getThicknessFrom()) == 1
-					&& priceMasterResponse.getThicknessTo().compareTo(fThickness) == 1) {
+					&& fThickness.compareTo(priceMasterResponse.getThicknessFrom()) >= 0
+					&& priceMasterResponse.getThicknessTo().compareTo(fThickness) >= 0) {
 					obj.put("BasePrice", priceMasterResponse.getPrice());
 				}
 			}
@@ -331,32 +331,32 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 						int partCount = instructionService.getPartCount(instruction.getPartDetails().getId());
 						
 						if ((additionalPriceMasterResponse.getAdditionalPriceId() == 1 || additionalPriceMasterResponse.getAdditionalPriceId() == 11)
-							&& BigDecimal.valueOf(partCount).compareTo(additionalPriceMasterResponse.getRangeFrom()) == 1
-							&& additionalPriceMasterResponse.getRangeTo().compareTo(BigDecimal.valueOf(partCount)) == 1) {
+							&& BigDecimal.valueOf(partCount).compareTo(additionalPriceMasterResponse.getRangeFrom()) >= 0
+							&& additionalPriceMasterResponse.getRangeTo().compareTo(BigDecimal.valueOf(partCount)) >= 0) {
 
 							additionalPrice.put(additionalPriceMasterResponse.getAdditionalPriceDesc(), additionalPriceMasterResponse.getPrice());
 							totalPrice = totalPrice.add(additionalPriceMasterResponse.getPrice());
 						}
 						
 						if ((additionalPriceMasterResponse.getAdditionalPriceId() == 2 || additionalPriceMasterResponse.getAdditionalPriceId() == 12)
-							&& plannedNoOfPieces.compareTo(additionalPriceMasterResponse.getRangeFrom()) == 1
-							&& additionalPriceMasterResponse.getRangeTo().compareTo(plannedNoOfPieces) == 1) {
+							&& plannedNoOfPieces.compareTo(additionalPriceMasterResponse.getRangeFrom()) >= 0
+							&& additionalPriceMasterResponse.getRangeTo().compareTo(plannedNoOfPieces) >= 0) {
 
 							additionalPrice.put(additionalPriceMasterResponse.getAdditionalPriceDesc(), additionalPriceMasterResponse.getPrice());
 							totalPrice = totalPrice.add(additionalPriceMasterResponse.getPrice());
 						}
 						
 						if ((additionalPriceMasterResponse.getAdditionalPriceId() == 3 || additionalPriceMasterResponse.getAdditionalPriceId() == 10)  
-							&& bundleWeight.compareTo(additionalPriceMasterResponse.getRangeFrom()) == 1
-							&& additionalPriceMasterResponse.getRangeTo().compareTo(bundleWeight) == 1) {
+							&& bundleWeight.compareTo(additionalPriceMasterResponse.getRangeFrom()) >= 0
+							&& additionalPriceMasterResponse.getRangeTo().compareTo(bundleWeight) >= 0) {
 
 							additionalPrice.put(additionalPriceMasterResponse.getAdditionalPriceDesc(), additionalPriceMasterResponse.getPrice());
 							totalPrice = totalPrice.add(additionalPriceMasterResponse.getPrice());
 						}
 						
 						if ((additionalPriceMasterResponse.getAdditionalPriceId() == 5 || additionalPriceMasterResponse.getAdditionalPriceId() == 13)
-							&& noofPlans.compareTo(additionalPriceMasterResponse.getRangeFrom()) == 1
-							&& additionalPriceMasterResponse.getRangeTo().compareTo(noofPlans) == 1) {
+							&& noofPlans.compareTo(additionalPriceMasterResponse.getRangeFrom()) >= 0
+							&& additionalPriceMasterResponse.getRangeTo().compareTo(noofPlans) >= 0) {
 
 							additionalPrice.put(additionalPriceMasterResponse.getAdditionalPriceDesc(), additionalPriceMasterResponse.getPrice());
 							totalPrice = totalPrice.add(additionalPriceMasterResponse.getPrice());
@@ -366,16 +366,16 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 					if (additionalPriceMasterResponse.getProcessId() == 1 || additionalPriceMasterResponse.getProcessId() == 3) {
 						
 						if ((additionalPriceMasterResponse.getAdditionalPriceId() == 6 || additionalPriceMasterResponse.getAdditionalPriceId() == 14)
-							&& actualLength.compareTo(additionalPriceMasterResponse.getRangeFrom()) == 1
-							&& additionalPriceMasterResponse.getRangeTo().compareTo(actualLength) == 1) {
+							&& actualLength.compareTo(additionalPriceMasterResponse.getRangeFrom()) >= 0
+							&& additionalPriceMasterResponse.getRangeTo().compareTo(actualLength) >= 0) {
 
 							additionalPrice.put(additionalPriceMasterResponse.getAdditionalPriceDesc(), additionalPriceMasterResponse.getPrice());
 							totalPrice = totalPrice.add(additionalPriceMasterResponse.getPrice());
 						}
 						
 						if (additionalPriceMasterResponse.getAdditionalPriceId() == 8  
-							&& bundleWeight.compareTo(additionalPriceMasterResponse.getRangeFrom()) == 1
-							&& additionalPriceMasterResponse.getRangeTo().compareTo(bundleWeight) == 1) {
+							&& bundleWeight.compareTo(additionalPriceMasterResponse.getRangeFrom()) >= 0
+							&& additionalPriceMasterResponse.getRangeTo().compareTo(bundleWeight) >= 0) {
 
 							additionalPrice.put(additionalPriceMasterResponse.getAdditionalPriceDesc(), additionalPriceMasterResponse.getPrice());
 							totalPrice = totalPrice.add(additionalPriceMasterResponse.getPrice());

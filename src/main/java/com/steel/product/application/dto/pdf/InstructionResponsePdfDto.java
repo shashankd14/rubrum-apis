@@ -1,9 +1,6 @@
 package com.steel.product.application.dto.pdf;
 
-import javax.persistence.Transient;
-
 import com.steel.product.application.dto.delivery.DeliveryResponseDto;
-import com.steel.product.application.dto.partDetails.PartDetailsResponse;
 import com.steel.product.application.dto.process.ProcessDto;
 import com.steel.product.application.entity.EndUserTagsEntity;
 import com.steel.product.application.entity.PacketClassification;
@@ -50,5 +47,9 @@ public class InstructionResponsePdfDto {
     private String baseTotalPrice;
 
     private String additionalTotalPrice;
+
+    private String packingRate;
+    
+    private String totalPrice;
 
 }

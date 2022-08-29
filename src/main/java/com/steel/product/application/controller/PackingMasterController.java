@@ -4,6 +4,8 @@ import com.steel.product.application.dto.packingmaster.PackingBucketRequest;
 import com.steel.product.application.dto.packingmaster.PackingBucketResponse;
 import com.steel.product.application.dto.packingmaster.PackingItemRequest;
 import com.steel.product.application.dto.packingmaster.PackingItemResponse;
+import com.steel.product.application.dto.packingmaster.PackingRateMasterRequest;
+import com.steel.product.application.dto.packingmaster.PackingRateMasterResponse;
 import com.steel.product.application.dto.pricemaster.PriceMasterRequest;
 import com.steel.product.application.service.PackingMasterService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -86,4 +88,42 @@ public class PackingMasterController {
 		List<PackingBucketResponse> list = packingMasterService.getAllBucketList();
 		return list;
 	}
+	
+	@PostMapping(value = "/rate/save", produces = "application/json")
+	public ResponseEntity<Object> save(@RequestBody PackingRateMasterRequest packingRateMasterRequest, HttpServletRequest request) {
+		int userId = (request.getHeader("userId") == null ? 1 : Integer.parseInt(request.getHeader("userId")));
+
+		return packingMasterService.save(packingRateMasterRequest, userId);
+	}
+	
+	@PutMapping(value = "/rate/update", produces = "application/json")
+	public ResponseEntity<Object> update(@RequestBody PackingRateMasterRequest packingRateMasterRequest, HttpServletRequest request) {
+		int userId = (request.getHeader("userId") == null ? 1 : Integer.parseInt(request.getHeader("userId")));
+
+		return packingMasterService.save(packingRateMasterRequest, userId);
+	}
+	
+	@DeleteMapping(value = "/rate/{id}", produces = "application/json" )
+	public ResponseEntity<Object> deleteRate(@PathVariable("id") int id) {
+		return packingMasterService.deleteRate(id);
+	}
+	
+	@GetMapping(value = "/rate/{id}", produces = "application/json")
+	public ResponseEntity<Object> getByIdRate(@PathVariable("id") int id) {
+		PackingRateMasterResponse resp = packingMasterService.getByIdRate(id);
+		return new ResponseEntity<Object>(resp, HttpStatus.OK);
+	}
+
+	@GetMapping(value = "/rate", produces = "application/json")
+	public List<PackingRateMasterResponse> getAllRateList() {
+		List<PackingRateMasterResponse> list = packingMasterService.getAllRateList();
+		return list;
+	}
+
+	@GetMapping(value = "/rate/party/{partyId}", produces = "application/json")
+	public List<PackingRateMasterResponse> getAllRateListPartyWise(@PathVariable("partyId") int partyId) {
+		List<PackingRateMasterResponse> list = packingMasterService.getAllRateListPartyWise(partyId);
+		return list;
+	}
+	
 }

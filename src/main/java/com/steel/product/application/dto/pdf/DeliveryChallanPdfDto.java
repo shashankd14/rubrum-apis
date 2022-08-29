@@ -2,6 +2,7 @@ package com.steel.product.application.dto.pdf;
 
 import com.steel.product.application.entity.*;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,13 +17,12 @@ public class DeliveryChallanPdfDto {
     private List<InwardEntryPdfDto> inwardPdfDtos;
     private Float totalDeliveryWeight;
     private Float totalValueOfGoods;
-    private Float totalBasePrice;
-    private Float totalAdditionalPrice;
+    private Float totalPrice;
 
     public DeliveryChallanPdfDto() {
     }
 
-    public DeliveryChallanPdfDto(CompanyDetails companyDetails, List<InwardEntry> inwardEntries){
+    public DeliveryChallanPdfDto(CompanyDetails companyDetails, List<InwardEntry> inwardEntries, BigDecimal packingRate){
         this.companyName = companyDetails.getCompanyName();
         this.gstN = companyDetails.getGstN();
         this.addressBranch = companyDetails.getAddressBranch();
@@ -32,7 +32,7 @@ public class DeliveryChallanPdfDto {
             this.inwardPdfDtos = new ArrayList<>();
         }
         this.inwardPdfDtos = inwardEntries.stream().map(inw -> InwardEntry.valueOf(inw, inw.getInstructions()
-                .stream().map(ins -> Instruction.valueOfInstructionPdf(ins, inw)).collect(Collectors.toList()))).collect(Collectors.toList());
+                .stream().map(ins -> Instruction.valueOfInstructionPdf(ins, inw, packingRate)).collect(Collectors.toList()))).collect(Collectors.toList());
 
         this.totalDeliveryWeight = inwardPdfDtos.stream().flatMap(inw -> inw.getInstructions().stream())
                 .reduce(0f, (sum, ins) -> sum + (ins.getProcess().getProcessId() == 7 ? ins.getPlannedWeight():ins.getActualWeight()) , Float::sum);
@@ -40,12 +40,9 @@ public class DeliveryChallanPdfDto {
         this.totalValueOfGoods = inwardPdfDtos.stream().flatMap(inw -> inw.getInstructions().stream())
                 .reduce(0f,(sum,ins) -> sum+ins.getValueOfGoods(),Float::sum);
 
-        this.totalBasePrice = inwardPdfDtos.stream().flatMap(inw -> inw.getInstructions().stream())
-                .reduce(0f,(sum,ins) -> sum+Float.parseFloat( ins.getBaseTotalPrice()) ,Float::sum);
+        this.totalPrice = inwardPdfDtos.stream().flatMap(inw -> inw.getInstructions().stream())
+                .reduce(0f,(sum,ins) -> sum+Float.parseFloat( ins.getTotalPrice()) ,Float::sum);
 
-        this.totalAdditionalPrice = inwardPdfDtos.stream().flatMap(inw -> inw.getInstructions().stream())
-                .reduce(0f,(sum,ins) -> sum+Float.parseFloat( ins.getAdditionalTotalPrice() ) ,Float::sum);
-        
     }
 
     public String getCompanyName() {
@@ -112,21 +109,12 @@ public class DeliveryChallanPdfDto {
         this.totalValueOfGoods = totalValueOfGoods;
     }
 
-	public Float getTotalBasePrice() {
-		return totalBasePrice;
+	public Float getTotalPrice() {
+		return totalPrice;
 	}
 
-	public void setTotalBasePrice(Float totalBasePrice) {
-		this.totalBasePrice = totalBasePrice;
+	public void setTotalPrice(Float totalPrice) {
+		this.totalPrice = totalPrice;
 	}
-
-	public Float getTotalAdditionalPrice() {
-		return totalAdditionalPrice;
-	}
-
-	public void setTotalAdditionalPrice(Float totalAdditionalPrice) {
-		this.totalAdditionalPrice = totalAdditionalPrice;
-	}
-    
     
 }

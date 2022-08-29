@@ -101,7 +101,7 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
 
     @Query("select count(ins.instructionId) from Instruction ins where ins.partDetails.id = :partDetailsId")
     int getPartCount(@Param("partDetailsId") Long partDetailsId);
-    
+
 	@Modifying
 	@Transactional
 	@Query("update PartDetails set pdfS3Url=:url where partDetailsId= :partDetailsId ")

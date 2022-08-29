@@ -1,7 +1,11 @@
 package com.steel.product.application.service;
 
 import com.steel.product.application.dto.inward.InwardEntryResponseDto;
+import com.steel.product.application.dto.partDetails.PartDetailsPDFResponse;
 import com.steel.product.application.entity.InwardEntry;
+import com.steel.product.application.entity.PartDetails;
+
+import net.minidev.json.JSONObject;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -41,4 +45,6 @@ public interface InwardEntryService {
 	Page<InwardEntry> findAllWithPagination(int pageNo, int pageSize, String searchText, String partyId);
 
 	List<InwardEntry> findInwardByPartyId(Integer partyId);
+
+	JSONObject getPlanPDFs(int inwardEntryId);
 }

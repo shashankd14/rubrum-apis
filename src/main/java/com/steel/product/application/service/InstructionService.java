@@ -2,6 +2,7 @@ package com.steel.product.application.service;
 
 import com.steel.product.application.dto.instruction.*;
 import com.steel.product.application.dto.pdf.InwardEntryPdfDto;
+import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.mapper.TotalLengthAndWeight;
 import org.springframework.http.ResponseEntity;
@@ -76,6 +77,10 @@ public interface InstructionService {
 	int getPartCount(Long theId);
 
 	public void updateS3PlanPDF(String partDetailsId, String url);
+
+	public void updateS3InwardPDF(Integer inwardId, String url);
+
+	public void updateS3DCPDF(Integer inwardId, String url);
 
 }
 

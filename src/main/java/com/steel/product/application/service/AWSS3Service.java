@@ -10,4 +10,6 @@ public interface AWSS3Service {
 
 	public String uploadPDFFileToS3Bucket(String bucketName, File file,  String partDetailsId);
 
+	public String generatePresignedUrl(String fileName);
+
 }

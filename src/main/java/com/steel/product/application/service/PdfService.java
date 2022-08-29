@@ -1,8 +1,10 @@
 package com.steel.product.application.service;
 
 import com.lowagie.text.DocumentException;
+import com.steel.product.application.dto.packingmaster.PackingRateMasterResponse;
 import com.steel.product.application.dto.pdf.*;
 import com.steel.product.application.entity.CompanyDetails;
+import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +19,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -27,38 +30,51 @@ public class PdfService {
     private CompanyDetailsService companyDetailsService;
     private SpringTemplateEngine templateEngine;
     private InstructionService instructionService;
-	private AWSS3Service awsS3Service;
+	private AWSS3Service awsS3Service; 
+	private PackingMasterService packingMasterService;
 
     @Value("${aws.s3.bucketPDFs}")
     private String bucketName;
 
-    @Autowired
+	@Autowired
 	public PdfService(InwardEntryService inwardEntryService, CompanyDetailsService companyDetailsService,
-			SpringTemplateEngine templateEngine, InstructionService instructionService, AWSS3Service awsS3Service) {
-        this.inwardEntryService = inwardEntryService;
-        this.companyDetailsService = companyDetailsService;
-        this.templateEngine = templateEngine;
-        this.instructionService = instructionService;
-        this.awsS3Service = awsS3Service;
-    }
+			SpringTemplateEngine templateEngine, InstructionService instructionService, AWSS3Service awsS3Service,
+			PackingMasterService packingMasterService) {
+		this.inwardEntryService = inwardEntryService;
+		this.companyDetailsService = companyDetailsService;
+		this.templateEngine = templateEngine;
+		this.instructionService = instructionService;
+		this.awsS3Service = awsS3Service;
+		this.packingMasterService = packingMasterService;
+	}
 
     public File generatePdf(PdfDto pdfDto) throws IOException, org.dom4j.DocumentException, DocumentException {
         Context context = getContext(pdfDto);
         String html = loadAndFillTemplate(context, pdfDto.getProcessId());
-        return renderPdf(html, "inward");
+        return renderPdfInstruction(html, "inward", ""+pdfDto.getInwardId(), "INWARD_PDF");
     }
 
     public File generatePdf(PartDto partDto) throws IOException, org.dom4j.DocumentException, DocumentException {
         Context context = getContext(partDto);
         InwardEntryPdfDto inwardEntryPdfDto = (InwardEntryPdfDto)context.getVariable("inward");
         String html = loadAndFillTemplate(context,Integer.parseInt(inwardEntryPdfDto.getVProcess()));
-        return renderPdfInstruction(html, "inward", partDto.getPartDetailsId());
+        return renderPdfInstruction(html, "inward", partDto.getPartDetailsId(), "PLAN_PDF");
     }
 
     public File generateDeliveryPdf(DeliveryPdfDto deliveryPdfDto) throws IOException, org.dom4j.DocumentException, DocumentException {
         Context context = getDeliveryContext(deliveryPdfDto);
         String html = loadAndFillDeliveryTemplate(context, deliveryPdfDto);
-        return renderPdf(html, "delivery");
+        int deliverId=0;
+        
+        if(deliveryPdfDto.getInstructionIds()!=null && deliveryPdfDto.getInstructionIds().size()>0) {
+            List<InwardEntry> inwardEntries = inwardEntryService.findDeliveryItemsByInstructionIds(deliveryPdfDto.getInstructionIds());
+            InwardEntry inwardEntry =inwardEntries.get(0);
+            for ( Instruction instruction : inwardEntry.getInstructions()) {
+            	deliverId = instruction.getDeliveryDetails().getDeliveryId();
+            }
+        }
+        
+        return renderPdfInstruction(html, "delivery", ""+deliverId, "DC_PDF");
     }
 
     private String loadAndFillDeliveryTemplate(Context context, DeliveryPdfDto deliveryPdfDto) {
@@ -69,7 +85,16 @@ public class PdfService {
         Context context = new Context();
         List<InwardEntry> inwardEntries = inwardEntryService.findDeliveryItemsByInstructionIds(deliveryPdfDto.getInstructionIds());
         CompanyDetails companyDetails = companyDetailsService.findById(1);
-        DeliveryChallanPdfDto deliveryChallanPdfDto = new DeliveryChallanPdfDto(companyDetails,inwardEntries);
+        BigDecimal packingRate=new BigDecimal("0.00");
+        
+        if(deliveryPdfDto.getPackingRateId()!=null && deliveryPdfDto.getPackingRateId()>0) {
+        	PackingRateMasterResponse packingRateResponse = packingMasterService.getByIdRate(deliveryPdfDto.getPackingRateId());
+        	if(packingRateResponse!=null && packingRateResponse.getPackingRate()!=null) {
+        		packingRate=packingRateResponse.getPackingRate();
+        	}
+        }
+    	
+        DeliveryChallanPdfDto deliveryChallanPdfDto = new DeliveryChallanPdfDto(companyDetails,inwardEntries, packingRate);
         context.setVariable("deliveryChallan",deliveryChallanPdfDto);
         return context;
     }
@@ -86,7 +111,7 @@ public class PdfService {
         return file;
     }
 
-    private File renderPdfInstruction(String html,String filename, String partDetailsId) throws IOException, DocumentException {
+    private File renderPdfInstruction(String html, String filename, String id, String processType) throws IOException, DocumentException {
         File file = File.createTempFile("aspen-steel-"+filename, ".pdf");
         OutputStream outputStream = new FileOutputStream(file);
         ITextRenderer renderer = new ITextRenderer(20f * 4f / 3f, 20);
@@ -95,9 +120,18 @@ public class PdfService {
         renderer.createPDF(outputStream);
     
 		try {
-			String fileUrl = awsS3Service.uploadPDFFileToS3Bucket(bucketName, file, partDetailsId);
+			String fileUrl = "";
+			if("INWARD_PDF".equals(processType)) {
+				fileUrl = awsS3Service.uploadPDFFileToS3Bucket(bucketName, file, "INWARD_"+id);
+				instructionService.updateS3InwardPDF(Integer.parseInt(id), "INWARD_"+id);
+			} else if("PLAN_PDF".equals(processType)) {
+				fileUrl = awsS3Service.uploadPDFFileToS3Bucket(bucketName, file, id);
+				instructionService.updateS3PlanPDF(id, fileUrl);
+			} else if("DC_PDF".equals(processType)) {
+				fileUrl = awsS3Service.uploadPDFFileToS3Bucket(bucketName, file, "DC_"+id);
+				instructionService.updateS3DCPDF(Integer.parseInt(id), "DC_"+id);
+			}
 			System.out.println("fileUrl == "+fileUrl);
-			instructionService.updateS3PlanPDF(partDetailsId, fileUrl);
 		} catch (Exception e) {
 			System.out.println("Error while uploading pdf - " + e.getMessage());
 		}
@@ -120,11 +154,11 @@ public class PdfService {
             inwardEntry = instructions.get(0).getInwardId();
             instructionsCut = instructions.stream()
                     .filter(ins -> ins.getProcess().getProcessId() == 3)
-                    .map(ins -> Instruction.valueOfInstructionPdf(ins, null))
+                    .map(ins -> Instruction.valueOfInstructionPdf(ins, null, null))
                     .collect(Collectors.toList());
             instructionsSlit = instructions.stream()
                     .filter(ins -> ins.getProcess().getProcessId() == 2)
-                    .map(ins -> Instruction.valueOfInstructionPdf(ins, null))
+                    .map(ins -> Instruction.valueOfInstructionPdf(ins, null, null))
                     .collect(Collectors.toList());
             instructionResponsePdfDtos = null;
             inwardEntryPdfDto = InwardEntry.valueOf(inwardEntry, instructionsCut, instructionsSlit);
@@ -132,7 +166,7 @@ public class PdfService {
             inwardEntry = inwardEntryService.getByEntryId(pdfDto.getInwardId());
             instructionResponsePdfDtos = inwardEntry.getInstructions()
                     .stream().filter(ins -> ins.getProcess().getProcessId() == pdfDto.getProcessId())
-                    .map(i -> Instruction.valueOfInstructionPdf(i, null))
+                    .map(i -> Instruction.valueOfInstructionPdf(i, null, null))
                     .collect(Collectors.toList());
             inwardEntryPdfDto = InwardEntry.valueOf(inwardEntry, instructionResponsePdfDtos);
         } else {

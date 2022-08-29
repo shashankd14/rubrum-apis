@@ -3,6 +3,7 @@ package com.steel.product.application.service;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +13,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.amazonaws.AmazonServiceException;
+import com.amazonaws.HttpMethod;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 
 @Service
@@ -24,8 +30,20 @@ public class AWSS3ServiceImpl implements AWSS3Service {
     @Value("${aws.url}")
     private String url;
     
+    @Value("${aws.s3.bucketPDFs}")
+    private String bucketPDFs;
+    
     @Value("${aws.s3.bucket}")
     private String bucketName;
+    
+    @Value("${aws.access_key_id}")
+    private String accessKey;
+    
+    @Value("${aws.secret_access_key}")
+    private String secretKey;
+    
+    @Value("${aws.s3.region}")
+    private String region;
     
     @Override
     // @Async annotation ensures that the method is executed in a different background thread 
@@ -73,6 +91,27 @@ public class AWSS3ServiceImpl implements AWSS3Service {
 		String fileUrl = url + "/" + bucketName + "/" + uniqueFileName;
 		return fileUrl;
 	}
-    
-    
+
+	@Override
+	public String generatePresignedUrl(String fileName) {
+
+		BasicAWSCredentials awsCreds = new BasicAWSCredentials(accessKey, secretKey);
+		
+		final AmazonS3 s3Client = AmazonS3ClientBuilder.standard().withCredentials(new AWSStaticCredentialsProvider(awsCreds)).withRegion(region).build();
+
+		// Set the expiry time
+		java.util.Date expiration = new java.util.Date();
+		long expTimeMillis = expiration.getTime();
+		expTimeMillis += 1000 * 60 * 60;
+		expiration.setTime(expTimeMillis);
+
+		GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(bucketPDFs, fileName)
+				.withMethod(HttpMethod.GET).withExpiration(expiration);
+		//
+		URL url = s3Client.generatePresignedUrl(generatePresignedUrlRequest);
+		//System.out.println("Pre-Signed URL: " + url.toString());
+
+		return url.toString();
+	}
+
 }

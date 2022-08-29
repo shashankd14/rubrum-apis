@@ -5,12 +5,15 @@ import com.steel.product.application.entity.InwardEntry;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.QueryHint;
+import javax.transaction.Transactional;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -57,18 +60,26 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 
     @Query("select distinct inw from InwardEntry inw left join fetch inw.party party left join fetch inw.material mat " +
             "left join fetch inw.materialGrade matG left join fetch inw.instructions ins left join fetch ins.packetClassification " +
-            "where party.nPartyId = :partyId and inw.isDeleted is false and inw.status < 4 and inw.inStockWeight > 0 and ins.groupId is null" +
-            " or ins is null order by inw.inwardEntryId")
+            "where party.nPartyId = :partyId and inw.isDeleted is false and inw.status < 4 and inw.inStockWeight > 0 and ins.groupId is null " +
+            "or ins is null order by inw.inwardEntryId")
     @QueryHints(value = {
             @QueryHint(name = HINT_FETCH_SIZE, value = "10"),
             @QueryHint(name = HINT_PASS_DISTINCT_THROUGH,value = "false")
     })
     List<InwardEntry> findInwardByPartyId(Integer partyId);
-//    and ins.isDeleted is false
-}
 
-//@Query("select distinct inw,mat,grade from InwardEntry inw left join fetch inw.party left join fetch inw.instructions ins left join" +
-//        " inw.material mat left join inw.materialGrade grade left join inw.status st" +
-//        " where inw.party.id = :partyId and st.statusId < 4 and inw.isDeleted is false and ins.isDeleted is false " +
-//        "and (ins.status.statusId < 4 or ins.status.statusId >= 4 and inw.inStockWeight > 0)" +
-//        " or ins is null order by inw.inwardEntryId")
+    @Query("select distinct pd from PartDetails pd join fetch pd.instructions ins join ins.inwardId where ins.inwardId.inwardEntryId= :inwardId")
+    List<Object[]> getPlanPDFs(@Param("inwardId") Integer inwardId);
+
+	@Modifying
+	@Transactional
+	@Query("update InwardEntry set pdfS3Url=:url where inwardEntryId= :inwardId ")
+	public void updateS3InwardPDF(@Param("inwardId") Integer inwardId, @Param("url") String url);
+
+    @Query(nativeQuery = true, value = "SELECT pdf_s3_url FROM product_tblinwardentry WHERE inwardentryid = :inwardId")
+    public String getS3URL(@Param("inwardId") Integer inwardId);
+
+    @Query("select distinct pd from DeliveryDetails pd join fetch pd.instructions ins join ins.inwardId where ins.inwardId.inwardEntryId= :inwardId")
+    List<Object[]> getDCPDFs(@Param("inwardId") Integer inwardId);
+
+}

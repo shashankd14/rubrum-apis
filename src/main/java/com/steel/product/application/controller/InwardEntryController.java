@@ -7,6 +7,7 @@ import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.service.*;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import net.minidev.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -338,6 +339,18 @@ public class InwardEntryController {
 		try {
 			boolean isPresent = this.inwdEntrySvc.isCustomerBatchIdPresent(customerBatchId);
 			return new ResponseEntity<Object>(Boolean.valueOf(isPresent), HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@GetMapping({ "/getPlanPDFs/{inwardEntryId}" })
+	public ResponseEntity<Object> getPlanPDFs(@PathVariable int inwardEntryId) {
+		try {
+			JSONObject entry = this.inwdEntrySvc.getPlanPDFs(inwardEntryId);
+			if (entry == null)
+				throw new RuntimeException("Entry id not found - " + inwardEntryId);
+			return new ResponseEntity<Object>(entry, HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}

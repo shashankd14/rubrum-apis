@@ -1,5 +1,6 @@
 package com.steel.product.application.service;
 
+import com.steel.product.application.dao.DeliveryDetailsRepository;
 import com.steel.product.application.dao.InstructionRepository;
 import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.dto.instruction.*;
@@ -38,6 +39,8 @@ public class InstructionServiceImpl implements InstructionService {
 
     private InwardEntryRepository inwardEntryRepository;
 
+    private DeliveryDetailsRepository deliveryDetailsRepository;
+    
     private InwardEntryService inwardService;
 
     private ProcessService processService;
@@ -54,15 +57,16 @@ public class InstructionServiceImpl implements InstructionService {
 
     private InstructionMapper instructionMapper;
 
-    @Autowired
+	@Autowired
 	public InstructionServiceImpl(InstructionRepository instructionRepository,
 			InwardEntryRepository inwardEntryRepository, InwardEntryService inwardService,
 			ProcessService processService, StatusService statusService,
 			PacketClassificationService packetClassificationService, EndUserTagsService endUserTagsService,
 			PartDetailsService partDetailsService, PartDetailsMapper partDetailsMapper,
-			InstructionMapper instructionMapper) {
+			InstructionMapper instructionMapper, DeliveryDetailsRepository deliveryDetailsRepository) {
         this.instructionRepository = instructionRepository;
         this.inwardEntryRepository = inwardEntryRepository;
+        this.deliveryDetailsRepository = deliveryDetailsRepository;
         this.inwardService = inwardService;
         this.processService = processService;
         this.statusService = statusService;
@@ -924,6 +928,15 @@ public class InstructionServiceImpl implements InstructionService {
 	public void updateS3PlanPDF(String partDetailsId, String url) {
 		instructionRepository.updateS3PlanPDF(partDetailsId, url);
 	}
-    
+
+	@Override
+	public void updateS3InwardPDF(Integer inwardId, String url) {
+		inwardEntryRepository.updateS3InwardPDF(inwardId, url);
+	}
+
+	@Override
+	public void updateS3DCPDF(Integer inwardId, String url) {
+		deliveryDetailsRepository.updateS3DCPDF(inwardId, url);
+	}
 
 }

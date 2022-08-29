@@ -98,6 +98,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
         delivery.setCreatedBy(userId);
         delivery.setUpdatedBy(userId);
         delivery.setVehicleNo(deliveryDto.getVehicleNo());
+        delivery.setPackingRateId( deliveryDto.getPackingRateId());
 
         deliveryItemDetails = deliveryDto.getDeliveryItemDetails();
 

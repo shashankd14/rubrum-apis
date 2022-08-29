@@ -2,7 +2,13 @@ package com.steel.product.application.service;
 
 import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.dto.inward.InwardEntryResponseDto;
+import com.steel.product.application.dto.partDetails.PartDetailsPDFResponse;
+import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.InwardEntry;
+import com.steel.product.application.entity.PartDetails;
+
+import net.minidev.json.JSONObject;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +18,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -21,10 +26,12 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 
 	private final static Logger LOGGER = LoggerFactory.getLogger("InwardEntryServiceImpl");
 	private final InwardEntryRepository inwdEntryRepo;
+	private AWSS3Service awsS3Service;
 
 	@Autowired
-	public InwardEntryServiceImpl(InwardEntryRepository theInwdEntryRepo) {
+	public InwardEntryServiceImpl(InwardEntryRepository theInwdEntryRepo, AWSS3Service awsS3Service) {
 		this.inwdEntryRepo = theInwdEntryRepo;
+		this.awsS3Service = awsS3Service;
 	}
 
 	public InwardEntry saveEntry(InwardEntry entry) {
@@ -145,6 +152,44 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 			throw new RuntimeException("Did not find entry with coilNumber - " + coilNumber);
 		}
 		return theEntry;
+	}
+
+	public JSONObject getPlanPDFs(int inwardId) {
+		JSONObject finalResp =new JSONObject();
+		List<PartDetailsPDFResponse> response = new ArrayList<PartDetailsPDFResponse>();
+		List<Object[]> result = this.inwdEntryRepo.getPlanPDFs(inwardId);
+
+		for (Object[] obj : result) {
+
+			PartDetailsPDFResponse kk = new PartDetailsPDFResponse();
+
+			PartDetails partDetails = (PartDetails) obj[0];
+			kk.setId(partDetails.getId().toString());
+			kk.setFileName(partDetails.getPartDetailsId());
+			kk.setPdfS3Url(partDetails.getPdfS3Url());
+			kk.setPdfS3Url(awsS3Service.generatePresignedUrl(partDetails.getPartDetailsId()) );
+			response.add(kk);
+		}
+		finalResp.put("plan_pdfs", response);
+		
+		String s3URL = this.inwdEntryRepo.getS3URL(inwardId);
+		finalResp.put("inward_pdf", awsS3Service.generatePresignedUrl(s3URL) );
+		
+		List<PartDetailsPDFResponse> response2 = new ArrayList<PartDetailsPDFResponse>();
+		List<Object[]> result2 = this.inwdEntryRepo.getDCPDFs(inwardId);
+
+		for (Object[] obj2 : result2) {
+
+			PartDetailsPDFResponse kk = new PartDetailsPDFResponse();
+			DeliveryDetails partDetails = (DeliveryDetails) obj2[0];
+			kk.setId(partDetails.getDeliveryId().toString());
+			kk.setFileName(partDetails.getPdfS3Url());
+			kk.setPdfS3Url(awsS3Service.generatePresignedUrl(partDetails.getPdfS3Url()));
+			response2.add(kk);
+		}
+		finalResp.put("dc_pdfs", response2);
+		
+		return finalResp;
 	}
 
 }
