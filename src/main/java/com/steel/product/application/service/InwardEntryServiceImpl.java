@@ -116,6 +116,20 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 			return pageResult;
 		}
 	}
+
+	@Override
+	public Page<InwardEntry> findAllWIPlistWithPagination(int pageNo, int pageSize, String searchText, String partyId) {
+		LOGGER.info("In findAllWithPagination page ");
+		Pageable pageable = PageRequest.of((pageNo-1), pageSize);
+		
+		if(partyId!=null && partyId.length()>0) {
+			Page<InwardEntry> pageResult = inwdEntryRepo.findAllWIP(searchText, Integer.parseInt(partyId), pageable);
+			return pageResult;
+		} else {
+			Page<InwardEntry> pageResult = inwdEntryRepo.findAllWIP(searchText, pageable);
+			return pageResult;
+		}
+	}
 	
 	@Override
 	public List<InwardEntryResponseDto> findAllInwards() {

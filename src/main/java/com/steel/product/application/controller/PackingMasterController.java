@@ -6,7 +6,6 @@ import com.steel.product.application.dto.packingmaster.PackingItemRequest;
 import com.steel.product.application.dto.packingmaster.PackingItemResponse;
 import com.steel.product.application.dto.packingmaster.PackingRateMasterRequest;
 import com.steel.product.application.dto.packingmaster.PackingRateMasterResponse;
-import com.steel.product.application.dto.pricemaster.PriceMasterRequest;
 import com.steel.product.application.service.PackingMasterService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 

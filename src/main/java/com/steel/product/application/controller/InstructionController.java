@@ -2,6 +2,7 @@ package com.steel.product.application.controller;
 
 import com.steel.product.application.dto.instruction.*;
 import com.steel.product.application.entity.Instruction;
+import com.steel.product.application.exception.MockException;
 import com.steel.product.application.service.*;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -108,7 +109,7 @@ public class InstructionController {
 	}
 
 	@PostMapping("/saveFullHandlingDispatch/{inwardId}")
-	public ResponseEntity<Object> saveFullHandlingDispatch(@PathVariable int inwardId, HttpServletRequest request) {
+	public ResponseEntity<Object> saveFullHandlingDispatch(@PathVariable int inwardId, HttpServletRequest request) throws MockException {
 		int userId = (request.getHeader("userId")==null ? 1: Integer.parseInt(request.getHeader("userId")));
 		return new ResponseEntity<>(instructionService.saveFullHandlingDispatch(inwardId, userId ), HttpStatus.OK);
 	}

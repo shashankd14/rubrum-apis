@@ -11,6 +11,7 @@ import com.steel.product.application.dto.pdf.InwardEntryPdfDto;
 import com.steel.product.application.dto.pdf.PartDetailsPdfResponse;
 import com.steel.product.application.entity.*;
 import com.steel.product.application.entity.Process;
+import com.steel.product.application.exception.MockException;
 import com.steel.product.application.mapper.InstructionMapper;
 import com.steel.product.application.mapper.PartDetailsMapper;
 import com.steel.product.application.mapper.TotalLengthAndWeight;
@@ -468,7 +469,7 @@ public class InstructionServiceImpl implements InstructionService {
     }
 
     @Override
-    public InstructionResponseDto saveFullHandlingDispatch(Integer inwardId, int userId) {
+    public InstructionResponseDto saveFullHandlingDispatch(Integer inwardId, int userId) throws MockException {
         LOGGER.info("inside saveUnprocessedForDelivery method");
         Date date = new Date();
         Instruction unprocessedInstruction = new Instruction();
@@ -477,6 +478,14 @@ public class InstructionServiceImpl implements InstructionService {
         Integer handlingProcessId = 8, readyToDeliverStatusId = 4;
         Process handlingProcess = processService.getById(handlingProcessId);
         Status readyToDeliverStatus = statusService.getStatusById(readyToDeliverStatusId);
+        
+        List<Instruction> instructions = instructionRepository.findByStatus(inwardId, inProgressStatusId);
+        
+        if(instructions!=null && instructions.size()>0){
+			List<String> errors = new ArrayList<>();
+			errors.add("we can't do FULL HANDLING since some of the children instructions were in WIP status");
+			throw new MockException("MSG-0007", errors);
+        }
 
         float denominator = inward.getfThickness() * (inward.getfWidth() / 1000f) * 7.85f;
         float lengthUnprocessed = inward.getFpresent() / denominator;
@@ -939,4 +948,8 @@ public class InstructionServiceImpl implements InstructionService {
 		deliveryDetailsRepository.updateS3DCPDF(inwardId, url);
 	}
 
+	@Override
+	public List<Instruction> findAllByInstructionIdInAndStatus(List<Integer> instructionIds, List<Integer> statusId) {
+		return instructionRepository.findAllByInstructionIdInAndStatus(instructionIds, statusId);
+	}
 }

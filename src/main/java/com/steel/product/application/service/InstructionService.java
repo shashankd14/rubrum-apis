@@ -4,6 +4,7 @@ import com.steel.product.application.dto.instruction.*;
 import com.steel.product.application.dto.pdf.InwardEntryPdfDto;
 import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.Instruction;
+import com.steel.product.application.exception.MockException;
 import com.steel.product.application.mapper.TotalLengthAndWeight;
 import org.springframework.http.ResponseEntity;
 
@@ -72,7 +73,7 @@ public interface InstructionService {
 
     HashMap<Integer,Double> findSumOfPlannedWeightAndActualWeightForUnprocessed();
 
-    InstructionResponseDto saveFullHandlingDispatch(Integer inwardId, int userId);
+    InstructionResponseDto saveFullHandlingDispatch(Integer inwardId, int userId) throws MockException;
 
 	int getPartCount(Long theId);
 
@@ -81,6 +82,8 @@ public interface InstructionService {
 	public void updateS3InwardPDF(Integer inwardId, String url);
 
 	public void updateS3DCPDF(Integer inwardId, String url);
+
+	List<Instruction> findAllByInstructionIdInAndStatus(List<Integer> instructionIds, List<Integer> statusId);
 
 }
 

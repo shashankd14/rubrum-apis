@@ -47,4 +47,6 @@ public interface InwardEntryService {
 	List<InwardEntry> findInwardByPartyId(Integer partyId);
 
 	JSONObject getPlanPDFs(int inwardEntryId);
+
+	Page<InwardEntry> findAllWIPlistWithPagination(int pageNo, int pageSize, String searchText, String partyId);
 }

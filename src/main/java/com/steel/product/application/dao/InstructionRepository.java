@@ -107,4 +107,12 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
 	@Query("update PartDetails set pdfS3Url=:url where partDetailsId= :partDetailsId ")
 	public void updateS3PlanPDF(@Param("partDetailsId") String partDetailsId, @Param("url") String url);
 
+	@Query("select ins from Instruction ins left join fetch ins.inwardId left join fetch ins.parentInstruction where ins.inwardId.inwardEntryId = :inwardId and ins.status.statusId = :statusId")
+	public List<Instruction> findByStatus(@Param("inwardId") Integer inwardId, @Param("statusId") Integer statusId);
+	
+    @Query("select ins from Instruction ins left join fetch ins.inwardId left join fetch ins.parentInstruction where ins.instructionId in :instructionIds and ins.status.statusId in :statusId")
+    public List<Instruction> findAllByInstructionIdInAndStatus(@Param("instructionIds") List<Integer> instructionIds, @Param("statusId") List<Integer> statusId);
+
+    
+    
 }

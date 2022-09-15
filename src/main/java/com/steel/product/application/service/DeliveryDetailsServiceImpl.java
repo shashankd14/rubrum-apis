@@ -106,13 +106,16 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
         Integer deliveredStatusId = 4;
         Status deliveredStatus = statusService.getStatusById(deliveredStatusId);
         Integer readyToDeliverStatusId = 3;
-        if("FULL_HANDLING".equalsIgnoreCase(deliveryDto.getTaskType())) {
-            readyToDeliverStatusId = 4;
-        }
+        
+        List<Integer> statusIdList=new ArrayList<>();
+        statusIdList.add(readyToDeliverStatusId);
+        statusIdList.add(deliveredStatusId);
         Map<Integer, String> instructionRemarksMap = deliveryItemDetails.stream().filter(d -> d.getRemarks() != null)
                 .collect(Collectors.toMap(d -> d.getInstructionId(), d -> d.getRemarks()));
+        
         List<Instruction> instructions = instructionService.findAllByInstructionIdInAndStatus(deliveryItemDetails.stream()
-                .map(d -> d.getInstructionId()).collect(Collectors.toList()), readyToDeliverStatusId);
+                .map(d -> d.getInstructionId()).collect(Collectors.toList()), statusIdList);
+        
         instructions.forEach(ins -> ins.setStatus(deliveredStatus));
         instructions.forEach(ins -> ins.setPriceDetails( priceMasterService.calculateInstructionPrice(ins.getInstructionId())));
         instructions = instructionService.saveAll(instructions);
