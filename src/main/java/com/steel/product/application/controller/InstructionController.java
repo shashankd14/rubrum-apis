@@ -108,10 +108,10 @@ public class InstructionController {
 		return new ResponseEntity<>(instructionService.saveUnprocessedForDelivery(inwardId, userId), HttpStatus.OK);
 	}
 
-	@PostMapping("/saveFullHandlingDispatch/{inwardId}")
-	public ResponseEntity<Object> saveFullHandlingDispatch(@PathVariable int inwardId, HttpServletRequest request) throws MockException {
+	@PostMapping("/saveFullHandlingDispatch")
+	public ResponseEntity<Object> saveFullHandlingDispatch(@RequestBody List<Integer> inwardList, HttpServletRequest request) throws MockException {
 		int userId = (request.getHeader("userId")==null ? 1: Integer.parseInt(request.getHeader("userId")));
-		return new ResponseEntity<>(instructionService.saveFullHandlingDispatch(inwardId, userId ), HttpStatus.OK);
+		return new ResponseEntity<>(instructionService.saveFullHandlingDispatch(inwardList, userId ), HttpStatus.OK);
 	}
 	
 	@PostMapping("/cut")

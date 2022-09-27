@@ -89,6 +89,8 @@ public class InwardEntryResponseDto {
 
     private Float availableLength;
 
+	private Float scrapWeight;
+    
     public Integer getInwardEntryId() {
         return inwardEntryId;
     }
@@ -400,4 +402,14 @@ public class InwardEntryResponseDto {
     public void setAvailableLength(Float availableLength) {
         this.availableLength = availableLength;
     }
+
+	public Float getScrapWeight() {
+		return scrapWeight;
+	}
+
+	public void setScrapWeight(Float scrapWeight) {
+		this.scrapWeight = scrapWeight;
+	}
+    
+    
 }

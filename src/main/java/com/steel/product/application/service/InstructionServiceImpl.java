@@ -316,7 +316,8 @@ public class InstructionServiceImpl implements InstructionService {
         Status inProgressStatus = statusService.getStatusById(inProgressStatusId);
         Status readyToDeliverStatus = statusService.getStatusById(readyToDeliverStatusId);
         Status currentStatus;
-        
+        Float scrapWeight=0f;
+    	
         if("WIPtoFG".equalsIgnoreCase(instructionFinishDto.getTaskType())) {    // WIPtoFG
         	statusId = inProgressStatusId;
         	currentStatus= readyToDeliverStatus;
@@ -352,6 +353,7 @@ public class InstructionServiceImpl implements InstructionService {
             instruction.setActualLength(ins.getActualLength());
             instruction.setActualWidth(ins.getActualWidth());
             instruction.setActualWeight(ins.getActualWeight());
+          	scrapWeight = scrapWeight + (ins.getPlannedWeight() - ins.getActualWeight());
             instruction.setActualNoOfPieces(ins.getActualNoOfPieces());
             instruction.setPacketClassification(packetClassificationMap.get(ins.getPacketClassificationId()));
             instruction.setEndUserTagsEntity(endUserTagsEntityMap.get(ins.getEndUserTagId()));
@@ -363,9 +365,16 @@ public class InstructionServiceImpl implements InstructionService {
         LOGGER.info("saved all instructions");
         boolean isAnyInstructionInProgress = false;
         Instruction savedInstruction = updatedInstructionList.get(0);
-
         InwardEntry inwardEntry = savedInstruction.getInwardId();
         Instruction parentInstruction = savedInstruction.getParentInstruction();
+        if(scrapWeight !=0 ) {
+        	if( inwardEntry.getScrapWeight()!=null && inwardEntry.getScrapWeight() !=0 ) {
+            	Float totalScrapWeight = scrapWeight+ inwardEntry.getScrapWeight();
+            	inwardEntry.setScrapWeight(totalScrapWeight);
+        	} else {
+            	inwardEntry.setScrapWeight(scrapWeight);
+        	}
+        }
         Integer parentGroupId = savedInstruction.getParentGroupId();
         List<Instruction> parentGroupInstructions;
         List<Instruction> groupInstructions;
@@ -469,8 +478,13 @@ public class InstructionServiceImpl implements InstructionService {
     }
 
     @Override
-    public InstructionResponseDto saveFullHandlingDispatch(Integer inwardId, int userId) throws MockException {
+    public List<InstructionResponseDto>  saveFullHandlingDispatch(List<Integer> inwardList, int userId) throws MockException {
         LOGGER.info("inside saveUnprocessedForDelivery method");
+
+        List<InstructionResponseDto> totalList=new ArrayList<>(); 
+        		
+        for (Integer inwardId : inwardList) {
+        
         Date date = new Date();
         Instruction unprocessedInstruction = new Instruction();
         InwardEntry inward = inwardService.getByInwardEntryId(inwardId);
@@ -513,8 +527,9 @@ public class InstructionServiceImpl implements InstructionService {
         inward = inwardService.saveEntry(inward);
         Optional<InstructionResponseDto> savedInstruction = inward.getInstructions().stream().filter(ins -> ins.getProcess().getProcessId() == 8)
                 .map(ins -> Instruction.valueOf(ins)).findFirst();
-
-        return savedInstruction.orElse(null);
+        totalList.add(savedInstruction.get());
+        }
+        return totalList;
     }
 
     @Override

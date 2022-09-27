@@ -100,6 +100,9 @@ public class InwardEntry {
 	@Column(name = "billedweight")
 	private float billedweight;
 
+	@Column(name = "scrapWeight")
+	private Float scrapWeight;
+
 	@Column(name = "parentcoilnumber")
 	private String parentCoilNumber;
 
@@ -478,6 +481,22 @@ public class InwardEntry {
 		this.availableLength = availableLength;
 	}
 
+	public Float getScrapWeight() {
+		return scrapWeight;
+	}
+
+	public void setScrapWeight(Float scrapWeight) {
+		this.scrapWeight = scrapWeight;
+	}
+
+	public String getPdfS3Url() {
+		return pdfS3Url;
+	}
+
+	public void setPdfS3Url(String pdfS3Url) {
+		this.pdfS3Url = pdfS3Url;
+	}
+
 	public static InwardEntryPdfDto valueOf(InwardEntry inwardEntry, List<InstructionResponsePdfDto> instructionResponsePdfDtos){
         InwardEntryPdfDto inwardEntryPdfDto = new InwardEntryPdfDto();
         inwardEntryPdfDto.setInwardEntryId(inwardEntry.getInwardEntryId());
@@ -594,6 +613,7 @@ public class InwardEntry {
 		inwardEntryResponseDto.setAvailableLength(inwardEntry.getAvailableLength());
 		inwardEntryResponseDto.setCustomerInvoiceNo(inwardEntry.getCustomerInvoiceNo());
 		inwardEntryResponseDto.setParentCoilNumber(inwardEntry.getParentCoilNumber());
+		inwardEntryResponseDto.setScrapWeight( inwardEntry.getScrapWeight() );
 		return inwardEntryResponseDto;
 	}
 

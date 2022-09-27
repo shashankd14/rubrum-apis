@@ -2,7 +2,6 @@ package com.steel.product.application.service;
 
 import com.steel.product.application.dto.instruction.*;
 import com.steel.product.application.dto.pdf.InwardEntryPdfDto;
-import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.exception.MockException;
 import com.steel.product.application.mapper.TotalLengthAndWeight;
@@ -73,7 +72,7 @@ public interface InstructionService {
 
     HashMap<Integer,Double> findSumOfPlannedWeightAndActualWeightForUnprocessed();
 
-    InstructionResponseDto saveFullHandlingDispatch(Integer inwardId, int userId) throws MockException;
+    List<InstructionResponseDto> saveFullHandlingDispatch(List<Integer> inwardList, int userId) throws MockException;
 
 	int getPartCount(Long theId);
 
