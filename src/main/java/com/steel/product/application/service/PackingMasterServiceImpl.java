@@ -74,6 +74,7 @@ public class PackingMasterServiceImpl implements PackingMasterService {
 		packingItemEntity.setUpdatedOn(new Date());
 		packingItemRepository.save (packingItemEntity);
 		if (packingItemRequest.getId() != null && packingItemRequest.getId() > 0) {
+			log.info("Packing Item details updated successfully");
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Packing Item details updated successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
 		} else {
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Packing Item details saved successfully..! \"}", new HttpHeaders(), HttpStatus.OK);

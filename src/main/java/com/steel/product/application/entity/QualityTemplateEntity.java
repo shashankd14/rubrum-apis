@@ -2,9 +2,11 @@ package com.steel.product.application.entity;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.json.JSONArray;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.steel.product.application.dto.packingmaster.PackingItemResponse;
+import com.steel.product.application.dto.quality.QualityTemplateResponse;
+
 import lombok.Data;
 import lombok.ToString;
 
@@ -13,25 +15,31 @@ import javax.persistence.*;
 import java.util.Date;
 
 @Entity
-@Table(name = "packing_item")
+@Table(name = "quality_template")
 @Data
 @ToString
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class PackingItemEntity {
+public class QualityTemplateEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "item_id")
-	private Integer itemId;
+	@Column(name = "template_id")
+	private Integer templateId;
 	
-	@Column(name = "packing_id")
-	private String packingItemId;
+	@Column(name = "templateName")
+	private String templateName;
+	
+	@Column(name = "stageName")
+	private String stageName;
 
-	@Column(name = "description")
-	private String description;
+	@Column(name = "processId")
+	private Integer processId;
 	
-	@Column(name = "unit")
-	private String unit;
+	@Column(name = "fieldDetails", length = 2000)
+	private String fieldDetails;
+	
+	@Column(name = "remarks")
+	private String remarks;
 
 	@Column(name = "created_by")
 	private Integer createdBy;
@@ -47,12 +55,13 @@ public class PackingItemEntity {
 	@UpdateTimestamp
 	private Date updatedOn;
 
-	public static PackingItemResponse valueOf(PackingItemEntity entity){
-		PackingItemResponse dtoResponse = new PackingItemResponse();
-		dtoResponse.setItemId(entity.getItemId());
-		dtoResponse.setPackingItemId(entity.getPackingItemId());
-		dtoResponse.setDescription( entity.getDescription());
-		dtoResponse.setUnit( entity.getUnit());
+	public static QualityTemplateResponse valueOf(QualityTemplateEntity entity){
+		QualityTemplateResponse dtoResponse = new QualityTemplateResponse();
+		dtoResponse.setTemplateId(entity.getTemplateId());
+		dtoResponse.setStageName(entity.getStageName());
+		dtoResponse.setProcessId( entity.getProcessId() );
+		dtoResponse.setRemarks( entity.getRemarks() );
+		dtoResponse.setFieldDetails(entity.getFieldDetails());
 		dtoResponse.setCreatedBy(entity.getCreatedBy());
 		dtoResponse.setUpdatedBy(entity.getUpdatedBy());
 		dtoResponse.setCreatedOn(entity.getCreatedOn());
