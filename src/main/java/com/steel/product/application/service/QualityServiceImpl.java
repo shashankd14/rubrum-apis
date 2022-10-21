@@ -2,6 +2,8 @@ package com.steel.product.application.service;
 
 import com.steel.product.application.dao.QualityPartyTemplateRepository;
 import com.steel.product.application.dao.QualityTemplateRepository;
+import com.steel.product.application.dto.quality.QualityCheckRequest;
+import com.steel.product.application.dto.quality.QualityCheckResponse;
 import com.steel.product.application.dto.quality.QualityPartyMappingRequest;
 import com.steel.product.application.dto.quality.QualityPartyMappingResponse;
 import com.steel.product.application.dto.quality.QualityTemplateMainResponse;
@@ -68,8 +70,13 @@ public class QualityServiceImpl implements QualityService {
 				qualityTemplateEntity.setStageName(jsonChild.get("stageName").toString());
 				qualityTemplateEntity.setTemplateName(json.get("templateName").toString());
 				qualityTemplateEntity.setFieldDetails(jsonChild.get("fieldDetails").toString());
-				qualityTemplateEntity.setProcessId(Integer.parseInt(jsonChild.get("processId").toString()));
-				qualityTemplateEntity.setRemarks(jsonChild.get("remarks").toString());
+
+				if (jsonChild.containsKey("processId") && jsonChild.get("processId") != null && jsonChild.get("processId").toString().length()>0) {
+					qualityTemplateEntity.setProcessId(Integer.parseInt(jsonChild.get("processId").toString()));
+				}
+				if (jsonChild.containsKey("remarks") && jsonChild.get("remarks") != null) {
+					qualityTemplateEntity.setRemarks(jsonChild.get("remarks").toString());
+				}
 				qualityTemplateEntity.setUpdatedBy(userId);
 				qualityTemplateEntity.setUpdatedOn(new Date());
 				list.add(qualityTemplateEntity);
@@ -211,6 +218,17 @@ public class QualityServiceImpl implements QualityService {
 		List<QualityPartyMappingResponse> instructionList = qualityPartyTemplateRepository.findAll().stream()
 				.map(i -> QualityPartyTemplateEntity.valueOf(i)).collect(Collectors.toList());
 		return instructionList;
+	}
+
+	@Override
+	public QualityCheckResponse qualityCheck(QualityCheckRequest qualityCheckRequest) {
+		
+		System.out.println("getInwardId == "+qualityCheckRequest.getInwardId());
+		System.out.println("getPartyId == "+qualityCheckRequest.getPartyId());
+		System.out.println("getInstructionId == "+qualityCheckRequest.getInstructionId());
+		System.out.println("getTemplateId == "+qualityCheckRequest.getTemplateId());
+		
+		return null;
 	}
 	
 

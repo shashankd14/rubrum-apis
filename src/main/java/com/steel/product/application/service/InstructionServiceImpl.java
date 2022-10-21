@@ -866,6 +866,18 @@ public class InstructionServiceImpl implements InstructionService {
                 instructionSaveRequestDto.getInstructionRequestDTOs().forEach(in -> packetClassificationIds.add(in.getPacketClassificationId()));
                 instructionSaveRequestDto.getInstructionRequestDTOs().forEach(in -> endUserTagIds.add(in.getEndUserTagId()));
             }
+
+            Float scrapWeight = inwardEntry.getScrapWeight();
+            String isScrapWeightUsed ="N";
+			for (InstructionSaveRequestDto instructionSaveRequestDto : instructionSaveRequestDtos) {
+				for (InstructionRequestDto instructionRequestChildDto : instructionSaveRequestDto.getInstructionRequestDTOs()) {
+					if (instructionRequestChildDto.getIsScrapWeightUsed()!=null && instructionRequestChildDto.getIsScrapWeightUsed()) {
+						scrapWeight = scrapWeight - instructionRequestChildDto.getPlannedWeight();
+						 isScrapWeightUsed ="Y";
+					}
+				}
+			}
+           
             LOGGER.info("incoming length,weight "+incomingLength+","+incomingWeight);
             remainingWeight = availableWeight - existingWeight - Math.floor(incomingWeight);
             remainingLength = availableLength - existingLength - incomingLength;
@@ -935,6 +947,9 @@ public class InstructionServiceImpl implements InstructionService {
             	parentInstruction.setUpdatedBy(userId);
                 instructionRepository.save(parentInstruction);
             } else if (fromInward) {
+            	if("Y".equals(isScrapWeightUsed)) {
+    				inwardEntry.setScrapWeight(scrapWeight);
+    			}
             	inwardEntry.setUpdatedBy(userId);
                 inwardService.saveEntry(inwardEntry);
             }

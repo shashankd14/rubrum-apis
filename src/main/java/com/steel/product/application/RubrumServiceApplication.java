@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Info;
@@ -18,6 +19,7 @@ import io.swagger.v3.oas.models.info.License;
 @EnableEurekaClient
 @EnableCaching
 @EnableAutoConfiguration
+@EnableScheduling
 @OpenAPIDefinition(info = @Info(title = "Rubrum APIs", version = "1.0", description = "API v1.0"))
 public class RubrumServiceApplication {
 	

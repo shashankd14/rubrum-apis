@@ -67,4 +67,6 @@ public class InstructionRequestDto {
     private String remarks;
 
     private Boolean isSlitAndCut;
+
+    private Boolean isScrapWeightUsed;
 }

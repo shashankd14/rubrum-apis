@@ -1,15 +1,14 @@
 package com.steel.product.application.service;
 
-import com.steel.product.application.dto.report.StockReportRequest;
+import org.springframework.mail.javamail.MimeMessageHelper;
 
-import javax.mail.MessagingException;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.text.ParseException;
+import com.steel.product.application.dto.report.StockReportRequest;
 
 public interface ReportsService {
 
-    String generateAndMailStockReport(StockReportRequest stockReportRequest);
+	String generateAndMailStockReport(StockReportRequest stockReportRequest);
 
-//    void uploadCSV() throws IOException, ParseException;
+	boolean createStockReport(int partyId, String strDate, MimeMessageHelper helper);
+
+	boolean createFGReport(int partyId, String strDate, MimeMessageHelper helper);
 }
