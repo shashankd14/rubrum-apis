@@ -2,10 +2,12 @@ package com.steel.product.application.service;
 
 import com.steel.product.application.dao.FGReportViewRepository;
 import com.steel.product.application.dao.StockReportViewRepository;
+import com.steel.product.application.dao.WIPReportViewRepository;
 import com.steel.product.application.dto.report.StockReportRequest;
 import com.steel.product.application.entity.FGReportViewEntity;
 import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.entity.StockReportViewEntity;
+import com.steel.product.application.entity.WIPReportViewEntity;
 import com.steel.product.application.util.CSVUtil;
 import com.steel.product.application.util.EmailUtil;
 
@@ -45,7 +47,10 @@ public class ReportsServiceImpl implements ReportsService {
 	
 	@Autowired
 	FGReportViewRepository fgReportViewRepository;
-    
+	
+	@Autowired
+	WIPReportViewRepository wipReportViewRepository;
+	
     private final InstructionService instructionService;
     private final CSVUtil csvUtil;
     private final EmailUtil emailUtil;
@@ -159,7 +164,7 @@ public class ReportsServiceImpl implements ReportsService {
 		try {
 			List<StockReportViewEntity> partyList = stockReportViewRepository.findByPartyId(partyId);
 
-			acctStatementMap.put("1", new Object[] { "CoilNumber", "CustomerBatchId", "MaterialDesc", "MaterialGrade", "Thickness", "Width", "Length", "NetWeight", "InwardStatus", "InStockWeight", "UnprocessedWeight" });
+			acctStatementMap.put("1", new Object[] { "CoilNumber", "CustomerBatchId", "MaterialDesc", "MaterialGrade", "Thickness", "Width", "Length", "NetWeight", "UnprocessedWeight", "InStockWeight", "InwardStatus" });
 
 			int cnt = 1;
 			for (StockReportViewEntity kk : partyList) {
@@ -168,8 +173,7 @@ public class ReportsServiceImpl implements ReportsService {
 				acctStatementMap.put("" + cnt,
 						new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getMaterialDesc(),
 								kk.getMaterialGrade(), kk.getFthickness(), kk.getFwidth(), kk.getFlength(),
-								kk.getNetWeight(), kk.getInwardStatus(), kk.getInStockWeight(),
-								kk.getUnProcessedWeight()});
+								kk.getNetWeight(), kk.getUnProcessedWeight(), kk.getInStockWeight(),kk.getInwardStatus()});
 			}
 		} catch (Exception e) {
 			LOGGER.error("Error at getStockReportDetails " + e.getMessage());
@@ -269,6 +273,98 @@ public class ReportsServiceImpl implements ReportsService {
 			}
 		} catch (Exception e) {
 			LOGGER.error("Error at getFGReportDetails " + e.getMessage());
+		}
+		return acctStatementMap;
+	}
+
+	@Override
+	public boolean createWIPReport(int partyId, String strDate, MimeMessageHelper helper) {
+
+		boolean attachmentRequired=true;
+		try {
+			// Create blank workbook
+			XSSFWorkbook workbook = new XSSFWorkbook();
+			
+			CellStyle borderStyle = workbook.createCellStyle();
+			borderStyle.setBorderBottom(BorderStyle.THIN);
+		    borderStyle.setBorderLeft(BorderStyle.THIN);
+			borderStyle.setBorderRight(BorderStyle.THIN);
+			borderStyle.setBorderTop(BorderStyle.THIN);
+			borderStyle.setAlignment(HorizontalAlignment.CENTER);
+			
+			// Create a blank sheet
+			XSSFSheet spreadsheet = workbook.createSheet("WIP_Report");
+
+			// Create row object
+			XSSFRow row;
+
+			Map<String, Object[]> acctStatementMap = getWIPReportDetails(partyId);
+
+			// Iterate over data and write to sheet
+			Set<String> keyid = acctStatementMap.keySet();
+			int rowid = 0;
+
+			for (String key : keyid) {
+				row = spreadsheet.createRow(rowid++);
+				Object[] objectArr = acctStatementMap.get(key);
+				int cellid = 0;
+
+				for (Object obj : objectArr) {
+					Cell cell = row.createCell(cellid++);
+				    cell.setCellStyle(borderStyle);
+					cell.setCellValue((String) obj);
+				}
+			
+			}
+			
+            String baseDirectory = env.getProperty("email.folderpath")+File.separator;
+            
+			File outputPojoDirectory = new File(baseDirectory);
+			outputPojoDirectory.mkdirs();
+			
+			File fullPath = new File(baseDirectory +File.separator+"WIPReport_"+strDate+".xlsx");
+			
+			FileOutputStream out = new FileOutputStream(fullPath);
+			workbook.write(out);
+			
+			FileSystemResource file = new FileSystemResource(fullPath);
+			if(acctStatementMap!=null && acctStatementMap.size()>1) {
+				attachmentRequired=false;
+				helper.addAttachment("WIPReport_" + strDate + ".xlsx", file);
+			}
+			
+			out.close();
+			fullPath.deleteOnExit();
+			//System.out.println("File Created At -- " + baseDirectory);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return attachmentRequired;
+	}
+
+	public Map<String, Object[]> getWIPReportDetails(int partyId) {
+
+		Map<String, Object[]> acctStatementMap = new LinkedHashMap<>();
+
+		try {
+			List<WIPReportViewEntity> partyList = wipReportViewRepository.findByPartyId(partyId);
+
+			acctStatementMap.put("1",
+					new Object[] { "CoilNumber", "CustomerBatchId", "MaterialDesc", "MaterialGrade", "Thickness",
+							"Width", "Length", "Net Weight", "In Stock Weight", "WIP Weight", "Thickness",
+							"Planned Width", "Planned Length", "Planned Weight", "Inward Status" });
+
+			int cnt = 1;
+			for (WIPReportViewEntity kk : partyList) {
+				cnt++;
+
+				acctStatementMap.put("" + cnt, new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(),
+						kk.getMaterialDesc(), kk.getMaterialGrade(), kk.getFthickness(), kk.getFwidth(),
+						kk.getFlength(), kk.getNetWeight(), kk.getInStockWeight(), kk.getWipWeight(), kk.getThickness(),
+						kk.getPlannedWidth(), kk.getPlannedLength(), kk.getPlannedWeight(), kk.getInwardStatus() });
+			}
+		} catch (Exception e) {
+			LOGGER.error("Error at getWIPReportDetails " + e.getMessage());
 		}
 		return acctStatementMap;
 	}

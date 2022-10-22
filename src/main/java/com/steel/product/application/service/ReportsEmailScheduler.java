@@ -48,13 +48,11 @@ public class ReportsEmailScheduler {
 			
 			List<Party> partyList = partyRepo.findAll();
 			for (Party party : partyList) {
-				if (party.getEmail1()!=null && party.getEmail1().length()>0  &&  party.getnPartyId() == 61) {
+				if (party.getEmail1()!=null && party.getEmail1().length()>0) {
 					mailSender.sendMail(party.getPartyName(), party.getEmail1(), party.getEmail2(), strDate, party.getnPartyId());
 				}
 			}
 		
-		} else {
-			logger.info("apiAlertRequired == "+apiAlertRequired);
 		}
 	}
 }

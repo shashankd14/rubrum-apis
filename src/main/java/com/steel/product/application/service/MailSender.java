@@ -53,6 +53,7 @@ public class MailSender {
 			MimeMessageHelper helper = new MimeMessageHelper(message, true);
 			reportsService.createStockReport(partyId, strDate, helper);
 			reportsService.createFGReport(partyId, strDate, helper);
+			reportsService.createWIPReport(partyId, strDate, helper);
 			helper.setFrom(fromMailId);
 			helper.setTo(emailId1);
 			
@@ -63,7 +64,7 @@ public class MailSender {
 			helper.setSubject("Daily Reports - "+strDate);
 			helper.setText(emailBody, true);
 			javaMailSender.send(message);
-			logger.info("Success...!");
+			logger.info("Email Sent Successfully to "+emailId1);
 		} catch (Exception e) {
 			logger.info("MailSender.Fail1: "+e.getMessage());
 		}

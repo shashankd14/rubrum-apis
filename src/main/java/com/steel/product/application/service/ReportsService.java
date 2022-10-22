@@ -11,4 +11,6 @@ public interface ReportsService {
 	boolean createStockReport(int partyId, String strDate, MimeMessageHelper helper);
 
 	boolean createFGReport(int partyId, String strDate, MimeMessageHelper helper);
+	
+	boolean createWIPReport(int partyId, String strDate, MimeMessageHelper helper);
 }
