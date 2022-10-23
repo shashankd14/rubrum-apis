@@ -63,7 +63,13 @@ public class WIPReportViewEntity {
 
 	@Column(name = "inward_status")
 	private String inwardStatus;
+	
+	@Column(name = "classification_tag")
+	private String classificationTag;
 
+	@Column(name = "enduser_tag_name")
+	private String enduserTagName;
+	
 	@Column(name = "partyId")
 	private int partyId;
 

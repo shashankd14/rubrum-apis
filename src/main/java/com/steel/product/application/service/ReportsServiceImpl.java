@@ -352,7 +352,8 @@ public class ReportsServiceImpl implements ReportsService {
 			acctStatementMap.put("1",
 					new Object[] { "CoilNumber", "CustomerBatchId", "MaterialDesc", "MaterialGrade", "Thickness",
 							"Width", "Length", "Net Weight", "In Stock Weight", "WIP Weight", "Thickness",
-							"Planned Width", "Planned Length", "Planned Weight", "Inward Status" });
+							"Planned Width", "Planned Length", "Planned Weight", "Inward Status", "Classification Tag",
+							"End User Tag" });
 
 			int cnt = 1;
 			for (WIPReportViewEntity kk : partyList) {
@@ -361,7 +362,8 @@ public class ReportsServiceImpl implements ReportsService {
 				acctStatementMap.put("" + cnt, new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(),
 						kk.getMaterialDesc(), kk.getMaterialGrade(), kk.getFthickness(), kk.getFwidth(),
 						kk.getFlength(), kk.getNetWeight(), kk.getInStockWeight(), kk.getWipWeight(), kk.getThickness(),
-						kk.getPlannedWidth(), kk.getPlannedLength(), kk.getPlannedWeight(), kk.getInwardStatus() });
+						kk.getPlannedWidth(), kk.getPlannedLength(), kk.getPlannedWeight(), kk.getInwardStatus(), 
+						kk.getClassificationTag(), kk.getEnduserTagName() });
 			}
 		} catch (Exception e) {
 			LOGGER.error("Error at getWIPReportDetails " + e.getMessage());

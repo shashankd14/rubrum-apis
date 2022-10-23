@@ -1,0 +1,133 @@
+---
+server:
+  error:
+    whitelabel:
+      enabled: false
+  port: 5000
+  servlet:
+    context-path: /api
+---
+user:
+  instance:
+    hostname: localhost
+  oauth:
+    clientId: R2dpxQ3vPrtfgF72
+    clientSecret: fDw7Mpkk5czHNuSRtmhGmAGL42CaxQB9
+    dns:
+      auth:
+        link: http://${user.instance.hostname}:${server.port}/configurator/oauth
+    redirectUris: http://${user.instance.hostname}:${server.port}/configurator/oauth2/code/
+    scheme: http
+  accesstoken:
+    validity: 1800
+  refreshtoken:
+    validity: 240000    
+    
+security:
+  oauth2:
+    client:
+      clientId: R2dpxQ3vPrtfgF72                          #Change this if required
+      clientSecret: fDw7Mpkk5czHNuSRtmhGmAGL42CaxQB9      #Change this if required
+
+login:
+  basepath: /api
+  #oauthUrl: http://localhost:5000
+  oauthUrl: http://3.110.7.212
+#  oauthUrl: http://steelproduct-env.eba-dn2yerzs.ap-south-1.elasticbeanstalk.com  
+
+---
+spring:
+  datasource:
+    hikari:
+      auto-commit: false
+      connectionTimeout: 40000
+      minimumIdle: 2
+      maximumPoolSize: 5
+#    url: jdbc:mysql://localhost:3306/aspen
+#    username: erpuser
+#    password: erpuser
+    url: jdbc:mysql://rubrum-uat.c53r1c1hi7pz.ap-south-1.rds.amazonaws.com:3306/aspen
+    username: admin
+    password: hello123
+#    url: jdbc:mysql://erp-db.ckxrxtsfcrlo.ap-south-1.rds.amazonaws.com/aspen?useSSL=false&serverTimezone=UTC
+#    username: admin
+#    password: Pass#336&
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL5Dialect
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL5Dialect
+    show-sql: true
+  main:
+    allow-bean-definition-overriding: true
+  application:
+    name: rubrum-service
+  mail:
+    host: smtp.gmail.com
+    username: workeazy8@gmail.com
+    password: sxtwuylmaywnifjt
+    port: 587
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true    
+              
+#email-properties
+email:
+  subject: Aspen private Limited
+  text: <P><FONT SIZE=2 FACE="Arial">Dear User,</FONT></P><P><FONT SIZE=2 FACE="Arial">Please find the attached Stock, FG, WIP reports.</FONT></P><P><FONT SIZE=2 FACE="Arial">Regards,</FONT> <BR><FONT SIZE=2 FACE="Arial">Aspen Team</FONT></P>
+  isHTML: true
+  sendReportEmailRequired: true
+  reportScheduleTime: '0 0 5,6,7,8,9,10,11,12,13,14,15,16 * * ?'
+  #reportScheduleTime: 0 0/02 * * * ?         '0 0 5,6,7,8,9,10,11,12,13,14,15,16 * * ?       0 0 11 * * ?   
+  #folderpath: E:/WS_bancassurance/ExcelFiles
+  folderpath: /home/ubuntu/ExcelFiles
+  
+#csv
+stock:
+  report:
+    headers: SNo,Coil No,Customer Batch No,Inward date,Process date,Material Description,Material Grade,Thickness,Width,Length,Form of material,Quantity in stock
+
+#AWS Credentials
+aws:
+  url: https://rubrum-uploads.s3.ap-south-1.amazonaws.com
+  access_key_id: AKIAI2EZJR3JG6JGND2A
+  secret_access_key: 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
+  s3: 
+    bucket: rubrum-uploads
+    bucketPDFs: rubrum-pdfs-uat
+    #bucketPDFs: rubrum-pdfs-prod
+    region: ap-south-1
+
+#JWT properties
+jwt:
+  signing:
+    key:
+      secret: mySecret
+  get:
+    token:
+      uri: /authenticate
+  refresh:
+    token:
+      uri: /refresh
+  http:
+    request:
+      header: Authorization
+  token:
+    expiration:
+      in: 
+        seconds: 604800   
+  
+eureka:
+  client:
+    registerWithEureka: false
+    fetchRegistry: false
+    serviceUrl:
+      defaultZone: http://${user.instance.hostname}:5401/eureka/  
+  instance:
+    preferIpAddress: true
+    
