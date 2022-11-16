@@ -77,6 +77,7 @@ public class DeliveryDetailsController {
 			deliveryDetails = deliveryDetailsService.save(deliveryDto, userId);
 			result = new ResponseEntity<>("Delivery details saved successfully!", HttpStatus.OK);
 		} catch (Exception e) {
+			e.printStackTrace();
 			result = new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 

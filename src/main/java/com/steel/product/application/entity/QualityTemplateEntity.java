@@ -2,8 +2,6 @@ package com.steel.product.application.entity;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.json.JSONArray;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.steel.product.application.dto.quality.QualityTemplateResponse;
 

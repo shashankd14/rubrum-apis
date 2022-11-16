@@ -25,47 +25,29 @@ public class FGReportViewEntity {
 	@Column(name = "customerbatchid")
 	private String customerBatchId;
 
+	@Column(name = "finishing_date")
+	private String finishingDate;
+
 	@Column(name = "material_desc")
 	private String materialDesc;
 
 	@Column(name = "material_grade")
 	private String materialGrade;
 
-	@Column(name = "fthickness")
-	private String fthickness;
-
-	@Column(name = "fwidth")
-	private String fwidth;
-
-	@Column(name = "flength")
-	private String flength;
-
-	@Column(name = "fg_weight")
-	private String fgWeight;
-	
 	@Column(name = "packet_id")
 	private String packetId;
 
 	@Column(name = "thickness")
 	private String thickness;
 	
-	@Column(name = "planned_width")
-	private String plannedWidth;
+	@Column(name = "actualwidth")
+	private String actualwidth;
 	
-	@Column(name = "planned_length")
-	private String plannedLength;
+	@Column(name = "actuallength")
+	private String actuallength;
 	
-	@Column(name = "planned_weight")
-	private String plannedWeight;
-
-	@Column(name = "actual_weight")
-	private String actualWeight;
-
-	@Column(name = "process_status")
-	private String processStatus;
-
-	@Column(name = "instruction_status")
-	private String instructionStatus;
+	@Column(name = "actualweight")
+	private String actualweight;
 
 	@Column(name = "classification_tag")
 	private String classificationTag;

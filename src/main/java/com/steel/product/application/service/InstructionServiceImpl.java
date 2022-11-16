@@ -367,14 +367,22 @@ public class InstructionServiceImpl implements InstructionService {
         Instruction savedInstruction = updatedInstructionList.get(0);
         InwardEntry inwardEntry = savedInstruction.getInwardId();
         Instruction parentInstruction = savedInstruction.getParentInstruction();
-        if(scrapWeight !=0 ) {
-        	if( inwardEntry.getScrapWeight()!=null && inwardEntry.getScrapWeight() !=0 ) {
-            	Float totalScrapWeight = scrapWeight+ inwardEntry.getScrapWeight();
-            	inwardEntry.setScrapWeight(totalScrapWeight);
-        	} else {
-            	inwardEntry.setScrapWeight(scrapWeight);
-        	}
-        }
+		if (scrapWeight != 0) {
+			if (inwardEntry.getScrapWeight() != null && inwardEntry.getScrapWeight() != 0) {
+				Float totalScrapWeight = scrapWeight + inwardEntry.getScrapWeight();
+				if (totalScrapWeight > 0) {
+					inwardEntry.setScrapWeight(totalScrapWeight);
+				} else {
+					inwardEntry.setScrapWeight(0.0f);
+				}
+			} else {
+				if (scrapWeight > 0) {
+					inwardEntry.setScrapWeight(scrapWeight);
+				} else {
+					inwardEntry.setScrapWeight(0.0f);
+				}
+			}
+		}
         Integer parentGroupId = savedInstruction.getParentGroupId();
         List<Instruction> parentGroupInstructions;
         List<Instruction> groupInstructions;
@@ -873,7 +881,8 @@ public class InstructionServiceImpl implements InstructionService {
 				for (InstructionRequestDto instructionRequestChildDto : instructionSaveRequestDto.getInstructionRequestDTOs()) {
 					if (instructionRequestChildDto.getIsScrapWeightUsed()!=null && instructionRequestChildDto.getIsScrapWeightUsed()) {
 						scrapWeight = scrapWeight - instructionRequestChildDto.getPlannedWeight();
-						 isScrapWeightUsed ="Y";
+		                availableWeight = availableWeight+instructionRequestChildDto.getPlannedWeight();
+						isScrapWeightUsed ="Y";
 					}
 				}
 			}
@@ -948,7 +957,11 @@ public class InstructionServiceImpl implements InstructionService {
                 instructionRepository.save(parentInstruction);
             } else if (fromInward) {
             	if("Y".equals(isScrapWeightUsed)) {
-    				inwardEntry.setScrapWeight(scrapWeight);
+            		if (scrapWeight > 0) {
+        				inwardEntry.setScrapWeight(scrapWeight);
+    				} else {
+    					inwardEntry.setScrapWeight(0.0f);
+    				}
     			}
             	inwardEntry.setUpdatedBy(userId);
                 inwardService.saveEntry(inwardEntry);

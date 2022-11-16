@@ -3,6 +3,8 @@ package com.steel.product.application.service;
 import com.steel.product.application.dao.PartyDetailsRepository;
 import com.steel.product.application.dto.party.PartyDto;
 import com.steel.product.application.dto.party.PartyResponse;
+import com.steel.product.application.dto.quality.QualityPartyMappingRequestNew;
+import com.steel.product.application.dto.quality.QualityPartyMappingResponse;
 import com.steel.product.application.entity.EndUserTagsEntity;
 import com.steel.product.application.entity.PacketClassification;
 import com.steel.product.application.entity.Party;
@@ -32,16 +34,19 @@ public class PartyDetailsServiceImpl implements PartyDetailsService {
 	private final EndUserTagsService endUserTagsService;
 
 	private final PartyMapper partyMapper;
-
+	
+	private final QualityService qualityService;
+	
 	@Autowired
 	public PartyDetailsServiceImpl(PartyDetailsRepository partyRepo, AddressService addressService,
 			PacketClassificationService packetClassificationService, PartyMapper partyMapper,
-			EndUserTagsService endUserTagsService) {
+			EndUserTagsService endUserTagsService, QualityService qualityService) {
 		this.partyRepo = partyRepo;
 		this.addressService = addressService;
 		this.packetClassificationService = packetClassificationService;
 		this.partyMapper = partyMapper;
 		this.endUserTagsService = endUserTagsService;
+		this.qualityService = qualityService;
 	}
 
 	public boolean checkPartyName(PartyDto partyDto) {
@@ -98,7 +103,7 @@ public class PartyDetailsServiceImpl implements PartyDetailsService {
 
 		savedPacketClassifications.forEach(pc -> party.addPacketClassification(pc));
 		savedEndUserTags.forEach(pc -> party.addEndUserTags(pc));
-
+		
 		if (party.getAddress1() != null) {
 			addressService.saveAddress(party.getAddress1());
 		}
@@ -110,6 +115,7 @@ public class PartyDetailsServiceImpl implements PartyDetailsService {
 		party.setUpdatedBy(userId);
 
 		Party savedParty = partyRepo.save(party);
+		qualityService.templateMapSaveNew(partyDto.getTemplateIdList(), savedParty.getnPartyId(), userId) ;
 
 		LOGGER.info("party saved ok ! " + savedParty.getPartyName());
 		return savedParty;
@@ -124,6 +130,19 @@ public class PartyDetailsServiceImpl implements PartyDetailsService {
 		Party party = null;
 		if (result.isPresent()) {
 			party = result.get();
+			
+			try {
+				List<QualityPartyMappingResponse> list = qualityService.getByPartyId(partyId);
+
+				for (QualityPartyMappingResponse kk: list ) {
+					QualityPartyMappingRequestNew kka =new QualityPartyMappingRequestNew();
+					kka.setTemplateId(kk.getTemplateId());
+					kka.setTemplateName(kk.getTemplateName());
+					party.getTemplateIdList().add(kka);
+				}
+			} catch (Exception e) {
+			}
+			
 		} else {
 			throw new RuntimeException("Did not find party id - " + partyId);
 		}

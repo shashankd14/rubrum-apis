@@ -5,6 +5,7 @@ import com.steel.product.application.dao.QualityTemplateRepository;
 import com.steel.product.application.dto.quality.QualityCheckRequest;
 import com.steel.product.application.dto.quality.QualityCheckResponse;
 import com.steel.product.application.dto.quality.QualityPartyMappingRequest;
+import com.steel.product.application.dto.quality.QualityPartyMappingRequestNew;
 import com.steel.product.application.dto.quality.QualityPartyMappingResponse;
 import com.steel.product.application.dto.quality.QualityTemplateMainResponse;
 import com.steel.product.application.dto.quality.QualityTemplateResponse;
@@ -187,7 +188,7 @@ public class QualityServiceImpl implements QualityService {
 			list.add(qualityPartyTemplateEntity);
 		}
 		qualityPartyTemplateRepository.saveAll(list);
-		response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Party-template mapping details saved successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
+		response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Party-Template mapping details saved successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
 		return response;
 	}
 
@@ -230,6 +231,29 @@ public class QualityServiceImpl implements QualityService {
 		
 		return null;
 	}
-	
+
+	@Override
+	public ResponseEntity<Object> templateMapSaveNew(List<QualityPartyMappingRequestNew> listReq, int partyId, int userId) {
+		
+		List<QualityPartyTemplateEntity> list1 = qualityPartyTemplateRepository.findByPartyId(partyId);
+		for (QualityPartyTemplateEntity qqualityPartyTemplateEntity : list1) {
+			qualityPartyTemplateRepository.deleteById(qqualityPartyTemplateEntity.getId());
+		}
+		
+		ResponseEntity<Object> response = null;
+		List<QualityPartyTemplateEntity> list=new ArrayList<QualityPartyTemplateEntity>();
+		for (QualityPartyMappingRequestNew qualityObjNew : listReq) {
+			QualityPartyTemplateEntity qualityPartyTemplateEntity = new QualityPartyTemplateEntity();
+			qualityPartyTemplateEntity.getTemplateEntity().setTemplateId(qualityObjNew.getTemplateId());
+			qualityPartyTemplateEntity.getParty().setnPartyId(partyId);
+			qualityPartyTemplateEntity.setCreatedBy(userId);
+			qualityPartyTemplateEntity.setUpdatedBy(userId);
+			qualityPartyTemplateEntity.setCreatedOn(new Date());
+			qualityPartyTemplateEntity.setUpdatedOn(new Date());
+			list.add(qualityPartyTemplateEntity);
+		}
+		qualityPartyTemplateRepository.saveAll(list);
+		return response;
+	}
 
 }

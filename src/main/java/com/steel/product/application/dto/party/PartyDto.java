@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.steel.product.application.dto.address.AddressDto;
 import com.steel.product.application.dto.endusertags.EndUserTagsRequest;
 import com.steel.product.application.dto.packetClassification.PacketClassificationRequest;
+import com.steel.product.application.dto.quality.QualityPartyMappingRequestNew;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -45,5 +47,7 @@ public class PartyDto {
 	private List<PacketClassificationRequest> tags;
 
 	private List<EndUserTagsRequest> endUserTags;
+
+	private List<QualityPartyMappingRequestNew> templateIdList;
 
 }

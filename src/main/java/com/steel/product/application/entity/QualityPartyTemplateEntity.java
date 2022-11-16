@@ -3,7 +3,6 @@ package com.steel.product.application.entity;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.steel.product.application.dto.packingmaster.PackingRateMasterResponse;
 import com.steel.product.application.dto.quality.QualityPartyMappingResponse;
 
 import lombok.Data;

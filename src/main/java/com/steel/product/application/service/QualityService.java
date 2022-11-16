@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import com.steel.product.application.dto.quality.QualityCheckRequest;
 import com.steel.product.application.dto.quality.QualityCheckResponse;
 import com.steel.product.application.dto.quality.QualityPartyMappingRequest;
+import com.steel.product.application.dto.quality.QualityPartyMappingRequestNew;
 import com.steel.product.application.dto.quality.QualityPartyMappingResponse;
 import com.steel.product.application.dto.quality.QualityTemplateMainResponse;
 
@@ -31,5 +32,7 @@ public interface QualityService {
 	List<QualityPartyMappingResponse> getAllMappings();
 
 	QualityCheckResponse qualityCheck(QualityCheckRequest qualityCheckRequest);
+
+	ResponseEntity<Object> templateMapSaveNew(List<QualityPartyMappingRequestNew> list1, int partyId, int userId);
 
 }

@@ -254,21 +254,17 @@ public class ReportsServiceImpl implements ReportsService {
 			List<FGReportViewEntity> partyList = fgReportViewRepository.findByPartyId(partyId);
 
 			acctStatementMap.put("1",
-					new Object[] { "CoilNumber", "CustomerBatchId", "MaterialDesc", "MaterialGrade",
-							"Thickness", "Width", "Length", "FG Weight", 
-							"Packet Id", "Thickness", "Planned Width", "Planned Length",
-							"Planned Weight", "Actual Weight", "Process Status", "Instruction Status",
-							"Classification Tag", "End User Tag" });
+					new Object[] { "CoilNumber", "CustomerBatchId", "Finishing Date","MaterialDesc", "MaterialGrade","Packet Id",
+							"Thickness", "Actual Width", "Actual Length", "Actual Weight", "Classification Tag", "End User Tag" });
 
 			int cnt = 1;
 			for (FGReportViewEntity kk : partyList) {
 				cnt++;
 
 				acctStatementMap.put("" + cnt,
-						new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getMaterialDesc(),kk.getMaterialGrade(),
-								 kk.getFthickness(), kk.getFwidth(), kk.getFlength(),kk.getFgWeight(), 
-								kk.getPacketId(), kk.getThickness(), kk.getPlannedWidth(),kk.getPlannedLength(), 
-								kk.getPlannedWeight(), kk.getActualWeight() , kk.getProcessStatus(),kk.getInstructionStatus(), 
+						new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getFinishingDate(), kk.getMaterialDesc(),
+								kk.getMaterialGrade(),kk.getPacketId(),
+								kk.getThickness(), kk.getActualwidth(), kk.getActuallength(), kk.getActualweight(),
 								kk.getClassificationTag(), kk.getEnduserTagName() });
 			}
 		} catch (Exception e) {

@@ -1,12 +1,6 @@
 package com.steel.product.application.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.steel.product.application.dto.status.StatusDto;
-import com.steel.product.application.entity.InwardEntry;
-
-import java.util.ArrayList;
-import java.util.List;
 import javax.persistence.*;
 
 @Entity

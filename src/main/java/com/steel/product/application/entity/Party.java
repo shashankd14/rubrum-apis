@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.steel.product.application.dto.endusertags.EndUserTagsRequest;
 import com.steel.product.application.dto.packetClassification.PacketClassificationRequest;
 import com.steel.product.application.dto.party.PartyDto;
+import com.steel.product.application.dto.quality.QualityPartyMappingRequestNew;
+
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import javax.persistence.*;
@@ -95,6 +97,9 @@ public class Party {
 	joinColumns = @JoinColumn(name="party_id"),
 	inverseJoinColumns = @JoinColumn(name="tagId"))
 	private Set<EndUserTagsEntity> endUserTags = new HashSet<>();
+	
+	@Transient
+	private List<QualityPartyMappingRequestNew> templateIdList = new ArrayList<>();
 
 	public void addEndUserTags(EndUserTagsEntity endUserTagsEntity){
 		this.endUserTags.add(endUserTagsEntity);
@@ -337,6 +342,19 @@ public class Party {
 			endUserTagsList.add(req);
 		}
 		partyDto.setEndUserTags(endUserTagsList);
+		partyDto.setTemplateIdList(party.getTemplateIdList());
 		return partyDto;
 	}
+
+	public List<QualityPartyMappingRequestNew> getTemplateIdList() {
+		return templateIdList;
+	}
+
+	public void setTemplateIdList(List<QualityPartyMappingRequestNew> templateIdList) {
+		this.templateIdList = templateIdList;
+	}
+ 
+	
+	
+	
 }
