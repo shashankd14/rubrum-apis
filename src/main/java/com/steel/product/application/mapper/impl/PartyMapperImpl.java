@@ -6,6 +6,8 @@ import com.steel.product.application.dto.endusertags.EndUserTagsResponse;
 import com.steel.product.application.dto.packetClassification.PacketClassificationResponse;
 import com.steel.product.application.dto.party.PartyDto;
 import com.steel.product.application.dto.party.PartyResponse;
+import com.steel.product.application.dto.quality.QualityPartyMappingRequestNew;
+import com.steel.product.application.dto.quality.QualityPartyMappingResponse;
 import com.steel.product.application.entity.Address;
 import com.steel.product.application.entity.EndUserTagsEntity;
 import com.steel.product.application.entity.PacketClassification;
@@ -13,6 +15,7 @@ import com.steel.product.application.entity.Party;
 import com.steel.product.application.mapper.AddressMapper;
 import com.steel.product.application.mapper.PacketClassificationMapper;
 import com.steel.product.application.mapper.PartyMapper;
+import com.steel.product.application.service.QualityService;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -36,6 +39,9 @@ public class PartyMapperImpl implements PartyMapper {
     @Autowired
     private PacketClassificationMapper packetClassificationMapper;
 
+    @Autowired
+	private QualityService qualityService;
+	
     @Override
     public Party toEntity(PartyDto partyDto) {
         if ( partyDto == null ) {
@@ -84,6 +90,7 @@ public class PartyMapperImpl implements PartyMapper {
         partyResponse.setAddress2( addressToAddressDto( party.getAddress2() ) );
         partyResponse.setPacketClassificationTags( packetClassificationSetToPacketClassificationResponseList( party.getPacketClassificationTags() ) );
         partyResponse.setEndUserTags( endUserTagsEntitySetToEndUserTagsResponseList( party.getEndUserTags() ) );
+        partyResponse.setTemplateIdList(party.getTemplateIdList());
 
         return partyResponse;
     }
@@ -96,6 +103,20 @@ public class PartyMapperImpl implements PartyMapper {
 
         List<PartyResponse> list = new ArrayList<PartyResponse>( party.size() );
         for ( Party party1 : party ) {
+        	
+        	try {
+				List<QualityPartyMappingResponse> list11 = qualityService.getByPartyId(party1.getnPartyId());
+
+				for (QualityPartyMappingResponse kk: list11 ) {
+					QualityPartyMappingRequestNew kka =new QualityPartyMappingRequestNew();
+					kka.setTemplateId(kk.getTemplateId());
+					kka.setTemplateName(kk.getTemplateName());
+					party1.getTemplateIdList().add(kka);
+				}
+			} catch (Exception e) {
+				System.out.println("template data not available = "+party1.getnPartyId());
+			}
+        	
             list.add( toResponse( party1 ) );
         }
 

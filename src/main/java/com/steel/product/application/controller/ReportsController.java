@@ -16,6 +16,9 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -44,7 +47,7 @@ public class ReportsController {
     }
 
 	@GetMapping("/sendReportEmail/{partyId}")
-	public void sendNotificationAlert(@PathVariable("partyId") int partyId) {
+	public ResponseEntity<Object> sendNotificationAlert(@PathVariable("partyId") int partyId) {
 
 		Calendar cal = Calendar.getInstance();
 		Date date = cal.getTime();
@@ -57,7 +60,7 @@ public class ReportsController {
 				mailSender.sendMail(party.getPartyName(), party.getEmail1(), party.getEmail2(), strDate, party.getnPartyId());
 			}
 		}
-
+		return new ResponseEntity<>("{\"status\": \"success\", \"message\":\"Email Report Sent Successfully..!\"}", new HttpHeaders(), HttpStatus.OK);
 	}
 
 }

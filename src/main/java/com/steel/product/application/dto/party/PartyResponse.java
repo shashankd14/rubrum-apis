@@ -3,10 +3,13 @@ package com.steel.product.application.dto.party;
 import com.steel.product.application.dto.address.AddressDto;
 import com.steel.product.application.dto.endusertags.EndUserTagsResponse;
 import com.steel.product.application.dto.packetClassification.PacketClassificationResponse;
+import com.steel.product.application.dto.quality.QualityPartyMappingRequestNew;
+
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-import java.util.List;
 
+import java.util.ArrayList;
+import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -28,7 +31,8 @@ public class PartyResponse {
     private AddressDto address2;
     private List<PacketClassificationResponse> packetClassificationTags;
     private List<EndUserTagsResponse> endUserTags;
-
+	private List<QualityPartyMappingRequestNew> templateIdList = new ArrayList<>();
+    
     public Integer getnPartyId() {
         return nPartyId;
     }
@@ -155,6 +159,14 @@ public class PartyResponse {
 
 	public void setEndUserTags(List<EndUserTagsResponse> endUserTags) {
 		this.endUserTags = endUserTags;
+	}
+
+	public List<QualityPartyMappingRequestNew> getTemplateIdList() {
+		return templateIdList;
+	}
+
+	public void setTemplateIdList(List<QualityPartyMappingRequestNew> templateIdList) {
+		this.templateIdList = templateIdList;
 	}
     
     

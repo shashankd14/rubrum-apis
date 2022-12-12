@@ -2,11 +2,13 @@ package com.steel.product.application.service;
 
 import com.steel.product.application.dao.FGReportViewRepository;
 import com.steel.product.application.dao.StockReportViewRepository;
+import com.steel.product.application.dao.StockSummaryReportViewRepository;
 import com.steel.product.application.dao.WIPReportViewRepository;
 import com.steel.product.application.dto.report.StockReportRequest;
 import com.steel.product.application.entity.FGReportViewEntity;
 import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.entity.StockReportViewEntity;
+import com.steel.product.application.entity.StockSummaryReportViewEntity;
 import com.steel.product.application.entity.WIPReportViewEntity;
 import com.steel.product.application.util.CSVUtil;
 import com.steel.product.application.util.EmailUtil;
@@ -50,6 +52,9 @@ public class ReportsServiceImpl implements ReportsService {
 	
 	@Autowired
 	WIPReportViewRepository wipReportViewRepository;
+	
+	@Autowired
+	StockSummaryReportViewRepository stockSummaryReportViewRepository;
 	
     private final InstructionService instructionService;
     private final CSVUtil csvUtil;
@@ -347,7 +352,7 @@ public class ReportsServiceImpl implements ReportsService {
 
 			acctStatementMap.put("1",
 					new Object[] { "CoilNumber", "CustomerBatchId", "MaterialDesc", "MaterialGrade", "Thickness",
-							"Width", "Length", "Net Weight", "In Stock Weight", "WIP Weight", "Thickness",
+							"Width", "Length", "Net Weight", "In Stock Weight", "WIP Weight", "Packet id","Thickness",
 							"Planned Width", "Planned Length", "Planned Weight", "Inward Status", "Classification Tag",
 							"End User Tag" });
 
@@ -357,9 +362,9 @@ public class ReportsServiceImpl implements ReportsService {
 
 				acctStatementMap.put("" + cnt, new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(),
 						kk.getMaterialDesc(), kk.getMaterialGrade(), kk.getFthickness(), kk.getFwidth(),
-						kk.getFlength(), kk.getNetWeight(), kk.getInStockWeight(), kk.getWipWeight(), kk.getThickness(),
-						kk.getPlannedWidth(), kk.getPlannedLength(), kk.getPlannedWeight(), kk.getInwardStatus(), 
-						kk.getClassificationTag(), kk.getEnduserTagName() });
+						kk.getFlength(), kk.getNetWeight(), kk.getInStockWeight(), kk.getWipWeight(), kk.getPacketId(), 
+						kk.getThickness(), kk.getPlannedWidth(), kk.getPlannedLength(), kk.getPlannedWeight(), 
+						kk.getInwardStatus(), kk.getClassificationTag(), kk.getEnduserTagName() });
 			}
 		} catch (Exception e) {
 			LOGGER.error("Error at getWIPReportDetails " + e.getMessage());
@@ -367,4 +372,103 @@ public class ReportsServiceImpl implements ReportsService {
 		return acctStatementMap;
 	}
 
+	@Override
+	public boolean createStockSummaryReport(int partyId, String strDate, MimeMessageHelper helper) {
+
+		boolean attachmentRequired=true;
+		try {
+			// Create blank workbook
+			XSSFWorkbook workbook = new XSSFWorkbook();
+			
+			CellStyle borderStyle = workbook.createCellStyle();
+			borderStyle.setBorderBottom(BorderStyle.THIN);
+		    borderStyle.setBorderLeft(BorderStyle.THIN);
+			borderStyle.setBorderRight(BorderStyle.THIN);
+			borderStyle.setBorderTop(BorderStyle.THIN);
+			borderStyle.setAlignment(HorizontalAlignment.CENTER);
+			
+			// Create a blank sheet
+			XSSFSheet spreadsheet = workbook.createSheet("StockSummary_Report");
+
+			// Create row object
+			XSSFRow row;
+
+			Map<String, Object[]> acctStatementMap = getStockSummaryReportDetails(partyId);
+
+			// Iterate over data and write to sheet
+			Set<String> keyid = acctStatementMap.keySet();
+			int rowid = 0;
+
+			for (String key : keyid) {
+				row = spreadsheet.createRow(rowid++);
+				Object[] objectArr = acctStatementMap.get(key);
+				int cellid = 0;
+
+				for (Object obj : objectArr) {
+					Cell cell = row.createCell(cellid++);
+				    cell.setCellStyle(borderStyle);
+					cell.setCellValue((String) obj);
+				}
+			
+			}
+			
+            String baseDirectory = env.getProperty("email.folderpath")+File.separator;
+            
+			File outputPojoDirectory = new File(baseDirectory);
+			outputPojoDirectory.mkdirs();
+			
+			File fullPath = new File(baseDirectory +File.separator+"StockSummaryReport_"+strDate+".xlsx");
+			
+			FileOutputStream out = new FileOutputStream(fullPath);
+			workbook.write(out);
+			
+			FileSystemResource file = new FileSystemResource(fullPath);
+			if(acctStatementMap!=null && acctStatementMap.size()>1) {
+				attachmentRequired=false;
+				helper.addAttachment("StockSummaryReport_" + strDate + ".xlsx", file);
+			}
+			
+			out.close();
+			fullPath.deleteOnExit();
+			//System.out.println("File Created At -- " + baseDirectory);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return attachmentRequired;
+	}
+
+	public Map<String, Object[]> getStockSummaryReportDetails(int partyId) {
+
+		Map<String, Object[]> acctStatementMap = new LinkedHashMap<>();
+
+		try {
+			List<StockSummaryReportViewEntity> partyList = stockSummaryReportViewRepository.findByPartyId(partyId);
+
+			acctStatementMap.put("1",
+					new Object[] { "Coil No", "Batch No", "MaterialDesc", "MaterialGrade", "Thickness", "Width",
+							"Length", "NetWeight", "InStockWeight", "FG Qty", "FG_Classification",
+							"CUT-ENDS_Classification", "EDGE-TRIM_Classification", "OTHERS_Classification",
+							"WIP_Classification", "BLANK_Classification", "Quality Defects", "Scrap Weight", "UnprocessedWeight", "WIP Qty",
+							"Dispatched Qty", "InwardStatus" });
+
+			int cnt = 1;
+			for (StockSummaryReportViewEntity kk : partyList) {
+				cnt++;
+
+				acctStatementMap.put("" + cnt,
+						new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getMaterialDesc(),
+								kk.getMaterialGrade(), kk.getFthickness(), kk.getFwidth(), kk.getFlength(),
+								kk.getNetweight(), kk.getInstockweight(), kk.getFgqty(), kk.getFgclassification(),
+								kk.getCutendsclassification(), kk.getEdgetrimclassification(),
+								kk.getOthersclassification(), kk.getWipclassification(), kk.getBlankclassification(),
+								kk.getQualitydefects(), kk.getScrapweight(), kk.getUnprocessedweight(), kk.getWipqty(),
+								kk.getDispatchedweight(), kk.getInwardstatus() });
+			}
+		} catch (Exception e) {
+			LOGGER.error("Error at createStockSummaryReport " + e.getMessage());
+		}
+		return acctStatementMap;
+	}
+
+	
 }

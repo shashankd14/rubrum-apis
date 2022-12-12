@@ -49,6 +49,9 @@ public class WIPReportViewEntity {
 	@Column(name = "wip_weight")
 	private String wipWeight;
 
+	@Column(name = "packet_id")
+	private String packetId;
+
 	@Column(name = "thickness")
 	private String thickness;
 
