@@ -10,4 +10,6 @@ public interface StockSummaryReportViewRepository extends JpaRepository<StockSum
 
 	List<StockSummaryReportViewEntity> findByPartyId(int partyId);
 
+	List<StockSummaryReportViewEntity> findByCoilNumber (String coilNumber);
+
 }

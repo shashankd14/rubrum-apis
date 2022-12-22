@@ -70,9 +70,6 @@ public class StockSummaryReportViewEntity {
 	@Column(name = "blankclassification")
 	private String blankclassification;
 
-	@Column(name = "scrapweight")
-	private String scrapweight;
-
 	@Column(name = "unprocessedweight")
 	private String unprocessedweight;
 	

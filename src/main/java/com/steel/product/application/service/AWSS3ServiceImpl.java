@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -113,5 +114,13 @@ public class AWSS3ServiceImpl implements AWSS3Service {
 
 		return url.toString();
 	}
-
+	
+	public static void mainaa (String[] args) {
+		System.out.println("Hi aknak ==");
+		String kk = new BCryptPasswordEncoder().encode("admin@123") ;
+		System.out.println("Hi aknak =="+kk);
+		kk = new BCryptPasswordEncoder().encode("Api@mg$r_Pro$") ;
+		System.out.println("Hi aknak22 =="+kk);		
+	}
+	
 }

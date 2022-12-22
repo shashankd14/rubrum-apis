@@ -448,7 +448,7 @@ public class ReportsServiceImpl implements ReportsService {
 					new Object[] { "Coil No", "Batch No", "MaterialDesc", "MaterialGrade", "Thickness", "Width",
 							"Length", "NetWeight", "InStockWeight", "FG Qty", "FG_Classification",
 							"CUT-ENDS_Classification", "EDGE-TRIM_Classification", "OTHERS_Classification",
-							"WIP_Classification", "BLANK_Classification", "Quality Defects", "Scrap Weight", "UnprocessedWeight", "WIP Qty",
+							"WIP_Classification", "BLANK_Classification", "Quality Defects", "UnprocessedWeight", "WIP Qty",
 							"Dispatched Qty", "InwardStatus" });
 
 			int cnt = 1;
@@ -461,13 +461,18 @@ public class ReportsServiceImpl implements ReportsService {
 								kk.getNetweight(), kk.getInstockweight(), kk.getFgqty(), kk.getFgclassification(),
 								kk.getCutendsclassification(), kk.getEdgetrimclassification(),
 								kk.getOthersclassification(), kk.getWipclassification(), kk.getBlankclassification(),
-								kk.getQualitydefects(), kk.getScrapweight(), kk.getUnprocessedweight(), kk.getWipqty(),
+								kk.getQualitydefects(), kk.getUnprocessedweight(), kk.getWipqty(),
 								kk.getDispatchedweight(), kk.getInwardstatus() });
 			}
 		} catch (Exception e) {
 			LOGGER.error("Error at createStockSummaryReport " + e.getMessage());
 		}
 		return acctStatementMap;
+	}
+
+	@Override
+	public List<StockSummaryReportViewEntity> reconcileReport(String coilNumber) {
+		return stockSummaryReportViewRepository.findByCoilNumber(coilNumber);
 	}
 
 	

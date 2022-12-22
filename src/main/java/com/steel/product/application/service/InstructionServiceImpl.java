@@ -18,6 +18,7 @@ import com.steel.product.application.mapper.TotalLengthAndWeight;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -312,7 +313,7 @@ public class InstructionServiceImpl implements InstructionService {
         List<InstructionRequestDto> InstructionRequestDtos = instructionFinishDto.getInstructionDtos();
         List<Instruction> updatedInstructionList = new ArrayList<Instruction>();
         Instruction instruction;
-        Integer inProgressStatusId = 2, readyToDeliverStatusId = 3, statusId = 0;
+        Integer inProgressStatusId = 2, readyToDeliverStatusId = 3, receivedStatusId = 1, despatchedStatusId = 4, statusId = 0;
         Status inProgressStatus = statusService.getStatusById(inProgressStatusId);
         Status readyToDeliverStatus = statusService.getStatusById(readyToDeliverStatusId);
         Status currentStatus;
@@ -334,7 +335,7 @@ public class InstructionServiceImpl implements InstructionService {
         Map<Integer, Instruction> instructionsMap = instructions.stream().collect(Collectors.toMap(ins -> ins.getInstructionId(), ins -> ins));
         if(instructionsMap.isEmpty()){
         	LOGGER.error("no instructions found in progress status");
-			return new ResponseEntity<Object>("all instructions already finished", HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<Object>("{\"status\": \"failure\", \"message\":\"All Instructions were already finished\"}", new HttpHeaders(), HttpStatus.UNPROCESSABLE_ENTITY);
 		}
         Map<Integer, PacketClassification> packetClassificationMap = packetClassificationService.findAllByPacketClassificationIdIn(InstructionRequestDtos.stream()
                 .map(ins -> ins.getPacketClassificationId()).collect(Collectors.toList())).stream().collect(Collectors.toMap(p -> p.getClassificationId(), p -> p));
@@ -355,7 +356,15 @@ public class InstructionServiceImpl implements InstructionService {
             instruction.setActualWeight(ins.getActualWeight());
           	scrapWeight = scrapWeight + (ins.getPlannedWeight() - ins.getActualWeight());
             instruction.setActualNoOfPieces(ins.getActualNoOfPieces());
-            instruction.setPacketClassification(packetClassificationMap.get(ins.getPacketClassificationId()));
+            if(ins.getPacketClassificationId()!=null && ins.getPacketClassificationId() >0 ) {
+                PacketClassification packetClassificationEntity=packetClassificationMap.get(ins.getPacketClassificationId());
+                if("WIP".equals(packetClassificationEntity.getClassificationName())) {
+                	currentStatus = inProgressStatus;
+                }
+                instruction.setPacketClassification(packetClassificationMap.get(ins.getPacketClassificationId()));
+            } else {
+                instruction.setPacketClassification(null);
+            }
             instruction.setEndUserTagsEntity(endUserTagsEntityMap.get(ins.getEndUserTagId()));
             instruction.setStatus(currentStatus);
             instruction.setUpdatedBy(userId);
@@ -426,6 +435,27 @@ public class InstructionServiceImpl implements InstructionService {
             throw new RuntimeException("Invalid request");
         }
 
+        InwardEntry inwardEntity  = inwardService.getByInwardEntryId(savedInstruction.getInwardId().getInwardEntryId());
+        boolean checkWIPStatus = inwardEntity.getInstructions().stream().anyMatch(cin -> cin.getStatus().getStatusId()== inProgressStatusId );
+
+		if (checkWIPStatus) {
+			inwardEntryRepository.updateInwardStatus(savedInstruction.getInwardId().getInwardEntryId(), inProgressStatusId);
+		} else {
+			boolean checkReadyToDeliverStatus = inwardEntity.getInstructions().stream().anyMatch(cin -> cin.getStatus().getStatusId()==readyToDeliverStatusId);
+			if (checkReadyToDeliverStatus) {
+				inwardEntryRepository.updateInwardStatus(savedInstruction.getInwardId().getInwardEntryId(), readyToDeliverStatusId);
+			}else {
+				if(inwardEntity.getFpresent()>0) {
+					inwardEntryRepository.updateInwardStatus(savedInstruction.getInwardId().getInwardEntryId(), receivedStatusId);
+				} else {
+					boolean despatchedStatus = inwardEntity.getInstructions().stream().anyMatch(cin -> cin.getStatus().getStatusId()==despatchedStatusId);
+					if (despatchedStatus) {
+						inwardEntryRepository.updateInwardStatus(savedInstruction.getInwardId().getInwardEntryId(), despatchedStatusId);
+					}
+				}
+			}
+		}
+        
         return new ResponseEntity<Object>(updatedInstructionList.stream().map(i -> Instruction.valueOf(i)), HttpStatus.OK);
     }
 
@@ -875,13 +905,23 @@ public class InstructionServiceImpl implements InstructionService {
                 instructionSaveRequestDto.getInstructionRequestDTOs().forEach(in -> endUserTagIds.add(in.getEndUserTagId()));
             }
 
-            Float scrapWeight = inwardEntry.getScrapWeight();
+            Float scrapWeight = 0.0f;
+            if(inwardEntry.getScrapWeight()!=null ) {
+            	scrapWeight = inwardEntry.getScrapWeight();
+            }
             String isScrapWeightUsed ="N";
 			for (InstructionSaveRequestDto instructionSaveRequestDto : instructionSaveRequestDtos) {
 				for (InstructionRequestDto instructionRequestChildDto : instructionSaveRequestDto.getInstructionRequestDTOs()) {
 					if (instructionRequestChildDto.getIsScrapWeightUsed()!=null && instructionRequestChildDto.getIsScrapWeightUsed()) {
-						scrapWeight = scrapWeight - instructionRequestChildDto.getPlannedWeight();
-		                availableWeight = availableWeight+instructionRequestChildDto.getPlannedWeight();
+			            Float plannedWeight = 0.0f;
+						if(instructionRequestChildDto.getPlannedWeight() != null && instructionRequestChildDto.getPlannedWeight() >0  ) {
+							plannedWeight = instructionRequestChildDto.getPlannedWeight();
+						} else if(instructionRequestChildDto.getActualWeight() != null && instructionRequestChildDto.getActualWeight() > 0 ) {
+							plannedWeight = instructionRequestChildDto.getActualWeight();
+						}
+
+						scrapWeight = scrapWeight - plannedWeight;
+		                availableWeight = availableWeight+plannedWeight;
 						isScrapWeightUsed ="Y";
 					}
 				}
@@ -928,7 +968,11 @@ public class InstructionServiceImpl implements InstructionService {
                 List<InstructionRequestDto> list = instructionPlanAndListMap.get(pd);
                 for (InstructionRequestDto requestDto : list) {
                     Instruction instruction = instructionMapper.toEntity(requestDto);
-                    instruction.setPacketClassification(savedPacketClassifications.get(requestDto.getPacketClassificationId()));
+                    if(requestDto.getPacketClassificationId()!=null && requestDto.getPacketClassificationId() >0 ) {
+                        instruction.setPacketClassification(savedPacketClassifications.get(requestDto.getPacketClassificationId()));
+                    } else {
+                        instruction.setPacketClassification(null);
+                    }
                     instruction.setEndUserTagsEntity(savedEndUserTagsEntities.get(requestDto.getEndUserTagId()));
                     instruction.setProcess(process);
                     instruction.setStatus(inProgressStatus);

@@ -91,4 +91,9 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
     		+ " order by inwardEntryId desc")
     Page<InwardEntry> findAllWIP(@Param("searchText") String searchText, Pageable pageable);
     
+    @Modifying
+	@Transactional
+	@Query("update InwardEntry inw set inw.status.statusId=:status where inw.inwardEntryId= :inwardId ")
+	public void updateInwardStatus(@Param("inwardId") Integer inwardId, @Param("status") Integer status);
+	
 }

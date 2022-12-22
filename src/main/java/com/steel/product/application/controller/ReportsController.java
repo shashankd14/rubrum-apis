@@ -3,6 +3,7 @@ package com.steel.product.application.controller;
 import com.steel.product.application.dao.PartyDetailsRepository;
 import com.steel.product.application.dto.report.StockReportRequest;
 import com.steel.product.application.entity.Party;
+import com.steel.product.application.entity.StockSummaryReportViewEntity;
 import com.steel.product.application.service.MailSender;
 import com.steel.product.application.service.ReportsService;
 
@@ -61,6 +62,14 @@ public class ReportsController {
 			}
 		}
 		return new ResponseEntity<>("{\"status\": \"success\", \"message\":\"Email Report Sent Successfully..!\"}", new HttpHeaders(), HttpStatus.OK);
+	}
+
+	@GetMapping("/reconcile/{coilNumber}")
+	public ResponseEntity<Object> reconcileReport(@PathVariable("coilNumber") String partyId) {
+
+		List<StockSummaryReportViewEntity> kk = reportsService.reconcileReport(partyId);
+
+		return new ResponseEntity<>(kk, new HttpHeaders(), HttpStatus.OK);
 	}
 
 }
