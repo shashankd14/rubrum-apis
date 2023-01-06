@@ -592,6 +592,10 @@ public class InwardEntry {
 		inwardEntryResponseDto.setInstruction(inwardEntry.getInstructions() != null ?
 				inwardEntry.getInstructions().stream().filter(i -> !i.getIsDeleted())
 						.map(i -> Instruction.valueOf(i)).collect(Collectors.toList()): null);
+		if(inwardEntryResponseDto.getInstruction()!=null && inwardEntryResponseDto.getInstruction().size()>0) {
+			Collections.sort(inwardEntryResponseDto.getInstruction(), new MyInstructionIdComp());
+		}
+		
 		inwardEntryResponseDto.setPurposeType(inwardEntry.getPurposeType());
 		inwardEntryResponseDto.setdReceivedDate(inwardEntry.getdReceivedDate());
 		inwardEntryResponseDto.setvLorryNo(inwardEntry.getvLorryNo());
@@ -616,7 +620,5 @@ public class InwardEntry {
 		inwardEntryResponseDto.setScrapWeight( inwardEntry.getScrapWeight() );
 		return inwardEntryResponseDto;
 	}
-
-
 
 }

@@ -726,7 +726,15 @@ public class InstructionServiceImpl implements InstructionService {
             LOGGER.info("updating inward "+inwardEntry.getInwardEntryId());
             inwardService.saveEntry(inwardEntry);
         }
-        return new ResponseEntity<>("delete success !",HttpStatus.OK);
+        
+        InwardEntry inwardEntity1  = inwardService.getByInwardEntryId(instruction.getInwardId().getInwardEntryId());
+        boolean deletedStatus = inwardEntity1.getInstructions().stream().anyMatch(cin -> cin.getIsDeleted()== false);
+
+		if (!deletedStatus) {
+			inwardEntryRepository.updateInwardStatus(instruction.getInwardId().getInwardEntryId(), 1);
+		}
+        
+        return new ResponseEntity<>("Delete Success ..!",HttpStatus.OK);
     }
 
     @Override
@@ -780,7 +788,13 @@ public class InstructionServiceImpl implements InstructionService {
         partDetailsService.save(partDetails);
         LOGGER.info("updating inward "+inwardEntry.getInwardEntryId());
         inwardService.saveEntry(inwardEntry);
-        return new ResponseEntity<>("delete success !",HttpStatus.OK);
+
+        InwardEntry inwardEntity1  = inwardService.getByInwardEntryId(inwardEntry.getInwardEntryId());
+        boolean deletedStatus = inwardEntity1.getInstructions().stream().anyMatch(cin -> cin.getIsDeleted()== false);
+		if (!deletedStatus) {
+			inwardEntry.setStatus(this.statusService.getStatusById(1));
+		}
+        return new ResponseEntity<>("Delete Success ..!",HttpStatus.OK);
     }
 
     @Override
