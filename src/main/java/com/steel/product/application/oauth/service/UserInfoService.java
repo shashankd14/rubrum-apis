@@ -21,7 +21,10 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 
 import com.steel.product.application.dao.UserRepository;
 import com.steel.product.application.dto.LoginRequest;
-import com.steel.product.application.entity.UserEntity;
+import com.steel.product.application.dto.admin.CreateUserRequest;
+import com.steel.product.application.entity.AdminUserEntity;
+import com.steel.product.application.entity.UserPartyMap;
+import com.steel.product.application.entity.UserRoleMap;
 import com.steel.product.application.exception.MockException;
 import com.steel.product.application.response.LoginResponse;
 import com.steel.product.application.response.OAuthResponse;
@@ -65,61 +68,78 @@ public class UserInfoService
 				.build();
 	}
 	
-	public UserEntity getUserEntityByEmail(String email) {
-		return userDetailsRepository.findByEmail(email);
+	public AdminUserEntity getUserEntityByEmail(String email) {
+		return userDetailsRepository.findByEmailId(email);
 	}
 
-    public UserEntity getUserEntityByUserName( String userName )
+    public AdminUserEntity getUserEntityByUserName( String userName )
     {
         short enabled = 1;
         return userDetailsRepository.findByUserNameAndEnabled( userName, enabled );
     }
 
-    public List< UserEntity > getAllActiveUserInfo()
+    public List< AdminUserEntity > getAllActiveUserInfo()
     {
         return userDetailsRepository.findAllByEnabled( ( short ) 1 );
     }
 
-    public UserEntity getUserInfoById( Integer id )
+    public AdminUserEntity getUserInfoById( Integer id )
     {
         return userDetailsRepository.findByUserId( id );
     }
 
-    public UserEntity addUser( UserEntity userInfo )
-    {
-    	userInfo.setFailLgnCounter(0);
-    	userInfo.setEnabled((short)1);
-    	userInfo.setRole("admin");
-        userInfo.setPassword( new BCryptPasswordEncoder().encode( userInfo.getPassword() ) );
-        return userDetailsRepository.save( userInfo );
-    }
-
-    public UserEntity updateUser( UserEntity userRecord )
-    {
-    	UserEntity userInfo = userDetailsRepository.findByUserId( userRecord.getUserId() );
-        userInfo.setUserName( userRecord.getUserName() );
-        userInfo.setPassword( userRecord.getPassword() );
-        userInfo.setRole( userRecord.getRole() );
-        userInfo.setEnabled( userRecord.getEnabled() );
-        return userDetailsRepository.save( userInfo );
-    }
+	public AdminUserEntity addUser(CreateUserRequest userInfo) {
+		AdminUserEntity adminUserEntity = new AdminUserEntity();
+		
+		if(userInfo.getUserId()>0) {
+			adminUserEntity.setUserId(userInfo.getUserId());
+		}
+		adminUserEntity.setUserName(userInfo.getUserName());
+		adminUserEntity.setFirstName(userInfo.getFirstName());
+		adminUserEntity.setLastName(userInfo.getLastName());
+		adminUserEntity.setMobileNo(userInfo.getMobileNo());
+		adminUserEntity.setEmailId(userInfo.getEmailId());
+		adminUserEntity.setFailLgnCounter(0);
+		adminUserEntity.setEnabled((short) 1);
+		adminUserEntity.setUserDataVisible(userInfo.getUserDataVisible());
+		adminUserEntity.setRawPassword(userInfo.getPassword());
+		adminUserEntity.setPassword(new BCryptPasswordEncoder().encode(userInfo.getPassword()));
+		if(userInfo.getUserId()>0) {
+			userDetailsRepository.deletePartyMapByUserId(userInfo.getUserId());
+			userDetailsRepository.deleteRoleMapByUserId(userInfo.getUserId());
+		}
+		for (Integer partyId : userInfo.getPartyList()) {
+			UserPartyMap userPartyMap = new UserPartyMap();
+			userPartyMap.setPartyId(partyId);
+			userPartyMap.setUserEntityid(adminUserEntity);
+			adminUserEntity.getUserPartyMap().add(userPartyMap);
+		}
+		for (Integer roleId : userInfo.getRoleList()) {
+			UserRoleMap userRoleMap = new UserRoleMap();
+			userRoleMap.setRoleId(roleId);
+			userRoleMap.setUserEntityid(adminUserEntity);
+			adminUserEntity.getUserRoleMap().add(userRoleMap);
+		}
+		return userDetailsRepository.save(adminUserEntity);
+	}
 
     public void deleteUser( Integer id )
     {
         userDetailsRepository.deleteById( id );
     }
 
-    public UserEntity updatePassword(UserEntity userRecord )
+    public AdminUserEntity updatePassword(AdminUserEntity userRecord )
     {
-    	UserEntity userInfo = userDetailsRepository.findByUserId( userRecord.getUserId() );
+    	AdminUserEntity userInfo = userDetailsRepository.findByUserId( userRecord.getUserId() );
         userInfo.setPassword (new BCryptPasswordEncoder().encode( userRecord.getPassword()) );
+        userInfo.setRawPassword ( userRecord.getPassword() );
         return userDetailsRepository.save( userInfo );
     }
 
-    public UserEntity updateRole( Integer id, UserEntity userRecord )
+    public AdminUserEntity updateRole( Integer id, AdminUserEntity userRecord )
     {
-    	UserEntity userInfo = userDetailsRepository.findByUserId( id );
-        userInfo.setRole( userRecord.getRole() );
+    	AdminUserEntity userInfo = userDetailsRepository.findByUserId( id );
+       // userInfo.setRoleId( userRecord.getRoleId() );
         return userDetailsRepository.save( userInfo );
     }
     
@@ -151,7 +171,7 @@ public class UserInfoService
 			}
 		}
 
-		UserEntity user = userDetailsRepository.findByUserNameAndEnabled(loginReq.getUserName(), (short)1);
+		AdminUserEntity user = userDetailsRepository.findByUserNameAndEnabled(loginReq.getUserName(), (short)1);
 
 		// Login is success - check user access is enabled
 		if (user != null && oauthResp != null && !StringUtils.isEmpty(oauthResp.getAccessToken())) {

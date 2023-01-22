@@ -1,12 +1,12 @@
 package com.steel.product.application.service;
 
-import com.steel.product.application.entity.UserEntity;
+import com.steel.product.application.entity.AdminUserEntity;
 import java.util.List;
 
 public interface UserService {
-  UserEntity saveStatus(UserEntity paramUser);
+  AdminUserEntity saveStatus(AdminUserEntity paramUser);
   
-  List<UserEntity> getAllUsers();
+  List<AdminUserEntity> getAllUsers();
   
-  UserEntity getUserById(int paramInt);
+  AdminUserEntity getUserById(int paramInt);
 }

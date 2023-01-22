@@ -23,7 +23,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.steel.product.application.entity.UserEntity;
+import com.steel.product.application.dto.admin.CreateUserRequest;
+import com.steel.product.application.entity.AdminUserEntity;
 import com.steel.product.application.exception.MockException;
 import com.steel.product.application.oauth.service.UserInfoService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -40,22 +41,27 @@ public class UserController
     private UserInfoService userService;
 
     @GetMapping( "/getAll" )
-    public Object getAllUser( @RequestHeader HttpHeaders requestHeader )
-    {
-        List< UserEntity > userInfos = userService.getAllActiveUserInfo();
-        if ( userInfos == null || userInfos.isEmpty() )
-        {
-            return new ResponseEntity< Void >( HttpStatus.NO_CONTENT );
-        }
-        return userInfos;
-    }
+    public ResponseEntity<Object> getAllUser( @RequestHeader HttpHeaders requestHeader )
+	{
+		ResponseEntity<Object> response = null;
+
+		List<AdminUserEntity> userInfos = null;
+		try {
+			userInfos = userService.getAllActiveUserInfo();
+		} catch (Exception e) {
+			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"" + e.getMessage() + "\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+
+		response = new ResponseEntity<>(userInfos, new HttpHeaders(), HttpStatus.OK);
+		return response;
+	}
 
     @PostMapping( "/signup" )
-    public UserEntity signup( @RequestBody UserEntity userRecord ) throws MockException
+    public AdminUserEntity signup( @RequestBody CreateUserRequest userRecord ) throws MockException
     {
-    	UserEntity existingUser = userService.getUserEntityByUserName( userRecord.getUserName() );
+    	AdminUserEntity existingUser = userService.getUserEntityByUserName( userRecord.getUserName() );
         if ( existingUser == null ) {
-        	UserEntity existingUser1 = userService.getUserEntityByEmail( userRecord.getEmail() );
+        	AdminUserEntity existingUser1 = userService.getUserEntityByEmail( userRecord.getEmailId() );
 			if (existingUser1 != null) {
 				List<String> errors = new ArrayList<>();
 				errors.add("Email Id is already mapped with other user");
@@ -69,14 +75,14 @@ public class UserController
         }
     }
 
-    @PutMapping( "/updateUser" )
-    public UserEntity updateUser( @RequestBody UserEntity userRecord)
+    @PutMapping( "/update" )
+    public AdminUserEntity updateUser( @RequestBody CreateUserRequest userRecord )
     {
-        return userService.updateUser(userRecord );
+        return userService.addUser( userRecord );
     }
 
 	@PutMapping("/changePassword")
-	public UserEntity updateUserPassword(@RequestBody UserEntity userRecord) throws MockException {
+	public AdminUserEntity updateUserPassword(@RequestBody AdminUserEntity userRecord) throws MockException {
 		try {
 			return userService.updatePassword(userRecord);
 		} catch (Exception e) {
@@ -90,7 +96,7 @@ public class UserController
 	}
 
     @PutMapping( "/changeRole/{id}" )
-    public UserEntity updateUserRole( @RequestBody UserEntity userRecord, @PathVariable Integer id )
+    public AdminUserEntity updateUserRole( @RequestBody AdminUserEntity userRecord, @PathVariable Integer id )
     {
         return userService.updateRole( id, userRecord );
     }
@@ -110,27 +116,27 @@ public class UserController
     }
 
     @GetMapping( "/{id}" )
-    public ResponseEntity< UserEntity > getUserById(HttpServletRequest request, @PathVariable Integer id )
+    public ResponseEntity< AdminUserEntity > getUserById(HttpServletRequest request, @PathVariable Integer id )
     {
     	
 		Principal principal = request.getUserPrincipal();
 
 		System.out.println("hi kanak == "+principal.getName());
     	    
-        UserEntity UserEntity = userService.getUserInfoById( id );
-        if ( UserEntity == null )
+        AdminUserEntity AdminUserEntity = userService.getUserInfoById( id );
+        if ( AdminUserEntity == null )
         {
             return new ResponseEntity<>( HttpStatus.NO_CONTENT );
         }
-        return new ResponseEntity<>( UserEntity, HttpStatus.OK );
+        return new ResponseEntity<>( AdminUserEntity, HttpStatus.OK );
     }
 
     @RequestMapping( "/me" )
-    public ResponseEntity< UserEntity > profile()
+    public ResponseEntity< AdminUserEntity > profile()
     {
         User user = ( User ) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        UserEntity profile = userService.getUserEntityByUserName( user.getUsername() );
+        AdminUserEntity profile = userService.getUserEntityByUserName( user.getUsername() );
 
         return ResponseEntity.ok( profile );
     }

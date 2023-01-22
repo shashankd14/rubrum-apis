@@ -11,7 +11,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.steel.product.application.entity.UserEntity;
+import com.steel.product.application.entity.AdminUserEntity;
 
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService
@@ -22,9 +22,9 @@ public class UserDetailsServiceImpl implements UserDetailsService
     @Override
     public UserDetails loadUserByUsername( String username ) throws UsernameNotFoundException
     {
-        UserEntity userInfo = userInfoDAO.getUserEntityByUserName( username );
+        AdminUserEntity userInfo = userInfoDAO.getUserEntityByUserName( username );
         if(userInfo!=null) {
-        	GrantedAuthority authority = new SimpleGrantedAuthority( userInfo.getRole() );
+        	GrantedAuthority authority = new SimpleGrantedAuthority( "admin" );
             return new User( userInfo.getUserName(), userInfo.getPassword(), Arrays.asList( authority ) );
         } else {
         	throw new UsernameNotFoundException("Could not find user with name :: "+username);

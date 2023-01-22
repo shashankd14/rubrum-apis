@@ -1,7 +1,7 @@
 package com.steel.product.application.service;
 
 import com.steel.product.application.dao.UserRepository;
-import com.steel.product.application.entity.UserEntity;
+import com.steel.product.application.entity.AdminUserEntity;
 import com.steel.product.application.service.UserService;
 import java.util.List;
 import java.util.Optional;
@@ -18,17 +18,17 @@ public class UserServiceImpl implements UserService {
         this.userRepo = userRepo;
     }
 
-    public UserEntity saveStatus(UserEntity user) {
-        return (UserEntity) this.userRepo.save(user);
+    public AdminUserEntity saveStatus(AdminUserEntity user) {
+        return (AdminUserEntity) this.userRepo.save(user);
     }
 
-    public List<UserEntity> getAllUsers() {
-        return (List<UserEntity>) this.userRepo.findAll();
+    public List<AdminUserEntity> getAllUsers() {
+        return (List<AdminUserEntity>) this.userRepo.findAll();
     }
 
-    public UserEntity getUserById(int id) {
-    Optional<UserEntity> result = this.userRepo.findById(Integer.valueOf(id));
-    UserEntity user = null;
+    public AdminUserEntity getUserById(int id) {
+    Optional<AdminUserEntity> result = this.userRepo.findById(Integer.valueOf(id));
+    AdminUserEntity user = null;
     if (result.isPresent()) {
       user = result.get();
     } else {

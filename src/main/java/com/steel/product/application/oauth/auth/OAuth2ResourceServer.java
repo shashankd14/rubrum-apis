@@ -30,7 +30,7 @@ public class OAuth2ResourceServer extends ResourceServerConfigurerAdapter
                                             "/swagger-ui/**",  			// swagger-ui resources
                                             "/configuration/**",      	// swagger configuration
                                             "/oauth/**",      			// swagger configuration
-                                            "/user/signup",     		// user controller
+                                            "/user/changePassword",     		// user controller
                                             "/login/**"      			// login controller
                                             ).permitAll()
                             				.antMatchers("/**").authenticated() // If we commented this then token is not required to access any service
