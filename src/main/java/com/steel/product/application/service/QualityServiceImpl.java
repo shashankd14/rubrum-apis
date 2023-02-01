@@ -7,27 +7,25 @@ import com.steel.product.application.dto.quality.QualityCheckResponse;
 import com.steel.product.application.dto.quality.QualityPartyMappingRequest;
 import com.steel.product.application.dto.quality.QualityPartyMappingRequestNew;
 import com.steel.product.application.dto.quality.QualityPartyMappingResponse;
-import com.steel.product.application.dto.quality.QualityTemplateMainResponse;
 import com.steel.product.application.dto.quality.QualityTemplateResponse;
 import com.steel.product.application.entity.QualityPartyTemplateEntity;
 import com.steel.product.application.entity.QualityTemplateEntity;
+import com.steel.product.application.util.CommonUtil;
+
 import lombok.extern.log4j.Log4j2;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.json.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @Log4j2
@@ -39,55 +37,64 @@ public class QualityServiceImpl implements QualityService {
 	@Autowired
 	QualityPartyTemplateRepository qualityPartyTemplateRepository;
 
+	@Value("${templateFilesPath}")
+	private String templateFilesPath;
+	
 	@Override
-	public ResponseEntity<Object> save(String payloadTransaction, int userId) {
+	public ResponseEntity<Object> save(String templateId, String templateName, String stageName, String templateDetails,
+			String userId, MultipartFile file1, MultipartFile file2,
+			MultipartFile file3, MultipartFile file4, MultipartFile file5, String processId) {
+		
 		ResponseEntity<Object> response = null;
-
-		List<QualityTemplateEntity> list=new ArrayList<>();
-		JSONParser parser = new JSONParser();
-		JSONObject json = new JSONObject();
+		String message="Quality Template details saved successfully..! ";
+		HttpHeaders header = new HttpHeaders();
+		header.set("Content-Type", "application/json");
 		try {
-			json = (JSONObject) parser.parse(payloadTransaction);
 
-			log.info("  payloadTransaction == " + payloadTransaction);
+			log.info("  templateDetails == " + templateDetails);
 
-			JSONArray jsonArr = new JSONArray(json.get("stageDetails").toString());
-			for (int i = 0; i < jsonArr.length(); i++) {
-				Integer templateId = 0;
-				JSONObject jsonChild = (JSONObject) parser.parse(jsonArr.getJSONObject(i).toString());
-				QualityTemplateEntity qualityTemplateEntity = null;
-				if (jsonChild.containsKey("templateId") && jsonChild.get("templateId") != null) {
-					templateId = Integer.parseInt(jsonChild.get("templateId").toString());
-				}
-				
-				if (templateId > 0) {
-					qualityTemplateEntity = qualityTemplateRepository.findByTemplateId(templateId);
-					qualityTemplateEntity.setTemplateId(templateId);
-				} else {
-					qualityTemplateEntity = new QualityTemplateEntity();
-					qualityTemplateEntity.setCreatedBy(userId);
-					qualityTemplateEntity.setCreatedOn(new Date());
-				}
-				qualityTemplateEntity.setStageName(jsonChild.get("stageName").toString());
-				qualityTemplateEntity.setTemplateName(json.get("templateName").toString());
-				qualityTemplateEntity.setFieldDetails(jsonChild.get("fieldDetails").toString());
-
-				if (jsonChild.containsKey("processId") && jsonChild.get("processId") != null && jsonChild.get("processId").toString().length()>0) {
-					qualityTemplateEntity.setProcessId(Integer.parseInt(jsonChild.get("processId").toString()));
-				}
-				if (jsonChild.containsKey("remarks") && jsonChild.get("remarks") != null) {
-					qualityTemplateEntity.setRemarks(jsonChild.get("remarks").toString());
-				}
-				qualityTemplateEntity.setUpdatedBy(userId);
-				qualityTemplateEntity.setUpdatedOn(new Date());
-				list.add(qualityTemplateEntity);
+			QualityTemplateEntity qualityTemplateEntity = null;
+			if (templateId !=null && Integer.parseInt(templateId) > 0) {
+				message="Quality Template details updated successfully..! ";
+				qualityTemplateEntity = qualityTemplateRepository.findByTemplateId(Integer.parseInt(templateId));
+				qualityTemplateEntity.setTemplateId(Integer.parseInt(templateId));
+			} else {
+				qualityTemplateEntity = new QualityTemplateEntity();
+				qualityTemplateEntity.setCreatedBy(Integer.parseInt(userId) );
+				qualityTemplateEntity.setCreatedOn(new Date());
 			}
+			qualityTemplateEntity.setStageName(stageName);
+			if(processId!=null && processId.length()>0) {
+				qualityTemplateEntity.setProcessId( Integer.parseInt(processId) );
+			}
+			
+			qualityTemplateEntity.setTemplateName(templateName);
+			qualityTemplateEntity.setTemplateDetails( templateDetails);
+			qualityTemplateEntity.setUpdatedBy(Integer.parseInt(userId) );
+			qualityTemplateEntity.setUpdatedOn(new Date());
 
-			qualityTemplateRepository.saveAll(list);
-			response = new ResponseEntity<>( "{\"status\": \"success\", \"message\": \"Quality Template details saved successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
+			if (file1 != null) {
+				CommonUtil.persistFiles(templateFilesPath, stageName, templateName, file1);
+			}
+			if (file2 != null) {
+				CommonUtil.persistFiles(templateFilesPath, stageName, templateName, file2);
+			}
+			if (file3 != null) {
+				CommonUtil.persistFiles(templateFilesPath, stageName, templateName, file3);
+			}
+			if (file4 != null) {
+				CommonUtil.persistFiles(templateFilesPath, stageName, templateName, file4);
+			}
+			if (file5 != null) {
+				CommonUtil.persistFiles(templateFilesPath, stageName, templateName, file5);
+			}
+			
+			qualityTemplateRepository.save(qualityTemplateEntity);
+			
+			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"" + message + "}", header, HttpStatus.OK);
 		} catch (Exception e) {
 			log.info("error is ==" + e.getMessage());
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", new HttpHeaders(), HttpStatus.BAD_REQUEST);
+			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.BAD_REQUEST);
 		}
 		
 		return response;
@@ -96,73 +103,42 @@ public class QualityServiceImpl implements QualityService {
 	@Override
 	public ResponseEntity<Object> delete(int id) {
 		ResponseEntity<Object> response = null;
+		HttpHeaders header = new HttpHeaders();
+		header.set("Content-Type", "application/json");
 		try {
 			qualityTemplateRepository.deleteById(id);
-			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Template stage details deleted successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
+			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Template stage details deleted successfully..! \"}", header, HttpStatus.OK);
 		} catch (Exception e) {
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"" + e.getMessage() + "\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"" + e.getMessage() + "\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		return response;
 	}
 
 	@Override
-	public QualityTemplateMainResponse getById(int id) {
-		QualityTemplateMainResponse resp = new QualityTemplateMainResponse();
-		List<QualityTemplateEntity> list = qualityTemplateRepository.findByTemplateName(id);
+	public QualityTemplateResponse getById(int id) {
 
-		for (QualityTemplateEntity entity : list) {
-			resp.setId(id);
-			resp.setTemplateName(entity.getTemplateName());
-			resp.getStageDetails().add(QualityTemplateEntity.valueOf(entity));
-		}
-
-		return resp;
+		return QualityTemplateEntity.valueOf(qualityTemplateRepository.findByTemplateId(id));
 	}
 
 	@Override
-	public List<QualityTemplateMainResponse> getAllTemplateDetails() {
-		List<QualityTemplateMainResponse> resp = new ArrayList<QualityTemplateMainResponse>();
+	public List<QualityTemplateResponse> getAllTemplateDetails() {
 
-		List<QualityTemplateEntity> list = qualityTemplateRepository.findAllTemplates();
-		Map<String, List<QualityTemplateResponse>> map = new HashMap<>();
-
-		for (QualityTemplateEntity entity : list) {
-
-			if (map != null && map.get(entity.getTemplateName()) != null) {
-				List<QualityTemplateResponse> listChild = map.get(entity.getTemplateName());
-				listChild.add(QualityTemplateEntity.valueOf(entity));
-				map.put(entity.getTemplateName(), listChild);
-			} else {
-				List<QualityTemplateResponse> listChild = new ArrayList<>();
-				listChild.add(QualityTemplateEntity.valueOf(entity));
-				map.put(entity.getTemplateName(), listChild);
-			}
-		}
-
-		// using for-each loop for iteration over Map.entrySet()
-		for (Map.Entry<String, List<QualityTemplateResponse>> entry : map.entrySet()) {
-			QualityTemplateMainResponse kk = new QualityTemplateMainResponse();
-			kk.setId(entry.getValue().get(0).getTemplateId());
-			kk.setTemplateName(entry.getKey() );
-			kk.setStageDetails(entry.getValue());
-			resp.add(kk );
-		}
-		return resp;
+		List<QualityTemplateResponse> instructionList = qualityTemplateRepository.findAllTemplates().stream()
+				.map(i -> QualityTemplateEntity.valueOf(i)).collect(Collectors.toList());
+		return instructionList ;
 	}
 
 	@Override
 	public ResponseEntity<Object> deleteTemplate(int id) {
 		ResponseEntity<Object> response = null;
+		HttpHeaders header = new HttpHeaders();
+		header.set("Content-Type", "application/json");
 		try {
 			
-			List<QualityTemplateEntity> list = qualityTemplateRepository.findByTemplateName(id);
-
-			for (QualityTemplateEntity entity : list) {
-				qualityTemplateRepository.deleteById(entity.getTemplateId());
-			}
-			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Quality Template deleted successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
+			qualityTemplateRepository.deleteById(id);
+			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Quality Template deleted successfully..! \"}", header, HttpStatus.OK);
 		} catch (Exception e) {
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"" + e.getMessage() + "\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"" + e.getMessage() + "\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		return response;
 	}

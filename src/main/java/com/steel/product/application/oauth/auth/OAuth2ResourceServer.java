@@ -33,7 +33,7 @@ public class OAuth2ResourceServer extends ResourceServerConfigurerAdapter
                                             "/user/changePassword",     		// user controller
                                             "/login/**"      			// login controller
                                             ).permitAll()
-                            				.antMatchers("/**").authenticated() // If we commented this then token is not required to access any service
+                            				//.antMatchers("/**").authenticated() // If we commented this then token is not required to access any service
 				.and().exceptionHandling().accessDeniedHandler(new OAuth2AccessDeniedHandler());
 	}
 

@@ -1,17 +1,17 @@
 package com.steel.product.application.dto.quality;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import lombok.Data;
 
 @Data
 public class QualityTemplateMainResponse {
-
-	private Integer id;
 	
+	private Integer templateId;
+
 	private String templateName;
 
-	private List<QualityTemplateResponse> stageDetails = new ArrayList<QualityTemplateResponse>();
+	private String stageName;
 
+	private String processId;
+
+	private String templateDetails;
 }

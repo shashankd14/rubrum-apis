@@ -32,13 +32,10 @@ public class QualityTemplateEntity {
 
 	@Column(name = "processId")
 	private Integer processId;
-	
-	@Column(name = "fieldDetails", length = 2000)
-	private String fieldDetails;
-	
-	@Column(name = "remarks")
-	private String remarks;
 
+	@Column(name = "templateDetails", length = 2000)
+	private String templateDetails;
+	
 	@Column(name = "created_by")
 	private Integer createdBy;
 
@@ -58,8 +55,7 @@ public class QualityTemplateEntity {
 		dtoResponse.setTemplateId(entity.getTemplateId());
 		dtoResponse.setStageName(entity.getStageName());
 		dtoResponse.setProcessId( entity.getProcessId() );
-		dtoResponse.setRemarks( entity.getRemarks() );
-		dtoResponse.setFieldDetails(entity.getFieldDetails());
+		dtoResponse.setTemplateDetails(entity.getTemplateDetails());
 		dtoResponse.setCreatedBy(entity.getCreatedBy());
 		dtoResponse.setUpdatedBy(entity.getUpdatedBy());
 		dtoResponse.setCreatedOn(entity.getCreatedOn());

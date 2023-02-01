@@ -4,18 +4,17 @@ import com.steel.product.application.dto.quality.QualityCheckRequest;
 import com.steel.product.application.dto.quality.QualityCheckResponse;
 import com.steel.product.application.dto.quality.QualityPartyMappingRequest;
 import com.steel.product.application.dto.quality.QualityPartyMappingResponse;
-import com.steel.product.application.dto.quality.QualityTemplateMainResponse;
+import com.steel.product.application.dto.quality.QualityTemplateResponse;
 import com.steel.product.application.service.QualityService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.List;
-import java.util.Optional;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @CrossOrigin
@@ -26,48 +25,59 @@ public class QualityMasterController {
 	@Autowired
 	private QualityService qualityService;
 
-	@PostMapping(value = "/template/save", produces = "application/json")
-	public ResponseEntity<Object> save(@RequestBody Optional<String> payload, HttpServletRequest request) {
-		int userId = (request.getHeader("userId") == null ? 1 : Integer.parseInt(request.getHeader("userId")));
-		String payloadTransaction = "";
-		if (payload.isPresent()) {
-			payloadTransaction = payload.get();
-		}
+	@PostMapping(value = "/template/save")
+	public ResponseEntity<Object> save(HttpServletRequest request,
+			@RequestParam(value = "file1", required = false) MultipartFile file1,
+			@RequestParam(value = "file2", required = false) MultipartFile file2,
+			@RequestParam(value = "file3", required = false) MultipartFile file3,
+			@RequestParam(value = "file4", required = false) MultipartFile file4,
+			@RequestParam(value = "file5", required = false) MultipartFile file5,
+			@RequestParam(value = "templateName", required = true) String templateName,
+			@RequestParam(value = "processId", required = false) String processId,
+			@RequestParam(value = "stageName", required = true) String stageName,
+			@RequestParam(value = "userId", required = true) String userId,
+			@RequestParam(value = "templateDetails", required = true) String templateDetails) {
 
-		return qualityService.save(payloadTransaction, userId);
+		return qualityService.save(null, templateName, stageName, templateDetails, userId, file1, file2, file3, file4,
+				file5, processId);
 	}
 
-	@PutMapping(value = "/template/update", produces = "application/json")
-	public ResponseEntity<Object> update(@RequestBody Optional<String> payload, HttpServletRequest request) {
-		int userId = (request.getHeader("userId") == null ? 1 : Integer.parseInt(request.getHeader("userId")));
-		String payloadTransaction = "";
-		if (payload.isPresent()) {
-			payloadTransaction = payload.get();
-		}
-
-		return qualityService.save(payloadTransaction, userId);
+	@PutMapping(value = "/template/update")
+	public ResponseEntity<Object> update(HttpServletRequest request,
+			@RequestParam(value = "file1", required = false) MultipartFile file1,
+			@RequestParam(value = "file2", required = false) MultipartFile file2,
+			@RequestParam(value = "file3", required = false) MultipartFile file3,
+			@RequestParam(value = "file4", required = false) MultipartFile file4,
+			@RequestParam(value = "file5", required = false) MultipartFile file5,
+			@RequestParam(value = "templateName", required = true) String templateName,
+			@RequestParam(value = "templateId", required = true) String templateId,
+			@RequestParam(value = "processId", required = false) String processId,
+			@RequestParam(value = "stageName", required = true) String stageName,
+			@RequestParam(value = "userId", required = true) String userId,
+			@RequestParam(value = "templateDetails", required = true) String templateDetails) {
+		
+		return qualityService.save(templateId, templateName, stageName, templateDetails, userId, file1, file2, file3, file4,
+				file5, processId);
 	}
-
-	@GetMapping(value = "/template/{id}", produces = "application/json")
-	public QualityTemplateMainResponse getById(@PathVariable("id") int id) {
-		QualityTemplateMainResponse list = qualityService.getById(id);
-		return list;
+	
+	@DeleteMapping(value = "/template/{id}", produces = "application/json" )
+	public ResponseEntity<Object> deleteTemplate(@PathVariable("id") int id) {
+		return qualityService.deleteTemplate(id);
 	}
 
 	@GetMapping(value = "/template", produces = "application/json")
-	public List<QualityTemplateMainResponse> getAllTemplates( ) {
-		List<QualityTemplateMainResponse> list = qualityService.getAllTemplateDetails();
-		return list;
+	public List<QualityTemplateResponse> getAllTemplates( ) {
+		return qualityService.getAllTemplateDetails();
+	}
+
+	@GetMapping(value = "/template/{id}", produces = "application/json")
+	public QualityTemplateResponse getById(@PathVariable("id") int id) {
+		return qualityService.getById(id);
 	}
 	
 	@DeleteMapping(value = "/template/stage/{id}", produces = "application/json" )
 	public ResponseEntity<Object> deleteStageDetails(@PathVariable("id") int id) {
 		return qualityService.delete(id);
-	}
-	
-	@DeleteMapping(value = "/template/templateName/{id}", produces = "application/json" )
-	public ResponseEntity<Object> deleteTemplate(@PathVariable("id") int id) {
-		return qualityService.deleteTemplate(id);
 	}
 	
 	@PostMapping(value = "/templatemap/save", produces = "application/json")

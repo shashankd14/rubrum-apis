@@ -11,11 +11,9 @@ public class QualityTemplateResponse {
 
 	private String stageName;
 
+	private String templateDetails;
+
 	private Integer processId;
-
-	private String fieldDetails;
-
-	private String remarks;
 
 	private Integer createdBy;
 
