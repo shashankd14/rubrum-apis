@@ -75,29 +75,23 @@ public class QualityMasterController {
 		return qualityService.getById(id);
 	}
 	
-	@DeleteMapping(value = "/template/stage/{id}", produces = "application/json" )
-	public ResponseEntity<Object> deleteStageDetails(@PathVariable("id") int id) {
-		return qualityService.delete(id);
-	}
-	
 	@PostMapping(value = "/templatemap/save", produces = "application/json")
 	public ResponseEntity<Object> templateMapSave(@RequestBody QualityPartyMappingRequest qualityPartyMappingRequest, HttpServletRequest request) {
-		int userId = (request.getHeader("userId") == null ? 1 : Integer.parseInt(request.getHeader("userId")));
-		return qualityService.templateMapSave(qualityPartyMappingRequest, userId);
+ 		return qualityService.templateMapSave(qualityPartyMappingRequest);
 	}
 	
-	@DeleteMapping(value = "/templatemap/{id}", produces = "application/json" )
-	public ResponseEntity<Object> deleteTemplateMap (@PathVariable("id") int id) {
-		return qualityService.deleteTemplateMap(id);
+	@DeleteMapping(value = "/templatemap/{templateId}", produces = "application/json" )
+	public ResponseEntity<Object> deleteTemplateMap (@PathVariable("templateId") int templateId) {
+		return qualityService.deleteTemplateMap(templateId);
 	}
 
-	@GetMapping(value = "/templatemap/party/{partyId}", produces = "application/json")
-	public List<QualityPartyMappingResponse> getBypartyId(@PathVariable("partyId") int partyId) {
-		List<QualityPartyMappingResponse> list = qualityService.getByPartyId(partyId);
+	@GetMapping(value = "/templatemap/{templateId}", produces = "application/json")
+	public List<QualityPartyMappingResponse> getBypartyId(@PathVariable("templateId") int templateId) {
+		List<QualityPartyMappingResponse> list = qualityService.getByTemplateId(templateId);
 		return list;
 	}
 
-	@GetMapping(value = "/templatemap/party", produces = "application/json")
+	@GetMapping(value = "/templatemap", produces = "application/json")
 	public List<QualityPartyMappingResponse> getAllMappings() {
 		List<QualityPartyMappingResponse> list = qualityService.getAllMappings();
 		return list;
@@ -108,6 +102,10 @@ public class QualityMasterController {
 		QualityCheckResponse list = qualityService.qualityCheck(qualityCheckRequest);
 		return list;
 	}
-	
+
+	@DeleteMapping(value = "/template/stage/{id}", produces = "application/json" )
+	public ResponseEntity<Object> deleteStageDetails(@PathVariable("id") int id) {
+		return qualityService.delete(id);
+	}
 	
 }

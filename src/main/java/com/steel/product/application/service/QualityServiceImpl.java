@@ -144,21 +144,24 @@ public class QualityServiceImpl implements QualityService {
 	}
 
 	@Override
-	public ResponseEntity<Object> templateMapSave(QualityPartyMappingRequest qualityPartyMappingRequest, int userId) {
+	public ResponseEntity<Object> templateMapSave(QualityPartyMappingRequest qualityPartyMappingRequest) {
 		
-		List<QualityPartyTemplateEntity> list1 = qualityPartyTemplateRepository.findByPartyId(qualityPartyMappingRequest.getPartyId());
+		List<QualityPartyTemplateEntity> list1 = qualityPartyTemplateRepository.findByTemplateId(qualityPartyMappingRequest.getTemplateId());
 		for (QualityPartyTemplateEntity qqualityPartyTemplateEntity : list1) {
 			qualityPartyTemplateRepository.deleteById(qqualityPartyTemplateEntity.getId());
 		}
 		
 		ResponseEntity<Object> response = null;
 		List<QualityPartyTemplateEntity> list=new ArrayList<QualityPartyTemplateEntity>();
-		for (Integer templateId : qualityPartyMappingRequest.getTemplateIdList()) {
+		for (Integer partyId : qualityPartyMappingRequest.getPartyIdList()) {
 			QualityPartyTemplateEntity qualityPartyTemplateEntity = new QualityPartyTemplateEntity();
-			qualityPartyTemplateEntity.getTemplateEntity().setTemplateId(templateId);
-			qualityPartyTemplateEntity.getParty().setnPartyId( qualityPartyMappingRequest.getPartyId() );
-			qualityPartyTemplateEntity.setCreatedBy(userId);
-			qualityPartyTemplateEntity.setUpdatedBy(userId);
+			qualityPartyTemplateEntity.getTemplateEntity().setTemplateId(qualityPartyMappingRequest.getTemplateId());
+			qualityPartyTemplateEntity.getParty().setnPartyId(partyId);
+			qualityPartyTemplateEntity.setThickness(qualityPartyMappingRequest.getThickness());
+			qualityPartyTemplateEntity.setEndUserTagId(qualityPartyMappingRequest.getEndUserTagId());
+			qualityPartyTemplateEntity.setMatGradeId( qualityPartyMappingRequest.getMatGradeId());
+			qualityPartyTemplateEntity.setCreatedBy(qualityPartyMappingRequest.getUserId());
+			qualityPartyTemplateEntity.setUpdatedBy(qualityPartyMappingRequest.getUserId());
 			qualityPartyTemplateEntity.setCreatedOn(new Date());
 			qualityPartyTemplateEntity.setUpdatedOn(new Date());
 			list.add(qualityPartyTemplateEntity);
@@ -169,12 +172,14 @@ public class QualityServiceImpl implements QualityService {
 	}
 
 	@Override
-	public ResponseEntity<Object> deleteTemplateMap(int id) {
+	public ResponseEntity<Object> deleteTemplateMap(int templateId) {
 		ResponseEntity<Object> response = null;
 		try {
 
-			 qualityPartyTemplateRepository.deleteById(id);
-
+			List<QualityPartyTemplateEntity> list1 = qualityPartyTemplateRepository.findByTemplateId(templateId);
+			for (QualityPartyTemplateEntity qqualityPartyTemplateEntity : list1) {
+				qualityPartyTemplateRepository.deleteById(qqualityPartyTemplateEntity.getId());
+			}
 			response = new ResponseEntity<>( "{\"status\": \"success\", \"message\": \"Party Template mapping deleted successfully..! \"}",
 					new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
@@ -186,6 +191,12 @@ public class QualityServiceImpl implements QualityService {
 	@Override
 	public List<QualityPartyMappingResponse> getByPartyId(int partyId) {
 		List<QualityPartyMappingResponse> instructionList = qualityPartyTemplateRepository.findByPartyId(partyId).stream()
+				.map(i -> QualityPartyTemplateEntity.valueOf(i)).collect(Collectors.toList());
+		return instructionList;
+	}
+	@Override
+	public List<QualityPartyMappingResponse> getByTemplateId(int templateId) {
+		List<QualityPartyMappingResponse> instructionList = qualityPartyTemplateRepository.findByTemplateId(templateId).stream()
 				.map(i -> QualityPartyTemplateEntity.valueOf(i)).collect(Collectors.toList());
 		return instructionList;
 	}

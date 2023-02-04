@@ -8,6 +8,8 @@ import com.steel.product.application.dto.quality.QualityPartyMappingResponse;
 import lombok.Data;
 import lombok.ToString;
 import javax.persistence.*;
+
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Entity
@@ -28,7 +30,16 @@ public class QualityPartyTemplateEntity {
 	
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "npartyid")
-	private Party party=new Party();
+	private Party party = new Party();
+
+	@Column(name = "enduser_tag_id")
+	private Integer endUserTagId;
+
+	@Column(name = "thickness")
+	private BigDecimal thickness;
+
+	@Column(name = "mat_grade_id")
+	private Integer matGradeId;
 
 	@Column(name = "created_by")
 	private Integer createdBy;
@@ -48,9 +59,12 @@ public class QualityPartyTemplateEntity {
 		QualityPartyMappingResponse dtoResponse = new QualityPartyMappingResponse();
 		dtoResponse.setId( entity.getId());
 		dtoResponse.setPartyId(entity.getParty().getnPartyId());
-		dtoResponse.setPartyName(entity.getParty().getPartyName() );
-		dtoResponse.setTemplateName( entity.getTemplateEntity().getTemplateName());
+		dtoResponse.setPartyName(entity.getParty().getPartyName());
+		dtoResponse.setTemplateName(entity.getTemplateEntity().getTemplateName());
 		dtoResponse.setTemplateId(entity.getTemplateEntity().getTemplateId());
+		dtoResponse.setEndUserTagId(entity.getEndUserTagId());
+		dtoResponse.setMatGradeId(entity.getMatGradeId());
+		dtoResponse.setThickness(entity.getThickness());
 		return dtoResponse;
 	}
 

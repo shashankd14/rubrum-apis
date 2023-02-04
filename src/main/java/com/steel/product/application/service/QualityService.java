@@ -10,9 +10,7 @@ import com.steel.product.application.dto.quality.QualityCheckResponse;
 import com.steel.product.application.dto.quality.QualityPartyMappingRequest;
 import com.steel.product.application.dto.quality.QualityPartyMappingRequestNew;
 import com.steel.product.application.dto.quality.QualityPartyMappingResponse;
-import com.steel.product.application.dto.quality.QualityTemplateMainResponse;
 import com.steel.product.application.dto.quality.QualityTemplateResponse;
-import com.steel.product.application.entity.QualityTemplateEntity;
 
 public interface QualityService {
 
@@ -24,11 +22,13 @@ public interface QualityService {
 
 	List<QualityTemplateResponse> getAllTemplateDetails();
 
-	ResponseEntity<Object> templateMapSave(QualityPartyMappingRequest qualityPartyMappingRequest, int userId);
+	ResponseEntity<Object> templateMapSave(QualityPartyMappingRequest qualityPartyMappingRequest);
 
-	ResponseEntity<Object> deleteTemplateMap (int id);
+	ResponseEntity<Object> deleteTemplateMap (int templateId);
 
 	List<QualityPartyMappingResponse> getByPartyId(int partyId);
+	
+	List<QualityPartyMappingResponse> getByTemplateId(int templateId);
 
 	List<QualityPartyMappingResponse> getAllMappings();
 

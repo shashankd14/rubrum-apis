@@ -17,5 +17,8 @@ public interface QualityPartyTemplateRepository extends JpaRepository<QualityPar
 
 	@Query("select ins from QualityPartyTemplateEntity ins where ins.party.nPartyId=:partyId ")
 	List<QualityPartyTemplateEntity> findByPartyId(@Param("partyId") Integer partyId);	
+
+	@Query("select ins from QualityPartyTemplateEntity ins where ins.templateEntity.templateId=:templateId ")
+	List<QualityPartyTemplateEntity> findByTemplateId(@Param("templateId") Integer templateId);	
 	
 }

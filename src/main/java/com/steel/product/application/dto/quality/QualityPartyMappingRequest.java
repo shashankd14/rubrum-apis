@@ -1,5 +1,6 @@
 package com.steel.product.application.dto.quality;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import lombok.Getter;
@@ -11,8 +12,16 @@ public class QualityPartyMappingRequest {
 
 	private Integer id;
 
-	private Integer partyId;
+	private Integer templateId;
 
-	private List<Integer> templateIdList;
+	private Integer endUserTagId;
+
+	private Integer matGradeId;
+
+	private Integer userId;
+
+	private BigDecimal thickness;
+
+	private List<Integer> partyIdList;
 
 }
