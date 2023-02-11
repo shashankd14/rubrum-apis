@@ -3,6 +3,7 @@ package com.steel.product.application.service;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.time.LocalDateTime;
 
@@ -83,13 +84,19 @@ public class AWSS3ServiceImpl implements AWSS3Service {
 	@Override
 	@Async
 	public String uploadPDFFileToS3Bucket(final String bucketName, final File file, String partDetailsId) {
-		String uniqueFileName = file.getName();
-		if (partDetailsId != null && partDetailsId.length() > 0) {
-			uniqueFileName = partDetailsId;
+		String fileUrl ="";
+		
+		try {
+			String uniqueFileName = file.getName();
+			if (partDetailsId != null && partDetailsId.length() > 0) {
+				uniqueFileName = partDetailsId;
+			}
+			final PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, uniqueFileName, file);
+			amazonS3.putObject(putObjectRequest);
+			fileUrl = url + "/" + bucketName + "/" + uniqueFileName;
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-		final PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, uniqueFileName, file);
-		amazonS3.putObject(putObjectRequest);
-		String fileUrl = url + "/" + bucketName + "/" + uniqueFileName;
 		return fileUrl;
 	}
 
@@ -114,6 +121,31 @@ public class AWSS3ServiceImpl implements AWSS3Service {
 
 		return url.toString();
 	}
+
+	@Override
+	public String persistFiles(String applicationJarPath, String stageName, String templateName,
+			MultipartFile file) throws IOException {
+		String path = applicationJarPath + File.separator + stageName + File.separator+ templateName;
+		String modifiedFileName = templateName+"_"+stageName+"_"+ file.getOriginalFilename().replaceAll("[^a-zA-Z0-9\\.\\-]", "_");
+		String jsonFile = path + File.separator + modifiedFileName;
+		File dir = new File(path);
+		if (!dir.exists())
+			dir.mkdirs();
+		InputStream inputStream = file.getInputStream();
+		FileOutputStream outStream = new FileOutputStream(new File(jsonFile));
+		byte[] contents = new byte[inputStream.available()];
+		int length;
+		while ((length = inputStream.read(contents)) > 0) {
+			outStream.write(contents, 0, length);
+		}
+		inputStream.close();
+		outStream.close();
+		
+		uploadPDFFileToS3Bucket(bucketPDFs, new File(jsonFile), modifiedFileName);
+
+		return modifiedFileName;
+	}
+	
 	
 	public static void mainaa (String[] args) {
 		System.out.println("Hi aknak ==");

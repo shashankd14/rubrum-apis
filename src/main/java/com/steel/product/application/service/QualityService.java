@@ -37,7 +37,9 @@ public interface QualityService {
 	ResponseEntity<Object> templateMapSaveNew(List<QualityPartyMappingRequestNew> list1, int partyId, int userId);
 
 	ResponseEntity<Object> save(String templateId, String templateName, String stageName, String templateDetails, String userId,
-			MultipartFile file1, MultipartFile file2, MultipartFile file3,
-			MultipartFile file4, MultipartFile file5, String processId);
+			String processId,
+			MultipartFile rustObserved, MultipartFile safetyIssues, MultipartFile waterExposure, MultipartFile wireRopeDamages, 
+			MultipartFile packingIntact, MultipartFile improperStorage, MultipartFile strapping, MultipartFile weighmentSlip, 
+			MultipartFile weighment, MultipartFile acknowledgementReceipt, MultipartFile unloadingImproper);
 
 }

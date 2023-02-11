@@ -27,28 +27,41 @@ public class QualityMasterController {
 
 	@PostMapping(value = "/template/save")
 	public ResponseEntity<Object> save(HttpServletRequest request,
-			@RequestParam(value = "file1", required = false) MultipartFile file1,
-			@RequestParam(value = "file2", required = false) MultipartFile file2,
-			@RequestParam(value = "file3", required = false) MultipartFile file3,
-			@RequestParam(value = "file4", required = false) MultipartFile file4,
-			@RequestParam(value = "file5", required = false) MultipartFile file5,
+			@RequestParam(value = "rustObserved", required = false) MultipartFile rustObserved,
+			@RequestParam(value = "safetyIssues", required = false) MultipartFile safetyIssues,
+			@RequestParam(value = "waterExposure", required = false) MultipartFile waterExposure,
+			@RequestParam(value = "wireRopeDamages", required = false) MultipartFile wireRopeDamages,
+			@RequestParam(value = "packingIntact", required = false) MultipartFile packingIntact,
+			@RequestParam(value = "improperStorage", required = false) MultipartFile improperStorage,
+			@RequestParam(value = "strapping", required = false) MultipartFile strapping,
+			@RequestParam(value = "weighmentSlip", required = false) MultipartFile weighmentSlip,
+			@RequestParam(value = "weighment", required = false) MultipartFile weighment,
+			@RequestParam(value = "acknowledgementReceipt", required = false) MultipartFile acknowledgementReceipt,
+			@RequestParam(value = "unloadingImproper", required = false) MultipartFile unloadingImproper,
 			@RequestParam(value = "templateName", required = true) String templateName,
 			@RequestParam(value = "processId", required = false) String processId,
 			@RequestParam(value = "stageName", required = true) String stageName,
 			@RequestParam(value = "userId", required = true) String userId,
 			@RequestParam(value = "templateDetails", required = true) String templateDetails) {
-
-		return qualityService.save(null, templateName, stageName, templateDetails, userId, file1, file2, file3, file4,
-				file5, processId);
+		
+		return qualityService.save(null, templateName, stageName, templateDetails, userId, processId,
+				rustObserved, safetyIssues, waterExposure, wireRopeDamages, packingIntact, improperStorage, 
+				strapping, weighmentSlip, weighment, acknowledgementReceipt, unloadingImproper );
 	}
 
 	@PutMapping(value = "/template/update")
 	public ResponseEntity<Object> update(HttpServletRequest request,
-			@RequestParam(value = "file1", required = false) MultipartFile file1,
-			@RequestParam(value = "file2", required = false) MultipartFile file2,
-			@RequestParam(value = "file3", required = false) MultipartFile file3,
-			@RequestParam(value = "file4", required = false) MultipartFile file4,
-			@RequestParam(value = "file5", required = false) MultipartFile file5,
+			@RequestParam(value = "rustObserved", required = false) MultipartFile rustObserved,
+			@RequestParam(value = "safetyIssues", required = false) MultipartFile safetyIssues,
+			@RequestParam(value = "waterExposure", required = false) MultipartFile waterExposure,
+			@RequestParam(value = "wireRopeDamages", required = false) MultipartFile wireRopeDamages,
+			@RequestParam(value = "packingIntact", required = false) MultipartFile packingIntact,
+			@RequestParam(value = "improperStorage", required = false) MultipartFile improperStorage,
+			@RequestParam(value = "strapping", required = false) MultipartFile strapping,
+			@RequestParam(value = "weighmentSlip", required = false) MultipartFile weighmentSlip,
+			@RequestParam(value = "weighment", required = false) MultipartFile weighment,
+			@RequestParam(value = "acknowledgementReceipt", required = false) MultipartFile acknowledgementReceipt,
+			@RequestParam(value = "unloadingImproper", required = false) MultipartFile unloadingImproper,
 			@RequestParam(value = "templateName", required = true) String templateName,
 			@RequestParam(value = "templateId", required = true) String templateId,
 			@RequestParam(value = "processId", required = false) String processId,
@@ -56,8 +69,9 @@ public class QualityMasterController {
 			@RequestParam(value = "userId", required = true) String userId,
 			@RequestParam(value = "templateDetails", required = true) String templateDetails) {
 		
-		return qualityService.save(templateId, templateName, stageName, templateDetails, userId, file1, file2, file3, file4,
-				file5, processId);
+		return qualityService.save(templateId, templateName, stageName, templateDetails, userId, processId,
+				rustObserved, safetyIssues, waterExposure, wireRopeDamages, packingIntact, improperStorage, 
+				strapping, weighmentSlip, weighment, acknowledgementReceipt, unloadingImproper );
 	}
 	
 	@DeleteMapping(value = "/template/{id}", produces = "application/json" )

@@ -17,6 +17,10 @@ public interface QualityTemplateRepository extends JpaRepository<QualityTemplate
 	@Query("select distinct q from QualityTemplateEntity q where templateName in (select distinct templateName from QualityTemplateEntity where templateId= :templateId) ")
 	List<QualityTemplateEntity> findByTemplateName(@Param("templateId") Integer templateId);
 
+	@Query("select distinct q from QualityTemplateEntity q where q.templateName = :templateName and q.stageName = :stageName ")
+	 QualityTemplateEntity findByTemplateNameAndStageName(@Param("templateName") String templateName,
+			@Param("stageName") String stageName);
+
 	@Query("select distinct q from QualityTemplateEntity q where templateName in (select distinct templateName from QualityTemplateEntity where 1=1) ")
 	List<QualityTemplateEntity> findAllTemplates();
 

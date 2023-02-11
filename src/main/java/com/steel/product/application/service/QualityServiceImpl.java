@@ -10,7 +10,6 @@ import com.steel.product.application.dto.quality.QualityPartyMappingResponse;
 import com.steel.product.application.dto.quality.QualityTemplateResponse;
 import com.steel.product.application.entity.QualityPartyTemplateEntity;
 import com.steel.product.application.entity.QualityTemplateEntity;
-import com.steel.product.application.util.CommonUtil;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -36,29 +35,44 @@ public class QualityServiceImpl implements QualityService {
 	
 	@Autowired
 	QualityPartyTemplateRepository qualityPartyTemplateRepository;
+	
+	@Autowired
+	AWSS3Service awsS3Service;
 
 	@Value("${templateFilesPath}")
 	private String templateFilesPath;
 	
 	@Override
-	public ResponseEntity<Object> save(String templateId, String templateName, String stageName, String templateDetails,
-			String userId, MultipartFile file1, MultipartFile file2,
-			MultipartFile file3, MultipartFile file4, MultipartFile file5, String processId) {
+	public ResponseEntity<Object> save(String templateId, String templateName, String stageName, String templateDetails, 
+			String userId, String processId,
+			MultipartFile rustObserved, MultipartFile safetyIssues, MultipartFile waterExposure, MultipartFile wireRopeDamages, 
+			MultipartFile packingIntact, MultipartFile improperStorage, MultipartFile strapping, MultipartFile weighmentSlip, 
+			MultipartFile weighment, MultipartFile ackReceipt, MultipartFile unloadingImproper) {
 		
 		ResponseEntity<Object> response = null;
 		String message="Quality Template details saved successfully..! ";
 		HttpHeaders header = new HttpHeaders();
 		header.set("Content-Type", "application/json");
 		try {
-
-			log.info("  templateDetails == " + templateDetails);
+			QualityTemplateEntity oldTemplateObj  = qualityTemplateRepository.findByTemplateNameAndStageName(templateName, stageName);
+			
+			log.info(" templateDetails == " + templateDetails);
 
 			QualityTemplateEntity qualityTemplateEntity = null;
 			if (templateId !=null && Integer.parseInt(templateId) > 0) {
+				
+				if (oldTemplateObj != null && oldTemplateObj.getTemplateId() > 0 && Integer.parseInt(templateId) != oldTemplateObj.getTemplateId()) {
+					return new ResponseEntity<>( "{\"status\": \"fail\", \"message\": \"Template - Stage Name already exists\"}", header, HttpStatus.BAD_REQUEST);
+				}
+				
 				message="Quality Template details updated successfully..! ";
 				qualityTemplateEntity = qualityTemplateRepository.findByTemplateId(Integer.parseInt(templateId));
 				qualityTemplateEntity.setTemplateId(Integer.parseInt(templateId));
 			} else {
+				
+				if (oldTemplateObj != null && oldTemplateObj.getTemplateId() > 0) {
+					return new ResponseEntity<>( "{\"status\": \"fail\", \"message\": \"Template - Stage Name already exists\"}", header, HttpStatus.BAD_REQUEST);
+				}
 				qualityTemplateEntity = new QualityTemplateEntity();
 				qualityTemplateEntity.setCreatedBy(Integer.parseInt(userId) );
 				qualityTemplateEntity.setCreatedOn(new Date());
@@ -73,26 +87,66 @@ public class QualityServiceImpl implements QualityService {
 			qualityTemplateEntity.setUpdatedBy(Integer.parseInt(userId) );
 			qualityTemplateEntity.setUpdatedOn(new Date());
 
-			if (file1 != null) {
-				CommonUtil.persistFiles(templateFilesPath, stageName, templateName, file1);
+			if (rustObserved != null) {
+				String fileUrl = awsS3Service.persistFiles(templateFilesPath, stageName, templateName, rustObserved);
+				qualityTemplateEntity.setRustObserved( fileUrl);
+				/*
+				JSONParser parser = new JSONParser();
+				JSONArray array = (JSONArray)parser.parse(templateDetails);
+				JSONObject jsonObject = new JSONObject();
+				for (Object dbRespObj : array) {
+					jsonObject = (JSONObject) dbRespObj;
+					if("PackingIntact".equals(jsonObject.get("type"))) {
+						
+					}
+				}*/
 			}
-			if (file2 != null) {
-				CommonUtil.persistFiles(templateFilesPath, stageName, templateName, file2);
+			if (safetyIssues != null) {
+				String fileUrl = awsS3Service.persistFiles(templateFilesPath, stageName, templateName, safetyIssues);
+				qualityTemplateEntity.setSafetyIssues( fileUrl);
 			}
-			if (file3 != null) {
-				CommonUtil.persistFiles(templateFilesPath, stageName, templateName, file3);
+			if (waterExposure != null) {
+				String fileUrl = awsS3Service.persistFiles(templateFilesPath, stageName, templateName, waterExposure);
+				qualityTemplateEntity.setWaterExposure( fileUrl);
 			}
-			if (file4 != null) {
-				CommonUtil.persistFiles(templateFilesPath, stageName, templateName, file4);
+			if (wireRopeDamages != null) {
+				String fileUrl = awsS3Service.persistFiles(templateFilesPath, stageName, templateName, wireRopeDamages);
+				qualityTemplateEntity.setWireRopeDamages( fileUrl);
 			}
-			if (file5 != null) {
-				CommonUtil.persistFiles(templateFilesPath, stageName, templateName, file5);
+			if (packingIntact != null) {
+				String fileUrl = awsS3Service.persistFiles(templateFilesPath, stageName, templateName, packingIntact);
+				qualityTemplateEntity.setPackingIntact(fileUrl);
+			}
+			if (improperStorage != null) {
+				String fileUrl = awsS3Service.persistFiles(templateFilesPath, stageName, templateName, improperStorage);
+				qualityTemplateEntity.setImproperStorage(  fileUrl);
+			}
+			if (strapping != null) {
+				String fileUrl = awsS3Service.persistFiles(templateFilesPath, stageName, templateName, strapping);
+				qualityTemplateEntity.setStrapping(fileUrl);
+			}
+			if (weighmentSlip != null) {
+				String fileUrl = awsS3Service.persistFiles(templateFilesPath, stageName, templateName, weighmentSlip);
+				qualityTemplateEntity.setWeighmentSlip(fileUrl);
+			}
+			if (weighment != null) {
+				String fileUrl = awsS3Service.persistFiles(templateFilesPath, stageName, templateName, weighment);
+				qualityTemplateEntity.setWeighment( fileUrl);
+			}
+			if (ackReceipt != null) {
+				String fileUrl = awsS3Service.persistFiles(templateFilesPath, stageName, templateName, ackReceipt);
+				qualityTemplateEntity.setAckReceipt( fileUrl);
+			}
+			if (unloadingImproper != null) {
+				String fileUrl = awsS3Service.persistFiles(templateFilesPath, stageName, templateName, unloadingImproper);
+				qualityTemplateEntity.setUnloadingImproper( fileUrl);
 			}
 			
 			qualityTemplateRepository.save(qualityTemplateEntity);
 			
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"" + message + "}", header, HttpStatus.OK);
 		} catch (Exception e) {
+			e.printStackTrace();
 			log.info("error is ==" + e.getMessage());
 			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.BAD_REQUEST);
 		}
@@ -117,7 +171,43 @@ public class QualityServiceImpl implements QualityService {
 	@Override
 	public QualityTemplateResponse getById(int id) {
 
-		return QualityTemplateEntity.valueOf(qualityTemplateRepository.findByTemplateId(id));
+		
+		QualityTemplateResponse resp = QualityTemplateEntity.valueOf(qualityTemplateRepository.findByTemplateId(id));;
+		
+		if(resp.getRustObserved()!=null && resp.getRustObserved().length() >0 ) {
+			resp.setRustObservedPreSingedURL(awsS3Service.generatePresignedUrl(resp.getRustObserved()) );
+		}
+		if(resp.getSafetyIssues()!=null && resp.getSafetyIssues().length() >0 ) {
+			resp.setSafetyIssuesPreSingedURL(awsS3Service.generatePresignedUrl(resp.getSafetyIssues()) );		
+		}
+		if(resp.getWaterExposure()!=null && resp.getWaterExposure().length() >0 ) {
+			resp.setWaterExposurePreSingedURL(awsS3Service.generatePresignedUrl(resp.getWaterExposure()) );		
+		}
+		if(resp.getWireRopeDamages()!=null && resp.getWireRopeDamages().length() >0 ) {
+			resp.setWireRopeDamagesPreSingedURL(awsS3Service.generatePresignedUrl(resp.getWireRopeDamages()) );		
+		}
+		if(resp.getPackingIntact()!=null && resp.getPackingIntact().length() >0 ) {
+			resp.setPackingIntactPreSingedURL(awsS3Service.generatePresignedUrl(resp.getPackingIntact()) );		
+		}
+		if(resp.getImproperStorage()!=null && resp.getImproperStorage().length() >0 ) {
+			resp.setImproperStoragePreSingedURL(awsS3Service.generatePresignedUrl(resp.getImproperStorage()) );		
+		}
+		if(resp.getStrapping()!=null && resp.getStrapping().length() >0 ) {
+			resp.setStrappingPreSingedURL(awsS3Service.generatePresignedUrl(resp.getStrapping()) );		
+		}
+		if(resp.getWeighmentSlip()!=null && resp.getWeighmentSlip().length() >0 ) {
+			resp.setWeighmentSlipPreSingedURL(awsS3Service.generatePresignedUrl(resp.getWeighmentSlip()) );		
+		}
+		if(resp.getWeighment()!=null && resp.getWeighment().length() >0 ) {
+			resp.setWeighmentPreSingedURL(awsS3Service.generatePresignedUrl(resp.getWeighment()) );		
+		}
+		if(resp.getAckReceipt()!=null && resp.getAckReceipt().length() >0 ) {
+			resp.setAckReceiptPreSingedURL(awsS3Service.generatePresignedUrl(resp.getAckReceipt()) );
+		}
+		if(resp.getUnloadingImproper()!=null && resp.getUnloadingImproper().length() >0 ) {
+			resp.setUnloadingImproperPreSingedURL(awsS3Service.generatePresignedUrl(resp.getUnloadingImproper()) );
+		}
+		return resp;
 	}
 
 	@Override
