@@ -52,8 +52,10 @@ public class RoleController {
 	}
 
 	@GetMapping(value = "/getRoleDetails", produces = "application/json")
-	public Map<String, Object> getRoleDetails(@Valid @RequestBody RoleSearch roleSearch) throws Exception {
-
+	public Map<String, Object> getRoleDetails() throws Exception {
+		RoleSearch roleSearch=new RoleSearch();
+		roleSearch.setPage( 0);
+		roleSearch.setSize(10000);
 		log.info("******RoleController.getRoleDetails**************");
 		Pageable paging = PageRequest.of(roleSearch.getPage(), roleSearch.getSize());
 		return roleService.getAllRoles(roleSearch, paging);

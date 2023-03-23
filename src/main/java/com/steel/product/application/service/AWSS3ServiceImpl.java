@@ -1,6 +1,7 @@
 package com.steel.product.application.service;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,6 +24,9 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 
+import lombok.extern.log4j.Log4j2;
+
+@Log4j2
 @Service
 public class AWSS3ServiceImpl implements AWSS3Service {
  
@@ -95,7 +99,7 @@ public class AWSS3ServiceImpl implements AWSS3Service {
 			amazonS3.putObject(putObjectRequest);
 			fileUrl = url + "/" + bucketName + "/" + uniqueFileName;
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.info("getMessage == "+e.getMessage());
 		}
 		return fileUrl;
 	}
@@ -143,6 +147,35 @@ public class AWSS3ServiceImpl implements AWSS3Service {
 		
 		uploadPDFFileToS3Bucket(bucketPDFs, new File(jsonFile), modifiedFileName);
 
+		return modifiedFileName;
+	}
+
+	@Override
+	public String persistQualityReportFiles(String applicationJarPath, String stageName, String templateName,
+			MultipartFile file) {
+		String modifiedFileName="";
+		try {
+			String path = applicationJarPath + File.separator + stageName + File.separator+ templateName;
+			modifiedFileName = templateName+"_"+stageName+"_"+ file.getOriginalFilename().replaceAll("[^a-zA-Z0-9\\.\\-]", "_");
+			String jsonFile = path + File.separator + modifiedFileName;
+			File dir = new File(path);
+			if (!dir.exists())
+				dir.mkdirs();
+			InputStream inputStream = file.getInputStream();
+			FileOutputStream outStream = new FileOutputStream(new File(jsonFile));
+			byte[] contents = new byte[inputStream.available()];
+			int length;
+			while ((length = inputStream.read(contents)) > 0) {
+				outStream.write(contents, 0, length);
+			}
+			inputStream.close();
+			outStream.close();
+			
+			uploadPDFFileToS3Bucket(bucketPDFs+"/QualityReports", new File(jsonFile), modifiedFileName);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		return modifiedFileName;
 	}
 	

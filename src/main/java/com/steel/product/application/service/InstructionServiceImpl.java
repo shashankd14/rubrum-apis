@@ -248,6 +248,8 @@ public class InstructionServiceImpl implements InstructionService {
     public void deleteById(Integer instructionId) {
         LOGGER.info("inside delete instruction method");
         Instruction deleteInstruction = instructionRepository.getOne(instructionId);
+        Integer inProgressStatusId = 2, readyToDeliverStatusId = 3, receivedStatusId = 1, despatchedStatusId = 4, statusId = 0;
+
 //        if(deleteInstruction.getInwardId() != null && deleteInstruction.getParentGroupId() != null)
         deleteInstruction.setPacketClassification(null);
         deleteInstruction.setDeliveryDetails(null);
@@ -261,6 +263,29 @@ public class InstructionServiceImpl implements InstructionService {
             }
             inwardEntry.removeInstruction(deleteInstruction);
             inwardEntryRepository.save(inwardEntry);
+            
+            
+            InwardEntry inwardEntity  = inwardService.getByInwardEntryId(deleteInstruction.getInwardId().getInwardEntryId());
+            boolean checkWIPStatus = inwardEntity.getInstructions().stream().anyMatch(cin -> cin.getStatus().getStatusId()== inProgressStatusId );
+
+    		if (checkWIPStatus) {
+    			inwardEntryRepository.updateInwardStatus(deleteInstruction.getInwardId().getInwardEntryId(), inProgressStatusId);
+    		} else {
+    			boolean checkReadyToDeliverStatus = inwardEntity.getInstructions().stream().anyMatch(cin -> cin.getStatus().getStatusId()==readyToDeliverStatusId);
+    			if (checkReadyToDeliverStatus) {
+    				inwardEntryRepository.updateInwardStatus(deleteInstruction.getInwardId().getInwardEntryId(), readyToDeliverStatusId);
+    			}else {
+    				if(inwardEntity.getFpresent()>0) {
+    					inwardEntryRepository.updateInwardStatus(deleteInstruction.getInwardId().getInwardEntryId(), receivedStatusId);
+    				} else {
+    					boolean despatchedStatus = inwardEntity.getInstructions().stream().anyMatch(cin -> cin.getStatus().getStatusId()==despatchedStatusId);
+    					if (despatchedStatus) {
+    						inwardEntryRepository.updateInwardStatus(deleteInstruction.getInwardId().getInwardEntryId(), despatchedStatusId);
+    					}
+    				}
+    			}
+    		}
+    		
         } else if (deleteInstruction.getParentInstruction() != null) {
             Instruction parentInstruction = deleteInstruction.getParentInstruction();
             parentInstruction.removeChildInstruction(deleteInstruction);
@@ -499,6 +524,23 @@ public class InstructionServiceImpl implements InstructionService {
     public List<Instruction> findSlitAndCutInstructionByInwardId(Integer inwardId) {
         return instructionRepository.findSlitAndCutInstructionByInwardId(inwardId);
     }
+    
+    @Override
+	public List<Instruction> findSlitAndCutInstructionByInwardId1(Integer inwardId) {
+
+		List<Instruction> instructions = instructionRepository.findSlitAndCutInstructionByInwardId1(inwardId);
+
+		for (Instruction ins : instructions) {
+			List<Instruction> childInstructions = instructionRepository.findSlitAndCutInstructionByGroupId(ins.getInstructionId());
+
+			if (childInstructions == null || childInstructions.size() == 0) {
+				deleteById(ins.getInstructionId());
+			}
+
+		}
+
+		return instructionRepository.findSlitAndCutInstructionByInwardId1(inwardId);
+	}
 
     @Override
     public Instruction save(Instruction instruction) {

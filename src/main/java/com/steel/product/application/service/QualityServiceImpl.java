@@ -1,14 +1,17 @@
 package com.steel.product.application.service;
 
 import com.steel.product.application.dao.QualityPartyTemplateRepository;
+import com.steel.product.application.dao.QualityReportRepository;
 import com.steel.product.application.dao.QualityTemplateRepository;
 import com.steel.product.application.dto.quality.QualityCheckRequest;
 import com.steel.product.application.dto.quality.QualityCheckResponse;
 import com.steel.product.application.dto.quality.QualityPartyMappingRequest;
 import com.steel.product.application.dto.quality.QualityPartyMappingRequestNew;
 import com.steel.product.application.dto.quality.QualityPartyMappingResponse;
+import com.steel.product.application.dto.quality.QualityReportResponse;
 import com.steel.product.application.dto.quality.QualityTemplateResponse;
 import com.steel.product.application.entity.QualityPartyTemplateEntity;
+import com.steel.product.application.entity.QualityReportEntity;
 import com.steel.product.application.entity.QualityTemplateEntity;
 
 import lombok.extern.log4j.Log4j2;
@@ -32,6 +35,9 @@ public class QualityServiceImpl implements QualityService {
 
 	@Autowired
 	QualityTemplateRepository qualityTemplateRepository;
+
+	@Autowired
+	QualityReportRepository qualityReportRepository;
 	
 	@Autowired
 	QualityPartyTemplateRepository qualityPartyTemplateRepository;
@@ -284,6 +290,14 @@ public class QualityServiceImpl implements QualityService {
 				.map(i -> QualityPartyTemplateEntity.valueOf(i)).collect(Collectors.toList());
 		return instructionList;
 	}
+	
+	@Override
+	public List<QualityPartyMappingResponse> getByPartyIdAndStageName(int partyId, String stageName) {
+		List<QualityPartyMappingResponse> instructionList = qualityPartyTemplateRepository.getByPartyIdAndStageName(partyId, stageName).stream()
+				.map(i -> QualityPartyTemplateEntity.valueOf(i)).collect(Collectors.toList());
+		return instructionList;
+	}
+	
 	@Override
 	public List<QualityPartyMappingResponse> getByTemplateId(int templateId) {
 		List<QualityPartyMappingResponse> instructionList = qualityPartyTemplateRepository.findByTemplateId(templateId).stream()
@@ -330,6 +344,164 @@ public class QualityServiceImpl implements QualityService {
 			list.add(qualityPartyTemplateEntity);
 		}
 		qualityPartyTemplateRepository.saveAll(list);
+		return response;
+	}
+
+	@Override
+	public List<Float> getAllThickness() {
+
+		List<Object[]> ll = qualityTemplateRepository.getAllThickness();
+		List<Float> thicknessList = new ArrayList<>();
+
+		for (Object[] obj2 : ll) {
+			thicknessList.add((Float) obj2[0]);
+		}
+
+		return thicknessList;
+	}
+
+	@Override
+	public ResponseEntity<Object> reportsSave(String inspectionId, String coilNumber, String inwardId, String templateId, String stageName,
+			String templateDetails, String userId, MultipartFile rustObserved, MultipartFile safetyIssues,
+			MultipartFile waterExposure, MultipartFile wireRopeDamages, MultipartFile packingIntact,
+			MultipartFile improperStorage, MultipartFile strapping, MultipartFile weighmentSlip,
+			MultipartFile weighment, MultipartFile acknowledgementReceipt, MultipartFile unloadingImproper) {
+		
+		ResponseEntity<Object> response = null;
+		String message="Quality Inspection Report details updated successfully..! ";
+		HttpHeaders header = new HttpHeaders();
+		header.set("Content-Type", "application/json");
+		try {
+			QualityReportEntity qualityReportEntity = new QualityReportEntity();
+
+			if (inspectionId != null && Integer.parseInt(inspectionId) > 0) {
+				qualityReportEntity = qualityReportRepository.findByInspectionId(Integer.parseInt(inspectionId));
+			}
+			qualityReportEntity.setUpdatedBy(Integer.parseInt(userId) );
+			qualityReportEntity.setUpdatedOn(new Date());
+			qualityReportEntity.setTemplateDetails( templateDetails);
+			qualityReportEntity.setInwardId(Integer.parseInt(inwardId)  );
+			qualityReportEntity.setCoilNumber(coilNumber); 
+			qualityReportEntity.setTemplateId(Integer.parseInt(templateId)); 
+			qualityReportEntity.setStageName( stageName ); 
+
+			if (rustObserved != null) {
+				String fileUrl = awsS3Service.persistQualityReportFiles(templateFilesPath, stageName, coilNumber, rustObserved);
+				qualityReportEntity.setRustObserved( fileUrl);
+			}
+			if (safetyIssues != null) {
+				String fileUrl = awsS3Service.persistQualityReportFiles(templateFilesPath, stageName, coilNumber, safetyIssues);
+				qualityReportEntity.setSafetyIssues( fileUrl);
+			}
+			if (waterExposure != null) {
+				String fileUrl = awsS3Service.persistQualityReportFiles(templateFilesPath, stageName, coilNumber, waterExposure);
+				qualityReportEntity.setWaterExposure( fileUrl);
+			}
+			if (wireRopeDamages != null) {
+				String fileUrl = awsS3Service.persistQualityReportFiles(templateFilesPath, stageName, coilNumber, wireRopeDamages);
+				qualityReportEntity.setWireRopeDamages( fileUrl);
+			}
+			if (packingIntact != null) {
+				String fileUrl = awsS3Service.persistQualityReportFiles(templateFilesPath, stageName, coilNumber, packingIntact);
+				qualityReportEntity.setPackingIntact(fileUrl);
+			}
+			if (improperStorage != null) {
+				String fileUrl = awsS3Service.persistQualityReportFiles(templateFilesPath, stageName, coilNumber, improperStorage);
+				qualityReportEntity.setImproperStorage(  fileUrl);
+			}
+			if (strapping != null) {
+				String fileUrl = awsS3Service.persistQualityReportFiles(templateFilesPath, stageName, coilNumber, strapping);
+				qualityReportEntity.setStrapping(fileUrl);
+			}
+			if (weighmentSlip != null) {
+				String fileUrl = awsS3Service.persistQualityReportFiles(templateFilesPath, stageName, coilNumber, weighmentSlip);
+				qualityReportEntity.setWeighmentSlip(fileUrl);
+			}
+			if (weighment != null) {
+				String fileUrl = awsS3Service.persistQualityReportFiles(templateFilesPath, stageName, coilNumber, weighment);
+				qualityReportEntity.setWeighment( fileUrl);
+			}
+			if (acknowledgementReceipt != null) {
+				String fileUrl = awsS3Service.persistQualityReportFiles(templateFilesPath, stageName, coilNumber, acknowledgementReceipt);
+				qualityReportEntity.setAckReceipt( fileUrl);
+			}
+			if (unloadingImproper != null) {
+				String fileUrl = awsS3Service.persistQualityReportFiles(templateFilesPath, stageName, coilNumber, unloadingImproper);
+				qualityReportEntity.setUnloadingImproper( fileUrl);
+			}
+			
+			qualityReportRepository.save(qualityReportEntity);
+			
+			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"" + message + "}", header, HttpStatus.OK);
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.info("error is ==" + e.getMessage());
+			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.BAD_REQUEST);
+		}
+		
+		return response;
+	}
+
+	@Override
+	public QualityReportResponse inspectionreportGetById(int id) {
+
+		QualityReportResponse resp = QualityReportEntity.valueOf(qualityReportRepository.findByInspectionId(id));;
+		
+		if(resp.getRustObserved()!=null && resp.getRustObserved().length() >0 ) {
+			resp.setRustObservedPreSingedURL(awsS3Service.generatePresignedUrl(resp.getRustObserved()) );
+		}
+		if(resp.getSafetyIssues()!=null && resp.getSafetyIssues().length() >0 ) {
+			resp.setSafetyIssuesPreSingedURL(awsS3Service.generatePresignedUrl(resp.getSafetyIssues()) );		
+		}
+		if(resp.getWaterExposure()!=null && resp.getWaterExposure().length() >0 ) {
+			resp.setWaterExposurePreSingedURL(awsS3Service.generatePresignedUrl(resp.getWaterExposure()) );		
+		}
+		if(resp.getWireRopeDamages()!=null && resp.getWireRopeDamages().length() >0 ) {
+			resp.setWireRopeDamagesPreSingedURL(awsS3Service.generatePresignedUrl(resp.getWireRopeDamages()) );		
+		}
+		if(resp.getPackingIntact()!=null && resp.getPackingIntact().length() >0 ) {
+			resp.setPackingIntactPreSingedURL(awsS3Service.generatePresignedUrl(resp.getPackingIntact()) );		
+		}
+		if(resp.getImproperStorage()!=null && resp.getImproperStorage().length() >0 ) {
+			resp.setImproperStoragePreSingedURL(awsS3Service.generatePresignedUrl(resp.getImproperStorage()) );		
+		}
+		if(resp.getStrapping()!=null && resp.getStrapping().length() >0 ) {
+			resp.setStrappingPreSingedURL(awsS3Service.generatePresignedUrl(resp.getStrapping()) );		
+		}
+		if(resp.getWeighmentSlip()!=null && resp.getWeighmentSlip().length() >0 ) {
+			resp.setWeighmentSlipPreSingedURL(awsS3Service.generatePresignedUrl(resp.getWeighmentSlip()) );		
+		}
+		if(resp.getWeighment()!=null && resp.getWeighment().length() >0 ) {
+			resp.setWeighmentPreSingedURL(awsS3Service.generatePresignedUrl(resp.getWeighment()) );		
+		}
+		if(resp.getAckReceipt()!=null && resp.getAckReceipt().length() >0 ) {
+			resp.setAckReceiptPreSingedURL(awsS3Service.generatePresignedUrl(resp.getAckReceipt()) );
+		}
+		if(resp.getUnloadingImproper()!=null && resp.getUnloadingImproper().length() >0 ) {
+			resp.setUnloadingImproperPreSingedURL(awsS3Service.generatePresignedUrl(resp.getUnloadingImproper()) );
+		}
+		return resp;
+	}
+	@Override
+	public List<QualityReportResponse> inspectionreportGetAll() {
+		List<QualityReportResponse> instructionList = qualityReportRepository.findAll().stream()
+				.map(i -> QualityReportEntity.valueOf(i)).collect(Collectors.toList());
+		return instructionList;
+	}
+	 
+	@Override
+	public ResponseEntity<Object> deleteInspectionReport(int id) {
+
+		ResponseEntity<Object> response = null;
+		HttpHeaders header = new HttpHeaders();
+		header.set("Content-Type", "application/json");
+		try {
+
+			qualityReportRepository.deleteById(id);
+			response = new ResponseEntity<>( "{\"status\": \"success\", \"message\": \"Quality Inspection Report deleted successfully..! \"}", header, HttpStatus.OK);
+		} catch (Exception e) {
+			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"" + e.getMessage() + "\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 		return response;
 	}
 

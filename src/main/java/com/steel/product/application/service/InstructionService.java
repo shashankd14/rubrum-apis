@@ -84,5 +84,7 @@ public interface InstructionService {
 
 	List<Instruction> findAllByInstructionIdInAndStatus(List<Integer> instructionIds, List<Integer> statusId);
 
+	List<Instruction> findSlitAndCutInstructionByInwardId1(Integer inwardId);
+
 }
 

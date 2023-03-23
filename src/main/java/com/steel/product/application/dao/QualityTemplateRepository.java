@@ -26,4 +26,7 @@ public interface QualityTemplateRepository extends JpaRepository<QualityTemplate
 
 	void deleteByTemplateName(@Param("templateName") String templateName);
 
+	@Query(nativeQuery = true, value = "select distinct fthickness from product_tblinwardentry where 1=1")
+	List<Object[]> getAllThickness();
+	    
 }

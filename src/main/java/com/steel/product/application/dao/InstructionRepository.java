@@ -55,6 +55,12 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
             " where inw.inwardEntryId = :inwardId and (ins.groupId is not null or ins.parentGroupId is not null)")
     List<Instruction> findSlitAndCutInstructionByInwardId(@Param("inwardId") Integer inwardId);
 
+    @Query("select ins from Instruction ins join fetch ins.inwardId inw where inw.inwardEntryId = :inwardId and ins.groupId >0 ")
+    List<Instruction> findSlitAndCutInstructionByInwardId1(@Param("inwardId") Integer inwardId);
+
+    @Query("select ins from Instruction ins where ins.status != 4 and ins.parentGroupId = :groupId")
+    List<Instruction> findSlitAndCutInstructionByGroupId (@Param("groupId") Integer groupId);
+
     @Query("select COALESCE(SUM(ins.plannedWeight),0) from Instruction ins where ins.groupId = :groupId")
     Float sumOfPlannedWeightOfInstructionsHavingGroupId(@Param("groupId") Integer groupId);
 
@@ -109,10 +115,9 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
 
 	@Query("select ins from Instruction ins left join fetch ins.inwardId left join fetch ins.parentInstruction where ins.inwardId.inwardEntryId = :inwardId and ins.status.statusId = :statusId")
 	public List<Instruction> findByStatus(@Param("inwardId") Integer inwardId, @Param("statusId") Integer statusId);
-	
+
     @Query("select ins from Instruction ins left join fetch ins.inwardId left join fetch ins.parentInstruction where ins.instructionId in :instructionIds and ins.status.statusId in :statusId")
     public List<Instruction> findAllByInstructionIdInAndStatus(@Param("instructionIds") List<Integer> instructionIds, @Param("statusId") List<Integer> statusId);
 
-    
-    
+	 
 }

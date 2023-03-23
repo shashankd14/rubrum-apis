@@ -16,4 +16,7 @@ public interface AWSS3Service {
 	String persistFiles(String applicationJarPath, String stageName, String templateName, MultipartFile file)
 			throws IOException;
 
+	String persistQualityReportFiles(String applicationJarPath, String stageName, String templateName,
+			MultipartFile file) throws IOException;
+
 }

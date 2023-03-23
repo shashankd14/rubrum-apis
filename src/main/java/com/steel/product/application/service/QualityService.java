@@ -10,6 +10,7 @@ import com.steel.product.application.dto.quality.QualityCheckResponse;
 import com.steel.product.application.dto.quality.QualityPartyMappingRequest;
 import com.steel.product.application.dto.quality.QualityPartyMappingRequestNew;
 import com.steel.product.application.dto.quality.QualityPartyMappingResponse;
+import com.steel.product.application.dto.quality.QualityReportResponse;
 import com.steel.product.application.dto.quality.QualityTemplateResponse;
 
 public interface QualityService {
@@ -24,10 +25,10 @@ public interface QualityService {
 
 	ResponseEntity<Object> templateMapSave(QualityPartyMappingRequest qualityPartyMappingRequest);
 
-	ResponseEntity<Object> deleteTemplateMap (int templateId);
+	ResponseEntity<Object> deleteTemplateMap(int templateId);
 
 	List<QualityPartyMappingResponse> getByPartyId(int partyId);
-	
+
 	List<QualityPartyMappingResponse> getByTemplateId(int templateId);
 
 	List<QualityPartyMappingResponse> getAllMappings();
@@ -36,10 +37,27 @@ public interface QualityService {
 
 	ResponseEntity<Object> templateMapSaveNew(List<QualityPartyMappingRequestNew> list1, int partyId, int userId);
 
-	ResponseEntity<Object> save(String templateId, String templateName, String stageName, String templateDetails, String userId,
-			String processId,
-			MultipartFile rustObserved, MultipartFile safetyIssues, MultipartFile waterExposure, MultipartFile wireRopeDamages, 
-			MultipartFile packingIntact, MultipartFile improperStorage, MultipartFile strapping, MultipartFile weighmentSlip, 
+	ResponseEntity<Object> save(String templateId, String templateName, String stageName, String templateDetails,
+			String userId, String processId, MultipartFile rustObserved, MultipartFile safetyIssues,
+			MultipartFile waterExposure, MultipartFile wireRopeDamages, MultipartFile packingIntact,
+			MultipartFile improperStorage, MultipartFile strapping, MultipartFile weighmentSlip,
 			MultipartFile weighment, MultipartFile acknowledgementReceipt, MultipartFile unloadingImproper);
+
+	List<Float> getAllThickness();
+
+	ResponseEntity<Object> reportsSave(String inspectionId, String coilNumber, String inwardId, String templateId,
+			String stageName, String templateDetails, String userId, MultipartFile rustObserved,
+			MultipartFile safetyIssues, MultipartFile waterExposure, MultipartFile wireRopeDamages,
+			MultipartFile packingIntact, MultipartFile improperStorage, MultipartFile strapping,
+			MultipartFile weighmentSlip, MultipartFile weighment, MultipartFile acknowledgementReceipt,
+			MultipartFile unloadingImproper);
+
+	QualityReportResponse inspectionreportGetById(int id);
+
+	ResponseEntity<Object> deleteInspectionReport(int id);
+
+	List<QualityReportResponse> inspectionreportGetAll();
+
+	List<QualityPartyMappingResponse> getByPartyIdAndStageName(int partyId, String stageName);
 
 }
