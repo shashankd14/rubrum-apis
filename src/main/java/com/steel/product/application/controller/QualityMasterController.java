@@ -1,5 +1,9 @@
 package com.steel.product.application.controller;
 
+import com.steel.product.application.dto.inward.InwardDto;
+import com.steel.product.application.dto.pricemaster.PriceMasterRequest;
+import com.steel.product.application.dto.quality.KQPRequest;
+import com.steel.product.application.dto.quality.KQPResponse;
 import com.steel.product.application.dto.quality.QualityCheckRequest;
 import com.steel.product.application.dto.quality.QualityCheckResponse;
 import com.steel.product.application.dto.quality.QualityPartyMappingRequest;
@@ -153,20 +157,6 @@ public class QualityMasterController {
 		return qualityService.delete(id);
 	}
 
-	@GetMapping({ "/reports/inwardlist/{pageNo}/{pageSize}" })
-	public ResponseEntity<Object> findAllWithPagination(@PathVariable int pageNo, @PathVariable int pageSize,
-			@RequestParam(required = false, name = "searchText") String searchText,
-			@RequestParam(required = false, name = "partyId") String partyId) {
-		Map<String, Object> response = new HashMap<>();
-		Page<InwardEntry> pageResult = inwdEntrySvc.findAllWithPagination(pageNo, pageSize, searchText, partyId);
-		List<Object> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponse(inw)).collect(Collectors.toList());
-		response.put("content", inwardList);
-		response.put("currentPage", pageResult.getNumber());
-		response.put("totalItems", pageResult.getTotalElements());
-		response.put("totalPages", pageResult.getTotalPages());
-		return new ResponseEntity<Object>(response, HttpStatus.OK);
-	}
-
 	@PostMapping(value = "/inspectionreport/save")
 	public ResponseEntity<Object> reportsSave(HttpServletRequest request,
 			@RequestParam(value = "rustObserved", required = false) MultipartFile rustObserved,
@@ -232,4 +222,104 @@ public class QualityMasterController {
 	public ResponseEntity<Object> deleteInspectionReport(@PathVariable("id") int id) {
 		return qualityService.deleteInspectionReport(id);
 	}
+	
+	@GetMapping({ "/reports/inwardlist/{pageNo}/{pageSize}" })
+	public ResponseEntity<Object> inwardlist(@PathVariable int pageNo, @PathVariable int pageSize,
+			@RequestParam(required = false, name = "searchText") String searchText,
+			@RequestParam(required = false, name = "partyId") String partyId) {
+		Map<String, Object> response = new HashMap<>();
+		Page<InwardEntry> pageResult = inwdEntrySvc.findAllWithPagination(pageNo, pageSize, searchText, partyId);
+		List<Object> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponse(inw)).collect(Collectors.toList());
+		response.put("content", inwardList);
+		response.put("currentPage", pageResult.getNumber());
+		response.put("totalItems", pageResult.getTotalElements());
+		response.put("totalPages", pageResult.getTotalPages());
+		return new ResponseEntity<Object>(response, HttpStatus.OK);
+	}
+
+	@GetMapping({ "/reports/preprocessing/{pageNo}/{pageSize}" })
+	public ResponseEntity<Object> preprocessing(@PathVariable int pageNo, @PathVariable int pageSize,
+			@RequestParam(required = false, name = "searchText") String searchText,
+			@RequestParam(required = false, name = "partyId") String partyId) {
+		Map<String, Object> response = new HashMap<>();
+		Page<InwardEntry> pageResult = inwdEntrySvc.findAllWithPagination(pageNo, pageSize, searchText, partyId);
+		List<Object> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponse(inw)).collect(Collectors.toList());
+		response.put("content", inwardList);
+		response.put("currentPage", pageResult.getNumber());
+		response.put("totalItems", pageResult.getTotalElements());
+		response.put("totalPages", pageResult.getTotalPages());
+		return new ResponseEntity<Object>(response, HttpStatus.OK);
+	}
+
+	@GetMapping({ "/reports/processing/{pageNo}/{pageSize}" })
+	public ResponseEntity<Object> processing(@PathVariable int pageNo, @PathVariable int pageSize,
+			@RequestParam(required = false, name = "searchText") String searchText,
+			@RequestParam(required = false, name = "partyId") String partyId) {
+		Map<String, Object> response = new HashMap<>();
+		Page<InwardEntry> pageResult = inwdEntrySvc.findAllWithPagination(pageNo, pageSize, searchText, partyId);
+		List<Object> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponse(inw)).collect(Collectors.toList());
+		response.put("content", inwardList);
+		response.put("currentPage", pageResult.getNumber());
+		response.put("totalItems", pageResult.getTotalElements());
+		response.put("totalPages", pageResult.getTotalPages());
+		return new ResponseEntity<Object>(response, HttpStatus.OK);
+	}
+
+	@GetMapping({ "/reports/predispatch/{pageNo}/{pageSize}" })
+	public ResponseEntity<Object> predispatch(@PathVariable int pageNo, @PathVariable int pageSize,
+			@RequestParam(required = false, name = "searchText") String searchText,
+			@RequestParam(required = false, name = "partyId") String partyId) {
+		Map<String, Object> response = new HashMap<>();
+		Page<InwardEntry> pageResult = inwdEntrySvc.findAllWithPagination(pageNo, pageSize, searchText, partyId);
+		List<Object> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponse(inw)).collect(Collectors.toList());
+		response.put("content", inwardList);
+		response.put("currentPage", pageResult.getNumber());
+		response.put("totalItems", pageResult.getTotalElements());
+		response.put("totalPages", pageResult.getTotalPages());
+		return new ResponseEntity<Object>(response, HttpStatus.OK);
+	}
+
+	@GetMapping({ "/reports/postdispatch/{pageNo}/{pageSize}" })
+	public ResponseEntity<Object> postdispatch(@PathVariable int pageNo, @PathVariable int pageSize,
+			@RequestParam(required = false, name = "searchText") String searchText,
+			@RequestParam(required = false, name = "partyId") String partyId) {
+		Map<String, Object> response = new HashMap<>();
+		Page<InwardEntry> pageResult = inwdEntrySvc.findAllWithPagination(pageNo, pageSize, searchText, partyId);
+		List<Object> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponse(inw)).collect(Collectors.toList());
+		response.put("content", inwardList);
+		response.put("currentPage", pageResult.getNumber());
+		response.put("totalItems", pageResult.getTotalElements());
+		response.put("totalPages", pageResult.getTotalPages());
+		return new ResponseEntity<Object>(response, HttpStatus.OK);
+	} 
+	
+	@PostMapping(value = "/kqp/save", produces = "application/json" )
+	public ResponseEntity<Object> save(@RequestBody KQPRequest kcpRequest, HttpServletRequest request) {
+		int userId = (request.getHeader("userId")==null ? 1: Integer.parseInt(request.getHeader("userId")));
+
+		return qualityService.save(kcpRequest, userId);
+	}
+	
+	@PutMapping(value = "/kqp/update", produces = "application/json" )
+	public ResponseEntity<Object> update(@RequestBody KQPRequest kcpRequest, HttpServletRequest request) {
+		int userId = (request.getHeader("userId")==null ? 1: Integer.parseInt(request.getHeader("userId")));
+
+		return qualityService.save(kcpRequest, userId);
+	}
+
+	@GetMapping(value = "/kqp/{id}", produces = "application/json")
+	public KQPResponse kqpGetById (@PathVariable("id") int id) {
+		return qualityService.kqpGetById(id);
+	}
+
+	@GetMapping(value = "/kqp", produces = "application/json")
+	public List<KQPResponse> kqpGetByAll() {
+		return qualityService.kqpGetByAll();
+	}
+	
+	@DeleteMapping(value = "/kqp/{id}", produces = "application/json" )
+	public ResponseEntity<Object> deleteKQP(@PathVariable("id") int id) {
+		return qualityService.deleteKQP(id);
+	}
+	
 }

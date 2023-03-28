@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.steel.product.application.dto.quality.KQPRequest;
+import com.steel.product.application.dto.quality.KQPResponse;
 import com.steel.product.application.dto.quality.QualityCheckRequest;
 import com.steel.product.application.dto.quality.QualityCheckResponse;
 import com.steel.product.application.dto.quality.QualityPartyMappingRequest;
@@ -59,5 +61,13 @@ public interface QualityService {
 	List<QualityReportResponse> inspectionreportGetAll();
 
 	List<QualityPartyMappingResponse> getByPartyIdAndStageName(int partyId, String stageName);
+
+	ResponseEntity<Object> save(KQPRequest kcpRequest, int userId);
+
+	KQPResponse kqpGetById(int id);
+
+	List<KQPResponse> kqpGetByAll();
+
+	ResponseEntity<Object> deleteKQP(int id);
 
 }

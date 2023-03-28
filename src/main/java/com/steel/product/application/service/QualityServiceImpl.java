@@ -1,8 +1,11 @@
 package com.steel.product.application.service;
 
+import com.steel.product.application.dao.KQPRepository;
 import com.steel.product.application.dao.QualityPartyTemplateRepository;
 import com.steel.product.application.dao.QualityReportRepository;
 import com.steel.product.application.dao.QualityTemplateRepository;
+import com.steel.product.application.dto.quality.KQPRequest;
+import com.steel.product.application.dto.quality.KQPResponse;
 import com.steel.product.application.dto.quality.QualityCheckRequest;
 import com.steel.product.application.dto.quality.QualityCheckResponse;
 import com.steel.product.application.dto.quality.QualityPartyMappingRequest;
@@ -10,17 +13,16 @@ import com.steel.product.application.dto.quality.QualityPartyMappingRequestNew;
 import com.steel.product.application.dto.quality.QualityPartyMappingResponse;
 import com.steel.product.application.dto.quality.QualityReportResponse;
 import com.steel.product.application.dto.quality.QualityTemplateResponse;
+import com.steel.product.application.entity.KQPEntity;
 import com.steel.product.application.entity.QualityPartyTemplateEntity;
 import com.steel.product.application.entity.QualityReportEntity;
 import com.steel.product.application.entity.QualityTemplateEntity;
 
 import lombok.extern.log4j.Log4j2;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -35,6 +37,9 @@ public class QualityServiceImpl implements QualityService {
 
 	@Autowired
 	QualityTemplateRepository qualityTemplateRepository;
+	
+	@Autowired
+	KQPRepository kqpRepository;
 
 	@Autowired
 	QualityReportRepository qualityReportRepository;
@@ -373,7 +378,16 @@ public class QualityServiceImpl implements QualityService {
 		header.set("Content-Type", "application/json");
 		try {
 			QualityReportEntity qualityReportEntity = new QualityReportEntity();
-
+			
+			QualityReportEntity checkDuplicate = qualityReportRepository.findFirstByCoilNumber( coilNumber);
+			if (checkDuplicate != null && checkDuplicate.getCoilNumber().length() > 0) {
+				return new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"This coil already entered..!  }", header, HttpStatus.BAD_REQUEST);
+			}			
+			
+			if (inspectionId != null && Integer.parseInt(inspectionId) > 0) {
+				qualityReportEntity = qualityReportRepository.findByInspectionId(Integer.parseInt(inspectionId));
+			}
+			
 			if (inspectionId != null && Integer.parseInt(inspectionId) > 0) {
 				qualityReportEntity = qualityReportRepository.findByInspectionId(Integer.parseInt(inspectionId));
 			}
@@ -482,6 +496,7 @@ public class QualityServiceImpl implements QualityService {
 		}
 		return resp;
 	}
+	
 	@Override
 	public List<QualityReportResponse> inspectionreportGetAll() {
 		List<QualityReportResponse> instructionList = qualityReportRepository.findAll().stream()
@@ -499,6 +514,72 @@ public class QualityServiceImpl implements QualityService {
 
 			qualityReportRepository.deleteById(id);
 			response = new ResponseEntity<>( "{\"status\": \"success\", \"message\": \"Quality Inspection Report deleted successfully..! \"}", header, HttpStatus.OK);
+		} catch (Exception e) {
+			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"" + e.getMessage() + "\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return response;
+	}
+
+	@Override
+	public ResponseEntity<Object> save(KQPRequest kcpRequest, int userId) {
+
+		ResponseEntity<Object> response = null;
+
+		KQPEntity checkpackingItemEntity = kqpRepository.findFirstByKqpName( kcpRequest.getKqpName());
+		
+		KQPEntity kqpEntity = new KQPEntity();
+		if (checkpackingItemEntity != null && checkpackingItemEntity.getKqpId() > 0) {
+			kqpEntity.setKqpId(kcpRequest.getKqpId());
+			
+			if (checkpackingItemEntity != null && kcpRequest.getKqpId() != checkpackingItemEntity.getKqpId()) {
+				return new ResponseEntity<>( 	"{\"status\": \"fail\", \"message\": \"KQP Name already exists..! \"}",
+						new HttpHeaders(), HttpStatus.BAD_REQUEST);
+
+			}
+		}  
+		kqpEntity.setKqpName( kcpRequest.getKqpName() );
+		kqpEntity.setKqpDesc( kcpRequest.getKqpDesc()  );
+		kqpEntity.setKqpSummary( kcpRequest.getKqpSummary() );
+		kqpEntity.setStageName( kcpRequest.getStageName());
+		kqpEntity.setCreatedBy(userId);
+		kqpEntity.setUpdatedBy(userId);
+		kqpEntity.setCreatedOn(new Date());
+		kqpEntity.setUpdatedOn(new Date());
+		kqpRepository.save (kqpEntity);
+		if (kcpRequest.getKqpId() != null && kcpRequest.getKqpId() > 0) {
+			log.info("KQP details updated successfully");
+			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"KQP details updated successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
+		} else {
+			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"KQP details saved successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
+		}
+		return response;
+	}
+	
+	@Override
+	public KQPResponse kqpGetById(int kqpId) {
+
+		KQPResponse resp = KQPEntity.valueOf(kqpRepository.findByKqpId(kqpId));
+		return resp;
+	}
+
+	@Override
+	public List<KQPResponse> kqpGetByAll() {
+
+		List<KQPResponse> instructionList = kqpRepository.findAll().stream().map(i -> KQPEntity.valueOf(i))
+				.collect(Collectors.toList());
+
+		return instructionList;
+	}
+
+	@Override
+	public ResponseEntity<Object> deleteKQP(int id) {
+		ResponseEntity<Object> response = null;
+		HttpHeaders header = new HttpHeaders();
+		header.set("Content-Type", "application/json");
+		try {
+
+			kqpRepository.deleteById(id);
+			response = new ResponseEntity<>( "{\"status\": \"success\", \"message\": \"KQP details deleted successfully..! \"}", header, HttpStatus.OK);
 		} catch (Exception e) {
 			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"" + e.getMessage() + "\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
 		}

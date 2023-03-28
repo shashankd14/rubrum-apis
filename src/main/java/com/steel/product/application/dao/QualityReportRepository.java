@@ -11,4 +11,6 @@ public interface QualityReportRepository extends JpaRepository<QualityReportEnti
 
 	QualityReportEntity findByInspectionId(Integer inspectionId);
 
+	QualityReportEntity findFirstByCoilNumber (String coilNumber);
+
 }
