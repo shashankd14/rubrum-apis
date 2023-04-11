@@ -95,5 +95,14 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 	@Transactional
 	@Query("update InwardEntry inw set inw.status.statusId=:status where inw.inwardEntryId= :inwardId ")
 	public void updateInwardStatus(@Param("inwardId") Integer inwardId, @Param("status") Integer status);
+    
+    public static final String GET_INWARD_DETAILS = " select min(stts) from ( "
+			+ " SELECT distinct inwardentryid as inwardid, child.status as stts, "
+			+ " (SELECT count(distinct inss.instructionid) cnt FROM product_instruction inss where inss.inwardid=parent.inwardentryid  and status!=4 and inss.parentgroupid=child.groupid) as siltcutcnt  "
+			+ " FROM product_tblinwardentry parent, product_instruction child  "
+			+ " where child.isdeleted=0 and parent.inwardentryid = child.inwardid ) a  where 1=1 AND CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END and inwardid=:inwardId ";
+
+	@Query(value = GET_INWARD_DETAILS, nativeQuery = true)
+	public List<Object[]> getCoilStatus(@Param("inwardId") Integer inwardId);
 	
 }

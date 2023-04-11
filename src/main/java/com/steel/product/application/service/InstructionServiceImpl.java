@@ -263,29 +263,7 @@ public class InstructionServiceImpl implements InstructionService {
             }
             inwardEntry.removeInstruction(deleteInstruction);
             inwardEntryRepository.save(inwardEntry);
-            
-            
-            InwardEntry inwardEntity  = inwardService.getByInwardEntryId(deleteInstruction.getInwardId().getInwardEntryId());
-            boolean checkWIPStatus = inwardEntity.getInstructions().stream().anyMatch(cin -> cin.getStatus().getStatusId()== inProgressStatusId );
-
-    		if (checkWIPStatus) {
-    			inwardEntryRepository.updateInwardStatus(deleteInstruction.getInwardId().getInwardEntryId(), inProgressStatusId);
-    		} else {
-    			boolean checkReadyToDeliverStatus = inwardEntity.getInstructions().stream().anyMatch(cin -> cin.getStatus().getStatusId()==readyToDeliverStatusId);
-    			if (checkReadyToDeliverStatus) {
-    				inwardEntryRepository.updateInwardStatus(deleteInstruction.getInwardId().getInwardEntryId(), readyToDeliverStatusId);
-    			}else {
-    				if(inwardEntity.getFpresent()>0) {
-    					inwardEntryRepository.updateInwardStatus(deleteInstruction.getInwardId().getInwardEntryId(), receivedStatusId);
-    				} else {
-    					boolean despatchedStatus = inwardEntity.getInstructions().stream().anyMatch(cin -> cin.getStatus().getStatusId()==despatchedStatusId);
-    					if (despatchedStatus) {
-    						inwardEntryRepository.updateInwardStatus(deleteInstruction.getInwardId().getInwardEntryId(), despatchedStatusId);
-    					}
-    				}
-    			}
-    		}
-    		
+            updateCoilStatus( deleteInstruction.getInwardId().getInwardEntryId());
         } else if (deleteInstruction.getParentInstruction() != null) {
             Instruction parentInstruction = deleteInstruction.getParentInstruction();
             parentInstruction.removeChildInstruction(deleteInstruction);
@@ -460,27 +438,7 @@ public class InstructionServiceImpl implements InstructionService {
             throw new RuntimeException("Invalid request");
         }
 
-        InwardEntry inwardEntity  = inwardService.getByInwardEntryId(savedInstruction.getInwardId().getInwardEntryId());
-        boolean checkWIPStatus = inwardEntity.getInstructions().stream().anyMatch(cin -> cin.getStatus().getStatusId()== inProgressStatusId );
-
-		if (checkWIPStatus) {
-			inwardEntryRepository.updateInwardStatus(savedInstruction.getInwardId().getInwardEntryId(), inProgressStatusId);
-		} else {
-			boolean checkReadyToDeliverStatus = inwardEntity.getInstructions().stream().anyMatch(cin -> cin.getStatus().getStatusId()==readyToDeliverStatusId);
-			if (checkReadyToDeliverStatus) {
-				inwardEntryRepository.updateInwardStatus(savedInstruction.getInwardId().getInwardEntryId(), readyToDeliverStatusId);
-			}else {
-				if(inwardEntity.getFpresent()>0) {
-					inwardEntryRepository.updateInwardStatus(savedInstruction.getInwardId().getInwardEntryId(), receivedStatusId);
-				} else {
-					boolean despatchedStatus = inwardEntity.getInstructions().stream().anyMatch(cin -> cin.getStatus().getStatusId()==despatchedStatusId);
-					if (despatchedStatus) {
-						inwardEntryRepository.updateInwardStatus(savedInstruction.getInwardId().getInwardEntryId(), despatchedStatusId);
-					}
-				}
-			}
-		}
-        
+        updateCoilStatus(savedInstruction.getInwardId().getInwardEntryId());
         return new ResponseEntity<Object>(updatedInstructionList.stream().map(i -> Instruction.valueOf(i)), HttpStatus.OK);
     }
 
@@ -1095,4 +1053,23 @@ public class InstructionServiceImpl implements InstructionService {
 	public List<Instruction> findAllByInstructionIdInAndStatus(List<Integer> instructionIds, List<Integer> statusId) {
 		return instructionRepository.findAllByInstructionIdInAndStatus(instructionIds, statusId);
 	}
+
+	private void updateCoilStatus(int inwardEntryId) {
+		try {
+			Integer status = 1;
+
+			List<Object[]> results = inwardEntryRepository.getCoilStatus(inwardEntryId);
+
+			if (results != null && results.size() > 0) {
+				Object[] result = results.get(0);
+				status = result[0] != null ? (Integer) result[0] : 1;
+			}
+			if (status > 1) {
+				inwardEntryRepository.updateInwardStatus(inwardEntryId, status);
+			}
+		} catch (Exception e) {
+			LOGGER.info(e.getMessage());
+		}
+	}
+	
 }

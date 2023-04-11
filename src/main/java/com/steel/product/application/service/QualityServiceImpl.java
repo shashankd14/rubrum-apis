@@ -1,9 +1,12 @@
 package com.steel.product.application.service;
 
+import com.steel.product.application.dao.KQPPartyTemplateRepository;
 import com.steel.product.application.dao.KQPRepository;
 import com.steel.product.application.dao.QualityPartyTemplateRepository;
 import com.steel.product.application.dao.QualityReportRepository;
 import com.steel.product.application.dao.QualityTemplateRepository;
+import com.steel.product.application.dto.quality.KQPPartyMappingRequest;
+import com.steel.product.application.dto.quality.KQPPartyMappingResponse;
 import com.steel.product.application.dto.quality.KQPRequest;
 import com.steel.product.application.dto.quality.KQPResponse;
 import com.steel.product.application.dto.quality.QualityCheckRequest;
@@ -14,6 +17,7 @@ import com.steel.product.application.dto.quality.QualityPartyMappingResponse;
 import com.steel.product.application.dto.quality.QualityReportResponse;
 import com.steel.product.application.dto.quality.QualityTemplateResponse;
 import com.steel.product.application.entity.KQPEntity;
+import com.steel.product.application.entity.KQPPartyTemplateEntity;
 import com.steel.product.application.entity.QualityPartyTemplateEntity;
 import com.steel.product.application.entity.QualityReportEntity;
 import com.steel.product.application.entity.QualityTemplateEntity;
@@ -43,6 +47,9 @@ public class QualityServiceImpl implements QualityService {
 
 	@Autowired
 	QualityReportRepository qualityReportRepository;
+
+	@Autowired
+	KQPPartyTemplateRepository kqpPartyTemplateRepository;
 	
 	@Autowired
 	QualityPartyTemplateRepository qualityPartyTemplateRepository;
@@ -350,7 +357,7 @@ public class QualityServiceImpl implements QualityService {
 		}
 		qualityPartyTemplateRepository.saveAll(list);
 		return response;
-	}
+	} 
 
 	@Override
 	public List<Float> getAllThickness() {
@@ -361,9 +368,33 @@ public class QualityServiceImpl implements QualityService {
 		for (Object[] obj2 : ll) {
 			thicknessList.add((Float) obj2[0]);
 		}
-
 		return thicknessList;
 	}
+
+	@Override
+	public List<Float> getAllWidth() {
+
+		List<Object[]> ll = qualityTemplateRepository.getAllWidth();
+		List<Float> widthList = new ArrayList<>();
+
+		for (Object[] obj2 : ll) {
+			widthList.add((Float) obj2[0]);
+		}
+		return widthList;
+	}
+
+	@Override
+	public List<Float> getAllLength() {
+
+		List<Object[]> ll = qualityTemplateRepository.getAllLength();
+		List<Float> lengthList = new ArrayList<>();
+
+		for (Object[] obj2 : ll) {
+			lengthList.add((Float) obj2[0]);
+		}
+		return lengthList;
+	}
+	
 
 	@Override
 	public ResponseEntity<Object> reportsSave(String inspectionId, String coilNumber, String inwardId, String templateId, String stageName,
@@ -586,4 +617,65 @@ public class QualityServiceImpl implements QualityService {
 		return response;
 	}
 
+	@Override
+	public ResponseEntity<Object> kqpPartyMapSave(KQPPartyMappingRequest kqpPartyMappingRequest) {
+
+		List<KQPPartyTemplateEntity> list1 = kqpPartyTemplateRepository.findByKqpId(kqpPartyMappingRequest.getKqpId());
+		for (KQPPartyTemplateEntity kqpPartyTemplateEntity : list1) {
+			kqpPartyTemplateRepository.deleteById(kqpPartyTemplateEntity.getId());
+		}
+
+		ResponseEntity<Object> response = null;
+		List<KQPPartyTemplateEntity> list = new ArrayList<>();
+		for (Integer partyId : kqpPartyMappingRequest.getPartyIdList()) {
+			KQPPartyTemplateEntity kqpPartyTemplateEntity = new KQPPartyTemplateEntity();
+			kqpPartyTemplateEntity.getKqpEntity().setKqpId(kqpPartyMappingRequest.getKqpId());
+			kqpPartyTemplateEntity.getParty().setnPartyId(partyId);
+			kqpPartyTemplateEntity.setThickness(kqpPartyMappingRequest.getThickness());
+			kqpPartyTemplateEntity.setLength(kqpPartyMappingRequest.getLength());
+			kqpPartyTemplateEntity.setWidth(kqpPartyMappingRequest.getWidth());
+			kqpPartyTemplateEntity.setEndUserTagId(kqpPartyMappingRequest.getEndUserTagId());
+			kqpPartyTemplateEntity.setMatGradeId(kqpPartyMappingRequest.getMatGradeId());
+			kqpPartyTemplateEntity.setCreatedBy(kqpPartyMappingRequest.getUserId());
+			kqpPartyTemplateEntity.setUpdatedBy(kqpPartyMappingRequest.getUserId());
+			kqpPartyTemplateEntity.setCreatedOn(new Date());
+			kqpPartyTemplateEntity.setUpdatedOn(new Date());
+			list.add(kqpPartyTemplateEntity);
+		}
+		kqpPartyTemplateRepository.saveAll(list);
+		response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"KQP-Party mapping details saved successfully..! \"}",
+				new HttpHeaders(), HttpStatus.OK);
+		return response;
+	}
+
+	@Override
+	public ResponseEntity<Object> deleteKQPPartyMap(int kqpId) {
+		ResponseEntity<Object> response = null;
+		try {
+
+			List<KQPPartyTemplateEntity> list1 = kqpPartyTemplateRepository.findByKqpId(kqpId);
+			for (KQPPartyTemplateEntity kqpPartyTemplateEntity : list1) {
+				kqpPartyTemplateRepository.deleteById(kqpPartyTemplateEntity.getId());
+			}
+			response = new ResponseEntity<>( "{\"status\": \"success\", \"message\": \"KQP-Party mapping deleted successfully..! \"}",
+					new HttpHeaders(), HttpStatus.OK);
+		} catch (Exception e) {
+			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"" + e.getMessage() + "\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return response;
+	}
+	
+	@Override
+	public List<KQPPartyMappingResponse> getByKQPId(int kqpId) {
+		List<KQPPartyMappingResponse> instructionList = kqpPartyTemplateRepository.findByKqpId( kqpId).stream()
+				.map(i -> KQPPartyTemplateEntity.valueOf(i)).collect(Collectors.toList());
+		return instructionList;
+	}
+
+	@Override
+	public List<KQPPartyMappingResponse> getAllKQPMappings() {
+		List<KQPPartyMappingResponse> instructionList = kqpPartyTemplateRepository.findAll().stream()
+				.map(i -> KQPPartyTemplateEntity.valueOf(i)).collect(Collectors.toList());
+		return instructionList;
+	}
 }

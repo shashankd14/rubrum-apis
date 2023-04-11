@@ -1,7 +1,7 @@
 package com.steel.product.application.controller;
 
-import com.steel.product.application.dto.inward.InwardDto;
-import com.steel.product.application.dto.pricemaster.PriceMasterRequest;
+import com.steel.product.application.dto.quality.KQPPartyMappingRequest;
+import com.steel.product.application.dto.quality.KQPPartyMappingResponse;
 import com.steel.product.application.dto.quality.KQPRequest;
 import com.steel.product.application.dto.quality.KQPResponse;
 import com.steel.product.application.dto.quality.QualityCheckRequest;
@@ -144,6 +144,18 @@ public class QualityMasterController {
 	public ResponseEntity<Object> getAllThickness() {
 
 		return new ResponseEntity<Object>(qualityService.getAllThickness(), HttpStatus.OK);
+	}
+
+	@GetMapping(value = "/templatemap/getallwidth", produces = "application/json")
+	public ResponseEntity<Object> getAllWidth() {
+
+		return new ResponseEntity<Object>(qualityService.getAllWidth(), HttpStatus.OK);
+	}
+
+	@GetMapping(value = "/templatemap/getalllength", produces = "application/json")
+	public ResponseEntity<Object> getAllLength() {
+
+		return new ResponseEntity<Object>(qualityService.getAllLength(), HttpStatus.OK);
 	}
 	
 	@GetMapping(value = "/qualityCheck", produces = "application/json")
@@ -321,5 +333,27 @@ public class QualityMasterController {
 	public ResponseEntity<Object> deleteKQP(@PathVariable("id") int id) {
 		return qualityService.deleteKQP(id);
 	}
+
+	@PostMapping(value = "/kqppartymap/save", produces = "application/json")
+	public ResponseEntity<Object> kqpPartyMapSave(@RequestBody KQPPartyMappingRequest kqpPartyMappingRequest) {
+ 		return qualityService.kqpPartyMapSave(kqpPartyMappingRequest);
+	}
 	
+	@DeleteMapping(value = "/kqppartymap/{kqpId}", produces = "application/json" )
+	public ResponseEntity<Object> deleteKQPPartyMap (@PathVariable("kqpId") int kqpId) {
+		return qualityService.deleteKQPPartyMap(kqpId);
+	}
+
+	@GetMapping(value = "/kqppartymap/{kqpId}", produces = "application/json")
+	public List<KQPPartyMappingResponse> getkqpByTemplateId(@PathVariable("kqpId") int kqpId) {
+		List<KQPPartyMappingResponse> list = qualityService.getByKQPId(kqpId);
+		return list;
+	}
+
+	@GetMapping(value = "/kqppartymap", produces = "application/json")
+	public List<KQPPartyMappingResponse> getAllKQPMappings() {
+		List<KQPPartyMappingResponse> list = qualityService.getAllKQPMappings();
+		return list;
+	}
+
 }

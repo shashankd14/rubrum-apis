@@ -3,8 +3,11 @@ package com.steel.product.application.service;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.steel.product.application.dto.quality.KQPPartyMappingRequest;
+import com.steel.product.application.dto.quality.KQPPartyMappingResponse;
 import com.steel.product.application.dto.quality.KQPRequest;
 import com.steel.product.application.dto.quality.KQPResponse;
 import com.steel.product.application.dto.quality.QualityCheckRequest;
@@ -45,8 +48,6 @@ public interface QualityService {
 			MultipartFile improperStorage, MultipartFile strapping, MultipartFile weighmentSlip,
 			MultipartFile weighment, MultipartFile acknowledgementReceipt, MultipartFile unloadingImproper);
 
-	List<Float> getAllThickness();
-
 	ResponseEntity<Object> reportsSave(String inspectionId, String coilNumber, String inwardId, String templateId,
 			String stageName, String templateDetails, String userId, MultipartFile rustObserved,
 			MultipartFile safetyIssues, MultipartFile waterExposure, MultipartFile wireRopeDamages,
@@ -69,5 +70,19 @@ public interface QualityService {
 	List<KQPResponse> kqpGetByAll();
 
 	ResponseEntity<Object> deleteKQP(int id);
+
+	List<Float> getAllThickness();
+
+	List<Float> getAllWidth();
+
+	List<Float> getAllLength();
+
+	ResponseEntity<Object> kqpPartyMapSave(KQPPartyMappingRequest qualityPartyMappingRequest);
+
+	ResponseEntity<Object> deleteKQPPartyMap(int kqpId);
+
+	List<KQPPartyMappingResponse> getByKQPId(int kqpId);
+
+	List<KQPPartyMappingResponse> getAllKQPMappings();
 
 }
