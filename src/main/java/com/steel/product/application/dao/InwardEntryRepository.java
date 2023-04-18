@@ -68,7 +68,7 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
     })
     List<InwardEntry> findInwardByPartyId(Integer partyId);
 
-    @Query("select distinct pd from PartDetails pd join fetch pd.instructions ins join ins.inwardId where ins.inwardId.inwardEntryId= :inwardId")
+    @Query(value="SELECT DISTINCT part.part_details_id, part.pdf_s3_url FROM product_part_details part INNER JOIN product_instruction ins ON part.id = ins.part_details_id INNER JOIN product_tblinwardentry inward ON ins.inwardid = inward.inwardentryid WHERE ins.inwardid = :inwardId", nativeQuery = true)
     List<Object[]> getPlanPDFs(@Param("inwardId") Integer inwardId);
 
 	@Modifying

@@ -171,17 +171,15 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 	public JSONObject getPlanPDFs(int inwardId) {
 		JSONObject finalResp =new JSONObject();
 		List<PartDetailsPDFResponse> response = new ArrayList<PartDetailsPDFResponse>();
-		List<Object[]> result = this.inwdEntryRepo.getPlanPDFs(inwardId);
-
-		for (Object[] obj : result) {
-
+		List<Object[]> results = this.inwdEntryRepo.getPlanPDFs(inwardId);
+		Iterator itr = results.iterator();
+		while (itr.hasNext()) {
 			PartDetailsPDFResponse kk = new PartDetailsPDFResponse();
-
-			PartDetails partDetails = (PartDetails) obj[0];
-			kk.setId(partDetails.getId().toString());
-			kk.setFileName(partDetails.getPartDetailsId());
-			kk.setPdfS3Url(partDetails.getPdfS3Url());
-			kk.setPdfS3Url(awsS3Service.generatePresignedUrl(partDetails.getPartDetailsId()) );
+			Object result[] = (Object[]) itr.next();
+			kk.setId(result[0] != null ? (String) result[0] : null);
+			kk.setFileName(result[0] != null ? (String) result[0] : null);
+			kk.setPdfS3Url(result[1] != null ? (String) result[1] : null);
+			kk.setPdfS3Url(awsS3Service.generatePresignedUrl(kk.getFileName()));
 			response.add(kk);
 		}
 		finalResp.put("plan_pdfs", response);
