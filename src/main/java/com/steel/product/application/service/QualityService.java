@@ -3,7 +3,6 @@ package com.steel.product.application.service;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.steel.product.application.dto.quality.KQPPartyMappingRequest;
@@ -12,6 +11,7 @@ import com.steel.product.application.dto.quality.KQPRequest;
 import com.steel.product.application.dto.quality.KQPResponse;
 import com.steel.product.application.dto.quality.QualityCheckRequest;
 import com.steel.product.application.dto.quality.QualityCheckResponse;
+import com.steel.product.application.dto.quality.QualityInspReportListPageResponse;
 import com.steel.product.application.dto.quality.QualityPartyMappingRequest;
 import com.steel.product.application.dto.quality.QualityPartyMappingRequestNew;
 import com.steel.product.application.dto.quality.QualityPartyMappingResponse;
@@ -84,5 +84,7 @@ public interface QualityService {
 	List<KQPPartyMappingResponse> getByKQPId(int kqpId);
 
 	List<KQPPartyMappingResponse> getAllKQPMappings();
+
+	List<QualityInspReportListPageResponse> qirListPage();
 
 }

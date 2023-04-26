@@ -119,5 +119,8 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
     @Query("select ins from Instruction ins left join fetch ins.inwardId left join fetch ins.parentInstruction where ins.instructionId in :instructionIds and ins.status.statusId in :statusId")
     public List<Instruction> findAllByInstructionIdInAndStatus(@Param("instructionIds") List<Integer> instructionIds, @Param("statusId") List<Integer> statusId);
 
-	 
+	@Modifying
+	@Transactional
+	@Query("update Instruction set groupId =:groupId where instructionId in :instructionIds ")
+	public void updateInstructionGroupId(@Param("groupId") int groupId, @Param("instructionIds") List<Integer> instructionIds);
 }

@@ -6,6 +6,7 @@ import com.steel.product.application.dto.quality.KQPRequest;
 import com.steel.product.application.dto.quality.KQPResponse;
 import com.steel.product.application.dto.quality.QualityCheckRequest;
 import com.steel.product.application.dto.quality.QualityCheckResponse;
+import com.steel.product.application.dto.quality.QualityInspReportListPageResponse;
 import com.steel.product.application.dto.quality.QualityPartyMappingRequest;
 import com.steel.product.application.dto.quality.QualityPartyMappingResponse;
 import com.steel.product.application.dto.quality.QualityReportResponse;
@@ -353,6 +354,12 @@ public class QualityMasterController {
 	@GetMapping(value = "/kqppartymap", produces = "application/json")
 	public List<KQPPartyMappingResponse> getAllKQPMappings() {
 		List<KQPPartyMappingResponse> list = qualityService.getAllKQPMappings();
+		return list;
+	}
+
+	@GetMapping(value = "/qir/listpage", produces = "application/json")
+	public List<QualityInspReportListPageResponse> qirListPage() {
+		List<QualityInspReportListPageResponse> list = qualityService.qirListPage();
 		return list;
 	}
 

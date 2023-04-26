@@ -15,6 +15,7 @@ import com.steel.product.application.exception.MockException;
 import com.steel.product.application.mapper.InstructionMapper;
 import com.steel.product.application.mapper.PartDetailsMapper;
 import com.steel.product.application.mapper.TotalLengthAndWeight;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1024,6 +1025,11 @@ public class InstructionServiceImpl implements InstructionService {
             	inwardEntry.setUpdatedBy(userId);
                 inwardService.saveEntry(inwardEntry);
             }
+            
+			if (instructionSaveRequestDtos.get(0).getParentInstructionIds() != null && instructionSaveRequestDtos.get(0).getParentInstructionIds().getInstructionIds() != null && instructionSaveRequestDtos.get(0).getParentInstructionIds().getInstructionIds().size() > 0) {
+				instructionRepository.updateInstructionGroupId(instructionSaveRequestDtos.get(0).getParentInstructionIds().getGroupId(), instructionSaveRequestDtos.get(0).getParentInstructionIds().getInstructionIds());
+			}
+            
             return new ResponseEntity<Object>(partDetailsResponseList, HttpStatus.CREATED);
     }
 

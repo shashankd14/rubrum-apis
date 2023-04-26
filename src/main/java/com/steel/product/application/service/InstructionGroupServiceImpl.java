@@ -26,7 +26,7 @@ public class InstructionGroupServiceImpl implements InstructionGroupService{
         List<Instruction> instructions = instructionService.getAllByInstructionIdIn(instructionGroupDto.getInstructionId());
         InstructionGroup savedInstructionGroup = instructionGroupRepository.save(instructionGroup);
         savedInstructionGroup = this.createBundle(instructions,savedInstructionGroup);
-        instructionService.saveAll(instructions);
+        //instructionService.saveAll(instructions);
         return instructionGroupRepository.save(savedInstructionGroup);
     }
 

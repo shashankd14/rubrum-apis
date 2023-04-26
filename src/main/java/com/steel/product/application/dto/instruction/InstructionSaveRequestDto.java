@@ -10,7 +10,10 @@ import java.util.List;
 @Setter
 public class InstructionSaveRequestDto {
 
-    private partDetailsRequest partDetailsRequest;
-    private List<InstructionRequestDto> instructionRequestDTOs;
+	private partDetailsRequest partDetailsRequest;
+	
+	private List<InstructionRequestDto> instructionRequestDTOs;
+	
+	private ParentInstructionDTO parentInstructionIds;
 
 }

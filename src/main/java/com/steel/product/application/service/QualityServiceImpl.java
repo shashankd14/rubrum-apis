@@ -11,6 +11,7 @@ import com.steel.product.application.dto.quality.KQPRequest;
 import com.steel.product.application.dto.quality.KQPResponse;
 import com.steel.product.application.dto.quality.QualityCheckRequest;
 import com.steel.product.application.dto.quality.QualityCheckResponse;
+import com.steel.product.application.dto.quality.QualityInspReportListPageResponse;
 import com.steel.product.application.dto.quality.QualityPartyMappingRequest;
 import com.steel.product.application.dto.quality.QualityPartyMappingRequestNew;
 import com.steel.product.application.dto.quality.QualityPartyMappingResponse;
@@ -677,5 +678,23 @@ public class QualityServiceImpl implements QualityService {
 		List<KQPPartyMappingResponse> instructionList = kqpPartyTemplateRepository.findAll().stream()
 				.map(i -> KQPPartyTemplateEntity.valueOf(i)).collect(Collectors.toList());
 		return instructionList;
+	}
+
+	@Override
+	public List<QualityInspReportListPageResponse> qirListPage() {
+		List<Object[]> packetsList = kqpPartyTemplateRepository.qirListPage();
+		List<QualityInspReportListPageResponse> qirList = new ArrayList<>();
+
+		for (Object[] result : packetsList) {
+			QualityInspReportListPageResponse resp = new QualityInspReportListPageResponse();
+			resp.setPlanId(result[0] != null ? (String) result[0] : null);
+			resp.setCoilNo(result[1] != null ? (String) result[1] : null);
+			resp.setCustomerBatchNo(result[2] != null ? (String) result[2] : null);
+			resp.setPlanDate(result[3] != null ? (String) result[3] : null);
+			resp.setMaterialGrade(result[4] != null ? (String) result[4] : null);
+			resp.setFthickness( result[5] != null ? (Float) result[5] : null);
+			qirList.add(resp);
+		}
+		return qirList;
 	}
 }
