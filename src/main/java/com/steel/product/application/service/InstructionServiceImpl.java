@@ -15,7 +15,6 @@ import com.steel.product.application.exception.MockException;
 import com.steel.product.application.mapper.InstructionMapper;
 import com.steel.product.application.mapper.PartDetailsMapper;
 import com.steel.product.application.mapper.TotalLengthAndWeight;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -857,7 +856,13 @@ public class InstructionServiceImpl implements InstructionService {
             String partDetailsId;
             double incomingWeight = 0f, availableWeight = 0f, existingWeight = 0f, remainingWeight = 0f;
             double incomingLength = 0f, availableLength = 0f, existingLength = 0f, remainingLength = 0f;
-
+            
+            for (InstructionSaveRequestDto instructionSaveRequestDTO : instructionSaveRequestDtos) {
+				if (instructionSaveRequestDTO.getParentInstructionIds() != null && instructionSaveRequestDTO.getParentInstructionIds().getInstructionIds() != null && instructionSaveRequestDTO.getParentInstructionIds().getInstructionIds().size() > 0) {
+					instructionRepository.updateInstructionGroupId(instructionSaveRequestDTO.getParentInstructionIds().getGroupId(), instructionSaveRequestDTO.getParentInstructionIds().getInstructionIds());
+				}
+            }
+			
             if (inwardId != null && groupId != null) {
                 LOGGER.info("adding instructions from inward "+ inwardId +", group id " + groupId);
                 inwardEntry = inwardService.getByInwardEntryId(inwardId);
@@ -1025,11 +1030,6 @@ public class InstructionServiceImpl implements InstructionService {
             	inwardEntry.setUpdatedBy(userId);
                 inwardService.saveEntry(inwardEntry);
             }
-            
-			if (instructionSaveRequestDtos.get(0).getParentInstructionIds() != null && instructionSaveRequestDtos.get(0).getParentInstructionIds().getInstructionIds() != null && instructionSaveRequestDtos.get(0).getParentInstructionIds().getInstructionIds().size() > 0) {
-				instructionRepository.updateInstructionGroupId(instructionSaveRequestDtos.get(0).getParentInstructionIds().getGroupId(), instructionSaveRequestDtos.get(0).getParentInstructionIds().getInstructionIds());
-			}
-            
             return new ResponseEntity<Object>(partDetailsResponseList, HttpStatus.CREATED);
     }
 

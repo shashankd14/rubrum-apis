@@ -31,9 +31,9 @@ public class InstructionGroupServiceImpl implements InstructionGroupService{
     }
 
     private InstructionGroup createBundle(List<Instruction> instructions, InstructionGroup savedInstructionGroup) {
-        for(Instruction ins:instructions){
-            ins.setGroupId(savedInstructionGroup.getGroupId());
-        }
+        //for(Instruction ins:instructions){
+          //  ins.setGroupId(savedInstructionGroup.getGroupId());
+        //}
         savedInstructionGroup.setInstructionCount(instructions.size());
         return savedInstructionGroup;
     }
