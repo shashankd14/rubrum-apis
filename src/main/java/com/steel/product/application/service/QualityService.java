@@ -5,10 +5,12 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.steel.product.application.dto.instruction.InstructionResponseDto;
 import com.steel.product.application.dto.quality.KQPPartyMappingRequest;
 import com.steel.product.application.dto.quality.KQPPartyMappingResponse;
 import com.steel.product.application.dto.quality.KQPRequest;
 import com.steel.product.application.dto.quality.KQPResponse;
+import com.steel.product.application.dto.quality.QIRSaveDataRequest;
 import com.steel.product.application.dto.quality.QualityCheckRequest;
 import com.steel.product.application.dto.quality.QualityCheckResponse;
 import com.steel.product.application.dto.quality.QualityInspReportListPageResponse;
@@ -86,5 +88,7 @@ public interface QualityService {
 	List<KQPPartyMappingResponse> getAllKQPMappings();
 
 	List<QualityInspReportListPageResponse> qirListPage();
+
+	List<InstructionResponseDto> fetchpacketdtls(QIRSaveDataRequest qirSaveDataRequest);
 
 }

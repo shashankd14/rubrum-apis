@@ -1,9 +1,11 @@
 package com.steel.product.application.controller;
 
+import com.steel.product.application.dto.instruction.InstructionResponseDto;
 import com.steel.product.application.dto.quality.KQPPartyMappingRequest;
 import com.steel.product.application.dto.quality.KQPPartyMappingResponse;
 import com.steel.product.application.dto.quality.KQPRequest;
 import com.steel.product.application.dto.quality.KQPResponse;
+import com.steel.product.application.dto.quality.QIRSaveDataRequest;
 import com.steel.product.application.dto.quality.QualityCheckRequest;
 import com.steel.product.application.dto.quality.QualityCheckResponse;
 import com.steel.product.application.dto.quality.QualityInspReportListPageResponse;
@@ -363,4 +365,19 @@ public class QualityMasterController {
 		return list;
 	}
 
+	@PostMapping(value = "/qir/fetchpacketdtls", produces = "application/json")
+	public ResponseEntity<Object> getDocInstructionDetails(@RequestBody QIRSaveDataRequest qirSaveDataRequest) {
+
+		try {
+
+			List<InstructionResponseDto> instructionList = qualityService.fetchpacketdtls(qirSaveDataRequest);
+
+			return new ResponseEntity<Object>(instructionList, HttpStatus.OK);
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 }

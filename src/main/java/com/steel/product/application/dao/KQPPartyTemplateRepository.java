@@ -1,5 +1,6 @@
 package com.steel.product.application.dao;
 
+import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.KQPPartyTemplateEntity;
 import java.util.List;
 
@@ -28,4 +29,7 @@ public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTempla
 			" WHERE 1=1 ", nativeQuery = true)
 	List<Object[]> qirListPage();
 
+	@Query(value = "SELECT ins FROM Instruction ins where ins.inwardId.coilNumber = :coilNo and ins.partDetails.partDetailsId = :partDetailsId ")
+	List<Instruction> fetchpacketdtls(@Param("coilNo") String coilNo, @Param("partDetailsId") String partDetailsId);
+	
 }

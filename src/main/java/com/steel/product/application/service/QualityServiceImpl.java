@@ -5,10 +5,12 @@ import com.steel.product.application.dao.KQPRepository;
 import com.steel.product.application.dao.QualityPartyTemplateRepository;
 import com.steel.product.application.dao.QualityReportRepository;
 import com.steel.product.application.dao.QualityTemplateRepository;
+import com.steel.product.application.dto.instruction.InstructionResponseDto;
 import com.steel.product.application.dto.quality.KQPPartyMappingRequest;
 import com.steel.product.application.dto.quality.KQPPartyMappingResponse;
 import com.steel.product.application.dto.quality.KQPRequest;
 import com.steel.product.application.dto.quality.KQPResponse;
+import com.steel.product.application.dto.quality.QIRSaveDataRequest;
 import com.steel.product.application.dto.quality.QualityCheckRequest;
 import com.steel.product.application.dto.quality.QualityCheckResponse;
 import com.steel.product.application.dto.quality.QualityInspReportListPageResponse;
@@ -17,6 +19,7 @@ import com.steel.product.application.dto.quality.QualityPartyMappingRequestNew;
 import com.steel.product.application.dto.quality.QualityPartyMappingResponse;
 import com.steel.product.application.dto.quality.QualityReportResponse;
 import com.steel.product.application.dto.quality.QualityTemplateResponse;
+import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.KQPEntity;
 import com.steel.product.application.entity.KQPPartyTemplateEntity;
 import com.steel.product.application.entity.QualityPartyTemplateEntity;
@@ -696,5 +699,15 @@ public class QualityServiceImpl implements QualityService {
 			qirList.add(resp);
 		}
 		return qirList;
+	}
+
+	@Override
+	public List<InstructionResponseDto> fetchpacketdtls(QIRSaveDataRequest qirSaveDataRequest) {
+
+		List<InstructionResponseDto> instructionList = kqpPartyTemplateRepository
+				.fetchpacketdtls(qirSaveDataRequest.getCoilNo(), qirSaveDataRequest.getPartDetailsId()).stream()
+				.map(i -> Instruction.valueOf(i)).collect(Collectors.toList());
+
+		return instructionList;
 	}
 }

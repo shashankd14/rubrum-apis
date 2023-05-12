@@ -1,5 +1,7 @@
 package com.steel.product.application.service;
 
+import java.util.StringTokenizer;
+
 import javax.annotation.PostConstruct;
 import javax.mail.internet.MimeMessage;
 
@@ -58,15 +60,17 @@ public class MailSender {
 			helper.setFrom(fromMailId);
 			helper.setTo(emailId1);
 			
-			if(emailId2!=null && emailId2.length()>0) {
-				helper.addCc(emailId2);
+			StringTokenizer st = new StringTokenizer(emailId2, ",");
+			while (st.hasMoreTokens()) {
+				String ccEmailId=st.nextToken();
+				helper.addCc(ccEmailId);
 			}
-			
-			helper.setSubject("Daily Reports - "+strDate);
+			helper.setSubject(partyName +" - Daily Reports on "+strDate);
 			helper.setText(emailBody, true);
 			javaMailSender.send(message);
 			logger.info("Email Sent Successfully to "+emailId1);
 		} catch (Exception e) {
+			e.printStackTrace();
 			logger.info("MailSender.Fail1: "+e.getMessage());
 		}
 	}
