@@ -19,8 +19,10 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
+import com.steel.product.application.dao.AdminMenuRepository;
 import com.steel.product.application.dao.UserRepository;
 import com.steel.product.application.dto.LoginRequest;
+import com.steel.product.application.dto.admin.AdminMenuDto;
 import com.steel.product.application.dto.admin.CreateUserRequest;
 import com.steel.product.application.entity.AdminUserEntity;
 import com.steel.product.application.entity.UserPartyMap;
@@ -49,6 +51,9 @@ public class UserInfoService
 
     @Autowired
     private UserRepository userDetailsRepository;
+
+    @Autowired
+	AdminMenuRepository adminMenuRepository;
     
 	private static String OAUTHURL;
 
@@ -182,6 +187,7 @@ public class UserInfoService
 			user.setCurrentLoginTime(loginDate);
 
 			userDetailsRepository.save(user);
+			List<AdminMenuDto> menusList = adminMenuRepository.findMenus(user.getUserId());
 
 			response = LoginResponse.builder().userId(user.getUserId())
 					.userName(user.getUserName())
@@ -190,7 +196,11 @@ public class UserInfoService
 					.refresh_token(oauthResp.getRefreshToken())
 					.token_type(oauthResp.getTokenType())
 					.expires_in(oauthResp.getExpiresIn())
+					.menusList(menusList)
 					.build();
+			
+
+			
 		} else {
 			
 			List<String> errors = new ArrayList<>();

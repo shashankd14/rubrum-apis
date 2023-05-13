@@ -33,11 +33,4 @@ public class LoginController {
 		return userService.login(loginReq);
 	}
 	
-	@PostMapping("/testlogin")
-	public LoginResponse testlogin(@Valid @RequestBody LoginRequest loginReq) throws MockException {
-
-		log.debug("*** Login Method Invoked ***");
-		return userService.login(loginReq);
-	}
-
 }

@@ -5,6 +5,7 @@ import com.steel.product.application.dto.inward.InwardEntryResponseDto;
 import com.steel.product.application.entity.InwardDoc;
 import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.service.*;
+import com.steel.product.application.util.CommonUtil;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import net.minidev.json.JSONObject;
@@ -41,6 +42,8 @@ public class InwardEntryController {
 
 	private AWSS3Service awsS3Service;
 
+	private CommonUtil commonUtil;
+
 	private InwardDocService inwardDocService;
 
 	private Timestamp timestamp = new Timestamp(System.currentTimeMillis());
@@ -49,7 +52,7 @@ public class InwardEntryController {
 	public InwardEntryController(InwardEntryService inwdEntrySvc, PartyDetailsService partyDetailsService,
 			StatusService statusService, MaterialDescriptionService matDescService,
 			MaterialGradeService matGradeService, UserService userSerive, AWSS3Service awsS3Service,
-			InwardDocService inwardDocService) {
+			InwardDocService inwardDocService, CommonUtil commonUtil) {
 		this.inwdEntrySvc = inwdEntrySvc;
 		this.partyDetailsService = partyDetailsService;
 		this.statusService = statusService;
@@ -57,6 +60,7 @@ public class InwardEntryController {
 		this.matGradeService = matGradeService;
 		this.awsS3Service = awsS3Service;
 		this.inwardDocService = inwardDocService;
+		this.commonUtil = commonUtil;
 	}
 
 	@PostMapping("/addNew")
@@ -64,10 +68,7 @@ public class InwardEntryController {
 		InwardEntry inwardEntry = new InwardEntry();
 		System.out.println("DTO details " + inward);
 		try {
-			
-			int userId = (request.getHeader("userId")==null ? 1: Integer.parseInt(request.getHeader("userId")));
-
-			//inward.setUserId(userId);
+			int userId = commonUtil.getUserId();
 			inwardEntry.setInwardEntryId(0);
 			inwardEntry.setPurposeType(inward.getPurposeType());
 			inwardEntry.setParty(this.partyDetailsService.getPartyById(inward.getPartyId()));
@@ -89,8 +90,6 @@ public class InwardEntryController {
 			inwardEntry.setCustomerCoilId(inward.getCustomerCoilId());
 			inwardEntry.setCustomerInvoiceNo(inward.getCustomerInvoiceNo());
 			inwardEntry.setCustomerBatchId(inward.getCustomerBatchId());
-
-			// inwardEntry.setCustomerInvoiceDate(Timestamp.valueOf(inward.getCustomerInvoiceDate()));
 
 			inwardEntry.setMaterial(this.matDescService.getMatById(inward.getMaterialId()));
 			inwardEntry.setMaterialGrade(matGradeService.getById(inward.getMaterialGradeId()));
@@ -118,7 +117,6 @@ public class InwardEntryController {
 			inwardEntry.setIsDeleted(Boolean.valueOf(false));
 			inwardEntry.setCreatedOn(this.timestamp);
 			inwardEntry.setUpdatedOn(this.timestamp);
-
 			inwardEntry.setCreatedBy(userId);
 			inwardEntry.setUpdatedBy(userId);
 
@@ -155,11 +153,8 @@ public class InwardEntryController {
 		InwardEntry inwardEntry = new InwardEntry();
 		System.out.println("DTO details " + inward);
 		try {
-			int userId = (request.getHeader("userId")==null ? 1: Integer.parseInt(request.getHeader("userId")));
-
-			//inward.setUserId(userId);
+			int userId = commonUtil.getUserId();
 			inwardEntry = inwdEntrySvc.getByEntryId(inward.getInwardId());
-
 			inwardEntry.setPurposeType(inward.getPurposeType());
 			inwardEntry.setParty(this.partyDetailsService.getPartyById(inward.getPartyId()));
 			inwardEntry.setCoilNumber(inward.getCoilNumber());
@@ -191,10 +186,7 @@ public class InwardEntryController {
 			inwardEntry.setBilledweight(0);
 			inwardEntry.setParentCoilNumber(null);
 			inwardEntry.setvParentBundleNumber(0);
-
 			inwardEntry.setIsDeleted(Boolean.valueOf(false));
-
-			//inwardEntry.setCreatedBy( inward.getCreatedBy());
 			inwardEntry.setUpdatedBy( userId );
 
 			if (inward.getTestCertificateFile() != null) {

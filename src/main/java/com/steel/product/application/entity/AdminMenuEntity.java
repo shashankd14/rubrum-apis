@@ -32,7 +32,7 @@ import lombok.Data;
 @NamedNativeQueries(value = {
     
         @NamedNativeQuery(name = "findMenu", query = ""
-        		+"select am.menu_id as menuId,am.parent_menu_id as parentMenuId,am.menu_name as menuName,am.menukey as menuKey,am.display_order as displayOrder,armm.op_permission as permission from admin_menus am,admin_role_menu_map armm,admin_role amr,admin_user_role_mapping aurm where armm.menu_id = am.menu_id and armm.role_id = amr.role_id and amr.role_id = aurm.role_id and aurm.user_id = :userId" ,
+        		+"select am.menu_id as menuId,am.parent_menu_id as parentMenuId,am.menu_name as menuName,am.menukey as menuKey,am.display_order as displayOrder,group_concat( armm.op_permission separator ',') AS permission from admin_menus am,admin_role_menu_map armm,admin_role amr,admin_user_role_mapping aurm where armm.menu_id = am.menu_id and armm.role_id = amr.role_id and amr.role_id = aurm.role_id and aurm.user_id = :userId group by am.menu_id , am.parent_menu_id, am.menu_name,am.menukey,am.display_order" ,
         resultSetMapping = "findMenus"),
         @NamedNativeQuery(name = "findAllMenu", query = ""
                 +"select am.menu_id as menuId,am.menukey as menuKey,am.parent_menu_id as parentMenuId,am.menu_name as menuName,am.display_order as displayOrder,am.default_permission as permission from admin_menus am where am.active_flag = 'Y'",

@@ -4,6 +4,7 @@ import com.steel.product.application.dto.instruction.*;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.exception.MockException;
 import com.steel.product.application.service.*;
+import com.steel.product.application.util.CommonUtil;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -25,11 +26,12 @@ public class InstructionController {
 
 	private InstructionService instructionService;
 
+	private CommonUtil commonUtil;
+	
 	@Autowired
-	public InstructionController(InstructionService instructionService, InwardEntryService inwardService,
-			StatusService statusService, ProcessService processService, CompanyDetailsService companyDetailsService,
-			PacketClassificationService packetClassificationService, PdfService pdfService) {
+	public InstructionController(InstructionService instructionService,  CommonUtil commonUtil) {
 		this.instructionService = instructionService;
+		this.commonUtil = commonUtil;
 	}
 
 	@GetMapping("/list")
@@ -77,22 +79,19 @@ public class InstructionController {
 	@PostMapping("/save")
 	public ResponseEntity<Object> saveInstruction(
 			@RequestBody List<InstructionSaveRequestDto> instructionSaveRequestDtos, HttpServletRequest request) {
-		int userId = (request.getHeader("userId")==null ? 1: Integer.parseInt(request.getHeader("userId")));
-
+		int userId = commonUtil.getUserId();
 		return instructionService.addInstruction(instructionSaveRequestDtos, userId);
 
 	}
 
 	@PutMapping("/update")
 	public ResponseEntity<Object> update(@RequestBody InstructionFinishDto instructionFinishDto, HttpServletRequest request) {
-
-		int userId = (request.getHeader("userId")==null ? 1: Integer.parseInt(request.getHeader("userId")));
+		int userId = commonUtil.getUserId();
 		return instructionService.updateInstruction(instructionFinishDto, userId);
 	}
 
 	@PostMapping("{instructionId}")
 	public ResponseEntity<Object> deleteById(@PathVariable Integer instructionId) {
-
 		try {
 			instructionService.deleteById(instructionId);
 			return new ResponseEntity<Object>("delete success!", HttpStatus.OK);
@@ -104,13 +103,13 @@ public class InstructionController {
 
 	@PostMapping("/saveUnprocessedForDelivery/{inwardId}")
 	public ResponseEntity<Object> saveUnprocessedForDelivery(@PathVariable int inwardId, HttpServletRequest request) {
-		int userId = (request.getHeader("userId")==null ? 1: Integer.parseInt(request.getHeader("userId")));
+		int userId = commonUtil.getUserId();
 		return new ResponseEntity<>(instructionService.saveUnprocessedForDelivery(inwardId, userId), HttpStatus.OK);
 	}
 
 	@PostMapping("/saveFullHandlingDispatch")
 	public ResponseEntity<Object> saveFullHandlingDispatch(@RequestBody List<Integer> inwardList, HttpServletRequest request) throws MockException {
-		int userId = (request.getHeader("userId")==null ? 1: Integer.parseInt(request.getHeader("userId")));
+		int userId = commonUtil.getUserId();
 		return new ResponseEntity<>(instructionService.saveFullHandlingDispatch(inwardList, userId ), HttpStatus.OK);
 	}
 	
