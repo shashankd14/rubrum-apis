@@ -3,9 +3,11 @@ package com.steel.product.application.service;
 import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.dto.inward.InwardEntryResponseDto;
 import com.steel.product.application.dto.partDetails.PartDetailsPDFResponse;
+import com.steel.product.application.entity.AdminUserEntity;
 import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.InwardEntry;
-import com.steel.product.application.entity.PartDetails;
+import com.steel.product.application.entity.UserPartyMap;
+import com.steel.product.application.util.CommonUtil;
 
 import net.minidev.json.JSONObject;
 
@@ -15,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -27,11 +30,13 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 	private final static Logger LOGGER = LoggerFactory.getLogger("InwardEntryServiceImpl");
 	private final InwardEntryRepository inwdEntryRepo;
 	private AWSS3Service awsS3Service;
+	private CommonUtil commonUtil;
 
 	@Autowired
-	public InwardEntryServiceImpl(InwardEntryRepository theInwdEntryRepo, AWSS3Service awsS3Service) {
+	public InwardEntryServiceImpl(InwardEntryRepository theInwdEntryRepo, AWSS3Service awsS3Service, CommonUtil commonUtil) {
 		this.inwdEntryRepo = theInwdEntryRepo;
 		this.awsS3Service = awsS3Service;
+		this.commonUtil = commonUtil;
 	}
 
 	public InwardEntry saveEntry(InwardEntry entry) {
@@ -56,8 +61,7 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 	public ResponseEntity<Object> getInwardEntriesByPartyId(int partyId) {
 		List<InwardEntry> entities = new ArrayList<>();
 		entities = this.inwdEntryRepo.getInwardEntriesByPartyId(Integer.valueOf(partyId));
-		return new ResponseEntity(entities.stream().map(inw -> InwardEntry.valueOfResponse(inw))
-				.collect(Collectors.toList()), HttpStatus.OK);
+		return new ResponseEntity(entities.stream().map(inw -> InwardEntry.valueOfResponse(inw)).collect(Collectors.toList()), HttpStatus.OK);
 	}
 
 	public void deleteById(int id) {
@@ -112,8 +116,19 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 			Page<InwardEntry> pageResult = inwdEntryRepo.findAll(searchText, Integer.parseInt(partyId), pageable);
 			return pageResult;
 		} else {
-			Page<InwardEntry> pageResult = inwdEntryRepo.findAll(searchText, pageable);
-			return pageResult;
+			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
+			if(adminUserEntity.getUserPartyMap()!=null && adminUserEntity.getUserPartyMap().size()>0) {
+				List<Integer> partyIds=new ArrayList<>();
+				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
+					partyIds.add(userPartyMap.getPartyId());
+					LOGGER.info("In partyIds === "+partyIds);
+				}
+				Page<InwardEntry> pageResult = inwdEntryRepo.findAll(searchText, partyIds, pageable);
+				return pageResult;
+			} else {
+				Page<InwardEntry> pageResult = inwdEntryRepo.findAll(searchText, pageable);
+				return pageResult;
+			}
 		}
 	}
 
@@ -126,8 +141,19 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 			Page<InwardEntry> pageResult = inwdEntryRepo.findAllWIP(searchText, Integer.parseInt(partyId), pageable);
 			return pageResult;
 		} else {
-			Page<InwardEntry> pageResult = inwdEntryRepo.findAllWIP(searchText, pageable);
-			return pageResult;
+			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
+			if(adminUserEntity.getUserPartyMap()!=null && adminUserEntity.getUserPartyMap().size()>0) {
+				List<Integer> partyIds=new ArrayList<>();
+				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
+					partyIds.add(userPartyMap.getPartyId());
+					LOGGER.info("In partyIds === "+partyIds);
+				}
+				Page<InwardEntry> pageResult = inwdEntryRepo.findAllWIP(searchText, partyIds, pageable);
+				return pageResult;
+			} else {
+				Page<InwardEntry> pageResult = inwdEntryRepo.findAllWIP(searchText, pageable);
+				return pageResult;
+			}
 		}
 	}
 	

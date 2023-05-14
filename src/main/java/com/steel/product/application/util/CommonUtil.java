@@ -68,4 +68,16 @@ public class CommonUtil {
 		return userId;
 	}
 
+	public AdminUserEntity getUserDetails() {
+		AdminUserEntity adminUserEntity = null;
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+		UserDetails userDetail = (UserDetails) authentication.getPrincipal();
+		Optional<AdminUserEntity> userEntity = userDetailsRepository.findByUserName(userDetail.getUsername());
+		if (userEntity.isPresent()) {
+			adminUserEntity = userEntity.get();
+		}
+		return adminUserEntity;
+	}
+
 }

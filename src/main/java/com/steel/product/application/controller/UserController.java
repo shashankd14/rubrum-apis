@@ -1,6 +1,5 @@
 package com.steel.product.application.controller;
 
-import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -119,10 +118,6 @@ public class UserController
     public ResponseEntity< AdminUserEntity > getUserById(HttpServletRequest request, @PathVariable Integer id )
     {
     	
-		Principal principal = request.getUserPrincipal();
-
-		System.out.println("hi kanak == "+principal.getName());
-    	    
         AdminUserEntity AdminUserEntity = userService.getUserInfoById( id );
         if ( AdminUserEntity == null )
         {

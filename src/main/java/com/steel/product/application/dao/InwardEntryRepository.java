@@ -31,6 +31,11 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
     		+ " order by inwardEntryId desc")
     Page<InwardEntry> findAll(@Param("searchText") String searchText, Pageable pageable);
     
+	@Query("select inw from InwardEntry inw where (inw.coilNumber like %:searchText% or "
+			+ " inw.customerBatchId like %:searchText% or inw.customerInvoiceNo like %:searchText% or inw.party.partyName like %:searchText% ) "
+			+ " and inw.party.nPartyId in :partyIds order by inwardEntryId desc")
+	Page<InwardEntry> findAll(@Param("searchText") String searchText, @Param("partyIds") List<Integer> partyIds, Pageable pageable);
+    
 	@Query("select inw from InwardEntry inw where (inw.coilNumber like %:searchText% or inw.customerBatchId like %:searchText% or "
 			+ " inw.customerInvoiceNo like %:searchText% or inw.party.partyName like %:searchText% ) and inw.party.nPartyId=:partyId order by inwardEntryId desc")
 	Page<InwardEntry> findAll(@Param("searchText") String searchText, @Param("partyId") int partyId, Pageable pageable);
@@ -81,10 +86,14 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 
     @Query("select distinct pd from DeliveryDetails pd join fetch pd.instructions ins join ins.inwardId where ins.inwardId.inwardEntryId= :inwardId")
     List<Object[]> getDCPDFs(@Param("inwardId") Integer inwardId);
-    
+
 	@Query("select inw from InwardEntry inw where inw.status.statusId=2 and (inw.coilNumber like %:searchText% or inw.customerBatchId like %:searchText% or "
 			+ " inw.customerInvoiceNo like %:searchText% or inw.party.partyName like %:searchText% ) and inw.party.nPartyId=:partyId order by inwardEntryId desc")
 	Page<InwardEntry> findAllWIP(@Param("searchText") String searchText, @Param("partyId") int partyId, Pageable pageable);
+    
+	@Query("select inw from InwardEntry inw where inw.status.statusId=2 and (inw.coilNumber like %:searchText% or inw.customerBatchId like %:searchText% or "
+			+ " inw.customerInvoiceNo like %:searchText% or inw.party.partyName like %:searchText% ) and inw.party.nPartyId in :partyIds order by inwardEntryId desc")
+	Page<InwardEntry> findAllWIP(@Param("searchText") String searchText, @Param("partyIds") List<Integer> partyIds, Pageable pageable);
     
     @Query("select inw from InwardEntry inw where inw.status.statusId=2 and (inw.coilNumber like %:searchText% or "
     		+ " inw.customerBatchId like %:searchText% or inw.customerInvoiceNo like %:searchText% or inw.party.partyName like %:searchText% ) "
