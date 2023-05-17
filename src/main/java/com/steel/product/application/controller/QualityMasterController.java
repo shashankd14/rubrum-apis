@@ -8,6 +8,7 @@ import com.steel.product.application.dto.quality.KQPResponse;
 import com.steel.product.application.dto.quality.QIRSaveDataRequest;
 import com.steel.product.application.dto.quality.QualityCheckRequest;
 import com.steel.product.application.dto.quality.QualityCheckResponse;
+import com.steel.product.application.dto.quality.QualityInspDispatchListResponse;
 import com.steel.product.application.dto.quality.QualityInspReportListPageResponse;
 import com.steel.product.application.dto.quality.QualityPartyMappingRequest;
 import com.steel.product.application.dto.quality.QualityPartyMappingResponse;
@@ -379,5 +380,11 @@ public class QualityMasterController {
 			e.printStackTrace();
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+	}
+
+	@GetMapping(value = "/qir/dispatchlist", produces = "application/json")
+	public List<QualityInspDispatchListResponse> qirDispatchList() {
+		List<QualityInspDispatchListResponse> list = qualityService.qirDispatchList();
+		return list;
 	}
 }

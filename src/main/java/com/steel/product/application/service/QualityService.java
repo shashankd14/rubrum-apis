@@ -13,6 +13,7 @@ import com.steel.product.application.dto.quality.KQPResponse;
 import com.steel.product.application.dto.quality.QIRSaveDataRequest;
 import com.steel.product.application.dto.quality.QualityCheckRequest;
 import com.steel.product.application.dto.quality.QualityCheckResponse;
+import com.steel.product.application.dto.quality.QualityInspDispatchListResponse;
 import com.steel.product.application.dto.quality.QualityInspReportListPageResponse;
 import com.steel.product.application.dto.quality.QualityPartyMappingRequest;
 import com.steel.product.application.dto.quality.QualityPartyMappingRequestNew;
@@ -90,5 +91,7 @@ public interface QualityService {
 	List<QualityInspReportListPageResponse> qirListPage();
 
 	List<InstructionResponseDto> fetchpacketdtls(QIRSaveDataRequest qirSaveDataRequest);
+
+	List<QualityInspDispatchListResponse> qirDispatchList();
 
 }

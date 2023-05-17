@@ -4,10 +4,14 @@ import com.steel.product.application.dao.DeliveryDetailsRepository;
 import com.steel.product.application.dto.delivery.DeliveryDto;
 import com.steel.product.application.dto.delivery.DeliveryItemDetails;
 import com.steel.product.application.dto.delivery.DeliveryPacketsDto;
+import com.steel.product.application.entity.AdminUserEntity;
 import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.entity.Status;
+import com.steel.product.application.entity.UserPartyMap;
+import com.steel.product.application.util.CommonUtil;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,17 +38,20 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
     private InwardEntryService inwardEntryService;
 
     private PriceMasterService priceMasterService;
+    
+	private CommonUtil commonUtil;
 
-    @Autowired
+	@Autowired
 	public DeliveryDetailsServiceImpl(DeliveryDetailsRepository deliveryDetailsRepo,
 			InstructionService instructionService, StatusService statusService, InwardEntryService inwardEntryService,
-			PriceMasterService priceMasterService) {
-        this.deliveryDetailsRepo = deliveryDetailsRepo;
-        this.instructionService = instructionService;
-        this.statusService = statusService;
-        this.inwardEntryService = inwardEntryService;
-        this.priceMasterService = priceMasterService;
-    }
+			PriceMasterService priceMasterService, CommonUtil commonUtil) {
+		this.deliveryDetailsRepo = deliveryDetailsRepo;
+		this.instructionService = instructionService;
+		this.statusService = statusService;
+		this.inwardEntryService = inwardEntryService;
+		this.priceMasterService = priceMasterService;
+		this.commonUtil = commonUtil;
+	}
 
     @Override
     public List<Instruction> getAll() {
@@ -295,9 +302,20 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 	        LOGGER.info("Delivery details list size "+deliveryList.getSize());
 	        return deliveryList;
 		} else {
-	    	Page<DeliveryDetails> deliveryList = deliveryDetailsRepo.findAllDeliveries(searchText, pageable);
-	        LOGGER.info("Delivery details list size "+deliveryList.getSize());
-	        return deliveryList;
+			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
+			if(adminUserEntity.getUserPartyMap()!=null && adminUserEntity.getUserPartyMap().size()>0) {
+				List<Integer> partyIds=new ArrayList<>();
+				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
+					partyIds.add(userPartyMap.getPartyId());
+					LOGGER.info("In partyIds === "+partyIds);
+				}
+				Page<DeliveryDetails> deliveryList = deliveryDetailsRepo.findAllDeliveries(searchText, partyIds, pageable);
+				return deliveryList;
+			} else {
+				Page<DeliveryDetails> deliveryList = deliveryDetailsRepo.findAllDeliveries(searchText, pageable);
+		        LOGGER.info("Delivery details list size "+deliveryList.getSize());
+		        return deliveryList;
+			}
 		}
     }
 

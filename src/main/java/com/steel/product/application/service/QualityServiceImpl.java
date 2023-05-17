@@ -13,6 +13,7 @@ import com.steel.product.application.dto.quality.KQPResponse;
 import com.steel.product.application.dto.quality.QIRSaveDataRequest;
 import com.steel.product.application.dto.quality.QualityCheckRequest;
 import com.steel.product.application.dto.quality.QualityCheckResponse;
+import com.steel.product.application.dto.quality.QualityInspDispatchListResponse;
 import com.steel.product.application.dto.quality.QualityInspReportListPageResponse;
 import com.steel.product.application.dto.quality.QualityPartyMappingRequest;
 import com.steel.product.application.dto.quality.QualityPartyMappingRequestNew;
@@ -27,6 +28,8 @@ import com.steel.product.application.entity.QualityReportEntity;
 import com.steel.product.application.entity.QualityTemplateEntity;
 
 import lombok.extern.log4j.Log4j2;
+
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -709,5 +712,26 @@ public class QualityServiceImpl implements QualityService {
 				.map(i -> Instruction.valueOf(i)).collect(Collectors.toList());
 
 		return instructionList;
+	}
+
+	@Override
+	public List<QualityInspDispatchListResponse> qirDispatchList() {
+		List<Object[]> packetsList = kqpPartyTemplateRepository.qirDispatchList();
+		List<QualityInspDispatchListResponse> qirList = new ArrayList<>();
+
+		for (Object[] result : packetsList) {
+			QualityInspDispatchListResponse resp = new QualityInspDispatchListResponse();
+			resp.setCoilNo(result[0] != null ? (String) result[0] : null);
+			resp.setDeliveryDate(result[1] != null ? (String) result[1] : null);
+			resp.setDeliveryChalanNo(result[2] != null ? (Integer) result[2] : null);
+			resp.setCustomerBatchNo(result[3] != null ? (String) result[3] : null);
+			resp.setQtyDelivered(result[4] != null ? (new BigDecimal(result[4].toString())) : null);
+			resp.setVehicleNo(result[5] != null ? (String) result[5] : null);
+			resp.setCustomerInvoiceNo(result[6] != null ? (String) result[6] : null);
+			resp.setCustomerInvoiceDate(result[7] != null ? (String) result[7] : null);
+			resp.setEndUserTags(result[8] != null ? (String) result[8] : null);
+			qirList.add(resp);
+		}
+		return qirList;
 	}
 }

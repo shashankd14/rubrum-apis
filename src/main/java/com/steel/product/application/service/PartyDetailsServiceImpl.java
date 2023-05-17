@@ -5,10 +5,14 @@ import com.steel.product.application.dto.party.PartyDto;
 import com.steel.product.application.dto.party.PartyResponse;
 import com.steel.product.application.dto.quality.QualityPartyMappingRequestNew;
 import com.steel.product.application.dto.quality.QualityPartyMappingResponse;
+import com.steel.product.application.entity.AdminUserEntity;
 import com.steel.product.application.entity.EndUserTagsEntity;
 import com.steel.product.application.entity.PacketClassification;
 import com.steel.product.application.entity.Party;
+import com.steel.product.application.entity.UserPartyMap;
 import com.steel.product.application.mapper.PartyMapper;
+import com.steel.product.application.util.CommonUtil;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,16 +41,19 @@ public class PartyDetailsServiceImpl implements PartyDetailsService {
 	
 	private final QualityService qualityService;
 	
+	private final CommonUtil commonUtil;
+	
 	@Autowired
 	public PartyDetailsServiceImpl(PartyDetailsRepository partyRepo, AddressService addressService,
 			PacketClassificationService packetClassificationService, PartyMapper partyMapper,
-			EndUserTagsService endUserTagsService, QualityService qualityService) {
+			EndUserTagsService endUserTagsService, QualityService qualityService, CommonUtil commonUtil) {
 		this.partyRepo = partyRepo;
 		this.addressService = addressService;
 		this.packetClassificationService = packetClassificationService;
 		this.partyMapper = partyMapper;
 		this.endUserTagsService = endUserTagsService;
 		this.qualityService = qualityService;
+		this.commonUtil = commonUtil;
 	}
 
 	public boolean checkPartyName(PartyDto partyDto) {
@@ -152,14 +159,37 @@ public class PartyDetailsServiceImpl implements PartyDetailsService {
 	@Override
 	public Page<Party> findAllWithPagination(int pageNo, int pageSize) {
 		Pageable pageable = PageRequest.of(pageNo, pageSize);
-		Page<Party> pageResult = partyRepo.findAllParties(pageable);
-		return pageResult;
+		AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
+		if(adminUserEntity.getUserPartyMap()!=null && adminUserEntity.getUserPartyMap().size()>0) {
+			List<Integer> partyIds=new ArrayList<>();
+			for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
+				partyIds.add(userPartyMap.getPartyId());
+				LOGGER.info("In partyIds === "+partyIds);
+			}
+			Page<Party> pageResult = partyRepo.findAllParties(pageable, partyIds);
+			return pageResult;
+		} else {
+			Page<Party> pageResult = partyRepo.findAllParties(pageable);
+			return pageResult;
+		}
+		
 	}
 
 	@Override
 	public List<PartyResponse> findAllParties() {
-		List<Party> parties = partyRepo.findAllParties();
-		return partyMapper.toResponseList(parties);
+		AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
+		if(adminUserEntity.getUserPartyMap()!=null && adminUserEntity.getUserPartyMap().size()>0) {
+			List<Integer> partyIds=new ArrayList<>();
+			for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
+				partyIds.add(userPartyMap.getPartyId());
+				LOGGER.info("In partyIds === "+partyIds);
+			}
+			List<Party> parties = partyRepo.findAllParties(partyIds);
+			return partyMapper.toResponseList(parties);
+		} else {
+			List<Party> parties = partyRepo.findAllParties();
+			return partyMapper.toResponseList(parties);
+		}
 	}
 
 }
