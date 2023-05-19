@@ -1,7 +1,10 @@
 package com.steel.product.application.dao;
 
+import com.steel.product.application.dto.quality.QualityTemplateResponse;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.KQPPartyTemplateEntity;
+
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -39,5 +42,8 @@ public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTempla
 			+ " FROM product_tbl_delivery_details deli, product_instruction ins, product_tblinwardentry inward  "
 			+ " WHERE deli.deliveryid = ins.deliveryid and ins.inwardid = inward.inwardentryid", nativeQuery = true)
 	List<Object[]> qirDispatchList();
+
+	@Query(value = "SELECT ins FROM Instruction ins where ins.inwardId.coilNumber = :coilNo and ins.deliveryDetails.deliveryId = :partDetailsId ")
+	List<Instruction> getDispatchDetails(@Param("coilNo") String coilNo, @Param("partDetailsId") Integer partDetailsId);
 	
 }

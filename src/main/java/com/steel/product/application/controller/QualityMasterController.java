@@ -360,8 +360,14 @@ public class QualityMasterController {
 		return list;
 	}
 
-	@GetMapping(value = "/qir/listpage", produces = "application/json")
-	public List<QualityInspReportListPageResponse> qirListPage() {
+	@GetMapping(value = "/qir/preprocessing/listpage", produces = "application/json")
+	public List<QualityInspReportListPageResponse> qirPreListPage() {
+		List<QualityInspReportListPageResponse> list = qualityService.qirListPage();
+		return list;
+	}
+
+	@GetMapping(value = "/qir/postprocessing/listpage", produces = "application/json")
+	public List<QualityInspReportListPageResponse> qirPostListPage() {
 		List<QualityInspReportListPageResponse> list = qualityService.qirListPage();
 		return list;
 	}
@@ -382,9 +388,31 @@ public class QualityMasterController {
 		}
 	}
 
-	@GetMapping(value = "/qir/dispatchlist", produces = "application/json")
-	public List<QualityInspDispatchListResponse> qirDispatchList() {
+	@GetMapping(value = "/qir/postdispatch/dispatchlist", produces = "application/json")
+	public List<QualityInspDispatchListResponse> qirPostDispatchList() {
 		List<QualityInspDispatchListResponse> list = qualityService.qirDispatchList();
 		return list;
+	}
+			
+	@GetMapping(value = "/qir/predispatch/dispatchlist", produces = "application/json")
+	public List<QualityInspDispatchListResponse> qirPreDispatchList() {
+		List<QualityInspDispatchListResponse> list = qualityService.qirDispatchList();
+		return list;
+	}
+
+	@PostMapping(value = "/qir/dispatchdtls", produces = "application/json")
+	public ResponseEntity<Object> getDispatchDetails(@RequestBody QIRSaveDataRequest qirSaveDataRequest) {
+
+		try {
+
+			List<InstructionResponseDto> instructionList = qualityService.getDispatchDetails(qirSaveDataRequest);
+
+			return new ResponseEntity<Object>(instructionList, HttpStatus.OK);
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
 }

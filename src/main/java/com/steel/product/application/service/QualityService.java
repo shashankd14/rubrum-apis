@@ -94,4 +94,6 @@ public interface QualityService {
 
 	List<QualityInspDispatchListResponse> qirDispatchList();
 
+	List<InstructionResponseDto> getDispatchDetails(QIRSaveDataRequest qirSaveDataRequest);
+
 }

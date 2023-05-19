@@ -734,4 +734,15 @@ public class QualityServiceImpl implements QualityService {
 		}
 		return qirList;
 	}
+
+	@Override
+	public List<InstructionResponseDto> getDispatchDetails(QIRSaveDataRequest qirSaveDataRequest) {
+
+		List<InstructionResponseDto> instructionList = kqpPartyTemplateRepository
+				.getDispatchDetails(qirSaveDataRequest.getCoilNo(), Integer.parseInt(qirSaveDataRequest.getPartDetailsId())).stream()
+				.map(i -> Instruction.valueOf(i)).collect(Collectors.toList());
+
+		return instructionList;
+	}
+
 }
