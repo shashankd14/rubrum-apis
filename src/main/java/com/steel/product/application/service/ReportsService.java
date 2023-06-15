@@ -19,4 +19,6 @@ public interface ReportsService {
 	boolean createStockSummaryReport(int partyId, String strDate, MimeMessageHelper helper);
 
 	List<StockSummaryReportViewEntity> reconcileReport(String coilNumber);
+
+	boolean createRMReport(int partyId, String strDate, MimeMessageHelper helper);
 }

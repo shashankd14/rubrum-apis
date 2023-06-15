@@ -1,12 +1,14 @@
 package com.steel.product.application.service;
 
 import com.steel.product.application.dao.FGReportViewRepository;
+import com.steel.product.application.dao.RMReportViewRepository;
 import com.steel.product.application.dao.StockReportViewRepository;
 import com.steel.product.application.dao.StockSummaryReportViewRepository;
 import com.steel.product.application.dao.WIPReportViewRepository;
 import com.steel.product.application.dto.report.StockReportRequest;
 import com.steel.product.application.entity.FGReportViewEntity;
 import com.steel.product.application.entity.InwardEntry;
+import com.steel.product.application.entity.RMReportViewEntity;
 import com.steel.product.application.entity.StockReportViewEntity;
 import com.steel.product.application.entity.StockSummaryReportViewEntity;
 import com.steel.product.application.entity.WIPReportViewEntity;
@@ -52,6 +54,9 @@ public class ReportsServiceImpl implements ReportsService {
 	
 	@Autowired
 	WIPReportViewRepository wipReportViewRepository;
+	
+	@Autowired
+	RMReportViewRepository rmReportViewRepository;
 	
 	@Autowired
 	StockSummaryReportViewRepository stockSummaryReportViewRepository;
@@ -471,9 +476,99 @@ public class ReportsServiceImpl implements ReportsService {
 	}
 
 	@Override
+	public boolean createRMReport(int partyId, String strDate, MimeMessageHelper helper) {
+
+		boolean attachmentRequired=true;
+		try {
+			// Create blank workbook
+			XSSFWorkbook workbook = new XSSFWorkbook();
+			
+			CellStyle borderStyle = workbook.createCellStyle();
+			borderStyle.setBorderBottom(BorderStyle.THIN);
+		    borderStyle.setBorderLeft(BorderStyle.THIN);
+			borderStyle.setBorderRight(BorderStyle.THIN);
+			borderStyle.setBorderTop(BorderStyle.THIN);
+			borderStyle.setAlignment(HorizontalAlignment.CENTER);
+			
+			// Create a blank sheet
+			XSSFSheet spreadsheet = workbook.createSheet("RM_Report");
+
+			// Create row object
+			XSSFRow row;
+
+			Map<String, Object[]> acctStatementMap = getRMReportDetails(partyId);
+
+			// Iterate over data and write to sheet
+			Set<String> keyid = acctStatementMap.keySet();
+			int rowid = 0;
+
+			for (String key : keyid) {
+				row = spreadsheet.createRow(rowid++);
+				Object[] objectArr = acctStatementMap.get(key);
+				int cellid = 0;
+
+				for (Object obj : objectArr) {
+					Cell cell = row.createCell(cellid++);
+				    cell.setCellStyle(borderStyle);
+					cell.setCellValue((String) obj);
+				}
+			
+			}
+			
+            String baseDirectory = env.getProperty("email.folderpath")+File.separator;
+            
+			File outputPojoDirectory = new File(baseDirectory);
+			outputPojoDirectory.mkdirs();
+			
+			File fullPath = new File(baseDirectory +File.separator+"RMReport_"+strDate+".xlsx");
+			
+			FileOutputStream out = new FileOutputStream(fullPath);
+			workbook.write(out);
+			
+			FileSystemResource file = new FileSystemResource(fullPath);
+			if(acctStatementMap!=null && acctStatementMap.size()>1) {
+				attachmentRequired=false;
+				helper.addAttachment("RMReport_" + strDate + ".xlsx", file);
+			}
+			
+			out.close();
+			fullPath.deleteOnExit();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return attachmentRequired;
+	}
+
+	public Map<String, Object[]> getRMReportDetails(int partyId) {
+
+		Map<String, Object[]> acctStatementMap = new LinkedHashMap<>();
+
+		try {
+			List<RMReportViewEntity> partyList = rmReportViewRepository.findByPartyId(partyId);
+
+			acctStatementMap.put("1",
+					new Object[] { "CoilNumber", "CustomerBatchId", "Received Date","MaterialDesc", "MaterialGrade", "Thickness",
+							"Width", "Length", "Net Weight", "Customer Invoice Number", "Customer Invoice Date", "Status", "Created On" });
+
+			int cnt = 1;
+			for (RMReportViewEntity kk : partyList) {
+				cnt++;
+
+				acctStatementMap.put("" + cnt,
+						new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getReceivedDate(),
+								kk.getDescription(), kk.getMaterialGrade(), kk.getFthickness(), kk.getFwidth(),
+								kk.getFlength(), kk.getNetWeight(), kk.getCustInvNo(), kk.getCustInvDate(),
+								kk.getInwardStatus(), kk.getCreatedOn() });
+			}
+		} catch (Exception e) {
+			LOGGER.error("Error at getWIPReportDetails " + e.getMessage());
+		}
+		return acctStatementMap;
+	}
+
+	@Override
 	public List<StockSummaryReportViewEntity> reconcileReport(String coilNumber) {
 		return stockSummaryReportViewRepository.findByCoilNumber(coilNumber);
 	}
-
 	
 }

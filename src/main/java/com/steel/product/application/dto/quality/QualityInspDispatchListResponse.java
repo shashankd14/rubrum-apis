@@ -27,4 +27,6 @@ public class QualityInspDispatchListResponse {
 
 	private String customerInvoiceDate;
 
+	private int nPartyId;
+	
 }

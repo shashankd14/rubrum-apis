@@ -57,11 +57,8 @@ public class ReportsController {
 
 		List<Party> partyList = partyRepo.findAll();
 		for (Party party : partyList) {
-			//if (party.getEmail1() != null && party.getEmail1().length() > 0 && party.getnPartyId() == partyId) {
-				//mailSender.sendMail(party.getPartyName(), party.getEmail1(), party.getEmail2(), strDate, party.getnPartyId());
-			//}
-			if (party.getEmail1() != null && party.getEmail1().length() > 0) {
-				mailSender.sendMail(party.getPartyName(), "aspen.reports@gmail.com", "gautam3179@gmail.com, shashank.rd@gmail.com, kanakadri32@gmail.com", strDate, party.getnPartyId());
+			if (party.getEmail1() != null && party.getEmail1().length() > 0 && party.getnPartyId() == partyId) {
+				mailSender.sendMail(party.getPartyName(), party.getEmail1(), party.getEmail2(), strDate, party.getnPartyId());
 			}
 		}
 		return new ResponseEntity<>("{\"status\": \"success\", \"message\":\"Email Report Sent Successfully..!\"}", new HttpHeaders(), HttpStatus.OK);

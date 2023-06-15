@@ -179,12 +179,11 @@ public class AWSS3ServiceImpl implements AWSS3Service {
 		return modifiedFileName;
 	}
 	
-	
-	public static void mainaa (String[] args) {
+	public static void mainss(String[] args) {
 		System.out.println("Hi aknak ==");
 		String kk = new BCryptPasswordEncoder().encode("5699e5cb-8aac-4a39-bb61-413f18653051") ;
 		System.out.println("Hi aknak =="+kk);
-		kk = new BCryptPasswordEncoder().encode("Api@mg$r_Pro$") ;
+		kk = new BCryptPasswordEncoder().encode("AdMIn@Pro$") ;
 		System.out.println("Hi aknak22 =="+kk);		
 	}
 	

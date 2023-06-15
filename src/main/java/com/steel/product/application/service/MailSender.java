@@ -57,6 +57,7 @@ public class MailSender {
 			reportsService.createFGReport(partyId, strDate, helper);
 			reportsService.createWIPReport(partyId, strDate, helper);
 			reportsService.createStockSummaryReport( partyId, strDate, helper);
+			reportsService.createRMReport( partyId, strDate, helper);
 			helper.setFrom(fromMailId);
 			helper.setTo(emailId1);
 			

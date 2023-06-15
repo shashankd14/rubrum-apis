@@ -10,6 +10,7 @@ import com.steel.product.application.dto.quality.QualityCheckRequest;
 import com.steel.product.application.dto.quality.QualityCheckResponse;
 import com.steel.product.application.dto.quality.QualityInspDispatchListResponse;
 import com.steel.product.application.dto.quality.QualityInspReportListPageResponse;
+import com.steel.product.application.dto.quality.QualityInspectionReportResponse;
 import com.steel.product.application.dto.quality.QualityPartyMappingRequest;
 import com.steel.product.application.dto.quality.QualityPartyMappingResponse;
 import com.steel.product.application.dto.quality.QualityReportResponse;
@@ -137,7 +138,6 @@ public class QualityMasterController {
 		return list;
 	}
  
-
 	@GetMapping(value = "/templatemap", produces = "application/json")
 	public List<QualityPartyMappingResponse> getAllMappings() {
 		List<QualityPartyMappingResponse> list = qualityService.getAllMappings();
@@ -366,7 +366,7 @@ public class QualityMasterController {
 		return list;
 	}
 
-	@GetMapping(value = "/qir/postprocessing/listpage", produces = "application/json")
+	@GetMapping(value = "/qir/processing/listpage", produces = "application/json")
 	public List<QualityInspReportListPageResponse> qirPostListPage() {
 		List<QualityInspReportListPageResponse> list = qualityService.qirListPage();
 		return list;
@@ -415,4 +415,38 @@ public class QualityMasterController {
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+
+	@PostMapping(value = "/qir/save")
+	public ResponseEntity<Object> qirReportSave(HttpServletRequest request,
+			@RequestParam(value = "rustObserved", required = false) MultipartFile rustObserved,
+			@RequestParam(value = "safetyIssues", required = false) MultipartFile safetyIssues,
+			@RequestParam(value = "waterExposure", required = false) MultipartFile waterExposure,
+			@RequestParam(value = "wireRopeDamages", required = false) MultipartFile wireRopeDamages,
+			@RequestParam(value = "packingIntact", required = false) MultipartFile packingIntact,
+			@RequestParam(value = "improperStorage", required = false) MultipartFile improperStorage,
+			@RequestParam(value = "strapping", required = false) MultipartFile strapping,
+			@RequestParam(value = "weighmentSlip", required = false) MultipartFile weighmentSlip,
+			@RequestParam(value = "weighment", required = false) MultipartFile weighment,
+			@RequestParam(value = "acknowledgementReceipt", required = false) MultipartFile acknowledgementReceipt,
+			@RequestParam(value = "unloadingImproper", required = false) MultipartFile unloadingImproper,
+			@RequestParam(value = "templateId", required = false) String templateId,
+			@RequestParam(value = "processId", required = false) String processId,
+			@RequestParam(value = "stageName", required = true) String stageName,
+			@RequestParam(value = "userId", required = true) String userId,
+			@RequestParam(value = "templateDetails", required = true) String templateDetails,
+			@RequestParam(value = "coilNo", required = true) String coilNo,
+			@RequestParam(value = "customerBatchNo", required = true) String customerBatchNo,
+			@RequestParam(value = "planId", required = false) String planId,
+			@RequestParam(value = "deliveryChalanNo", required = false) String deliveryChalanNo) {
+		
+		return qualityService.qirReportSave(templateId, stageName, templateDetails, userId, processId,
+				rustObserved, safetyIssues, waterExposure, wireRopeDamages, packingIntact, improperStorage, 
+				strapping, weighmentSlip, weighment, acknowledgementReceipt, unloadingImproper, coilNo, customerBatchNo, planId, deliveryChalanNo);
+	}
+
+	@GetMapping(value = "/qir/{coilNo}/{planId}", produces = "application/json")
+	public QualityInspectionReportResponse getqirById1(@PathVariable("coilNo") String coilNo, @PathVariable("planId") String planId) {
+		return qualityService.getqirById(coilNo, planId);
+	}
+
 }

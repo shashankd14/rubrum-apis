@@ -15,6 +15,7 @@ import com.steel.product.application.dto.quality.QualityCheckRequest;
 import com.steel.product.application.dto.quality.QualityCheckResponse;
 import com.steel.product.application.dto.quality.QualityInspDispatchListResponse;
 import com.steel.product.application.dto.quality.QualityInspReportListPageResponse;
+import com.steel.product.application.dto.quality.QualityInspectionReportResponse;
 import com.steel.product.application.dto.quality.QualityPartyMappingRequest;
 import com.steel.product.application.dto.quality.QualityPartyMappingRequestNew;
 import com.steel.product.application.dto.quality.QualityPartyMappingResponse;
@@ -95,5 +96,14 @@ public interface QualityService {
 	List<QualityInspDispatchListResponse> qirDispatchList();
 
 	List<InstructionResponseDto> getDispatchDetails(QIRSaveDataRequest qirSaveDataRequest);
+
+	ResponseEntity<Object> qirReportSave(String templateId, String stageName, String templateDetails, String userId,
+			String processId, MultipartFile rustObserved, MultipartFile safetyIssues, MultipartFile waterExposure,
+			MultipartFile wireRopeDamages, MultipartFile packingIntact, MultipartFile improperStorage,
+			MultipartFile strapping, MultipartFile weighmentSlip, MultipartFile weighment,
+			MultipartFile acknowledgementReceipt, MultipartFile unloadingImproper, String inwardId,
+			String customerBatchNo, String planId, String deliveryChalanNo);
+
+	QualityInspectionReportResponse getqirById(String coilNo, String planId );
 
 }

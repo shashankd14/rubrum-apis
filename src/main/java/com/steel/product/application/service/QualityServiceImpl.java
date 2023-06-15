@@ -2,6 +2,7 @@ package com.steel.product.application.service;
 
 import com.steel.product.application.dao.KQPPartyTemplateRepository;
 import com.steel.product.application.dao.KQPRepository;
+import com.steel.product.application.dao.QualityInspectionReportRepository;
 import com.steel.product.application.dao.QualityPartyTemplateRepository;
 import com.steel.product.application.dao.QualityReportRepository;
 import com.steel.product.application.dao.QualityTemplateRepository;
@@ -15,6 +16,7 @@ import com.steel.product.application.dto.quality.QualityCheckRequest;
 import com.steel.product.application.dto.quality.QualityCheckResponse;
 import com.steel.product.application.dto.quality.QualityInspDispatchListResponse;
 import com.steel.product.application.dto.quality.QualityInspReportListPageResponse;
+import com.steel.product.application.dto.quality.QualityInspectionReportResponse;
 import com.steel.product.application.dto.quality.QualityPartyMappingRequest;
 import com.steel.product.application.dto.quality.QualityPartyMappingRequestNew;
 import com.steel.product.application.dto.quality.QualityPartyMappingResponse;
@@ -23,6 +25,7 @@ import com.steel.product.application.dto.quality.QualityTemplateResponse;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.KQPEntity;
 import com.steel.product.application.entity.KQPPartyTemplateEntity;
+import com.steel.product.application.entity.QualityInspectionReportEntity;
 import com.steel.product.application.entity.QualityPartyTemplateEntity;
 import com.steel.product.application.entity.QualityReportEntity;
 import com.steel.product.application.entity.QualityTemplateEntity;
@@ -48,6 +51,9 @@ public class QualityServiceImpl implements QualityService {
 
 	@Autowired
 	QualityTemplateRepository qualityTemplateRepository;
+	
+	@Autowired
+	QualityInspectionReportRepository qualityInspectionReportRepository;
 	
 	@Autowired
 	KQPRepository kqpRepository;
@@ -699,6 +705,8 @@ public class QualityServiceImpl implements QualityService {
 			resp.setPlanDate(result[3] != null ? (String) result[3] : null);
 			resp.setMaterialGrade(result[4] != null ? (String) result[4] : null);
 			resp.setFthickness( result[5] != null ? (Float) result[5] : null);
+			resp.setTargetWeight(result[6] != null ? (Float) result[6] : null);
+			resp.setNPartyId( result[6] != null ? Integer.parseInt(result[6].toString()) : null);
 			qirList.add(resp);
 		}
 		return qirList;
@@ -730,6 +738,7 @@ public class QualityServiceImpl implements QualityService {
 			resp.setCustomerInvoiceNo(result[6] != null ? (String) result[6] : null);
 			resp.setCustomerInvoiceDate(result[7] != null ? (String) result[7] : null);
 			resp.setEndUserTags(result[8] != null ? (String) result[8] : null);
+			resp.setNPartyId( result[9] != null ? Integer.parseInt(result[9].toString()) : null);
 			qirList.add(resp);
 		}
 		return qirList;
@@ -745,4 +754,135 @@ public class QualityServiceImpl implements QualityService {
 		return instructionList;
 	}
 
+	@Override
+	public ResponseEntity<Object> qirReportSave(String templateId, String stageName, String templateDetails,
+			String userId, String processId, MultipartFile rustObserved, MultipartFile safetyIssues,
+			MultipartFile waterExposure, MultipartFile wireRopeDamages, MultipartFile packingIntact,
+			MultipartFile improperStorage, MultipartFile strapping, MultipartFile weighmentSlip,
+			MultipartFile weighment, MultipartFile ackReceipt, MultipartFile unloadingImproper, String coilNo,
+			String customerBatchNo, String planId, String deliveryChalanNo) {
+		
+		ResponseEntity<Object> response = null;
+		String message="Quality Template details saved successfully..! ";
+		HttpHeaders header = new HttpHeaders();
+		header.set("Content-Type", "application/json");
+		try {
+			QualityInspectionReportEntity qualityTemplateEntity = new QualityInspectionReportEntity();
+
+			log.info(" templateDetails == " + templateDetails);
+
+			qualityTemplateEntity.setCreatedBy(Integer.parseInt(userId));
+			qualityTemplateEntity.setCreatedOn(new Date());
+
+			qualityTemplateEntity.setStageName(stageName);
+			if(processId!=null && processId.length()>0) {
+				qualityTemplateEntity.setProcessId( Integer.parseInt(processId) );
+			}
+			
+			qualityTemplateEntity.setTemplateId(Integer.parseInt(templateId));
+			qualityTemplateEntity.setCoilNo(coilNo);
+			qualityTemplateEntity.setPlanId( planId);
+			qualityTemplateEntity.setDeliveryChalanNo( deliveryChalanNo);
+			qualityTemplateEntity.setTemplateDetails( templateDetails);
+			qualityTemplateEntity.setUpdatedBy(Integer.parseInt(userId) );
+			qualityTemplateEntity.setUpdatedOn(new Date());
+
+			if (rustObserved != null) {
+				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo+"_"+stageName, templateId, rustObserved);
+				qualityTemplateEntity.setRustObserved( fileUrl);
+			}
+			if (safetyIssues != null) {
+				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo+"_"+stageName, templateId, safetyIssues);
+				qualityTemplateEntity.setSafetyIssues( fileUrl);
+			}
+			if (waterExposure != null) {
+				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo+"_"+stageName, templateId, waterExposure);
+				qualityTemplateEntity.setWaterExposure( fileUrl);
+			}
+			if (wireRopeDamages != null) {
+				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo+"_"+stageName, templateId, wireRopeDamages);
+				qualityTemplateEntity.setWireRopeDamages( fileUrl);
+			}
+			if (packingIntact != null) {
+				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo+"_"+stageName, templateId, packingIntact);
+				qualityTemplateEntity.setPackingIntact(fileUrl);
+			}
+			if (improperStorage != null) {
+				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo+"_"+stageName, templateId, improperStorage);
+				qualityTemplateEntity.setImproperStorage(  fileUrl);
+			}
+			if (strapping != null) {
+				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo+"_"+stageName, templateId, strapping);
+				qualityTemplateEntity.setStrapping(fileUrl);
+			}
+			if (weighmentSlip != null) {
+				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo+"_"+stageName, templateId, weighmentSlip);
+				qualityTemplateEntity.setWeighmentSlip(fileUrl);
+			}
+			if (weighment != null) {
+				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo+"_"+stageName, templateId, weighment);
+				qualityTemplateEntity.setWeighment( fileUrl);
+			}
+			if (ackReceipt != null) {
+				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo+"_"+stageName, templateId, ackReceipt);
+				qualityTemplateEntity.setAckReceipt( fileUrl);
+			}
+			if (unloadingImproper != null) {
+				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo+"_"+stageName, templateId, unloadingImproper);
+				qualityTemplateEntity.setUnloadingImproper( fileUrl);
+			}
+			
+			qualityInspectionReportRepository.save(qualityTemplateEntity);
+			
+			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"" + message + "}", header, HttpStatus.OK);
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.info("error is ==" + e.getMessage());
+			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.BAD_REQUEST);
+		}
+		
+		return response;
+	}
+
+	@Override
+	public QualityInspectionReportResponse getqirById(String coilNo, String planId ) {
+		
+		QualityInspectionReportEntity entity = qualityInspectionReportRepository.findTop1ByCoilNo(coilNo);
+		QualityInspectionReportResponse resp = QualityInspectionReportEntity.valueOf(entity);
+		
+		if(resp.getRustObserved()!=null && resp.getRustObserved().length() >0 ) {
+			resp.setRustObservedPreSingedURL(awsS3Service.generatePresignedUrl(resp.getRustObserved()) );
+		}
+		if(resp.getSafetyIssues()!=null && resp.getSafetyIssues().length() >0 ) {
+			resp.setSafetyIssuesPreSingedURL(awsS3Service.generatePresignedUrl(resp.getSafetyIssues()) );		
+		}
+		if(resp.getWaterExposure()!=null && resp.getWaterExposure().length() >0 ) {
+			resp.setWaterExposurePreSingedURL(awsS3Service.generatePresignedUrl(resp.getWaterExposure()) );		
+		}
+		if(resp.getWireRopeDamages()!=null && resp.getWireRopeDamages().length() >0 ) {
+			resp.setWireRopeDamagesPreSingedURL(awsS3Service.generatePresignedUrl(resp.getWireRopeDamages()) );		
+		}
+		if(resp.getPackingIntact()!=null && resp.getPackingIntact().length() >0 ) {
+			resp.setPackingIntactPreSingedURL(awsS3Service.generatePresignedUrl(resp.getPackingIntact()) );		
+		}
+		if(resp.getImproperStorage()!=null && resp.getImproperStorage().length() >0 ) {
+			resp.setImproperStoragePreSingedURL(awsS3Service.generatePresignedUrl(resp.getImproperStorage()) );		
+		}
+		if(resp.getStrapping()!=null && resp.getStrapping().length() >0 ) {
+			resp.setStrappingPreSingedURL(awsS3Service.generatePresignedUrl(resp.getStrapping()) );		
+		}
+		if(resp.getWeighmentSlip()!=null && resp.getWeighmentSlip().length() >0 ) {
+			resp.setWeighmentSlipPreSingedURL(awsS3Service.generatePresignedUrl(resp.getWeighmentSlip()) );		
+		}
+		if(resp.getWeighment()!=null && resp.getWeighment().length() >0 ) {
+			resp.setWeighmentPreSingedURL(awsS3Service.generatePresignedUrl(resp.getWeighment()) );		
+		}
+		if(resp.getAckReceipt()!=null && resp.getAckReceipt().length() >0 ) {
+			resp.setAckReceiptPreSingedURL(awsS3Service.generatePresignedUrl(resp.getAckReceipt()) );
+		}
+		if(resp.getUnloadingImproper()!=null && resp.getUnloadingImproper().length() >0 ) {
+			resp.setUnloadingImproperPreSingedURL(awsS3Service.generatePresignedUrl(resp.getUnloadingImproper()) );
+		}
+		return resp;
+	}
 }

@@ -19,4 +19,8 @@ public class QualityInspReportListPageResponse {
 
 	private Float fthickness;
 
+	private Float targetWeight;
+
+	private int nPartyId;
+
 }
