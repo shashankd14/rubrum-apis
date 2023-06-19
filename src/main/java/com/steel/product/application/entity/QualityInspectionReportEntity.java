@@ -28,6 +28,9 @@ public class QualityInspectionReportEntity {
 	
 	@Column(name = "coil_no")
 	private String coilNo;
+
+	@Column(name = "customer_batch_no")
+	private String customerBatchNo;
 	
 	@Column(name = "plan_id")
 	private String planId;

@@ -201,7 +201,6 @@ public class QualityServiceImpl implements QualityService {
 
 	@Override
 	public QualityTemplateResponse getById(int id) {
-
 		
 		QualityTemplateResponse resp = QualityTemplateEntity.valueOf(qualityTemplateRepository.findByTemplateId(id));;
 		
@@ -693,6 +692,32 @@ public class QualityServiceImpl implements QualityService {
 	}
 
 	@Override
+	public List<QualityInspReportListPageResponse> qirInwardListPage() {
+		List<Object[]> packetsList = kqpPartyTemplateRepository.qirInwardListPage();
+		List<QualityInspReportListPageResponse> qirList = new ArrayList<>();
+
+		for (Object[] result : packetsList) {
+			QualityInspReportListPageResponse resp = new QualityInspReportListPageResponse();
+			resp.setInwardEntryId(result[0] != null ? (Integer) result[0] : null);
+			resp.setCoilNo(result[1] != null ? (String) result[1] : null);
+			resp.setCustomerBatchNo(result[2] != null ? (String) result[2] : null);
+			resp.setPlanDate(result[3] != null ? (String) result[3] : null);
+			resp.setMaterialGrade(result[4] != null ? (String) result[4] : null);
+			resp.setFthickness(result[5] != null ? (Float) result[5] : null);
+			resp.setTargetWeight(result[6] != null ? (Float) result[6] : null);
+			resp.setNPartyId(result[7] != null ? Integer.parseInt(result[7].toString()) : null);
+			if(result[8] != null && result[8].toString().length() >0 ) {
+				resp.setQirId(Integer.parseInt(result[8].toString()));
+			} else {
+				resp.setQirId(null);
+			}
+			qirList.add(resp);
+		}
+		return qirList;
+	}
+
+
+	@Override
 	public List<QualityInspReportListPageResponse> qirListPage() {
 		List<Object[]> packetsList = kqpPartyTemplateRepository.qirListPage();
 		List<QualityInspReportListPageResponse> qirList = new ArrayList<>();
@@ -704,9 +729,14 @@ public class QualityServiceImpl implements QualityService {
 			resp.setCustomerBatchNo(result[2] != null ? (String) result[2] : null);
 			resp.setPlanDate(result[3] != null ? (String) result[3] : null);
 			resp.setMaterialGrade(result[4] != null ? (String) result[4] : null);
-			resp.setFthickness( result[5] != null ? (Float) result[5] : null);
+			resp.setFthickness(result[5] != null ? (Float) result[5] : null);
 			resp.setTargetWeight(result[6] != null ? (Float) result[6] : null);
-			resp.setNPartyId( result[6] != null ? Integer.parseInt(result[6].toString()) : null);
+			resp.setNPartyId(result[7] != null ? Integer.parseInt(result[7].toString()) : null);
+			if(result[8] != null && result[8].toString().length() >0 ) {
+				resp.setQirId(Integer.parseInt(result[8].toString()));
+			} else {
+				resp.setQirId(null);
+			}
 			qirList.add(resp);
 		}
 		return qirList;
@@ -738,7 +768,12 @@ public class QualityServiceImpl implements QualityService {
 			resp.setCustomerInvoiceNo(result[6] != null ? (String) result[6] : null);
 			resp.setCustomerInvoiceDate(result[7] != null ? (String) result[7] : null);
 			resp.setEndUserTags(result[8] != null ? (String) result[8] : null);
-			resp.setNPartyId( result[9] != null ? Integer.parseInt(result[9].toString()) : null);
+			resp.setNPartyId(result[9] != null ? Integer.parseInt(result[9].toString()) : null);
+			if(result[10] != null && result[10].toString().length() >0 ) {
+				resp.setQirId( Integer.parseInt(result[10].toString()));
+			} else {
+				resp.setQirId(null);
+			}
 			qirList.add(resp);
 		}
 		return qirList;
@@ -760,27 +795,35 @@ public class QualityServiceImpl implements QualityService {
 			MultipartFile waterExposure, MultipartFile wireRopeDamages, MultipartFile packingIntact,
 			MultipartFile improperStorage, MultipartFile strapping, MultipartFile weighmentSlip,
 			MultipartFile weighment, MultipartFile ackReceipt, MultipartFile unloadingImproper, String coilNo,
-			String customerBatchNo, String planId, String deliveryChalanNo) {
+			String customerBatchNo, String planId, String deliveryChalanNo, String qirId) {
 		
 		ResponseEntity<Object> response = null;
-		String message="Quality Template details saved successfully..! ";
+		String message="Quality Inspection Report details saved successfully..! ";
 		HttpHeaders header = new HttpHeaders();
 		header.set("Content-Type", "application/json");
 		try {
+			
+			log.info(" templateDetails == " + templateDetails);
 			QualityInspectionReportEntity qualityTemplateEntity = new QualityInspectionReportEntity();
 
+			if (qirId !=null && Integer.parseInt(qirId) > 0) {
+				qualityTemplateEntity = qualityInspectionReportRepository.findByQirId(Integer.parseInt(qirId));
+			} else {
+				qualityTemplateEntity = new QualityInspectionReportEntity();
+				qualityTemplateEntity.setCreatedBy(Integer.parseInt(userId) );
+				qualityTemplateEntity.setCreatedOn(new Date());
+			}
 			log.info(" templateDetails == " + templateDetails);
-
+			
 			qualityTemplateEntity.setCreatedBy(Integer.parseInt(userId));
 			qualityTemplateEntity.setCreatedOn(new Date());
-
 			qualityTemplateEntity.setStageName(stageName);
 			if(processId!=null && processId.length()>0) {
 				qualityTemplateEntity.setProcessId( Integer.parseInt(processId) );
 			}
-			
 			qualityTemplateEntity.setTemplateId(Integer.parseInt(templateId));
 			qualityTemplateEntity.setCoilNo(coilNo);
+			qualityTemplateEntity.setCustomerBatchNo( customerBatchNo);
 			qualityTemplateEntity.setPlanId( planId);
 			qualityTemplateEntity.setDeliveryChalanNo( deliveryChalanNo);
 			qualityTemplateEntity.setTemplateDetails( templateDetails);
@@ -831,9 +874,7 @@ public class QualityServiceImpl implements QualityService {
 				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo+"_"+stageName, templateId, unloadingImproper);
 				qualityTemplateEntity.setUnloadingImproper( fileUrl);
 			}
-			
 			qualityInspectionReportRepository.save(qualityTemplateEntity);
-			
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"" + message + "}", header, HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -845,44 +886,165 @@ public class QualityServiceImpl implements QualityService {
 	}
 
 	@Override
-	public QualityInspectionReportResponse getqirById(String coilNo, String planId ) {
-		
+	public QualityInspectionReportResponse getqirById(String coilNo, String planId) {
+
 		QualityInspectionReportEntity entity = qualityInspectionReportRepository.findTop1ByCoilNo(coilNo);
 		QualityInspectionReportResponse resp = QualityInspectionReportEntity.valueOf(entity);
-		
-		if(resp.getRustObserved()!=null && resp.getRustObserved().length() >0 ) {
-			resp.setRustObservedPreSingedURL(awsS3Service.generatePresignedUrl(resp.getRustObserved()) );
+
+		if (resp.getRustObserved() != null && resp.getRustObserved().length() > 0) {
+			resp.setRustObservedPreSingedURL(awsS3Service.generatePresignedUrl(resp.getRustObserved()));
 		}
-		if(resp.getSafetyIssues()!=null && resp.getSafetyIssues().length() >0 ) {
-			resp.setSafetyIssuesPreSingedURL(awsS3Service.generatePresignedUrl(resp.getSafetyIssues()) );		
+		if (resp.getSafetyIssues() != null && resp.getSafetyIssues().length() > 0) {
+			resp.setSafetyIssuesPreSingedURL(awsS3Service.generatePresignedUrl(resp.getSafetyIssues()));
 		}
-		if(resp.getWaterExposure()!=null && resp.getWaterExposure().length() >0 ) {
-			resp.setWaterExposurePreSingedURL(awsS3Service.generatePresignedUrl(resp.getWaterExposure()) );		
+		if (resp.getWaterExposure() != null && resp.getWaterExposure().length() > 0) {
+			resp.setWaterExposurePreSingedURL(awsS3Service.generatePresignedUrl(resp.getWaterExposure()));
 		}
-		if(resp.getWireRopeDamages()!=null && resp.getWireRopeDamages().length() >0 ) {
-			resp.setWireRopeDamagesPreSingedURL(awsS3Service.generatePresignedUrl(resp.getWireRopeDamages()) );		
+		if (resp.getWireRopeDamages() != null && resp.getWireRopeDamages().length() > 0) {
+			resp.setWireRopeDamagesPreSingedURL(awsS3Service.generatePresignedUrl(resp.getWireRopeDamages()));
 		}
-		if(resp.getPackingIntact()!=null && resp.getPackingIntact().length() >0 ) {
-			resp.setPackingIntactPreSingedURL(awsS3Service.generatePresignedUrl(resp.getPackingIntact()) );		
+		if (resp.getPackingIntact() != null && resp.getPackingIntact().length() > 0) {
+			resp.setPackingIntactPreSingedURL(awsS3Service.generatePresignedUrl(resp.getPackingIntact()));
 		}
-		if(resp.getImproperStorage()!=null && resp.getImproperStorage().length() >0 ) {
-			resp.setImproperStoragePreSingedURL(awsS3Service.generatePresignedUrl(resp.getImproperStorage()) );		
+		if (resp.getImproperStorage() != null && resp.getImproperStorage().length() > 0) {
+			resp.setImproperStoragePreSingedURL(awsS3Service.generatePresignedUrl(resp.getImproperStorage()));
 		}
-		if(resp.getStrapping()!=null && resp.getStrapping().length() >0 ) {
-			resp.setStrappingPreSingedURL(awsS3Service.generatePresignedUrl(resp.getStrapping()) );		
+		if (resp.getStrapping() != null && resp.getStrapping().length() > 0) {
+			resp.setStrappingPreSingedURL(awsS3Service.generatePresignedUrl(resp.getStrapping()));
 		}
-		if(resp.getWeighmentSlip()!=null && resp.getWeighmentSlip().length() >0 ) {
-			resp.setWeighmentSlipPreSingedURL(awsS3Service.generatePresignedUrl(resp.getWeighmentSlip()) );		
+		if (resp.getWeighmentSlip() != null && resp.getWeighmentSlip().length() > 0) {
+			resp.setWeighmentSlipPreSingedURL(awsS3Service.generatePresignedUrl(resp.getWeighmentSlip()));
 		}
-		if(resp.getWeighment()!=null && resp.getWeighment().length() >0 ) {
-			resp.setWeighmentPreSingedURL(awsS3Service.generatePresignedUrl(resp.getWeighment()) );		
+		if (resp.getWeighment() != null && resp.getWeighment().length() > 0) {
+			resp.setWeighmentPreSingedURL(awsS3Service.generatePresignedUrl(resp.getWeighment()));
 		}
-		if(resp.getAckReceipt()!=null && resp.getAckReceipt().length() >0 ) {
-			resp.setAckReceiptPreSingedURL(awsS3Service.generatePresignedUrl(resp.getAckReceipt()) );
+		if (resp.getAckReceipt() != null && resp.getAckReceipt().length() > 0) {
+			resp.setAckReceiptPreSingedURL(awsS3Service.generatePresignedUrl(resp.getAckReceipt()));
 		}
-		if(resp.getUnloadingImproper()!=null && resp.getUnloadingImproper().length() >0 ) {
-			resp.setUnloadingImproperPreSingedURL(awsS3Service.generatePresignedUrl(resp.getUnloadingImproper()) );
+		if (resp.getUnloadingImproper() != null && resp.getUnloadingImproper().length() > 0) {
+			resp.setUnloadingImproperPreSingedURL(awsS3Service.generatePresignedUrl(resp.getUnloadingImproper()));
 		}
 		return resp;
 	}
+
+	@Override
+	public ResponseEntity<Object> deleteQIR(int id) {
+		ResponseEntity<Object> response = null;
+		HttpHeaders header = new HttpHeaders();
+		header.set("Content-Type", "application/json");
+		try {
+			qualityInspectionReportRepository.deleteById(id);
+			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"QIR Report deleted successfully..! \"}", header, HttpStatus.OK);
+		} catch (Exception e) {
+			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"" + e.getMessage() + "\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return response;
+	}
+
+	@Override
+	public QualityInspectionReportResponse getQIRReport(String stageName, String coilNo, String planId) {
+		
+		QualityInspectionReportResponse resp = new QualityInspectionReportResponse();
+		try {
+			QualityInspectionReportEntity entity = qualityInspectionReportRepository.findTop1ByCoilNo(coilNo);
+			
+			if ("inward".equalsIgnoreCase(stageName)) {
+				entity = qualityInspectionReportRepository.findTop1ByCoilNo(coilNo);
+			} else if ("processing".equalsIgnoreCase(stageName) || "postprocessing".equalsIgnoreCase(stageName)) {
+				entity = qualityInspectionReportRepository.findTop1ByCoilNoAndPlanId(coilNo, planId);
+			} else if ("predispatch".equalsIgnoreCase(stageName) || "postdispatch".equalsIgnoreCase(stageName)) {
+				entity = qualityInspectionReportRepository.findTop1ByCoilNoAndDeliveryChalanNo(coilNo, planId);
+			}
+			
+			resp = QualityInspectionReportEntity.valueOf(entity);
+			
+			if(resp.getRustObserved()!=null && resp.getRustObserved().length() >0 ) {
+				resp.setRustObservedPreSingedURL(awsS3Service.generatePresignedUrl(resp.getRustObserved()) );
+			}
+			if(resp.getSafetyIssues()!=null && resp.getSafetyIssues().length() >0 ) {
+				resp.setSafetyIssuesPreSingedURL(awsS3Service.generatePresignedUrl(resp.getSafetyIssues()) );		
+			}
+			if(resp.getWaterExposure()!=null && resp.getWaterExposure().length() >0 ) {
+				resp.setWaterExposurePreSingedURL(awsS3Service.generatePresignedUrl(resp.getWaterExposure()) );		
+			}
+			if(resp.getWireRopeDamages()!=null && resp.getWireRopeDamages().length() >0 ) {
+				resp.setWireRopeDamagesPreSingedURL(awsS3Service.generatePresignedUrl(resp.getWireRopeDamages()) );		
+			}
+			if(resp.getPackingIntact()!=null && resp.getPackingIntact().length() >0 ) {
+				resp.setPackingIntactPreSingedURL(awsS3Service.generatePresignedUrl(resp.getPackingIntact()) );		
+			}
+			if(resp.getImproperStorage()!=null && resp.getImproperStorage().length() >0 ) {
+				resp.setImproperStoragePreSingedURL(awsS3Service.generatePresignedUrl(resp.getImproperStorage()) );		
+			}
+			if(resp.getStrapping()!=null && resp.getStrapping().length() >0 ) {
+				resp.setStrappingPreSingedURL(awsS3Service.generatePresignedUrl(resp.getStrapping()) );		
+			}
+			if(resp.getWeighmentSlip()!=null && resp.getWeighmentSlip().length() >0 ) {
+				resp.setWeighmentSlipPreSingedURL(awsS3Service.generatePresignedUrl(resp.getWeighmentSlip()) );		
+			}
+			if(resp.getWeighment()!=null && resp.getWeighment().length() >0 ) {
+				resp.setWeighmentPreSingedURL(awsS3Service.generatePresignedUrl(resp.getWeighment()) );		
+			}
+			if(resp.getAckReceipt()!=null && resp.getAckReceipt().length() >0 ) {
+				resp.setAckReceiptPreSingedURL(awsS3Service.generatePresignedUrl(resp.getAckReceipt()) );
+			}
+			if(resp.getUnloadingImproper()!=null && resp.getUnloadingImproper().length() >0 ) {
+				resp.setUnloadingImproperPreSingedURL(awsS3Service.generatePresignedUrl(resp.getUnloadingImproper()) );
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return resp;
+	}
+
+	@Override
+	public QualityInspectionReportResponse getQIRReportById(int id) {
+		
+		QualityInspectionReportResponse resp = new QualityInspectionReportResponse();
+		try {
+			QualityInspectionReportEntity entity = qualityInspectionReportRepository.findByQirId(id);
+			if (entity != null) {
+
+				resp = QualityInspectionReportEntity.valueOf(entity);
+
+				if (resp.getRustObserved() != null && resp.getRustObserved().length() > 0) {
+					resp.setRustObservedPreSingedURL(awsS3Service.generatePresignedUrl(resp.getRustObserved()));
+				}
+				if (resp.getSafetyIssues() != null && resp.getSafetyIssues().length() > 0) {
+					resp.setSafetyIssuesPreSingedURL(awsS3Service.generatePresignedUrl(resp.getSafetyIssues()));
+				}
+				if (resp.getWaterExposure() != null && resp.getWaterExposure().length() > 0) {
+					resp.setWaterExposurePreSingedURL(awsS3Service.generatePresignedUrl(resp.getWaterExposure()));
+				}
+				if (resp.getWireRopeDamages() != null && resp.getWireRopeDamages().length() > 0) {
+					resp.setWireRopeDamagesPreSingedURL(awsS3Service.generatePresignedUrl(resp.getWireRopeDamages()));
+				}
+				if (resp.getPackingIntact() != null && resp.getPackingIntact().length() > 0) {
+					resp.setPackingIntactPreSingedURL(awsS3Service.generatePresignedUrl(resp.getPackingIntact()));
+				}
+				if (resp.getImproperStorage() != null && resp.getImproperStorage().length() > 0) {
+					resp.setImproperStoragePreSingedURL(awsS3Service.generatePresignedUrl(resp.getImproperStorage()));
+				}
+				if (resp.getStrapping() != null && resp.getStrapping().length() > 0) {
+					resp.setStrappingPreSingedURL(awsS3Service.generatePresignedUrl(resp.getStrapping()));
+				}
+				if (resp.getWeighmentSlip() != null && resp.getWeighmentSlip().length() > 0) {
+					resp.setWeighmentSlipPreSingedURL(awsS3Service.generatePresignedUrl(resp.getWeighmentSlip()));
+				}
+				if (resp.getWeighment() != null && resp.getWeighment().length() > 0) {
+					resp.setWeighmentPreSingedURL(awsS3Service.generatePresignedUrl(resp.getWeighment()));
+				}
+				if (resp.getAckReceipt() != null && resp.getAckReceipt().length() > 0) {
+					resp.setAckReceiptPreSingedURL(awsS3Service.generatePresignedUrl(resp.getAckReceipt()));
+				}
+				if (resp.getUnloadingImproper() != null && resp.getUnloadingImproper().length() > 0) {
+					resp.setUnloadingImproperPreSingedURL(awsS3Service.generatePresignedUrl(resp.getUnloadingImproper()));
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return resp;
+	}
+
 }

@@ -1,7 +1,6 @@
 package com.steel.product.application.dao;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.steel.product.application.entity.QualityInspectionReportEntity;
@@ -9,13 +8,11 @@ import com.steel.product.application.entity.QualityInspectionReportEntity;
 @Repository
 public interface QualityInspectionReportRepository extends JpaRepository<QualityInspectionReportEntity, Integer> {
 
-	QualityInspectionReportEntity findByCoilNo(String inwardId);
+	QualityInspectionReportEntity findTop1ByCoilNoAndPlanId(String coilNo, String planId);
 
-	QualityInspectionReportEntity findByPlanId(String planId);
+	QualityInspectionReportEntity findTop1ByCoilNoAndDeliveryChalanNo(String coilNo, String deliveryChalanNo);
 
-	QualityInspectionReportEntity findByDeliveryChalanNo(String deliveryChalanNo);
-
-	QualityInspectionReportEntity findTop1ByCoilNoAndPlanId(@Param("coilNo") String coilNo, @Param("planId") String planId);
-
-	QualityInspectionReportEntity findTop1ByCoilNo(@Param("coilNo") String coilNo);
+	QualityInspectionReportEntity findTop1ByCoilNo(String coilNo);
+	
+	QualityInspectionReportEntity findByQirId(Integer qirId); 
 }

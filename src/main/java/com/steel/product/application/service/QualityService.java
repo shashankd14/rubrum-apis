@@ -102,8 +102,16 @@ public interface QualityService {
 			MultipartFile wireRopeDamages, MultipartFile packingIntact, MultipartFile improperStorage,
 			MultipartFile strapping, MultipartFile weighmentSlip, MultipartFile weighment,
 			MultipartFile acknowledgementReceipt, MultipartFile unloadingImproper, String inwardId,
-			String customerBatchNo, String planId, String deliveryChalanNo);
+			String customerBatchNo, String planId, String deliveryChalanNo, String qirId);
 
 	QualityInspectionReportResponse getqirById(String coilNo, String planId );
+
+	ResponseEntity<Object> deleteQIR(int id);
+
+	QualityInspectionReportResponse getQIRReport(String stageName, String coilNo, String planId);
+
+	List<QualityInspReportListPageResponse> qirInwardListPage();
+
+	QualityInspectionReportResponse getQIRReportById(int id);
 
 }

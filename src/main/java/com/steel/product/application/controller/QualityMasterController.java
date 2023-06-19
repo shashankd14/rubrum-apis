@@ -360,6 +360,12 @@ public class QualityMasterController {
 		return list;
 	}
 
+	@GetMapping(value = "/qir/inward/listpage", produces = "application/json")
+	public List<QualityInspReportListPageResponse> qirInwardListPage() {
+		List<QualityInspReportListPageResponse> list = qualityService.qirInwardListPage();
+		return list;
+	}
+
 	@GetMapping(value = "/qir/preprocessing/listpage", produces = "application/json")
 	public List<QualityInspReportListPageResponse> qirPreListPage() {
 		List<QualityInspReportListPageResponse> list = qualityService.qirListPage();
@@ -374,15 +380,10 @@ public class QualityMasterController {
 
 	@PostMapping(value = "/qir/fetchpacketdtls", produces = "application/json")
 	public ResponseEntity<Object> getDocInstructionDetails(@RequestBody QIRSaveDataRequest qirSaveDataRequest) {
-
 		try {
-
 			List<InstructionResponseDto> instructionList = qualityService.fetchpacketdtls(qirSaveDataRequest);
-
 			return new ResponseEntity<Object>(instructionList, HttpStatus.OK);
-
 		} catch (Exception e) {
-
 			e.printStackTrace();
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -402,15 +403,10 @@ public class QualityMasterController {
 
 	@PostMapping(value = "/qir/dispatchdtls", produces = "application/json")
 	public ResponseEntity<Object> getDispatchDetails(@RequestBody QIRSaveDataRequest qirSaveDataRequest) {
-
 		try {
-
 			List<InstructionResponseDto> instructionList = qualityService.getDispatchDetails(qirSaveDataRequest);
-
 			return new ResponseEntity<Object>(instructionList, HttpStatus.OK);
-
 		} catch (Exception e) {
-
 			e.printStackTrace();
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -437,16 +433,30 @@ public class QualityMasterController {
 			@RequestParam(value = "coilNo", required = true) String coilNo,
 			@RequestParam(value = "customerBatchNo", required = true) String customerBatchNo,
 			@RequestParam(value = "planId", required = false) String planId,
-			@RequestParam(value = "deliveryChalanNo", required = false) String deliveryChalanNo) {
-		
-		return qualityService.qirReportSave(templateId, stageName, templateDetails, userId, processId,
-				rustObserved, safetyIssues, waterExposure, wireRopeDamages, packingIntact, improperStorage, 
-				strapping, weighmentSlip, weighment, acknowledgementReceipt, unloadingImproper, coilNo, customerBatchNo, planId, deliveryChalanNo);
+			@RequestParam(value = "deliveryChalanNo", required = false) String deliveryChalanNo,
+			@RequestParam(value = "qirId", required = false) String qirId) {
+
+		return qualityService.qirReportSave(templateId, stageName, templateDetails, userId, processId, rustObserved,
+				safetyIssues, waterExposure, wireRopeDamages, packingIntact, improperStorage, strapping, weighmentSlip,
+				weighment, acknowledgementReceipt, unloadingImproper, coilNo, customerBatchNo, planId,
+				deliveryChalanNo, qirId);
 	}
 
-	@GetMapping(value = "/qir/{coilNo}/{planId}", produces = "application/json")
-	public QualityInspectionReportResponse getqirById1(@PathVariable("coilNo") String coilNo, @PathVariable("planId") String planId) {
-		return qualityService.getqirById(coilNo, planId);
+	@GetMapping(value = "/qir/{stageName}/{coilNo}/{planId}", produces = "application/json")
+	public QualityInspectionReportResponse getQIRREport(@PathVariable("stageName") String stageName,
+			@PathVariable("coilNo") String coilNo, @PathVariable("planId") String planId) {
+		return qualityService.getQIRReport(stageName, coilNo, planId);
 	}
+	
+	@GetMapping(value = "/qir/{id}", produces = "application/json" )
+	public QualityInspectionReportResponse getQIR(@PathVariable("id") int id) {
+		return qualityService.getQIRReportById(id);
+	}
+	
+	@DeleteMapping(value = "/qir/{id}", produces = "application/json" )
+	public ResponseEntity<Object> deleteQIR(@PathVariable("id") int id) {
+		return qualityService.deleteQIR(id);
+	}
+
 
 }

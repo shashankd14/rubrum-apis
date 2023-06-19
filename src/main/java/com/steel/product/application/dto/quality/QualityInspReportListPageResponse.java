@@ -6,12 +6,14 @@ import lombok.Setter;
 @Getter
 @Setter
 public class QualityInspReportListPageResponse {
-
-	private String planId;
+	
+	private Integer inwardEntryId;
 
 	private String coilNo;
 
 	private String customerBatchNo;
+
+	private String planId;
 
 	private String planDate;
 
@@ -23,4 +25,6 @@ public class QualityInspReportListPageResponse {
 
 	private int nPartyId;
 
+	private Integer qirId;
+	
 }
