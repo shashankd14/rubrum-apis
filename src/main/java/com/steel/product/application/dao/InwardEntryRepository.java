@@ -114,4 +114,12 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 	@Query(value = GET_INWARD_DETAILS, nativeQuery = true)
 	public List<Object[]> getCoilStatus(@Param("inwardId") Integer inwardId);
 	
+	@Query(value = "SELECT distinct coilnumber `Coil No`,customerbatchid `Batch No`," + 
+			" (select desc2.vdescription from product_tblmatdescription desc2 where desc2.nmatid=inward.nmatid) as material_desc," + 
+			" (select aa.`gradename` from `product_material_grades` aa where aa.`gradeid` = `inward`.`materialgradeid`) AS `material_grade`," + 
+			" ROUND(`fthickness`, 2) as `fthickness`, round(fquantity,2) as `net weight`, " +
+			" ROUND(`grossweight`, 2) as `grossweight`, ROUND(`fwidth`, 2) as `fwidth` " +
+			" FROM product_tblinwardentry inward WHERE inwardentryid=:inwardId ", nativeQuery = true)
+	List<Object[]> getQRCodeDetails(@Param("inwardId") Integer inwardId);
+	
 }

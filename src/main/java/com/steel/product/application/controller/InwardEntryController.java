@@ -1,7 +1,10 @@
 package com.steel.product.application.controller;
 
+import com.google.zxing.WriterException;
+import com.itextpdf.text.DocumentException;
 import com.steel.product.application.dto.inward.InwardDto;
 import com.steel.product.application.dto.inward.InwardEntryResponseDto;
+import com.steel.product.application.dto.qrcode.QRCodeResponse;
 import com.steel.product.application.entity.InwardDoc;
 import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.service.*;
@@ -11,12 +14,16 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import net.minidev.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
@@ -46,13 +53,15 @@ public class InwardEntryController {
 
 	private InwardDocService inwardDocService;
 
+	private QRCodePDFGenerator pdfGenerator;
+
 	private Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 
 	@Autowired
 	public InwardEntryController(InwardEntryService inwdEntrySvc, PartyDetailsService partyDetailsService,
 			StatusService statusService, MaterialDescriptionService matDescService,
 			MaterialGradeService matGradeService, UserService userSerive, AWSS3Service awsS3Service,
-			InwardDocService inwardDocService, CommonUtil commonUtil) {
+			InwardDocService inwardDocService, CommonUtil commonUtil, QRCodePDFGenerator pdfGenerator) {
 		this.inwdEntrySvc = inwdEntrySvc;
 		this.partyDetailsService = partyDetailsService;
 		this.statusService = statusService;
@@ -61,6 +70,7 @@ public class InwardEntryController {
 		this.awsS3Service = awsS3Service;
 		this.inwardDocService = inwardDocService;
 		this.commonUtil = commonUtil;
+		this.pdfGenerator = pdfGenerator;
 	}
 
 	@PostMapping("/addNew")
@@ -361,5 +371,35 @@ public class InwardEntryController {
 		} catch (Exception e) {
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+	}
+
+	@GetMapping({ "/qrcode/{inwardEntryId}" })
+	public ResponseEntity<Object> qrcode(@PathVariable int inwardEntryId) {
+		InputStreamResource inputStreamResource = null;
+		ResponseEntity<Object> kk = null ;
+		try {
+
+			QRCodeResponse resp = inwdEntrySvc.getQRCodeDetails(inwardEntryId);
+			byte[] pngData;
+			StringBuilder text = new StringBuilder();
+			text.append("Coil NO : " + resp.getCoilNo());
+			text.append("\nCustomer BatchNo : " + resp.getCustomerBatchNo());
+			text.append("\nMaterial Type : " + resp.getMaterialDesc());
+			text.append("\nMaterial Grade : " + resp.getMaterialGrade());
+			text.append("\nThickness : " + resp.getFthickness());
+			text.append("\nWidth : " + resp.getFwidth());
+			text.append("\nNet Weight : " + resp.getNetWeight());
+			text.append("\nGross Weight : " + resp.getGrossWeight());
+			pngData = inwdEntrySvc.getQRCode(text.toString(), 0, 0);
+			inputStreamResource = pdfGenerator.InputStreamResource(pngData);
+			HttpHeaders headers = new HttpHeaders();
+			headers.add("Content-Disposition", "inline; filename=QRCode_" + resp.getCustomerBatchNo() + ".pdf");
+			kk = ResponseEntity.ok().headers(headers).contentType(MediaType.APPLICATION_OCTET_STREAM).body(inputStreamResource);
+		} catch (WriterException | IOException e) {
+			e.printStackTrace();
+		} catch (DocumentException e) {
+			e.printStackTrace();
+		}
+		return kk;
 	}
 }

@@ -1,11 +1,16 @@
 package com.steel.product.application.service;
 
+import com.google.zxing.WriterException;
 import com.steel.product.application.dto.inward.InwardEntryResponseDto;
+import com.steel.product.application.dto.qrcode.QRCodeResponse;
+import com.steel.product.application.dto.quality.QualityInspReportListPageResponse;
 import com.steel.product.application.entity.InwardEntry;
 import net.minidev.json.JSONObject;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
@@ -46,4 +51,8 @@ public interface InwardEntryService {
 	JSONObject getPlanPDFs(int inwardEntryId);
 
 	Page<InwardEntry> findAllWIPlistWithPagination(int pageNo, int pageSize, String searchText, String partyId);
+
+	QRCodeResponse getQRCodeDetails(int inwardEntryId);
+
+	byte[] getQRCode(String text, int width, int height) throws WriterException, IOException;
 }

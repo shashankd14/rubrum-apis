@@ -1,8 +1,15 @@
 package com.steel.product.application.service;
 
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.WriterException;
+import com.google.zxing.client.j2se.MatrixToImageConfig;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
 import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.dto.inward.InwardEntryResponseDto;
 import com.steel.product.application.dto.partDetails.PartDetailsPDFResponse;
+import com.steel.product.application.dto.qrcode.QRCodeResponse;
 import com.steel.product.application.entity.AdminUserEntity;
 import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.InwardEntry;
@@ -17,10 +24,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -228,6 +237,37 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 		finalResp.put("dc_pdfs", response2);
 		
 		return finalResp;
+	}
+
+	@Override
+	public byte[] getQRCode(String text, int width, int height) throws WriterException, IOException {
+		QRCodeWriter qrCodeWriter = new QRCodeWriter();
+		BitMatrix bitMatrix = qrCodeWriter.encode(text, BarcodeFormat.QR_CODE, width, height);
+		   
+		ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
+		MatrixToImageConfig con = new MatrixToImageConfig();
+		MatrixToImageWriter.writeToStream(bitMatrix, "PNG", pngOutputStream, con);
+		byte[] pngData = pngOutputStream.toByteArray();
+
+		return pngData;
+	}
+
+	@Override
+	public QRCodeResponse getQRCodeDetails(int inwardEntryId) {
+		List<Object[]> packetsList = inwdEntryRepo.getQRCodeDetails(inwardEntryId);
+		QRCodeResponse resp = new QRCodeResponse();
+
+		for (Object[] result : packetsList) {
+			resp.setCoilNo(result[0] != null ? (String) result[0] : null);
+			resp.setCustomerBatchNo(result[1] != null ? (String) result[1] : null);
+			resp.setMaterialDesc(result[2] != null ? (String) result[2] : null);
+			resp.setMaterialGrade( result[3] != null ? (String) result[3] : null);
+			resp.setFthickness(result[4] != null ? (Double) result[4] : null);
+			resp.setFwidth( result[5] != null ? (Double) result[5] : null);
+			resp.setNetWeight( result[6] != null ? (Double) result[6] : null);
+			resp.setGrossWeight( result[7] != null ? (Double)result[7] : null);
+		}
+		return resp;
 	}
 
 }
