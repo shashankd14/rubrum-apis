@@ -19,5 +19,6 @@ public interface PartDetailsService {
 
     PartDetails findById(Long partId);
 
+	void updatePartDetailsS3PDF(String partDetilsId, String url);
 
 }

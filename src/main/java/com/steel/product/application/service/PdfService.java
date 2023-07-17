@@ -31,6 +31,7 @@ public class PdfService {
     private InstructionService instructionService;
 	private AWSS3Service awsS3Service; 
 	private PackingMasterService packingMasterService;
+	private PartDetailsService partDetailsService;
 
     @Value("${aws.s3.bucketPDFs}")
     private String bucketName;
@@ -38,13 +39,14 @@ public class PdfService {
 	@Autowired
 	public PdfService(InwardEntryService inwardEntryService, CompanyDetailsService companyDetailsService,
 			SpringTemplateEngine templateEngine, InstructionService instructionService, AWSS3Service awsS3Service,
-			PackingMasterService packingMasterService) {
+			PackingMasterService packingMasterService, PartDetailsService partDetailsService) {
 		this.inwardEntryService = inwardEntryService;
 		this.companyDetailsService = companyDetailsService;
 		this.templateEngine = templateEngine;
 		this.instructionService = instructionService;
 		this.awsS3Service = awsS3Service;
 		this.packingMasterService = packingMasterService;
+		this.partDetailsService = partDetailsService;
 	}
 
     public File generatePdf(PdfDto pdfDto) throws IOException, org.dom4j.DocumentException, DocumentException {
@@ -140,6 +142,33 @@ public class PdfService {
         return file;
     }
 
+    public File renderQRCodePdfInstruction(String filename, String id, String processType, byte[] byteArray) throws IOException {
+        File file = File.createTempFile(filename, ".pdf");
+    
+		try {
+			String fileUrl = "";
+			if ("QRCODE_INWARD_PDF".equals(processType)) {
+				OutputStream out = new FileOutputStream(file);
+				out.write(byteArray);
+				out.close();
+				fileUrl = awsS3Service.uploadPDFFileToS3Bucket(bucketName, file, "QRCODE_INWARD_" + id);
+				inwardEntryService.updateQRCodeS3InwardPDF(id, "QRCODE_INWARD_" + id);
+			} else if ("QRCODE_PLAN_PDF".equals(processType)) {
+				OutputStream out = new FileOutputStream(file);
+				out.write(byteArray);
+				out.close();
+				fileUrl = awsS3Service.uploadPDFFileToS3Bucket(bucketName, file, "QRCODE_PLAN_" + id);
+				partDetailsService.updatePartDetailsS3PDF(id, "QRCODE_PLAN_" + id);
+			} 
+			System.out.println("fileUrl == "+fileUrl);
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("Error while uploading pdf - " + e.getMessage());
+		}
+        file.deleteOnExit();
+        return file;
+    }
+
     private Context getContext(PdfDto pdfDto) {
         Context context = new Context();
         Integer slitAndCutProcessId = 3;
@@ -179,7 +208,7 @@ public class PdfService {
 
     private Context getContext(PartDto partDto) {
         Context context = new Context();
-        InwardEntryPdfDto inwardEntryPdfDto = instructionService.findInwardJoinFetchInstructionsAndPartDetails(partDto.getPartDetailsId(), partDto.getGroupIds());
+        InwardEntryPdfDto inwardEntryPdfDto = instructionService.findQRCodeInwardJoinFetchInstructionsAndPartDetails(partDto.getPartDetailsId(), partDto.getGroupIds());
         context.setVariable("inward", inwardEntryPdfDto);
         return context;
     }

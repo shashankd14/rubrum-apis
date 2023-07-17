@@ -123,4 +123,15 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
 	@Transactional
 	@Query("update Instruction set groupId =:groupId where instructionId in :instructionIds ")
 	public void updateInstructionGroupId(@Param("groupId") int groupId, @Param("instructionIds") List<Integer> instructionIds);
+
+	@Query(value = "SELECT distinct coilnumber `Coil No`,customerbatchid `Batch No`," + 
+			" (select desc2.vdescription from product_tblmatdescription desc2 where desc2.nmatid=inward.nmatid) as material_desc," + 
+			" (select aa.`gradename` from `product_material_grades` aa where aa.`gradeid` = `inward`.`materialgradeid`) AS `material_grade`," + 
+			" ROUND(`fthickness`, 2) as `fthickness`, round(fquantity,2) as `net weight`, " +
+			" ROUND(`grossweight`, 2) as `grossweight`, ROUND(`fwidth`, 2) as `fwidth` " +
+			" FROM product_tblinwardentry inward WHERE inwardentryid=:inwardId ", nativeQuery = true)
+	public List<Object[]> getQRCodeDetails1(@Param("inwardId") Integer inwardId);
+	
+	@Query("select ins from Instruction ins left join fetch ins.inwardId where ins.inwardId.inwardEntryId = :inwardId and ins.status.statusId = :statusId ")
+	public List<Instruction> getQRCodeDetails(@Param("inwardId") Integer inwardId, @Param("statusId") Integer statusId);
 }

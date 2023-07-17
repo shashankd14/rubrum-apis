@@ -1,6 +1,9 @@
 package com.steel.product.application.controller;
 
 import com.steel.product.application.dto.instruction.*;
+import com.steel.product.application.dto.pdf.InwardEntryPdfDto;
+import com.steel.product.application.dto.pdf.PartDto;
+import com.steel.product.application.dto.qrcode.QRCodeResponse;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.exception.MockException;
 import com.steel.product.application.service.*;
@@ -9,7 +12,10 @@ import com.steel.product.application.util.CommonUtil;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,10 +34,13 @@ public class InstructionController {
 
 	private CommonUtil commonUtil;
 	
+	private QRCodePDFGenerator pdfGenerator;
+
 	@Autowired
-	public InstructionController(InstructionService instructionService,  CommonUtil commonUtil) {
+	public InstructionController(InstructionService instructionService,  CommonUtil commonUtil, QRCodePDFGenerator pdfGenerator) {
 		this.instructionService = instructionService;
 		this.commonUtil = commonUtil;
+		this.pdfGenerator = pdfGenerator;
 	}
 
 	@GetMapping("/list")
@@ -121,6 +130,29 @@ public class InstructionController {
 	@PostMapping("/slit")
 	public ResponseEntity<Object> deleteSlit(@RequestBody SlitInstructionDeleteRequest slitInstructionDeleteRequest) {
 		return instructionService.deleteSlit(slitInstructionDeleteRequest);
+	}
+
+	@PostMapping({ "/qrcode/plan" })
+	public ResponseEntity<Object> qrcode(@RequestBody PartDto partDto) {
+		InputStreamResource inputStreamResource = null;
+		ResponseEntity<Object> kk = null ;
+		try {
+
+	        InwardEntryPdfDto inwardEntryPdfDto = instructionService.findQRCodeInwardJoinFetchInstructionsAndPartDetails(partDto.getPartDetailsId(), partDto.getGroupIds());
+
+	        List<QRCodeResponse> resp = instructionService.getQRCodeDetails(inwardEntryPdfDto);
+
+			inputStreamResource = pdfGenerator.planInputStreamResource( resp, partDto);
+			HttpHeaders headers = new HttpHeaders();
+			headers.add("Content-Disposition", "inline; filename=QRCode_PLAN" + partDto.getPartDetailsId() + ".pdf");
+			
+			kk = ResponseEntity.ok().headers(headers).contentType(MediaType.APPLICATION_OCTET_STREAM).body(inputStreamResource);
+			
+			
+		} catch ( Exception e) {
+			e.printStackTrace();
+		}
+		return kk;
 	}
 
 }

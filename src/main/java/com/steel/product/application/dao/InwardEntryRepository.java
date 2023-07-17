@@ -83,6 +83,9 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 
     @Query(nativeQuery = true, value = "SELECT pdf_s3_url FROM product_tblinwardentry WHERE inwardentryid = :inwardId")
     public String getS3URL(@Param("inwardId") Integer inwardId);
+    
+    @Query(nativeQuery = true, value = "SELECT qrcode_s3_url FROM product_tblinwardentry WHERE inwardentryid = :inwardId")
+    public String getQRCodeS3URL(@Param("inwardId") Integer inwardId);
 
     @Query("select distinct pd from DeliveryDetails pd join fetch pd.instructions ins join ins.inwardId where ins.inwardId.inwardEntryId= :inwardId")
     List<Object[]> getDCPDFs(@Param("inwardId") Integer inwardId);
@@ -121,5 +124,10 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 			" ROUND(`grossweight`, 2) as `grossweight`, ROUND(`fwidth`, 2) as `fwidth` " +
 			" FROM product_tblinwardentry inward WHERE inwardentryid=:inwardId ", nativeQuery = true)
 	List<Object[]> getQRCodeDetails(@Param("inwardId") Integer inwardId);
-	
+
+	@Modifying
+	@Transactional
+	@Query("update InwardEntry set qrcodeS3Url=:url where inwardEntryId= :inwardId ")
+	public void updateQRCodeS3InwardPDF(@Param("inwardId") Integer inwardId, @Param("url") String url);
+
 }

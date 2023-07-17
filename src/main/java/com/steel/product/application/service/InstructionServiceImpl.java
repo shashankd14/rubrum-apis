@@ -9,6 +9,7 @@ import com.steel.product.application.dto.partDetails.partDetailsRequest;
 import com.steel.product.application.dto.pdf.InstructionResponsePdfDto;
 import com.steel.product.application.dto.pdf.InwardEntryPdfDto;
 import com.steel.product.application.dto.pdf.PartDetailsPdfResponse;
+import com.steel.product.application.dto.qrcode.QRCodeResponse;
 import com.steel.product.application.entity.*;
 import com.steel.product.application.entity.Process;
 import com.steel.product.application.exception.MockException;
@@ -24,6 +25,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -34,6 +36,8 @@ public class InstructionServiceImpl implements InstructionService {
     Integer cutProcessId = 1;
     Integer slitAndCutProcessId = 3;
     Integer inProgressStatusId = 2;
+
+    private static final DecimalFormat decfor = new DecimalFormat("0.00");  
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InstructionServiceImpl.class);
 
@@ -676,6 +680,74 @@ public class InstructionServiceImpl implements InstructionService {
     }
 
     @Override
+    public InwardEntryPdfDto findQRCodeInwardJoinFetchInstructionsAndPartDetails(String partDetailsId,List<Integer> groupIds) {
+        List<Object[]> objects = null;
+        Integer processId = null;
+        Integer cutProcessId = 1;
+        if(partDetailsId !=null && groupIds != null) {
+            LOGGER.info("partDetailsid: "+partDetailsId+", groupIds not null");
+            objects = instructionRepository.findPartDetailsJoinFetchInstructionsByPartDetailsIdOrGroupIds(partDetailsId,groupIds);
+        }else if(partDetailsId != null) {
+            LOGGER.info("partDetailsId: "+partDetailsId);
+            objects = instructionRepository.findPartDetailsJoinFetchInstructions(partDetailsId);
+        }else {
+            LOGGER.info("total groupIds "+groupIds.size());
+            objects = instructionRepository.findPartDetailsJoinFetchInstructionsAndGroupIds(groupIds);
+        }
+        Integer inwardId = null;
+        List<InstructionResponsePdfDto> instructions = new ArrayList<>();
+        float totalWeightSlit = 0f;
+        float totalWeightCut = 0f;
+        String cutPartDetailsId = null;
+        Map<PartDetailsPdfResponse, List<InstructionResponsePdfDto>> partDetailsSlitMap = null, partDetailsCutMap = null;
+        for (Object[] obj : objects) {
+            PartDetails partDetails = (PartDetails) obj[0];
+            Instruction instruction = (Instruction) obj[1];
+            instructions.add(Instruction.valueOfInstructionPdf(instruction, null, null));
+            if (inwardId == null) {
+                try {
+					inwardId = instruction.getInwardId().getInwardEntryId();
+				} catch (Exception e) {
+					inwardId = instruction.getParentInstruction().getInwardId().getInwardEntryId();
+				}
+            }
+            Long count = (Long) obj[2];
+            PartDetailsPdfResponse partDetailsPdfResponse = partDetailsMapper.toPartDetailsPdfResponse(partDetails);
+            InstructionResponsePdfDto instructionResponsePdfDto = instructionMapper.toResponsePdfDto(instruction);
+            instructionResponsePdfDto.setCountOfWeight(count);
+            cutPartDetailsId = partDetailsPdfResponse.getPartDetailsId();//added for new cuts created from existing slits
+            processId = partDetailsId == null ? cutProcessId : instruction.getProcess().getProcessId();
+            if(processId == 1 || processId == 3){
+                totalWeightCut += instruction.getPlannedWeight()*count;
+                if(partDetailsCutMap == null) {
+                    partDetailsCutMap = new HashMap<>();
+                }
+                partDetailsCutMap = addInstructionToPartDetailsMap(partDetailsCutMap,partDetailsPdfResponse,instructionResponsePdfDto);
+
+            }else{//slit process
+                totalWeightSlit += instruction.getPlannedWeight()*count;
+                if(partDetailsSlitMap == null) {
+                    partDetailsSlitMap = new HashMap<>();
+                }
+                partDetailsSlitMap = addInstructionToPartDetailsMap(partDetailsSlitMap,partDetailsPdfResponse,instructionResponsePdfDto);
+            }
+        }
+        InwardEntry inwardEntry;
+        InwardEntryPdfDto inwardEntryPdfDto;
+
+        inwardEntry = inwardService.getByEntryId(inwardId);
+        inwardEntryPdfDto = InwardEntry.valueOf(inwardEntry, null);
+        inwardEntryPdfDto.setPartDetailsCutMap(partDetailsCutMap);
+        inwardEntryPdfDto.setPartDetailsSlitMap(partDetailsSlitMap);
+        inwardEntryPdfDto.setInstructions( instructions);
+        inwardEntryPdfDto.setTotalWeightCut(partDetailsSlitMap == null ? totalWeightCut : 0f);
+        inwardEntryPdfDto.setTotalWeightSlit(totalWeightSlit);
+        inwardEntryPdfDto.setPartDetailsId(partDetailsId != null ? partDetailsId : cutPartDetailsId);
+        inwardEntryPdfDto.setVProcess(String.valueOf(processId));
+        return inwardEntryPdfDto;
+    }
+
+    @Override
     public ResponseEntity<Object> deleteCut(CutInstructionDeleteRequest cutInstructionDeleteRequest) {
         LOGGER.info("inside delete cut method for instruction id "+ cutInstructionDeleteRequest.getInstructionId());
         Instruction instruction = this.findInstructionById(cutInstructionDeleteRequest.getInstructionId());
@@ -1077,5 +1149,45 @@ public class InstructionServiceImpl implements InstructionService {
 			LOGGER.info(e.getMessage());
 		}
 	}
+
+	@Override
+	public List<QRCodeResponse> getQRCodeDetails(InwardEntryPdfDto inwardEntryPdfDto) {
+
+		List<QRCodeResponse> respo = new ArrayList<>();
+
+		for (InstructionResponsePdfDto pdfInstruction : inwardEntryPdfDto.getInstructions()) {
+			QRCodeResponse resp = new QRCodeResponse();
+			resp.setCoilNo(inwardEntryPdfDto.getCoilNumber());
+			resp.setCustomerBatchNo(inwardEntryPdfDto.getCustomerBatchId());
+			resp.setMaterialDesc(inwardEntryPdfDto.getMatDescription());
+			resp.setMaterialGrade(inwardEntryPdfDto.getMaterialGradeName() );
+			resp.setPartyName( inwardEntryPdfDto.getPartyName());
+			resp.setInstructionId( pdfInstruction.getInstructionId() );
+			
+			Float fThickness = inwardEntryPdfDto.getFThickness();
+			Float plannedWidth = pdfInstruction.getPlannedWidth();
+			Float plannedLength  = pdfInstruction.getPlannedLength() ;
+			resp.setFthickness((decfor.format( fThickness.doubleValue())));
+			resp.setFwidth((decfor.format( plannedWidth.doubleValue())));
+			resp.setFlength( (decfor.format( plannedLength.doubleValue())));
+			if(pdfInstruction.getProcess().getProcessId() == 1 || pdfInstruction.getProcess().getProcessId() == 3){
+				Float totalWeightCut  = inwardEntryPdfDto.getTotalWeightCut();
+				resp.setNetWeight(decfor.format( totalWeightCut.doubleValue()));
+			} else {
+				Float totalWeightSlit = inwardEntryPdfDto.getTotalWeightSlit();
+				resp.setNetWeight(decfor.format( totalWeightSlit.doubleValue()));
+			}
+			if(pdfInstruction.getEndUserTagsEntity()!=null && pdfInstruction.getEndUserTagsEntity().getTagName()!=null) {
+				resp.setEndUserTag(pdfInstruction.getEndUserTagsEntity().getTagName());
+			} else {
+				resp.setEndUserTag("");
+			}
+			respo.add(resp);
+		}
+		return respo;
+	}
+	
+	
+	
 	
 }

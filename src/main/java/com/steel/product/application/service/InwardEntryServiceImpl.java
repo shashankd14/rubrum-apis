@@ -1,11 +1,5 @@
 package com.steel.product.application.service;
 
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.WriterException;
-import com.google.zxing.client.j2se.MatrixToImageConfig;
-import com.google.zxing.client.j2se.MatrixToImageWriter;
-import com.google.zxing.common.BitMatrix;
-import com.google.zxing.qrcode.QRCodeWriter;
 import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.dto.inward.InwardEntryResponseDto;
 import com.steel.product.application.dto.partDetails.PartDetailsPDFResponse;
@@ -28,8 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -40,8 +33,9 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 	private final InwardEntryRepository inwdEntryRepo;
 	private AWSS3Service awsS3Service;
 	private CommonUtil commonUtil;
+    private static final DecimalFormat decfor = new DecimalFormat("0.00");  
 
-	@Autowired
+    @Autowired
 	public InwardEntryServiceImpl(InwardEntryRepository theInwdEntryRepo, AWSS3Service awsS3Service, CommonUtil commonUtil) {
 		this.inwdEntryRepo = theInwdEntryRepo;
 		this.awsS3Service = awsS3Service;
@@ -218,9 +212,17 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 			response.add(kk);
 		}
 		finalResp.put("plan_pdfs", response);
+		finalResp.put("inward_pdf", "");
+		finalResp.put("qrcode_inward_pdf", "");
 		
 		String s3URL = this.inwdEntryRepo.getS3URL(inwardId);
-		finalResp.put("inward_pdf", awsS3Service.generatePresignedUrl(s3URL) );
+		if(s3URL !=null && s3URL.length()>0) {
+			finalResp.put("inward_pdf", awsS3Service.generatePresignedUrl(s3URL) );
+		}
+		String qrcodeInwardPdf = this.inwdEntryRepo.getQRCodeS3URL(inwardId);
+		if(qrcodeInwardPdf !=null && qrcodeInwardPdf.length()>0) {
+			finalResp.put("qrcode_inward_pdf", awsS3Service.generatePresignedUrl(qrcodeInwardPdf));
+		}
 		
 		List<PartDetailsPDFResponse> response2 = new ArrayList<PartDetailsPDFResponse>();
 		List<Object[]> result2 = this.inwdEntryRepo.getDCPDFs(inwardId);
@@ -237,20 +239,7 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 		finalResp.put("dc_pdfs", response2);
 		
 		return finalResp;
-	}
-
-	@Override
-	public byte[] getQRCode(String text, int width, int height) throws WriterException, IOException {
-		QRCodeWriter qrCodeWriter = new QRCodeWriter();
-		BitMatrix bitMatrix = qrCodeWriter.encode(text, BarcodeFormat.QR_CODE, width, height);
-		   
-		ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
-		MatrixToImageConfig con = new MatrixToImageConfig();
-		MatrixToImageWriter.writeToStream(bitMatrix, "PNG", pngOutputStream, con);
-		byte[] pngData = pngOutputStream.toByteArray();
-
-		return pngData;
-	}
+	} 
 
 	@Override
 	public QRCodeResponse getQRCodeDetails(int inwardEntryId) {
@@ -262,12 +251,22 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 			resp.setCustomerBatchNo(result[1] != null ? (String) result[1] : null);
 			resp.setMaterialDesc(result[2] != null ? (String) result[2] : null);
 			resp.setMaterialGrade( result[3] != null ? (String) result[3] : null);
-			resp.setFthickness(result[4] != null ? (Double) result[4] : null);
-			resp.setFwidth( result[5] != null ? (Double) result[5] : null);
-			resp.setNetWeight( result[6] != null ? (Double) result[6] : null);
-			resp.setGrossWeight( result[7] != null ? (Double)result[7] : null);
+			
+			Double fThickness = result[4] != null ? (Double) result[4]: null;
+			Double fWidth =  result[5] != null ? (Double) result[5] : null;
+			Double netWeight  =  result[6] != null ? (Double) result[6] : null;
+			Double grossWeight  =  result[7] != null ? (Double) result[7] : null;
+			
+			resp.setFthickness(decfor.format(fThickness));
+			resp.setFwidth(decfor.format(fWidth));
+			resp.setNetWeight(decfor.format(netWeight));
+			resp.setGrossWeight(decfor.format(grossWeight));
 		}
 		return resp;
 	}
 
+	@Override
+	public void updateQRCodeS3InwardPDF(String inwardId, String url) {
+		inwdEntryRepo.updateQRCodeS3InwardPDF(Integer.parseInt(inwardId), url);
+	}
 }

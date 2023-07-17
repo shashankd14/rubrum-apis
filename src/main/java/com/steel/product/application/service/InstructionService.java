@@ -2,6 +2,7 @@ package com.steel.product.application.service;
 
 import com.steel.product.application.dto.instruction.*;
 import com.steel.product.application.dto.pdf.InwardEntryPdfDto;
+import com.steel.product.application.dto.qrcode.QRCodeResponse;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.exception.MockException;
 import com.steel.product.application.mapper.TotalLengthAndWeight;
@@ -85,6 +86,10 @@ public interface InstructionService {
 	List<Instruction> findAllByInstructionIdInAndStatus(List<Integer> instructionIds, List<Integer> statusId);
 
 	List<Instruction> findSlitAndCutInstructionByInwardId1(Integer inwardId);
+
+	public List<QRCodeResponse> getQRCodeDetails(InwardEntryPdfDto inwardEntryPdfDto);
+
+	InwardEntryPdfDto findQRCodeInwardJoinFetchInstructionsAndPartDetails(String partDetailsId, List<Integer> groupIds);
 
 }
 

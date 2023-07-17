@@ -8,19 +8,27 @@ import lombok.Setter;
 public class QRCodeResponse {
 	
 	private String coilNo;
+	
+	private Integer instructionId;
 
 	private String customerBatchNo;
+
+	private String partyName;
 
 	private String materialDesc;
 
 	private String materialGrade;
 
-	private Double fthickness;
+	private String endUserTag;
 
-	private Double netWeight;
+	private String fthickness;
 
-	private Double fwidth;
+	private String netWeight;
 
-	private Double grossWeight;
+	private String fwidth;
+
+	private String flength;
+
+	private String grossWeight;
 	
 }

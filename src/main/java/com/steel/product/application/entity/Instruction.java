@@ -207,18 +207,20 @@ public class Instruction {
 		
 		String baseTotalPrice = "0.00";
 		String additionalTotalPrice = "0.00";
-		try {
-			JSONParser parser = new JSONParser();
-			JSONObject json = (JSONObject) parser.parse(instruction.getPriceDetails());
-			if (json.containsKey("BasePrice")) {
-				baseTotalPrice = json.get("BasePrice").toString();
-				totalPrice=totalPrice+Float.parseFloat(baseTotalPrice);
+		if (instruction.getPriceDetails() != null) {
+			try {
+				JSONParser parser = new JSONParser();
+				JSONObject json = (JSONObject) parser.parse(instruction.getPriceDetails());
+				if (json.containsKey("BasePrice")) {
+					baseTotalPrice = json.get("BasePrice").toString();
+					totalPrice = totalPrice + Float.parseFloat(baseTotalPrice);
+				}
+				if (json.containsKey("AdditionalTotalPrice")) {
+					additionalTotalPrice = json.get("AdditionalTotalPrice").toString();
+					totalPrice = totalPrice + Float.parseFloat(additionalTotalPrice);
+				}
+			} catch (ParseException e) {
 			}
-			if (json.containsKey("AdditionalTotalPrice")) {
-				additionalTotalPrice = json.get("AdditionalTotalPrice").toString();
-				totalPrice=totalPrice+Float.parseFloat(additionalTotalPrice);
-			}
-		} catch (ParseException e) {
 		}
 		instructionResponsePdfDto.setBaseTotalPrice( baseTotalPrice );
 		instructionResponsePdfDto.setAdditionalTotalPrice( additionalTotalPrice );

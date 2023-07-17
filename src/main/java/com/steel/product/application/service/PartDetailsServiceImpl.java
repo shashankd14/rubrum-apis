@@ -23,7 +23,6 @@ public class PartDetailsServiceImpl implements PartDetailsService {
         this.partDetailsMapper = partDetailsMapper;
     }
 
-
     @Override
     public List<PartDetails> saveAll(List<PartDetails> partDetails) {
         return partDetailsRepository.saveAll(partDetails);
@@ -61,4 +60,9 @@ public class PartDetailsServiceImpl implements PartDetailsService {
         }
         return partDetailsOptional.get();
     }
+
+	@Override
+	public void updatePartDetailsS3PDF(String partDetilsId, String url) {
+		partDetailsRepository.updatePartDetailsS3PDF( partDetilsId , url);
+	}
 }

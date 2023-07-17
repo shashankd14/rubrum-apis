@@ -52,6 +52,9 @@ public class PartDetails {
     @Column(name = "pdf_s3_url")
     private String pdfS3Url;
 
+    @Column(name = "qrcode_s3_url")
+    private String qrcodeS3Url;
+
     public void addInstruction(Instruction instruction) {
         if (this.instructions == null) {
             this.instructions = new HashSet<>();
