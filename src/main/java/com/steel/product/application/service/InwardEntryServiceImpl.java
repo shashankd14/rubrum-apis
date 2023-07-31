@@ -208,7 +208,15 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 			kk.setId(result[0] != null ? (String) result[0] : null);
 			kk.setFileName(result[0] != null ? (String) result[0] : null);
 			kk.setPdfS3Url(result[1] != null ? (String) result[1] : null);
-			kk.setPdfS3Url(awsS3Service.generatePresignedUrl(kk.getFileName()));
+			if(kk.getPdfS3Url()!=null && kk.getPdfS3Url().length()>0) {
+				kk.setPdfS3Url(awsS3Service.generatePresignedUrl(kk.getFileName()));
+			}
+
+			String qrcodeS3Url =  (result[2] != null ? (String) result[2] : null);
+			if(qrcodeS3Url !=null && qrcodeS3Url.length()>0) {
+				kk.setQrcodeS3Url(awsS3Service.generatePresignedUrl(qrcodeS3Url));			
+			}
+			
 			response.add(kk);
 		}
 		finalResp.put("plan_pdfs", response);

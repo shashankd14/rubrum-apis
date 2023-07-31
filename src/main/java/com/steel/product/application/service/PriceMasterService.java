@@ -20,6 +20,7 @@ public interface PriceMasterService {
 	//ResponseEntity<Object> calculatePrice(CalculatePriceRequest calculatePriceRequest);
 
 	String calculateInstructionPrice(int instructionId);
-
+	
+	List<PriceMasterResponse> getAllPriceDetails(int partyId);
 
 }

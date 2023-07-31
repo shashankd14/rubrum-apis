@@ -10,4 +10,5 @@ public class PartDetailsPDFResponse {
 	private String id;
 	private String fileName;
 	private String pdfS3Url;
+	private String qrcodeS3Url;
 }

@@ -74,13 +74,16 @@ public class DeliveryDetailsController {
 		try {
 			int userId = (request.getHeader("userId")==null ? 1: Integer.parseInt(request.getHeader("userId")));
 
-			deliveryDetails = deliveryDetailsService.save(deliveryDto, userId);
-			result = new ResponseEntity<>("Delivery details saved successfully!", HttpStatus.OK);
+			boolean stts = deliveryDetailsService.validatePriceMapping(deliveryDto, userId);
+			if(stts) {
+				deliveryDetails = deliveryDetailsService.save(deliveryDto, userId);
+				result = new ResponseEntity<>("Delivery details saved successfully!", HttpStatus.OK);
+			} else {
+				result = new ResponseEntity<>("Please enter valid details in price master", HttpStatus.BAD_REQUEST);
+			}
 		} catch (Exception e) {
-			e.printStackTrace();
 			result = new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-
 		return result;
 	}
 

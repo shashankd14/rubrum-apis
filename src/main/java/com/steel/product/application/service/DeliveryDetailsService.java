@@ -1,5 +1,6 @@
 package com.steel.product.application.service;
 
+import com.steel.product.application.dto.TallyBillingInvoiceListDTO;
 import com.steel.product.application.dto.delivery.DeliveryDto;
 import com.steel.product.application.dto.delivery.DeliveryPacketsDto;
 import com.steel.product.application.entity.DeliveryDetails;
@@ -28,4 +29,10 @@ public interface DeliveryDetailsService {
     public Float findInstructionByInwardIdAndInstructionId(Integer inwardId,Integer instructionId);
 
 	Page<DeliveryDetails> deliveryListPagination(int pageNo, int pageSize, String searchText, String partyId);
+
+	public Page<DeliveryDetails> billingInvoiceList(int pageNo, int pageSize);
+
+	public List<TallyBillingInvoiceListDTO> billingDCDetails(List<Integer> dcIds);
+
+	public boolean validatePriceMapping(DeliveryDto deliveryDto, int userId);
 }

@@ -44,4 +44,14 @@ public interface PriceMasterRepository extends JpaRepository<PriceMasterEntity, 
             + " (SELECT mg.parentMaterial.matId from MaterialGrade mg where mg.gradeId=pc.matGradeId) as matId "
 			+ " from PriceMasterEntity pc")
 	List<Object[]> findAll1();
+	
+	@Query("select id, partyId, processId, matGradeId, thicknessFrom, thicknessTo, price, createdBy, updatedBy, createdOn, updatedOn, "
+            + " (SELECT partyName from Party party where party.nPartyId=pc.partyId) as partyName, "
+            + " (SELECT processName from Process process where process.processId=pc.processId) as processName, "
+            + " (SELECT gradeName from MaterialGrade mg where mg.gradeId=pc.matGradeId) as gradeName, "
+            + " (SELECT mg.parentMaterial.description from MaterialGrade mg where mg.gradeId=pc.matGradeId) as description, "
+            + " (SELECT mg.parentMaterial.matId from MaterialGrade mg where mg.gradeId=pc.matGradeId) as matId "
+			+ " from PriceMasterEntity pc where partyId =:partyId ")
+	List<Object[]> findAllDetails(@Param("partyId") Integer partyId);
+	
 }

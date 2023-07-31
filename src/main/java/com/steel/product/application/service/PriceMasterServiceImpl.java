@@ -2,7 +2,6 @@ package com.steel.product.application.service;
 
 import com.steel.product.application.dao.PriceMasterRepository;
 import com.steel.product.application.dto.pricemaster.PriceMasterResponse;
-import com.steel.product.application.dto.additionalpricemaster.AdditionalPriceMasterResponse;
 import com.steel.product.application.dto.pricemaster.PriceMasterRequest;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
@@ -118,7 +117,14 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 	}
 	
 	@Override
-	public List<PriceMasterResponse> getAllPriceDetails() {
+	public List<PriceMasterResponse> getAllPriceDetails(int partyId) {
+
+		List<Object[]> list = priceMasterRepository.findAllDetails(partyId);
+		return prepareDataList(list);
+	}
+	
+	@Override
+	public List<PriceMasterResponse> getAllPriceDetails( ) {
 
 		List<Object[]> list = priceMasterRepository.findAll1();
 		return prepareDataList(list);
@@ -298,17 +304,13 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 			obj.put("BasePrice", "0.00");
 			obj.put("AdditionalPrice", additionalPrice);
 
-			List<PriceMasterResponse> basePriceList = getAllPriceDetails();
-			List<AdditionalPriceMasterResponse> addPriceList = additionalPriceMasterService.getAllPriceDetails();
-
 			System.out.println("instructionId == " + instructionId);
 			Instruction instruction = instructionService.getById(instructionId);
 			InwardEntry inwardEntry = instruction.getInwardId();
+			System.out.println("inwardEntry.getParty().getnPartyId() == " + inwardEntry.getParty().getnPartyId());
+
+			List<PriceMasterResponse> basePriceList = getAllPriceDetails(inwardEntry.getParty().getnPartyId());
 			BigDecimal fThickness = new BigDecimal(Float.toString(inwardEntry.getfThickness()));
-			BigDecimal plannedNoOfPieces = new BigDecimal(Float.toString(instruction.getPlannedNoOfPieces()));
-			BigDecimal bundleWeight = new BigDecimal(Float.toString(instruction.getActualWeight()==null ? instruction.getPlannedWeight() : instruction.getActualWeight()));
-			BigDecimal noofPlans = BigDecimal.valueOf( inwardEntry.getInstructions().size() );
-			BigDecimal actualLength = new BigDecimal(Float.toString(instruction.getActualLength()==null ? instruction.getPlannedLength() : instruction.getActualLength()));
 			
 			for (PriceMasterResponse priceMasterResponse : basePriceList) {
 				
@@ -320,7 +322,13 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 					obj.put("BasePrice", priceMasterResponse.getPrice());
 				}
 			}
-			
+			/*
+			List<AdditionalPriceMasterResponse> addPriceList = additionalPriceMasterService.getAllPriceDetails();
+			BigDecimal plannedNoOfPieces = new BigDecimal(Float.toString(instruction.getPlannedNoOfPieces()));
+			BigDecimal bundleWeight = new BigDecimal(Float.toString(instruction.getActualWeight()==null ? instruction.getPlannedWeight() : instruction.getActualWeight()));
+			BigDecimal noofPlans = BigDecimal.valueOf( inwardEntry.getInstructions().size() );
+			BigDecimal actualLength = new BigDecimal(Float.toString(instruction.getActualLength()==null ? instruction.getPlannedLength() : instruction.getActualLength()));
+
 			for (AdditionalPriceMasterResponse additionalPriceMasterResponse : addPriceList) {
 				
 				if (inwardEntry.getParty().getnPartyId() == additionalPriceMasterResponse.getPartyId()
@@ -382,7 +390,7 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 						}
 					}
 				}
-			}
+			}*/
 
 			obj.put("AdditionalTotalPrice", totalPrice);
 		} catch (Exception e) { 

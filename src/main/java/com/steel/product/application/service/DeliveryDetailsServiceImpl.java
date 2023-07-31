@@ -1,9 +1,11 @@
 package com.steel.product.application.service;
 
 import com.steel.product.application.dao.DeliveryDetailsRepository;
+import com.steel.product.application.dto.TallyBillingInvoiceListDTO;
 import com.steel.product.application.dto.delivery.DeliveryDto;
 import com.steel.product.application.dto.delivery.DeliveryItemDetails;
 import com.steel.product.application.dto.delivery.DeliveryPacketsDto;
+import com.steel.product.application.dto.pricemaster.PriceMasterResponse;
 import com.steel.product.application.entity.AdminUserEntity;
 import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.Instruction;
@@ -16,18 +18,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(DeliveryDetails.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(DeliveryDetailsServiceImpl.class);
 
     private DeliveryDetailsRepository deliveryDetailsRepo;
 
@@ -329,5 +333,119 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
         return deliveryDetailsRepo.findInstructionByInwardIdAndInstructionId(inwardId,instructionId);
     }
 
+	@Override
+	public Page<DeliveryDetails> billingInvoiceList(int pageNo, int pageSize) {
+		if (pageSize > 10) {
+			pageSize = 10;
+		}
+		Pageable pageable = PageRequest.of((pageNo - 1), pageSize);
+		List<Object[]> kk = deliveryDetailsRepo.findAllDeliveriesForBilling(pageable);
+		List<DeliveryDetails> billingInvoiceList = new ArrayList<>();
 
+		for (Object[] objs : kk) {
+			DeliveryDetails invoiceListDTO = new DeliveryDetails();
+			invoiceListDTO.setDeliveryId( objs[0] != null ? (Integer) objs[0] : null);
+			billingInvoiceList.add(invoiceListDTO);
+		}
+		
+		Page<DeliveryDetails> page = new PageImpl<>(billingInvoiceList);
+		return page;
+	}
+
+	@Override
+	public List<TallyBillingInvoiceListDTO> billingDCDetails(List<Integer> dcIds) {
+		List<TallyBillingInvoiceListDTO> billingInvoiceList = new ArrayList<>();
+
+		List<Object[]> results = deliveryDetailsRepo.billingInvoiceList(dcIds);
+		for (Object[] objs : results) {
+			TallyBillingInvoiceListDTO invoiceListDTO = new TallyBillingInvoiceListDTO();
+			invoiceListDTO.setVoucherRef(objs[0] != null ? (Integer) objs[0] : null);
+			invoiceListDTO.setDcNo(objs[1] != null ? (Integer) objs[1] : null);
+			invoiceListDTO.setDcDate(objs[2] != null ? (String) objs[2] : null);
+			invoiceListDTO.setVoucherType(objs[3] != null ? (String) objs[3] : null);
+			invoiceListDTO.setCustomerCode(objs[4] != null ? (String) objs[4] : null);
+			invoiceListDTO.setCustomerName(objs[5] != null ? (String) objs[5] : null);
+			invoiceListDTO.setCustomerMobileNo(objs[6] != null ? (String) objs[6] : null);
+			invoiceListDTO.setUnderGroup(objs[7] != null ? (String) objs[7] : null);
+			invoiceListDTO.setAddress1(""+objs[8] != null ? (String) objs[8] : null);
+			invoiceListDTO.setAddress2(""+objs[9] != null ? (String) objs[9] : null);
+			invoiceListDTO.setAddress3(""+objs[10] != null ? (String) objs[10] : null);
+			invoiceListDTO.setCity(""+objs[11] != null ? (String) objs[11] : null);
+			invoiceListDTO.setPincode(objs[12] != null ? (String) objs[12] : null);
+			invoiceListDTO.setState(objs[13] != null ? (String) objs[13] : null);
+			invoiceListDTO.setGstno(objs[14] != null ? (String) objs[14] : null);
+			invoiceListDTO.setProductNo(objs[15] != null ? (String) objs[15] : null);
+			invoiceListDTO.setProductDesc(objs[16] != null ? (String) objs[16] : null);
+			invoiceListDTO.setCoilNo(objs[17] != null ? (String) objs[17] : null);
+			invoiceListDTO.setCustomerBatchNo(objs[18] != null ? (String) objs[18] : null);
+			invoiceListDTO.setMaterialGrade(objs[19] != null ? (String) objs[19] : null);
+			invoiceListDTO.setMaterialDesc(objs[20] != null ? (String) objs[20] : null);
+			invoiceListDTO.setHsnCode(objs[21] != null ? (String) objs[21] : null);
+			Float fThickness = objs[22] != null ? (Float) objs[22] : null;
+			Float plannedWidth = objs[23] != null ? (Float) objs[23] : null;
+			Float plannedLength  = objs[24] != null ? (Float) objs[24] : null;
+			invoiceListDTO.setThickness(fThickness);
+			invoiceListDTO.setWidth(plannedWidth);
+			invoiceListDTO.setLength(plannedLength);
+			invoiceListDTO.setGodown(objs[25] != null ? (String) objs[25] : null);
+			invoiceListDTO.setUom(objs[26] != null ? (String) objs[26] : null);
+			Float weight = objs[27] != null ? (Float) objs[27] : null;
+			invoiceListDTO.setQuantity(weight);
+			
+			String priceDetails = objs[28] != null ? (String) objs[28] : null;
+
+			/*
+			invoiceListDTO.setRate(objs[28] != null ? (String) objs[28] : null);
+			invoiceListDTO.setAmount(objs[29] != null ? (String) objs[29] : null);
+			invoiceListDTO.setGstPercentage(objs[30] != null ? (String) objs[30] : null);
+			invoiceListDTO.setIgst(objs[31] != null ? (String) objs[31] : null);
+			invoiceListDTO.setCgst(objs[32] != null ? (String) objs[32] : null);
+			invoiceListDTO.setSgst(objs[33] != null ? (String) objs[33] : null);
+			invoiceListDTO.setLedger1(objs[34] != null ? (String) objs[34] : null);
+			invoiceListDTO.setLedger2(objs[35] != null ? (String) objs[35] : null);
+			invoiceListDTO.setLedger3(objs[36] != null ? (String) objs[36] : null);
+			invoiceListDTO.setLedger4(objs[37] != null ? (String) objs[37] : null);
+			invoiceListDTO.setLedger5(objs[38] != null ? (String) objs[38] : null);
+			invoiceListDTO.setLedger6(objs[39] != null ? (String) objs[39] : null);
+			invoiceListDTO.setLedger7(objs[40] != null ? (String) objs[40] : null);
+			invoiceListDTO.setRoundOff(objs[41] != null ? (String) objs[41] : null);
+			invoiceListDTO.setTotal(objs[42] != null ? (String) objs[42] : null);
+			invoiceListDTO.setRemarks(objs[43] != null ? (String) objs[43] : null);
+			*/
+			billingInvoiceList.add(invoiceListDTO);
+		}
+		return billingInvoiceList;
+	}
+	
+	@Override
+    public boolean validatePriceMapping(DeliveryDto deliveryDto, int userId) {
+        LOGGER.info("in validatePriceMapping delivery api");
+        List<DeliveryItemDetails> deliveryItemDetails = deliveryDto.getDeliveryItemDetails();
+    	boolean mainStts = true;
+        List<Integer> statusIdList=new ArrayList<>();
+        statusIdList.add(4);statusIdList.add(3);
+        
+        List<Instruction> instructions = instructionService.findAllByInstructionIdInAndStatus(deliveryItemDetails.stream().map(d -> d.getInstructionId()).collect(Collectors.toList()), statusIdList);
+        
+        for(Instruction ins : instructions) {
+        	boolean innerStts = false;
+			List<PriceMasterResponse> basePriceList = priceMasterService.getAllPriceDetails(ins.getInwardId().getParty().getnPartyId());
+			BigDecimal fThickness = new BigDecimal(Float.toString(ins.getInwardId().getfThickness()));
+			for (PriceMasterResponse priceMasterResponse : basePriceList) {
+				if (ins.getInwardId().getMaterialGrade().getGradeId() == priceMasterResponse.getMatGradeId()
+					&& ins.getInwardId().getParty().getnPartyId() == priceMasterResponse.getPartyId()
+					&& ins.getProcess().getProcessId() == priceMasterResponse.getProcessId()
+					&& fThickness.compareTo(priceMasterResponse.getThicknessFrom()) >= 0
+					&& priceMasterResponse.getThicknessTo().compareTo(fThickness) >= 0) {
+					innerStts = true;
+				}
+			}
+			mainStts = innerStts;
+        }
+       
+        return mainStts;
+    }
+
+	
+	
 }

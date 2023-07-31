@@ -52,5 +52,43 @@ public interface DeliveryDetailsRepository extends JpaRepository<DeliveryDetails
 	@Transactional
 	@Query("update DeliveryDetails set pdfS3Url=:url where deliveryId= :deliveryId ")
 	public void updateS3DCPDF(@Param("deliveryId") Integer deliveryId, @Param("url") String url);
+    
+	@Query(value="SELECT DISTINCT dc.deliveryid , inward.coilnumber\r\n" + 
+			"FROM\r\n" + 
+			"    product_tblinwardentry inward,\r\n" + 
+			"    product_tblpartydetails party,\r\n" + 
+			"    product_instruction instr,\r\n" + 
+			"    product_tbl_delivery_details dc\r\n" + 
+			"WHERE\r\n" + 
+			"    party.npartyid = inward.npartyid\r\n" + 
+			"        AND inward.inwardentryid = instr.inwardid\r\n" + 
+			"        AND instr.deliveryid = dc.deliveryid order by  dc.deliveryid  desc", nativeQuery = true)
+	public List<Object[]> findAllDeliveriesForBilling(Pageable pageable);
+
+    @Query(value="SELECT DISTINCT instructionid, dc.deliveryid, DATE_FORMAT( dc.createdon, '%d-%m-%Y') ,\r\n " + 
+    		"    'DC' AS voucher_type, '' as custcode, partyname,\r\n " + 
+    		"    phone1, 'Sundry Debtors' AS Under_Group,\r\n " + 
+    		"    concat(' ','', address1),  concat(' ','', address2),  '' as address3,  'Bangalore' AS city, '560078' AS pincode, 'Karnataka' AS state, '' AS gstno, '' AS Product_NO, " + 
+    		"    case when processid=1 then 'CUTTING AND PACKING'\r\n  " + 
+    		"    when processid=2 then 'SLITTING AND PACKING'  \r\n" + 
+    		"    when processid=3 then 'SLIT AND CUT AND PACKING'\r\n " + 
+    		"    when processid=7 then 'HANDLING AND PACKING'  \r\n" + 
+    		"    when processid=8 then 'FULL HANDLING AND PACKING'  \r\n" + 
+    		"    end as Product_Desc, \r\n" + 
+    		"    coilnumber, customerbatchid, \r\n" + 
+    		"    (select gradename from product_material_grades  grd where grd.gradeid=inward.nmatid) as `Material_Grade`,\r\n" + 
+    		"    (select vdescription from product_tblmatdescription mat where mat.nmatid=inward.nmatid) as 'Material_Desc',\r\n" + 
+    		"    (select mat.hsn_code from product_tblmatdescription mat where mat.nmatid=inward.nmatid) as 'hsn_code',\r\n " + 
+    		"    fthickness,actualwidth, \r\n " + 
+    		"    actuallength,'Main location' as godown, \r\n" + 
+    		"    'MT' as uom, actualweight, price_details \r\n" + 
+    		" FROM product_tblinwardentry inward, " + 
+    		"    product_tblpartydetails party, " + 
+    		"    product_instruction instr, " + 
+    		"    product_tbl_delivery_details dc " + 
+    		" WHERE party.npartyid = inward.npartyid " + 
+    		"        AND inward.inwardentryid = instr.inwardid " + 
+    		"        AND instr.deliveryid = dc.deliveryid and dc.deliveryid in (:dcIDs)", nativeQuery = true)
+    public List<Object[]> billingInvoiceList(@Param("dcIDs") List<Integer> dcIDs);
 
 }
