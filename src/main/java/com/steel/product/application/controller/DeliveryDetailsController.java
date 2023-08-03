@@ -2,13 +2,18 @@ package com.steel.product.application.controller;
 
 import com.steel.product.application.dto.delivery.DeliveryDto;
 import com.steel.product.application.dto.delivery.DeliveryPacketsDto;
+import com.steel.product.application.dto.packingmaster.PackingRateMasterResponse;
+import com.steel.product.application.dto.pricemaster.PriceCalculateResponseDTO;
 import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.service.DeliveryDetailsService;
+import com.steel.product.application.service.PackingMasterService;
+
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +33,9 @@ public class DeliveryDetailsController {
 
     @Autowired
     private DeliveryDetailsService deliveryDetailsService;
+
+    @Autowired
+    private PackingMasterService packingMasterService;
 
 	@GetMapping({ "/list/{pageNo}/{pageSize}" })
 	public ResponseEntity<Object> findAllWithPagination(@PathVariable int pageNo, @PathVariable int pageSize,
@@ -66,6 +74,31 @@ public class DeliveryDetailsController {
 		}
 	}
 
+    @PostMapping("/validatePriceMapping")
+	public ResponseEntity<Object> validatePriceMapping(@RequestBody DeliveryDto deliveryDto, HttpServletRequest request) {
+		ResponseEntity<Object> result = null;
+		HttpHeaders headers = new HttpHeaders();
+		headers.set("Content-Type", "application/json");
+		try {
+			int userId = (request.getHeader("userId") == null ? 1 : Integer.parseInt(request.getHeader("userId")));
+
+			PackingRateMasterResponse packrate = packingMasterService.getByIdRate(deliveryDto.getPackingRateId());
+			if(!(packrate!=null && packrate.getPackingRateId()>0)) {
+				return new ResponseEntity<>("{\"validationStatus\": \"failure\", \"remarks\":\"Please enter valid packing rate details\"}", headers, HttpStatus.BAD_REQUEST);
+			}
+
+			PriceCalculateResponseDTO priceCalculateResponseDTO = deliveryDetailsService.validatePriceMapping(deliveryDto, deliveryDto.getPackingRateId());
+			if (priceCalculateResponseDTO.isValidationStatus()) {
+				result = new ResponseEntity<>(priceCalculateResponseDTO, headers, HttpStatus.OK);
+			} else {
+				result = new ResponseEntity<>(priceCalculateResponseDTO, headers, HttpStatus.BAD_REQUEST);
+			}
+		} catch (Exception e) {
+			result = new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return result;
+	}
+
     @PostMapping("/save")
 	public ResponseEntity<Object> save(@RequestBody DeliveryDto deliveryDto, HttpServletRequest request) {
 		ResponseEntity<Object> result = null;
@@ -74,13 +107,8 @@ public class DeliveryDetailsController {
 		try {
 			int userId = (request.getHeader("userId")==null ? 1: Integer.parseInt(request.getHeader("userId")));
 
-			boolean stts = deliveryDetailsService.validatePriceMapping(deliveryDto, userId);
-			if(stts) {
-				deliveryDetails = deliveryDetailsService.save(deliveryDto, userId);
-				result = new ResponseEntity<>("Delivery details saved successfully!", HttpStatus.OK);
-			} else {
-				result = new ResponseEntity<>("Please enter valid details in price master", HttpStatus.BAD_REQUEST);
-			}
+			deliveryDetails = deliveryDetailsService.save(deliveryDto, userId);
+			result = new ResponseEntity<>("Delivery details saved successfully!", HttpStatus.OK);
 		} catch (Exception e) {
 			result = new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}

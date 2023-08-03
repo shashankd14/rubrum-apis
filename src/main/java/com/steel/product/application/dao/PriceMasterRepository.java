@@ -34,8 +34,17 @@ public interface PriceMasterRepository extends JpaRepository<PriceMasterEntity, 
 
 	List<PriceMasterEntity> findByPartyIdAndProcessId(Integer partyId, Integer processId);
 
-	List<PriceMasterEntity> findByPartyIdAndProcessIdAndMatGradeId(Integer partyId, Integer processId, Integer matGradeId);
-
+	@Query("select id, partyId, processId, matGradeId, thicknessFrom, thicknessTo, price, createdBy, updatedBy, createdOn, updatedOn, "
+            + " (SELECT partyName from Party party where party.nPartyId=pc.partyId) as partyName, "
+            + " (SELECT processName from Process process where process.processId=pc.processId) as processName, "
+            + " (SELECT gradeName from MaterialGrade mg where mg.gradeId=pc.matGradeId) as gradeName, "
+            + " (SELECT mg.parentMaterial.description from MaterialGrade mg where mg.gradeId=pc.matGradeId) as description, "
+            + " (SELECT mg.parentMaterial.matId from MaterialGrade mg where mg.gradeId=pc.matGradeId) as matId "
+			+ " from PriceMasterEntity pc where partyId =:partyId and pc.matGradeId=:matGradeId and pc.processId=:processId ")
+	List<Object[]> findByPartyIdAndProcessIdAndMatGradeId(@Param("partyId") Integer partyId,
+			@Param("processId") Integer processId,
+			@Param("matGradeId") Integer matGradeId);
+	
 	@Query("select id, partyId, processId, matGradeId, thicknessFrom, thicknessTo, price, createdBy, updatedBy, createdOn, updatedOn, "
             + " (SELECT partyName from Party party where party.nPartyId=pc.partyId) as partyName, "
             + " (SELECT processName from Process process where process.processId=pc.processId) as processName, "

@@ -76,12 +76,12 @@ public interface DeliveryDetailsRepository extends JpaRepository<DeliveryDetails
     		"    when processid=8 then 'FULL HANDLING AND PACKING'  \r\n" + 
     		"    end as Product_Desc, \r\n" + 
     		"    coilnumber, customerbatchid, \r\n" + 
-    		"    (select gradename from product_material_grades  grd where grd.gradeid=inward.nmatid) as `Material_Grade`,\r\n" + 
+    		"    (select gradename from product_material_grades  grd where grd.gradeid=inward.materialgradeid) as `Material_Grade`,\r\n" + 
     		"    (select vdescription from product_tblmatdescription mat where mat.nmatid=inward.nmatid) as 'Material_Desc',\r\n" + 
     		"    (select mat.hsn_code from product_tblmatdescription mat where mat.nmatid=inward.nmatid) as 'hsn_code',\r\n " + 
     		"    fthickness,actualwidth, \r\n " + 
-    		"    actuallength,'Main location' as godown, \r\n" + 
-    		"    'MT' as uom, actualweight, price_details \r\n" + 
+    		"    actuallength,'Main location' as godown, 'MT' as uom, actualweight, \r\n" + 
+    		"    dc.packing_rate_id, inward.npartyid, instr.processid, inward.materialgradeid \r\n" + 
     		" FROM product_tblinwardentry inward, " + 
     		"    product_tblpartydetails party, " + 
     		"    product_instruction instr, " + 

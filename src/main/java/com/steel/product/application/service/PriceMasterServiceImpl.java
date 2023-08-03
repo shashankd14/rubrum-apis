@@ -2,6 +2,8 @@ package com.steel.product.application.service;
 
 import com.steel.product.application.dao.PriceMasterRepository;
 import com.steel.product.application.dto.pricemaster.PriceMasterResponse;
+import com.steel.product.application.dto.packingmaster.PackingRateMasterResponse;
+import com.steel.product.application.dto.pricemaster.PriceCalculateDTO;
 import com.steel.product.application.dto.pricemaster.PriceMasterRequest;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
@@ -11,6 +13,7 @@ import lombok.extern.log4j.Log4j2;
 import net.minidev.json.JSONObject;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -30,6 +33,9 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 	@Autowired
 	InstructionService instructionService;
 
+	@Autowired
+	PackingMasterService packingMasterService;	
+	
 	@Autowired
 	AdditionalPriceMasterService additionalPriceMasterService;
 
@@ -120,6 +126,13 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 	public List<PriceMasterResponse> getAllPriceDetails(int partyId) {
 
 		List<Object[]> list = priceMasterRepository.findAllDetails(partyId);
+		return prepareDataList(list);
+	}
+	
+	@Override
+	public List<PriceMasterResponse> getPartyGradeWiseDetails(int partyId, int processId, int gradeId) {
+
+		List<Object[]> list = priceMasterRepository.findByPartyIdAndProcessIdAndMatGradeId(partyId, processId, gradeId);
 		return prepareDataList(list);
 	}
 	
@@ -293,6 +306,7 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 		return new ResponseEntity<Object>(obj, HttpStatus.OK);
 	}
 	 */
+
 	@Override
 	public String calculateInstructionPrice(int instructionId ) {
 		
@@ -322,79 +336,47 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 					obj.put("BasePrice", priceMasterResponse.getPrice());
 				}
 			}
-			/*
-			List<AdditionalPriceMasterResponse> addPriceList = additionalPriceMasterService.getAllPriceDetails();
-			BigDecimal plannedNoOfPieces = new BigDecimal(Float.toString(instruction.getPlannedNoOfPieces()));
-			BigDecimal bundleWeight = new BigDecimal(Float.toString(instruction.getActualWeight()==null ? instruction.getPlannedWeight() : instruction.getActualWeight()));
-			BigDecimal noofPlans = BigDecimal.valueOf( inwardEntry.getInstructions().size() );
-			BigDecimal actualLength = new BigDecimal(Float.toString(instruction.getActualLength()==null ? instruction.getPlannedLength() : instruction.getActualLength()));
-
-			for (AdditionalPriceMasterResponse additionalPriceMasterResponse : addPriceList) {
-				
-				if (inwardEntry.getParty().getnPartyId() == additionalPriceMasterResponse.getPartyId()
-				&& instruction.getProcess().getProcessId() == additionalPriceMasterResponse.getProcessId()) {
-					
-					if (additionalPriceMasterResponse.getProcessId() == 2 || additionalPriceMasterResponse.getProcessId() == 3) {
-								
-						int partCount = instructionService.getPartCount(instruction.getPartDetails().getId());
-						
-						if ((additionalPriceMasterResponse.getAdditionalPriceId() == 1 || additionalPriceMasterResponse.getAdditionalPriceId() == 11)
-							&& BigDecimal.valueOf(partCount).compareTo(additionalPriceMasterResponse.getRangeFrom()) >= 0
-							&& additionalPriceMasterResponse.getRangeTo().compareTo(BigDecimal.valueOf(partCount)) >= 0) {
-
-							additionalPrice.put(additionalPriceMasterResponse.getAdditionalPriceDesc(), additionalPriceMasterResponse.getPrice());
-							totalPrice = totalPrice.add(additionalPriceMasterResponse.getPrice());
-						}
-						
-						if ((additionalPriceMasterResponse.getAdditionalPriceId() == 2 || additionalPriceMasterResponse.getAdditionalPriceId() == 12)
-							&& plannedNoOfPieces.compareTo(additionalPriceMasterResponse.getRangeFrom()) >= 0
-							&& additionalPriceMasterResponse.getRangeTo().compareTo(plannedNoOfPieces) >= 0) {
-
-							additionalPrice.put(additionalPriceMasterResponse.getAdditionalPriceDesc(), additionalPriceMasterResponse.getPrice());
-							totalPrice = totalPrice.add(additionalPriceMasterResponse.getPrice());
-						}
-						
-						if ((additionalPriceMasterResponse.getAdditionalPriceId() == 3 || additionalPriceMasterResponse.getAdditionalPriceId() == 10)  
-							&& bundleWeight.compareTo(additionalPriceMasterResponse.getRangeFrom()) >= 0
-							&& additionalPriceMasterResponse.getRangeTo().compareTo(bundleWeight) >= 0) {
-
-							additionalPrice.put(additionalPriceMasterResponse.getAdditionalPriceDesc(), additionalPriceMasterResponse.getPrice());
-							totalPrice = totalPrice.add(additionalPriceMasterResponse.getPrice());
-						}
-						
-						if ((additionalPriceMasterResponse.getAdditionalPriceId() == 5 || additionalPriceMasterResponse.getAdditionalPriceId() == 13)
-							&& noofPlans.compareTo(additionalPriceMasterResponse.getRangeFrom()) >= 0
-							&& additionalPriceMasterResponse.getRangeTo().compareTo(noofPlans) >= 0) {
-
-							additionalPrice.put(additionalPriceMasterResponse.getAdditionalPriceDesc(), additionalPriceMasterResponse.getPrice());
-							totalPrice = totalPrice.add(additionalPriceMasterResponse.getPrice());
-						}
-					}
-					
-					if (additionalPriceMasterResponse.getProcessId() == 1 || additionalPriceMasterResponse.getProcessId() == 3) {
-						
-						if ((additionalPriceMasterResponse.getAdditionalPriceId() == 6 || additionalPriceMasterResponse.getAdditionalPriceId() == 14)
-							&& actualLength.compareTo(additionalPriceMasterResponse.getRangeFrom()) >= 0
-							&& additionalPriceMasterResponse.getRangeTo().compareTo(actualLength) >= 0) {
-
-							additionalPrice.put(additionalPriceMasterResponse.getAdditionalPriceDesc(), additionalPriceMasterResponse.getPrice());
-							totalPrice = totalPrice.add(additionalPriceMasterResponse.getPrice());
-						}
-						
-						if (additionalPriceMasterResponse.getAdditionalPriceId() == 8  
-							&& bundleWeight.compareTo(additionalPriceMasterResponse.getRangeFrom()) >= 0
-							&& additionalPriceMasterResponse.getRangeTo().compareTo(bundleWeight) >= 0) {
-
-							additionalPrice.put(additionalPriceMasterResponse.getAdditionalPriceDesc(), additionalPriceMasterResponse.getPrice());
-							totalPrice = totalPrice.add(additionalPriceMasterResponse.getPrice());
-						}
-					}
-				}
-			}*/
-
 			obj.put("AdditionalTotalPrice", totalPrice);
 		} catch (Exception e) { 
 		}
 		return obj.toString();
+	}
+	
+	@Override
+	public PriceCalculateDTO calculateInstructionWisePrice(int partyId, BigDecimal fThickness, int processId,
+			int gradeId, int packingRateId, Float actualWeight) {
+		
+		PriceCalculateDTO priceCalculateDTO=new PriceCalculateDTO();
+		
+		try {
+			BigDecimal totalPrice = new BigDecimal(BigInteger.ZERO,  2);
+			List<PriceMasterResponse> basePriceList = getPartyGradeWiseDetails(partyId, processId, gradeId);
+						
+			for (PriceMasterResponse priceMasterResponse : basePriceList) {
+
+				if (gradeId == priceMasterResponse.getMatGradeId()
+						&& partyId == priceMasterResponse.getPartyId()
+						&& processId == priceMasterResponse.getProcessId()
+						&& fThickness.compareTo(priceMasterResponse.getThicknessFrom()) >= 0
+						&& priceMasterResponse.getThicknessTo().compareTo(fThickness) >= 0) {
+
+					priceCalculateDTO.setBasePrice(priceMasterResponse.getPrice());
+					totalPrice = totalPrice.add(priceCalculateDTO.getBasePrice());
+				}
+			}
+			
+			PackingRateMasterResponse packrate = packingMasterService.getByIdRate(packingRateId);
+			if(packrate != null && packrate.getPackingRate() !=null && packrate.getPackingRate().compareTo(BigDecimal.ZERO) > 0) {
+				BigDecimal packingRate = new BigDecimal(BigInteger.ZERO,  2);
+				packingRate = (packrate.getPackingRate().multiply(BigDecimal.valueOf(actualWeight)));
+				packingRate = packingRate.divide(BigDecimal.valueOf(1000));
+				priceCalculateDTO.setPackingPrice(packingRate);
+				totalPrice = totalPrice.add(packingRate);
+			}
+			priceCalculateDTO.setTotalPrice(totalPrice);
+		} catch (Exception e) { 
+			e.printStackTrace();
+		}
+		return priceCalculateDTO;
 	}
 }
