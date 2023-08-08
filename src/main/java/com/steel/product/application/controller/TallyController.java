@@ -1,6 +1,8 @@
 package com.steel.product.application.controller;
 
 import com.steel.product.application.dto.TallyBillingInvoiceListDTO;
+import com.steel.product.application.dto.delivery.TallyUpdateStatusDTO;
+import com.steel.product.application.dto.delivery.TallyUpdateSttsRequestDTO;
 import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.service.DeliveryDetailsService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -42,4 +44,15 @@ public class TallyController {
 		return new ResponseEntity<Object>(response, HttpStatus.OK);
 	}
 
+    @PostMapping("/update/dcstts")
+	public ResponseEntity<Object> save(@RequestBody TallyUpdateSttsRequestDTO deliveryDto) {
+		ResponseEntity<Object> result = null;
+
+		try {
+			result = new ResponseEntity<>("Delivery details saved successfully!", HttpStatus.OK);
+		} catch (Exception e) {
+			result = new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return result;
+	}
 }

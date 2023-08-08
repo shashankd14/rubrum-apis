@@ -1,17 +1,17 @@
 package com.steel.product.application.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.steel.product.application.dao.PriceMasterRepository;
 import com.steel.product.application.dto.pricemaster.PriceMasterResponse;
+import com.steel.product.application.dto.additionalpricemaster.AdditionalPriceMasterResponse;
 import com.steel.product.application.dto.packingmaster.PackingRateMasterResponse;
 import com.steel.product.application.dto.pricemaster.PriceCalculateDTO;
 import com.steel.product.application.dto.pricemaster.PriceMasterRequest;
 import com.steel.product.application.entity.Instruction;
-import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.entity.PriceMasterEntity;
 
 import lombok.extern.log4j.Log4j2;
-import net.minidev.json.JSONObject;
-
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -308,48 +308,33 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 	 */
 
 	@Override
-	public String calculateInstructionPrice(int instructionId ) {
-		
-		JSONObject obj=new JSONObject();
-		
+	public String calculateInstructionPrice(Instruction ins, int packingRateId) {
+		String jsonStr = "";
+		PriceCalculateDTO priceCalculateDTO = calculateInstructionWisePrice(ins, packingRateId);
+		ObjectMapper Obj = new ObjectMapper();
 		try {
-			JSONObject additionalPrice=new JSONObject();
-			BigDecimal totalPrice = new BigDecimal("0.00");
-			obj.put("BasePrice", "0.00");
-			obj.put("AdditionalPrice", additionalPrice);
-
-			System.out.println("instructionId == " + instructionId);
-			Instruction instruction = instructionService.getById(instructionId);
-			InwardEntry inwardEntry = instruction.getInwardId();
-			System.out.println("inwardEntry.getParty().getnPartyId() == " + inwardEntry.getParty().getnPartyId());
-
-			List<PriceMasterResponse> basePriceList = getAllPriceDetails(inwardEntry.getParty().getnPartyId());
-			BigDecimal fThickness = new BigDecimal(Float.toString(inwardEntry.getfThickness()));
-			
-			for (PriceMasterResponse priceMasterResponse : basePriceList) {
-				
-				if (inwardEntry.getMaterialGrade().getGradeId() == priceMasterResponse.getMatGradeId()
-					&& inwardEntry.getParty().getnPartyId() == priceMasterResponse.getPartyId()
-					&& instruction.getProcess().getProcessId() == priceMasterResponse.getProcessId()
-					&& fThickness.compareTo(priceMasterResponse.getThicknessFrom()) >= 0
-					&& priceMasterResponse.getThicknessTo().compareTo(fThickness) >= 0) {
-					obj.put("BasePrice", priceMasterResponse.getPrice());
-				}
-			}
-			obj.put("AdditionalTotalPrice", totalPrice);
-		} catch (Exception e) { 
+			jsonStr = Obj.writeValueAsString(priceCalculateDTO);
+			System.out.println(jsonStr);
+		} catch (IOException e) {
 		}
-		return obj.toString();
+		return jsonStr;
 	}
 	
 	@Override
 	public PriceCalculateDTO calculateInstructionWisePrice(int partyId, BigDecimal fThickness, int processId,
-			int gradeId, int packingRateId, Float actualWeight) {
-		
+			int gradeId, int packingRateId, Float actualWeight, Float actualLength1, int plannedNoOfPieces1,
+			int instrSize, Long partDetailsId) {
+
 		PriceCalculateDTO priceCalculateDTO=new PriceCalculateDTO();
 		
 		try {
 			BigDecimal totalPrice = new BigDecimal(BigInteger.ZERO,  2);
+			BigDecimal additionalPrice = new BigDecimal(BigInteger.ZERO,  2);
+			
+			if(processId==8 || processId==7) {
+				processId = 7;
+			}
+			
 			List<PriceMasterResponse> basePriceList = getPartyGradeWiseDetails(partyId, processId, gradeId);
 						
 			for (PriceMasterResponse priceMasterResponse : basePriceList) {
@@ -360,6 +345,9 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 						&& fThickness.compareTo(priceMasterResponse.getThicknessFrom()) >= 0
 						&& priceMasterResponse.getThicknessTo().compareTo(fThickness) >= 0) {
 
+					//BigDecimal basePrice = new BigDecimal(BigInteger.ZERO,  2);
+					//basePrice = (priceMasterResponse.getPrice().multiply(BigDecimal.valueOf(actualWeight)));
+					//basePrice = basePrice.divide(BigDecimal.valueOf(1000));
 					priceCalculateDTO.setBasePrice(priceMasterResponse.getPrice());
 					totalPrice = totalPrice.add(priceCalculateDTO.getBasePrice());
 				}
@@ -367,16 +355,209 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 			
 			PackingRateMasterResponse packrate = packingMasterService.getByIdRate(packingRateId);
 			if(packrate != null && packrate.getPackingRate() !=null && packrate.getPackingRate().compareTo(BigDecimal.ZERO) > 0) {
-				BigDecimal packingRate = new BigDecimal(BigInteger.ZERO,  2);
-				packingRate = (packrate.getPackingRate().multiply(BigDecimal.valueOf(actualWeight)));
-				packingRate = packingRate.divide(BigDecimal.valueOf(1000));
-				priceCalculateDTO.setPackingPrice(packingRate);
-				totalPrice = totalPrice.add(packingRate);
+				//BigDecimal packingRate = new BigDecimal(BigInteger.ZERO,  2);
+				//packingRate = (packrate.getPackingRate().multiply(BigDecimal.valueOf(actualWeight)));
+				//packingRate = packingRate.divide(BigDecimal.valueOf(1000));
+				priceCalculateDTO.setPackingPrice(packrate.getPackingRate());
+				totalPrice = totalPrice.add(priceCalculateDTO.getPackingPrice());
 			}
+			
+			List<AdditionalPriceMasterResponse> addPriceList = additionalPriceMasterService.getAllPriceDetails();
+			BigDecimal plannedNoOfPieces = new BigDecimal(Float.toString(plannedNoOfPieces1));
+			BigDecimal bundleWeight = new BigDecimal(Float.toString(actualWeight));
+			BigDecimal noofPlans = BigDecimal.valueOf(instrSize);
+			BigDecimal actualLength = new BigDecimal(Float.toString(actualLength1));
+
+			for (AdditionalPriceMasterResponse additionalPriceMasterResponse : addPriceList) {
+				
+				if (partyId == additionalPriceMasterResponse.getPartyId()
+				&& processId == additionalPriceMasterResponse.getProcessId()) {
+					
+					if (additionalPriceMasterResponse.getProcessId() == 2 || additionalPriceMasterResponse.getProcessId() == 3) {
+								
+						int partCount = instructionService.getPartCount(partDetailsId);
+						
+						if ((additionalPriceMasterResponse.getAdditionalPriceId() == 1 || additionalPriceMasterResponse.getAdditionalPriceId() == 11)
+							&& BigDecimal.valueOf(partCount).compareTo(additionalPriceMasterResponse.getRangeFrom()) >= 0
+							&& additionalPriceMasterResponse.getRangeTo().compareTo(BigDecimal.valueOf(partCount)) >= 0) {
+							
+							additionalPrice = additionalPrice.add(additionalPriceMasterResponse.getPrice());
+							totalPrice = totalPrice.add(additionalPriceMasterResponse.getPrice());
+						}
+						
+						if ((additionalPriceMasterResponse.getAdditionalPriceId() == 2 || additionalPriceMasterResponse.getAdditionalPriceId() == 12)
+							&& plannedNoOfPieces.compareTo(additionalPriceMasterResponse.getRangeFrom()) >= 0
+							&& additionalPriceMasterResponse.getRangeTo().compareTo(plannedNoOfPieces) >= 0) {
+
+							additionalPrice = additionalPrice.add(additionalPriceMasterResponse.getPrice());
+							totalPrice = totalPrice.add(additionalPriceMasterResponse.getPrice());
+						}
+						
+						if ((additionalPriceMasterResponse.getAdditionalPriceId() == 3 || additionalPriceMasterResponse.getAdditionalPriceId() == 10)  
+							&& bundleWeight.compareTo(additionalPriceMasterResponse.getRangeFrom()) >= 0
+							&& additionalPriceMasterResponse.getRangeTo().compareTo(bundleWeight) >= 0) {
+
+							additionalPrice = additionalPrice.add(additionalPriceMasterResponse.getPrice());
+							totalPrice = totalPrice.add(additionalPriceMasterResponse.getPrice());
+						}
+						
+						if ((additionalPriceMasterResponse.getAdditionalPriceId() == 5 || additionalPriceMasterResponse.getAdditionalPriceId() == 13)
+							&& noofPlans.compareTo(additionalPriceMasterResponse.getRangeFrom()) >= 0
+							&& additionalPriceMasterResponse.getRangeTo().compareTo(noofPlans) >= 0) {
+
+							additionalPrice = additionalPrice.add(additionalPriceMasterResponse.getPrice());
+							totalPrice = totalPrice.add(additionalPriceMasterResponse.getPrice());
+						}
+					}
+					
+					if (additionalPriceMasterResponse.getProcessId() == 1 || additionalPriceMasterResponse.getProcessId() == 3) {
+						
+						if ((additionalPriceMasterResponse.getAdditionalPriceId() == 6 || additionalPriceMasterResponse.getAdditionalPriceId() == 14)
+							&& actualLength.compareTo(additionalPriceMasterResponse.getRangeFrom()) >= 0
+							&& additionalPriceMasterResponse.getRangeTo().compareTo(actualLength) >= 0) {
+
+							additionalPrice = additionalPrice.add(additionalPriceMasterResponse.getPrice());
+							totalPrice = totalPrice.add(additionalPriceMasterResponse.getPrice());
+						}
+						
+						if (additionalPriceMasterResponse.getAdditionalPriceId() == 8  
+							&& bundleWeight.compareTo(additionalPriceMasterResponse.getRangeFrom()) >= 0
+							&& additionalPriceMasterResponse.getRangeTo().compareTo(bundleWeight) >= 0) {
+
+							additionalPrice = additionalPrice.add(additionalPriceMasterResponse.getPrice());
+							totalPrice = totalPrice.add(additionalPriceMasterResponse.getPrice());
+						}
+					}
+				}
+			}
+			priceCalculateDTO.setAdditionalPrice(additionalPrice);
 			priceCalculateDTO.setTotalPrice(totalPrice);
 		} catch (Exception e) { 
 			e.printStackTrace();
 		}
 		return priceCalculateDTO;
 	}
+	
+	@Override
+	public PriceCalculateDTO calculateInstructionWisePrice(Instruction ins, int packingRateId) {
+
+		PriceCalculateDTO priceCalculateDTO=new PriceCalculateDTO();
+		
+		try {
+			BigDecimal totalPrice = new BigDecimal(BigInteger.ZERO,  2);
+			BigDecimal additionalPrice = new BigDecimal(BigInteger.ZERO,  2);
+			
+			int processId=ins.getProcess().getProcessId();
+			if(processId==8 || processId==7) {
+				processId = 7;
+			}
+			
+			List<PriceMasterResponse> basePriceList = getPartyGradeWiseDetails(ins.getInwardId().getParty().getnPartyId(), processId, ins.getInwardId().getMaterialGrade().getGradeId());
+						
+			for (PriceMasterResponse priceMasterResponse : basePriceList) {
+
+				if (ins.getInwardId().getMaterialGrade().getGradeId() == priceMasterResponse.getMatGradeId()
+						&& ins.getInwardId().getParty().getnPartyId() == priceMasterResponse.getPartyId()
+						&& processId == priceMasterResponse.getProcessId()
+						&& BigDecimal.valueOf(ins.getInwardId().getfThickness()).compareTo(priceMasterResponse.getThicknessFrom()) >= 0
+						&& priceMasterResponse.getThicknessTo().compareTo(BigDecimal.valueOf(ins.getInwardId().getfThickness())) >= 0) {
+
+					//BigDecimal basePrice = new BigDecimal(BigInteger.ZERO,  2);
+					//basePrice = (priceMasterResponse.getPrice().multiply(BigDecimal.valueOf(ins.getActualWeight())));
+					//basePrice = basePrice.divide(BigDecimal.valueOf(1000));
+					priceCalculateDTO.setBasePrice(priceMasterResponse.getPrice());
+					totalPrice = totalPrice.add(priceCalculateDTO.getBasePrice()); 
+				}
+			}
+			
+			PackingRateMasterResponse packrate = packingMasterService.getByIdRate(packingRateId);
+			if(packrate != null && packrate.getPackingRate() !=null && packrate.getPackingRate().compareTo(BigDecimal.ZERO) > 0) {
+				//BigDecimal packingRate = new BigDecimal(BigInteger.ZERO,  2);
+				//packingRate = (packrate.getPackingRate().multiply(BigDecimal.valueOf(ins.getActualWeight())));
+				//packingRate = packingRate.divide(BigDecimal.valueOf(1000));
+				priceCalculateDTO.setPackingPrice(packrate.getPackingRate());
+				totalPrice = totalPrice.add(priceCalculateDTO.getPackingPrice());
+			}
+			
+			List<AdditionalPriceMasterResponse> addPriceList = additionalPriceMasterService.getAllPriceDetails();
+			//BigDecimal fThickness = new BigDecimal(Float.toString(ins.getInwardId().getfThickness()));
+			BigDecimal plannedNoOfPieces =new BigDecimal("1.00");
+			if(ins.getPlannedNoOfPieces()!=null && ins.getPlannedNoOfPieces() >0) {
+				plannedNoOfPieces = new BigDecimal(Float.toString(ins.getPlannedNoOfPieces()));
+			}
+			BigDecimal bundleWeight = new BigDecimal(Float.toString(ins.getActualWeight()==null ? ins.getPlannedWeight() : ins.getActualWeight()));
+			BigDecimal noofPlans = BigDecimal.valueOf( ins.getInwardId().getInstructions().size() );
+			BigDecimal actualLength = new BigDecimal(Float.toString(ins.getActualLength()==null ? ins.getPlannedLength() : ins.getActualLength()));
+
+			for (AdditionalPriceMasterResponse additionalPriceMasterResponse : addPriceList) {
+				
+				if (ins.getInwardId().getParty().getnPartyId() == additionalPriceMasterResponse.getPartyId()
+				&& processId == additionalPriceMasterResponse.getProcessId()) {
+					
+					if (additionalPriceMasterResponse.getProcessId() == 2 || additionalPriceMasterResponse.getProcessId() == 3) {
+								
+						int partCount = instructionService.getPartCount(ins.getPartDetails().getId());
+						
+						if ((additionalPriceMasterResponse.getAdditionalPriceId() == 1 || additionalPriceMasterResponse.getAdditionalPriceId() == 11)
+							&& BigDecimal.valueOf(partCount).compareTo(additionalPriceMasterResponse.getRangeFrom()) >= 0
+							&& additionalPriceMasterResponse.getRangeTo().compareTo(BigDecimal.valueOf(partCount)) >= 0) {
+							
+							additionalPrice = additionalPrice.add(additionalPriceMasterResponse.getPrice());
+							totalPrice = totalPrice.add(additionalPriceMasterResponse.getPrice());
+						}
+						
+						if ((additionalPriceMasterResponse.getAdditionalPriceId() == 2 || additionalPriceMasterResponse.getAdditionalPriceId() == 12)
+							&& plannedNoOfPieces.compareTo(additionalPriceMasterResponse.getRangeFrom()) >= 0
+							&& additionalPriceMasterResponse.getRangeTo().compareTo(plannedNoOfPieces) >= 0) {
+
+							additionalPrice = additionalPrice.add(additionalPriceMasterResponse.getPrice());
+							totalPrice = totalPrice.add(additionalPriceMasterResponse.getPrice());
+						}
+						
+						if ((additionalPriceMasterResponse.getAdditionalPriceId() == 3 || additionalPriceMasterResponse.getAdditionalPriceId() == 10)  
+							&& bundleWeight.compareTo(additionalPriceMasterResponse.getRangeFrom()) >= 0
+							&& additionalPriceMasterResponse.getRangeTo().compareTo(bundleWeight) >= 0) {
+
+							additionalPrice = additionalPrice.add(additionalPriceMasterResponse.getPrice());
+							totalPrice = totalPrice.add(additionalPriceMasterResponse.getPrice());
+						}
+						
+						if ((additionalPriceMasterResponse.getAdditionalPriceId() == 5 || additionalPriceMasterResponse.getAdditionalPriceId() == 13)
+							&& noofPlans.compareTo(additionalPriceMasterResponse.getRangeFrom()) >= 0
+							&& additionalPriceMasterResponse.getRangeTo().compareTo(noofPlans) >= 0) {
+
+							additionalPrice = additionalPrice.add(additionalPriceMasterResponse.getPrice());
+							totalPrice = totalPrice.add(additionalPriceMasterResponse.getPrice());
+						}
+					}
+					
+					if (additionalPriceMasterResponse.getProcessId() == 1 || additionalPriceMasterResponse.getProcessId() == 3) {
+						
+						if ((additionalPriceMasterResponse.getAdditionalPriceId() == 6 || additionalPriceMasterResponse.getAdditionalPriceId() == 14)
+							&& actualLength.compareTo(additionalPriceMasterResponse.getRangeFrom()) >= 0
+							&& additionalPriceMasterResponse.getRangeTo().compareTo(actualLength) >= 0) {
+
+							additionalPrice = additionalPrice.add(additionalPriceMasterResponse.getPrice());
+							totalPrice = totalPrice.add(additionalPriceMasterResponse.getPrice());
+						}
+						
+						if (additionalPriceMasterResponse.getAdditionalPriceId() == 8  
+							&& bundleWeight.compareTo(additionalPriceMasterResponse.getRangeFrom()) >= 0
+							&& additionalPriceMasterResponse.getRangeTo().compareTo(bundleWeight) >= 0) {
+
+							additionalPrice = additionalPrice.add(additionalPriceMasterResponse.getPrice());
+							totalPrice = totalPrice.add(additionalPriceMasterResponse.getPrice());
+						}
+					}
+				}
+			}
+			priceCalculateDTO.setAdditionalPrice(additionalPrice);
+			priceCalculateDTO.setTotalPrice(totalPrice);
+		} catch (Exception e) { 
+			e.printStackTrace();
+		}
+		return priceCalculateDTO;
+	}
+
+	
 }

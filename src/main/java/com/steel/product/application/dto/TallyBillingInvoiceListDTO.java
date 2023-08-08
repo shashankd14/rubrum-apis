@@ -1,8 +1,6 @@
 package com.steel.product.application.dto;
 
 import java.math.BigDecimal;
-import java.util.Date;
-
 import lombok.Data;
 
 @Data
@@ -36,6 +34,9 @@ public class TallyBillingInvoiceListDTO {
 	private String godown;
 	private String uom;
 	private Float quantity;
+	private BigDecimal basePrice;
+	private BigDecimal additionalPrice;
+	private BigDecimal packingRate;
 	private BigDecimal rate;
 	private BigDecimal amount;
 	private BigDecimal gstPercentage;
@@ -50,7 +51,7 @@ public class TallyBillingInvoiceListDTO {
 	private String ledger6;
 	private String ledger7;
 	private String roundOff;
-	private String total;
+	private BigDecimal total;
 	private String remarks;
 
 }

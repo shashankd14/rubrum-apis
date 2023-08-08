@@ -20,12 +20,16 @@ public interface PriceMasterService {
 
 	List<PriceMasterResponse> getAllPriceDetails();
 
-	String calculateInstructionPrice(int instructionId);
-	
 	List<PriceMasterResponse> getAllPriceDetails(int partyId);
 
 	List<PriceMasterResponse> getPartyGradeWiseDetails(int partyId, int processId, int gradeId);
 
-	PriceCalculateDTO calculateInstructionWisePrice(int partyId, BigDecimal fThickness, int processId, int gradeId, int packingRateId, Float actualWeight);
+	PriceCalculateDTO calculateInstructionWisePrice(int partyId, BigDecimal fThickness, int processId, int gradeId,
+			int packingRateId, Float actualWeight, Float actualLength1, int plannedNoOfPieces1, int instrSize,
+			Long partDetailsId);
+
+	PriceCalculateDTO calculateInstructionWisePrice(Instruction ins, int packingRateId);
+
+	String calculateInstructionPrice(Instruction ins, int packingRateId);
 
 }

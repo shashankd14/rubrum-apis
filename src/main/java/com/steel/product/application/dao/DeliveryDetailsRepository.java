@@ -81,14 +81,17 @@ public interface DeliveryDetailsRepository extends JpaRepository<DeliveryDetails
     		"    (select mat.hsn_code from product_tblmatdescription mat where mat.nmatid=inward.nmatid) as 'hsn_code',\r\n " + 
     		"    fthickness,actualwidth, \r\n " + 
     		"    actuallength,'Main location' as godown, 'MT' as uom, actualweight, \r\n" + 
-    		"    dc.packing_rate_id, inward.npartyid, instr.processid, inward.materialgradeid \r\n" + 
+    		"    dc.packing_rate_id, inward.npartyid, instr.processid, inward.materialgradeid, \r\n" + 
+    		"    price_details, plannednoofpieces,  \r\n" + 
+    		"    (select count(ins.instructionid) from product_instruction ins where ins.inwardid=inward.inwardentryid) as 'noofPlans', part_details_id, \r\n " + 
+    		"    (select  SUBSTRING(gstn, 1, 2)  from product_company_details where id=1) as companygstin, SUBSTRING(gstnumber, 1, 2) \r\n " + 
     		" FROM product_tblinwardentry inward, " + 
     		"    product_tblpartydetails party, " + 
     		"    product_instruction instr, " + 
-    		"    product_tbl_delivery_details dc " + 
-    		" WHERE party.npartyid = inward.npartyid " + 
-    		"        AND inward.inwardentryid = instr.inwardid " + 
-    		"        AND instr.deliveryid = dc.deliveryid and dc.deliveryid in (:dcIDs)", nativeQuery = true)
+    		"    product_tbl_delivery_details dc  \r\n" + 
+    		" WHERE party.npartyid = inward.npartyid  " + 
+    		"        AND inward.inwardentryid = instr.inwardid  \r\n" + 
+    		"        AND instr.deliveryid = dc.deliveryid and dc.deliveryid in (:dcIDs) \r\n", nativeQuery = true)
     public List<Object[]> billingInvoiceList(@Param("dcIDs") List<Integer> dcIDs);
 
 }

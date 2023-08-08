@@ -24,6 +24,10 @@ public class PriceCalculateDTO {
 
 	private BigDecimal packingPrice = new BigDecimal(BigInteger.ZERO,  2);
 
-	private BigDecimal totalPrice;
+	private BigDecimal additionalPrice  = new BigDecimal(BigInteger.ZERO,  2);
+
+	private BigDecimal rate  = new BigDecimal(BigInteger.ZERO,  2);
+	
+	private BigDecimal totalPrice = new BigDecimal(BigInteger.ZERO,  2);
 
 }

@@ -26,6 +26,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -122,14 +124,12 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
         List<Integer> statusIdList=new ArrayList<>();
         statusIdList.add(readyToDeliverStatusId);
         statusIdList.add(deliveredStatusId);
-        Map<Integer, String> instructionRemarksMap = deliveryItemDetails.stream().filter(d -> d.getRemarks() != null)
-                .collect(Collectors.toMap(d -> d.getInstructionId(), d -> d.getRemarks()));
+        Map<Integer, String> instructionRemarksMap = deliveryItemDetails.stream().filter(d -> d.getRemarks() != null).collect(Collectors.toMap(d -> d.getInstructionId(), d -> d.getRemarks()));
         
-        List<Instruction> instructions = instructionService.findAllByInstructionIdInAndStatus(deliveryItemDetails.stream()
-                .map(d -> d.getInstructionId()).collect(Collectors.toList()), statusIdList);
+        List<Instruction> instructions = instructionService.findAllByInstructionIdInAndStatus(deliveryItemDetails.stream().map(d -> d.getInstructionId()).collect(Collectors.toList()), statusIdList);
         
         instructions.forEach(ins -> ins.setStatus(deliveredStatus));
-        instructions.forEach(ins -> ins.setPriceDetails( priceMasterService.calculateInstructionPrice(ins.getInstructionId())));
+        instructions.forEach(ins -> ins.setPriceDetails( priceMasterService.calculateInstructionPrice(ins, deliveryDto.getPackingRateId())));
         instructions = instructionService.saveAll(instructions);
 
         InwardEntry inwardEntry;
@@ -368,10 +368,10 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 			invoiceListDTO.setCustomerName(objs[5] != null ? (String) objs[5] : null);
 			invoiceListDTO.setCustomerMobileNo(objs[6] != null ? (String) objs[6] : null);
 			invoiceListDTO.setUnderGroup(objs[7] != null ? (String) objs[7] : null);
-			invoiceListDTO.setAddress1(""+objs[8] != null ? (String) objs[8] : null);
-			invoiceListDTO.setAddress2(""+objs[9] != null ? (String) objs[9] : null);
-			invoiceListDTO.setAddress3(""+objs[10] != null ? (String) objs[10] : null);
-			invoiceListDTO.setCity(""+objs[11] != null ? (String) objs[11] : null);
+			invoiceListDTO.setAddress1("" + objs[8] != null ? (String) objs[8] : null);
+			invoiceListDTO.setAddress2("" + objs[9] != null ? (String) objs[9] : null);
+			invoiceListDTO.setAddress3("" + objs[10] != null ? (String) objs[10] : null);
+			invoiceListDTO.setCity("" + objs[11] != null ? (String) objs[11] : null);
 			invoiceListDTO.setPincode(objs[12] != null ? (String) objs[12] : null);
 			invoiceListDTO.setState(objs[13] != null ? (String) objs[13] : null);
 			invoiceListDTO.setGstno(objs[14] != null ? (String) objs[14] : null);
@@ -383,29 +383,71 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 			invoiceListDTO.setMaterialDesc(objs[20] != null ? (String) objs[20] : null);
 			invoiceListDTO.setHsnCode(objs[21] != null ? (String) objs[21] : null);
 			Float fThickness = objs[22] != null ? (Float) objs[22] : null;
-			Float plannedWidth = objs[23] != null ? (Float) objs[23] : null;
-			Float plannedLength  = objs[24] != null ? (Float) objs[24] : null;
+			Float actualWidth = objs[23] != null ? (Float) objs[23] : null;
+			Float actualLength = objs[24] != null ? (Float) objs[24] : null;
+			Float actualWeight = objs[27] != null ? (Float) objs[27] : null;
 			invoiceListDTO.setThickness(fThickness);
-			invoiceListDTO.setWidth(plannedWidth);
-			invoiceListDTO.setLength(plannedLength);
+			invoiceListDTO.setWidth(actualWidth);
+			invoiceListDTO.setLength(actualLength);
 			invoiceListDTO.setGodown(objs[25] != null ? (String) objs[25] : null);
 			invoiceListDTO.setUom(objs[26] != null ? (String) objs[26] : null);
-			Float actualWeight = objs[27] != null ? (Float) objs[27] : null;
 			invoiceListDTO.setQuantity(actualWeight);
-			
-			Integer packingRateId = objs[28] != null ? (Integer) objs[28] : 0;
-			Integer partyId  = objs[29] != null ? (Integer) objs[29] : 0;
-			Integer processId  = objs[30] != null ? (Integer) objs[30] : 0;
-			Integer materialGradeId  = objs[31] != null ? (Integer) objs[31] : 0;
 
-			PriceCalculateDTO priceCalculateDTO = priceMasterService.calculateInstructionWisePrice(partyId, BigDecimal.valueOf(fThickness), processId, materialGradeId, packingRateId, invoiceListDTO.getQuantity());
+			Integer packingRateId = objs[28] != null ? (Integer) objs[28] : 0;
+			Integer partyId = objs[29] != null ? (Integer) objs[29] : 0;
+			Integer processId = objs[30] != null ? (Integer) objs[30] : 0;
+			Integer materialGradeId = objs[31] != null ? (Integer) objs[31] : 0;
+			String priceDetails = objs[32] != null ? (String) objs[32] : "";
+			Integer plannedNoOfPieces = objs[33] != null ? (Integer) objs[33] : 0;
+			Integer noofPlans = objs[34] != null ? ((BigInteger) objs[34]).intValue() : 0;
+			Integer partDetailsId = objs[35] != null ? (Integer) objs[35] : 0;
+			String companyGSTIN = objs[36] != null ? (String) objs[36] : "29";
+			String partyGSTIN = objs[37] != null ? (String) objs[37] : "29";
+
+			PriceCalculateDTO priceCalculateDTO = priceMasterService.calculateInstructionWisePrice(partyId,
+					BigDecimal.valueOf(fThickness), processId, materialGradeId, packingRateId,
+					invoiceListDTO.getQuantity(), actualLength, plannedNoOfPieces, noofPlans, partDetailsId.longValue());
+
+			BigDecimal amount =new BigDecimal("0.00");
 			
-			invoiceListDTO.setRate(priceCalculateDTO.getTotalPrice());
-			invoiceListDTO.setAmount(priceCalculateDTO.getTotalPrice());
+			if(priceCalculateDTO!=null && priceCalculateDTO.getBasePrice() !=null) {
+				invoiceListDTO.setBasePrice( priceCalculateDTO.getBasePrice());
+				amount=amount.add(invoiceListDTO.getBasePrice());
+			}
+			if(priceCalculateDTO!=null && priceCalculateDTO.getAdditionalPrice() != null) {
+				invoiceListDTO.setAdditionalPrice( priceCalculateDTO.getAdditionalPrice());
+				amount=amount.add(invoiceListDTO.getAdditionalPrice());
+			}
+			if(priceCalculateDTO!=null && priceCalculateDTO.getPackingPrice() != null) {
+				invoiceListDTO.setPackingRate(  priceCalculateDTO.getPackingPrice());
+				amount=amount.add(invoiceListDTO.getPackingRate());
+			}
+			BigDecimal totalAmount = new BigDecimal(BigInteger.ZERO, 3);
+			if(amount!=null ) {
+				amount = amount.setScale(3, RoundingMode.HALF_EVEN); 
+				invoiceListDTO.setRate(amount);
+				totalAmount = (amount.multiply(BigDecimal.valueOf(actualWeight)));
+				totalAmount = totalAmount.divide(BigDecimal.valueOf(1000));
+				invoiceListDTO.setAmount(totalAmount);
+				invoiceListDTO.setTotal( totalAmount);
+			}
 			invoiceListDTO.setGstPercentage(new BigDecimal("12.00"));
-			invoiceListDTO.setIgst(new BigDecimal("12.00"));
-			invoiceListDTO.setCgst(new BigDecimal("12.00"));
-			invoiceListDTO.setSgst(new BigDecimal("12.00"));
+			BigDecimal grandTotal = new BigDecimal(BigInteger.ZERO,  2);
+
+			if(companyGSTIN.equals(partyGSTIN)) {
+				BigDecimal cgst = totalAmount.multiply(new BigDecimal("6.00")).divide(new BigDecimal("100.00"));
+				BigDecimal sgst = totalAmount.multiply(new BigDecimal("6.00")).divide(new BigDecimal("100.00"));
+
+				invoiceListDTO.setCgst(cgst.setScale(3, RoundingMode.HALF_EVEN)); 
+				invoiceListDTO.setSgst(sgst.setScale(3, RoundingMode.HALF_EVEN)); 
+				grandTotal=grandTotal.add(totalAmount).add(invoiceListDTO.getCgst()).add(invoiceListDTO.getSgst());
+			} else {
+				BigDecimal igst = totalAmount.multiply(new BigDecimal("12.00")).divide(new BigDecimal("100.00"));
+				invoiceListDTO.setIgst(igst.setScale(3, RoundingMode.HALF_EVEN)); 
+				grandTotal=grandTotal.add(totalAmount).add(invoiceListDTO.getIgst());
+			}
+			grandTotal=grandTotal.setScale(3, RoundingMode.HALF_EVEN);
+			invoiceListDTO.setTotal( grandTotal);
 			/*invoiceListDTO.setLedger1(objs[34] != null ? (String) objs[34] : null);
 			invoiceListDTO.setLedger2(objs[35] != null ? (String) objs[35] : null);
 			invoiceListDTO.setLedger3(objs[36] != null ? (String) objs[36] : null);
@@ -413,10 +455,8 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 			invoiceListDTO.setLedger5(objs[38] != null ? (String) objs[38] : null);
 			invoiceListDTO.setLedger6(objs[39] != null ? (String) objs[39] : null);
 			invoiceListDTO.setLedger7(objs[40] != null ? (String) objs[40] : null);
-			invoiceListDTO.setRoundOff(objs[41] != null ? (String) objs[41] : null);
-			invoiceListDTO.setTotal(objs[42] != null ? (String) objs[42] : null);
-			invoiceListDTO.setRemarks(objs[43] != null ? (String) objs[43] : null);*/
-			 
+			invoiceListDTO.setRoundOff(objs[41] != null ? (String) objs[41] : null);*/
+			invoiceListDTO.setRemarks("");
 			billingInvoiceList.add(invoiceListDTO);
 		}
 		return billingInvoiceList;
@@ -437,10 +477,15 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 		for (Instruction instruction : instructions) {
 			boolean innerStts = false;
 			InwardEntry inwardEntry = instruction.getInwardId();
-			PriceCalculateDTO priceCalculateDTO = priceMasterService.calculateInstructionWisePrice(
+			
+			/*PriceCalculateDTO priceCalculateDTO = priceMasterService.calculateInstructionWisePrice(
 					inwardEntry.getParty().getnPartyId(), BigDecimal.valueOf(inwardEntry.getfThickness()),
 					instruction.getProcess().getProcessId(), inwardEntry.getMaterialGrade().getGradeId(),
-					deliveryDto.getPackingRateId(), instruction.getActualWeight());
+					deliveryDto.getPackingRateId(), instruction.getActualWeight(), instruction.getActualLength(),
+					instruction.getPlannedNoOfPieces(), inwardEntry.getInstructions().size(),
+					instruction.getPartDetails().getId());*/
+			
+			PriceCalculateDTO priceCalculateDTO = priceMasterService.calculateInstructionWisePrice(instruction, deliveryDto.getPackingRateId());
 
 			priceCalculateDTO.setCoilNo(inwardEntry.getCoilNumber());
 			priceCalculateDTO.setCustomerBatchNo(inwardEntry.getCustomerBatchId());
@@ -449,8 +494,28 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 			priceCalculateDTO.setMatGradeName(inwardEntry.getMaterialGrade().getGradeName());
 			priceCalculateDTO.setActualWeight(instruction.getActualWeight());
 
+			BigDecimal amount =new BigDecimal("0.00");
+			
+			if(priceCalculateDTO!=null && priceCalculateDTO.getBasePrice() !=null) {
+				amount=amount.add(priceCalculateDTO.getBasePrice());
+			}
+			if(priceCalculateDTO!=null && priceCalculateDTO.getAdditionalPrice() != null) {
+				amount=amount.add(priceCalculateDTO.getAdditionalPrice());
+			}
+			if(priceCalculateDTO!=null && priceCalculateDTO.getPackingPrice() != null) {
+				amount=amount.add(priceCalculateDTO.getPackingPrice() );
+			}
+			if(amount!=null ) {
+				priceCalculateDTO.setRate(amount);
+				BigDecimal totalAmount = new BigDecimal(BigInteger.ZERO,  2);
+				totalAmount = (amount.multiply(BigDecimal.valueOf(priceCalculateDTO.getActualWeight())));
+				totalAmount = totalAmount.divide(BigDecimal.valueOf(1000));
+				priceCalculateDTO.setTotalPrice(totalAmount);
+			}
 			if (priceCalculateDTO.getBasePrice() != null && priceCalculateDTO.getBasePrice().compareTo(BigDecimal.ZERO) > 0) {
-				innerStts = true;
+				if (priceCalculateDTO.getPackingPrice() != null && priceCalculateDTO.getPackingPrice().compareTo(BigDecimal.ZERO) > 0) {
+					innerStts = true;
+				}
 			}
 			priceDetailsList.add(priceCalculateDTO);
 			mainStts = innerStts;
