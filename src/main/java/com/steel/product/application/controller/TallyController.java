@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -45,14 +46,16 @@ public class TallyController {
 	}
 
     @PostMapping("/update/dcstts")
-	public ResponseEntity<Object> save(@RequestBody TallyUpdateSttsRequestDTO deliveryDto) {
-		ResponseEntity<Object> result = null;
-
+	public ResponseEntity<Object> updateTallyStatus(@RequestBody TallyUpdateSttsRequestDTO deliveryDto) {
+		ResponseEntity<Object> response = null;
+		HttpHeaders header = new HttpHeaders();
+		header.set("Content-Type", "application/json");
 		try {
-			result = new ResponseEntity<>("Delivery details saved successfully!", HttpStatus.OK);
+			deliveryDetailsService.updateTallyStatus(deliveryDto);
+			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Tally status updated successfully!\"}", header, HttpStatus.OK);
 		} catch (Exception e) {
-			result = new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"" + e.getMessage() + "\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		return result;
+		return response;
 	}
 }

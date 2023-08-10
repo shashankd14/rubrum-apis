@@ -3,6 +3,7 @@ package com.steel.product.application.service;
 import com.steel.product.application.dto.TallyBillingInvoiceListDTO;
 import com.steel.product.application.dto.delivery.DeliveryDto;
 import com.steel.product.application.dto.delivery.DeliveryPacketsDto;
+import com.steel.product.application.dto.delivery.TallyUpdateSttsRequestDTO;
 import com.steel.product.application.dto.pricemaster.PriceCalculateResponseDTO;
 import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.Instruction;
@@ -36,4 +37,6 @@ public interface DeliveryDetailsService {
 	public List<TallyBillingInvoiceListDTO> billingDCDetails(List<Integer> dcIds);
 
 	public PriceCalculateResponseDTO validatePriceMapping(DeliveryDto deliveryDto, int userId);
+
+	DeliveryDetails updateTallyStatus(TallyUpdateSttsRequestDTO deliveryDto);
 }

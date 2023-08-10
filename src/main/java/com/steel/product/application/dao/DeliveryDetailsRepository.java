@@ -46,7 +46,7 @@ public interface DeliveryDetailsRepository extends JpaRepository<DeliveryDetails
 
 //    @Query("select sum(ins.actualWeight) from Instruction ins where ins.inwardId.inwardEntryId = :inwardId group by ins.inwardId")
     @Query("select ins.actualWeight from Instruction ins where ins.inwardId.inwardEntryId = :inwardId and instructionId = :instructionId")
-    public Float findInstructionByInwardIdAndInstructionId(@Param("inwardId")Integer inwardId,@Param("instructionId")Integer instructionId);
+    public Float findInstructionByInwardIdAndInstructionId(@Param("inwardId")Integer inwardId, @Param("instructionId")Integer instructionId);
 
 	@Modifying
 	@Transactional
@@ -93,5 +93,10 @@ public interface DeliveryDetailsRepository extends JpaRepository<DeliveryDetails
     		"        AND inward.inwardentryid = instr.inwardid  \r\n" + 
     		"        AND instr.deliveryid = dc.deliveryid and dc.deliveryid in (:dcIDs) \r\n", nativeQuery = true)
     public List<Object[]> billingInvoiceList(@Param("dcIDs") List<Integer> dcIDs);
-
+    
+    @Modifying
+   	@Transactional
+   	@Query("update DeliveryDetails dc set dc.tallyStatus = 'Y', dc.tallyDate = CURRENT_TIMESTAMP where dc.deliveryId in (:dcList) ")
+   	public void updateTallyStatus(@Param("dcList") List<Integer> dcList);
+    
 }

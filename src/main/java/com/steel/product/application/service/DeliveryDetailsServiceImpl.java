@@ -5,6 +5,8 @@ import com.steel.product.application.dto.TallyBillingInvoiceListDTO;
 import com.steel.product.application.dto.delivery.DeliveryDto;
 import com.steel.product.application.dto.delivery.DeliveryItemDetails;
 import com.steel.product.application.dto.delivery.DeliveryPacketsDto;
+import com.steel.product.application.dto.delivery.TallyUpdateStatusDTO;
+import com.steel.product.application.dto.delivery.TallyUpdateSttsRequestDTO;
 import com.steel.product.application.dto.pricemaster.PriceCalculateDTO;
 import com.steel.product.application.dto.pricemaster.PriceCalculateResponseDTO;
 import com.steel.product.application.entity.AdminUserEntity;
@@ -530,8 +532,23 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
         priceCalculateResponseDTO.setPriceDetailsList(priceDetailsList);
        
         return priceCalculateResponseDTO;
-    }
+	}
 
-	
-	
+	@Override
+	@Transactional
+	public DeliveryDetails updateTallyStatus(TallyUpdateSttsRequestDTO deliveryDto) {
+		LOGGER.info("in updateTallyStatus");
+		List<Integer> dcList= new ArrayList<>();
+		try {
+			for (TallyUpdateStatusDTO tallyUpdateStatusDTO : deliveryDto.getDcList()) {
+				dcList.add( tallyUpdateStatusDTO.getDcId() );
+			}
+			deliveryDetailsRepo.updateTallyStatus(dcList);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
+		}
+		return null;
+	}
+
 }

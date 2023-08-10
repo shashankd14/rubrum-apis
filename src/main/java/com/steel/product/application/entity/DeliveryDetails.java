@@ -53,6 +53,12 @@ public class DeliveryDetails {
     @Column(name = "pdf_s3_url")
     private String pdfS3Url;
 
+    @Column(name = "tally_status")
+    private String tallyStatus;
+
+    @Column(name = "tally_date")
+    private Date tallyDate;
+
     @OneToMany(mappedBy = "deliveryDetails", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH,
             CascadeType.REFRESH })
     private Set<Instruction> instructions;
