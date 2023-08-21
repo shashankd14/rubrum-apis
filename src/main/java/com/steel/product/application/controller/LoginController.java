@@ -4,6 +4,7 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,6 +24,7 @@ import lombok.extern.log4j.Log4j2;
 @Tag(name = "Login Controller", description = "Login Controller")
 @RequestMapping("/login")
 public class LoginController {
+
 	@Autowired
 	private UserInfoService userService;
 
@@ -32,5 +34,11 @@ public class LoginController {
 		log.debug("*** Login Method Invoked ***");
 		return userService.login(loginReq);
 	}
-	
+
+	@GetMapping("/auth")
+	public LoginResponse loginTally(@Valid @RequestBody LoginRequest loginReq) throws MockException {
+
+		log.debug("*** loginTally Method Invoked ***");
+		return userService.loginTally(loginReq);
+	}
 }

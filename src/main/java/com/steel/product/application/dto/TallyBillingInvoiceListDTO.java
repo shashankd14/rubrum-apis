@@ -40,16 +40,9 @@ public class TallyBillingInvoiceListDTO {
 	private BigDecimal rate;
 	private BigDecimal amount;
 	private BigDecimal gstPercentage;
-	private BigDecimal igst;
-	private BigDecimal cgst;
-	private BigDecimal sgst;
 	private String ledger1;
 	private String ledger2;
 	private String ledger3;
-	private String ledger4;
-	private String ledger5;
-	private String ledger6;
-	private String ledger7;
 	private String roundOff;
 	private BigDecimal total;
 	private String remarks;

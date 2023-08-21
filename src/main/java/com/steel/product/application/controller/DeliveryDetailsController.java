@@ -91,7 +91,7 @@ public class DeliveryDetailsController {
 			if (priceCalculateResponseDTO.isValidationStatus()) {
 				result = new ResponseEntity<>(priceCalculateResponseDTO, headers, HttpStatus.OK);
 			} else {
-				result = new ResponseEntity<>(priceCalculateResponseDTO, headers, HttpStatus.BAD_REQUEST);
+				result = new ResponseEntity<>(priceCalculateResponseDTO, headers, HttpStatus.OK);
 			}
 		} catch (Exception e) {
 			result = new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);

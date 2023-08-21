@@ -399,12 +399,12 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 			Integer partyId = objs[29] != null ? (Integer) objs[29] : 0;
 			Integer processId = objs[30] != null ? (Integer) objs[30] : 0;
 			Integer materialGradeId = objs[31] != null ? (Integer) objs[31] : 0;
-			String priceDetails = objs[32] != null ? (String) objs[32] : "";
+			//String priceDetails = objs[32] != null ? (String) objs[32] : "";
 			Integer plannedNoOfPieces = objs[33] != null ? (Integer) objs[33] : 0;
 			Integer noofPlans = objs[34] != null ? ((BigInteger) objs[34]).intValue() : 0;
 			Integer partDetailsId = objs[35] != null ? (Integer) objs[35] : 0;
-			String companyGSTIN = objs[36] != null ? (String) objs[36] : "29";
-			String partyGSTIN = objs[37] != null ? (String) objs[37] : "29";
+			//String companyGSTIN = objs[36] != null ? (String) objs[36] : "29";
+			//String partyGSTIN = objs[37] != null ? (String) objs[37] : "29";
 
 			PriceCalculateDTO priceCalculateDTO = priceMasterService.calculateInstructionWisePrice(partyId,
 					BigDecimal.valueOf(fThickness), processId, materialGradeId, packingRateId,
@@ -435,20 +435,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 			}
 			invoiceListDTO.setGstPercentage(new BigDecimal("12.00"));
 			BigDecimal grandTotal = new BigDecimal(BigInteger.ZERO,  2);
-
-			if(companyGSTIN.equals(partyGSTIN)) {
-				BigDecimal cgst = totalAmount.multiply(new BigDecimal("6.00")).divide(new BigDecimal("100.00"));
-				BigDecimal sgst = totalAmount.multiply(new BigDecimal("6.00")).divide(new BigDecimal("100.00"));
-
-				invoiceListDTO.setCgst(cgst.setScale(3, RoundingMode.HALF_EVEN)); 
-				invoiceListDTO.setSgst(sgst.setScale(3, RoundingMode.HALF_EVEN)); 
-				grandTotal=grandTotal.add(totalAmount).add(invoiceListDTO.getCgst()).add(invoiceListDTO.getSgst());
-			} else {
-				BigDecimal igst = totalAmount.multiply(new BigDecimal("12.00")).divide(new BigDecimal("100.00"));
-				invoiceListDTO.setIgst(igst.setScale(3, RoundingMode.HALF_EVEN)); 
-				grandTotal=grandTotal.add(totalAmount).add(invoiceListDTO.getIgst());
-			}
-			grandTotal=grandTotal.setScale(3, RoundingMode.HALF_EVEN);
+			grandTotal=grandTotal.add(totalAmount).setScale(3, RoundingMode.HALF_EVEN);
 			invoiceListDTO.setTotal( grandTotal);
 			/*invoiceListDTO.setLedger1(objs[34] != null ? (String) objs[34] : null);
 			invoiceListDTO.setLedger2(objs[35] != null ? (String) objs[35] : null);

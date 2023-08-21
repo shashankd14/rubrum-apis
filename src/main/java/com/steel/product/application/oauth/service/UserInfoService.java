@@ -210,6 +210,64 @@ public class UserInfoService
 
 		return response;
 	}
-	
+    
+	public LoginResponse loginTally(LoginRequest loginReq) throws MockException {
+
+		log.info("*** login processing started ***" + loginReq.getUserName());
+
+		LoginResponse response = null;
+		OAuthResponse oauthResp = null;
+
+		try {
+
+			oauthResp = webClient.post().uri(authBasePath + "/oauth/token")
+					.header("Authorization", "Basic " + Base64Utils.encodeToString((clientId + ":" + clientPwd).getBytes("UTF-8")))
+					.body(BodyInserters.fromFormData("username", loginReq.getUserName()).with("password", loginReq.getPassword()).with("grant_type", "password"))
+					.retrieve().bodyToMono(OAuthResponse.class).block();
+
+			log.debug("OAuth response:" + oauthResp);
+
+		} catch (Exception e) {
+			log.error("error occurred during login", e);
+			if (e instanceof WebClientResponseException.Unauthorized
+					|| e instanceof WebClientResponseException.BadRequest) {
+			} else {
+				
+				List<String> errors = new ArrayList<>();
+				errors.add("Unable to connect to the authorization server, please contact Bank");
+				throw new MockException("MSG-0002", errors);
+			}
+		}
+
+		AdminUserEntity user = userDetailsRepository.findByUserNameAndEnabled(loginReq.getUserName(), (short)1);
+
+		// Login is success - check user access is enabled
+		if (user != null && oauthResp != null && !StringUtils.isEmpty(oauthResp.getAccessToken())) {
+
+			// reset user fail login counter
+			Date loginDate = new Date();
+			user.setLastLoginTime(user.getCurrentLoginTime());
+			user.setCurrentLoginTime(loginDate);
+			userDetailsRepository.save(user);
+			response = LoginResponse.builder().userId(user.getUserId())
+					.userName(user.getUserName())
+					.lastLoginTime(user.getLastLoginTime())
+					.access_token(oauthResp.getAccessToken())
+					.refresh_token(oauthResp.getRefreshToken())
+					.token_type(oauthResp.getTokenType())
+					.expires_in(oauthResp.getExpiresIn())
+					.build();
+			
+
+			
+		} else {
+			
+			List<String> errors = new ArrayList<>();
+			errors.add("Invalid Login Attempt.");
+			throw new MockException("MSG-0003", errors);
+		}
+
+		return response;
+	}
 	
 }
