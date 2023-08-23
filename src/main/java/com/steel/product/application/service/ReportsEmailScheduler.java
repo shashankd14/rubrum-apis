@@ -38,9 +38,8 @@ public class ReportsEmailScheduler {
 	@Scheduled(cron = "${email.reportScheduleTime}")
 	public void sendNotificationAlert() {
 		
-		logger.info( "apiAlertRequired == "+apiAlertRequired);
 		if(apiAlertRequired) {
-			
+			logger.info( "apiAlertRequired == "+apiAlertRequired);
 			Calendar cal = Calendar.getInstance();
 			Date date = cal.getTime();
 			DateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy");

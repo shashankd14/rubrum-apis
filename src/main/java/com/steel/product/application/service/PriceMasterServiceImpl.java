@@ -14,6 +14,7 @@ import lombok.extern.log4j.Log4j2;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -313,6 +314,37 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 		PriceCalculateDTO priceCalculateDTO = calculateInstructionWisePrice(ins, packingRateId);
 		ObjectMapper Obj = new ObjectMapper();
 		try {
+			
+			if(priceCalculateDTO != null && priceCalculateDTO.getBasePrice() !=null 
+					&& priceCalculateDTO.getBasePrice().compareTo(BigDecimal.ZERO) > 0) {
+				
+				priceCalculateDTO.setInstructionId( ins.getInstructionId());
+				priceCalculateDTO.setCoilNo(ins.getInwardId().getCoilNumber());
+				priceCalculateDTO.setCustomerBatchNo( ins.getInwardId().getCustomerBatchId());
+				priceCalculateDTO.setMatGradeName( ins.getInwardId().getMaterialGrade().getGradeName());
+				priceCalculateDTO.setThickness(BigDecimal.valueOf( ins.getInwardId().getfThickness()));
+				priceCalculateDTO.setActualWeight( ins.getActualWeight());
+				
+				BigDecimal amount =new BigDecimal("0.00");
+				
+				if(priceCalculateDTO!=null && priceCalculateDTO.getBasePrice() !=null) {
+					amount=amount.add(priceCalculateDTO.getBasePrice());
+				}
+				if(priceCalculateDTO!=null && priceCalculateDTO.getAdditionalPrice() != null) {
+					amount=amount.add(priceCalculateDTO.getAdditionalPrice());
+				}
+				if(priceCalculateDTO!=null && priceCalculateDTO.getPackingPrice() != null) {
+					amount=amount.add(priceCalculateDTO.getPackingPrice() );
+				}
+				if(amount!=null ) {
+					priceCalculateDTO.setRate(amount.setScale(3, RoundingMode.HALF_EVEN));
+					BigDecimal totalAmount = new BigDecimal(BigInteger.ZERO,  2);
+					totalAmount = (amount.multiply(BigDecimal.valueOf(priceCalculateDTO.getActualWeight())));
+					totalAmount = totalAmount.divide(BigDecimal.valueOf(1000));
+					priceCalculateDTO.setTotalPrice(totalAmount.setScale(3, RoundingMode.HALF_EVEN));
+				}
+			}
+			 
 			jsonStr = Obj.writeValueAsString(priceCalculateDTO);
 			System.out.println(jsonStr);
 		} catch (IOException e) {

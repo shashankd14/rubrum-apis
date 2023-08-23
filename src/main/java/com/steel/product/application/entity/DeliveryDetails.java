@@ -209,6 +209,14 @@ public class DeliveryDetails {
 	public void setPdfS3Url(String pdfS3Url) {
 		this.pdfS3Url = pdfS3Url;
 	}
+
+	public String getTallyStatus() {
+		return tallyStatus;
+	}
+
+	public void setTallyStatus(String tallyStatus) {
+		this.tallyStatus = tallyStatus;
+	}
     
     
 }

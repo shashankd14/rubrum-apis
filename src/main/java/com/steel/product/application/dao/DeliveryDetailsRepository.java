@@ -52,8 +52,13 @@ public interface DeliveryDetailsRepository extends JpaRepository<DeliveryDetails
 	@Transactional
 	@Query("update DeliveryDetails set pdfS3Url=:url where deliveryId= :deliveryId ")
 	public void updateS3DCPDF(@Param("deliveryId") Integer deliveryId, @Param("url") String url);
+
+    @Query("select distinct dd.deliveryId, ins.inwardId.coilNumber from DeliveryDetails dd join dd.instructions ins join ins.inwardId inw "
+    		+ " where ins.deliveryDetails is not null and dd.tallyStatus='PENDING' "
+    		+ " order by dd.deliveryId desc ")
+	public Page<DeliveryDetails> findAllDeliveriesForBillingNew(Pageable pageable);
     
-	@Query(value="SELECT DISTINCT dc.deliveryid , inward.coilnumber\r\n" + 
+	@Query(value="SELECT DISTINCT dc.deliveryid, inward.coilnumber\r\n" + 
 			"FROM\r\n" + 
 			"    product_tblinwardentry inward,\r\n" + 
 			"    product_tblpartydetails party,\r\n" + 
@@ -62,7 +67,7 @@ public interface DeliveryDetailsRepository extends JpaRepository<DeliveryDetails
 			"WHERE\r\n" + 
 			"    party.npartyid = inward.npartyid\r\n" + 
 			"        AND inward.inwardentryid = instr.inwardid\r\n" + 
-			"        AND instr.deliveryid = dc.deliveryid order by  dc.deliveryid  desc", nativeQuery = true)
+			"        AND instr.deliveryid = dc.deliveryid and dc.tally_status='PENDING' order by dc.deliveryid desc", nativeQuery = true)
 	public List<Object[]> findAllDeliveriesForBilling(Pageable pageable);
 
     @Query(value="SELECT DISTINCT instructionid, dc.deliveryid, DATE_FORMAT( dc.createdon, '%d-%m-%Y') ,\r\n " + 
@@ -84,19 +89,19 @@ public interface DeliveryDetailsRepository extends JpaRepository<DeliveryDetails
     		"    dc.packing_rate_id, inward.npartyid, instr.processid, inward.materialgradeid, \r\n" + 
     		"    price_details, plannednoofpieces,  \r\n" + 
     		"    (select count(ins.instructionid) from product_instruction ins where ins.inwardid=inward.inwardentryid) as 'noofPlans', part_details_id, \r\n " + 
-    		"    (select  SUBSTRING(gstn, 1, 2)  from product_company_details where id=1) as companygstin, SUBSTRING(gstnumber, 1, 2) \r\n " + 
+    		"    (select SUBSTRING(gstn, 1, 2)  from product_company_details where id=1) as companygstin, SUBSTRING(gstnumber, 1, 2) \r\n " + 
     		" FROM product_tblinwardentry inward, " + 
     		"    product_tblpartydetails party, " + 
     		"    product_instruction instr, " + 
     		"    product_tbl_delivery_details dc  \r\n" + 
     		" WHERE party.npartyid = inward.npartyid  " + 
-    		"        AND inward.inwardentryid = instr.inwardid  \r\n" + 
+    		"        AND inward.inwardentryid = instr.inwardid \r\n" + 
     		"        AND instr.deliveryid = dc.deliveryid and dc.deliveryid in (:dcIDs) \r\n", nativeQuery = true)
     public List<Object[]> billingInvoiceList(@Param("dcIDs") List<Integer> dcIDs);
     
     @Modifying
    	@Transactional
-   	@Query("update DeliveryDetails dc set dc.tallyStatus = 'Y', dc.tallyDate = CURRENT_TIMESTAMP where dc.deliveryId in (:dcList) ")
+   	@Query("update DeliveryDetails dc set dc.tallyStatus = 'COMPLETED', dc.tallyDate = CURRENT_TIMESTAMP where dc.deliveryId in (:dcList) ")
    	public void updateTallyStatus(@Param("dcList") List<Integer> dcList);
     
 }

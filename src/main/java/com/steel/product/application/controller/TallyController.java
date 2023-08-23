@@ -1,7 +1,6 @@
 package com.steel.product.application.controller;
 
 import com.steel.product.application.dto.TallyBillingInvoiceListDTO;
-import com.steel.product.application.dto.delivery.TallyUpdateStatusDTO;
 import com.steel.product.application.dto.delivery.TallyUpdateSttsRequestDTO;
 import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.service.DeliveryDetailsService;
@@ -31,6 +30,8 @@ public class TallyController {
 	public ResponseEntity<Object> findAllWithPagination(@PathVariable int pageNo, @PathVariable int pageSize) {
 
 		Map<String, Object> response = new HashMap<>();
+		Page<DeliveryDetails> mainPaginationData = deliveryDetailsService.findAllDeliveriesForBillingNew(pageNo, pageSize);
+
 		Page<DeliveryDetails> pageResult = deliveryDetailsService.billingInvoiceList(pageNo, pageSize);
 		List<Integer> dcIds = new ArrayList<>();
 		for (DeliveryDetails deliveryDetails : pageResult.getContent()) {
@@ -39,9 +40,9 @@ public class TallyController {
 		System.out.println("dcIds " + dcIds);
 		List<TallyBillingInvoiceListDTO> billingInvoiceList = deliveryDetailsService.billingDCDetails(dcIds);
 		response.put("content", billingInvoiceList);
-		response.put("currentPage", pageResult.getNumber());
-		response.put("totalItems", pageResult.getTotalElements());
-		response.put("totalPages", pageResult.getTotalPages());
+		response.put("currentPage", mainPaginationData.getNumber());
+		response.put("totalItems", mainPaginationData.getTotalElements());
+		response.put("totalPages", mainPaginationData.getTotalPages());
 		return new ResponseEntity<Object>(response, HttpStatus.OK);
 	}
 

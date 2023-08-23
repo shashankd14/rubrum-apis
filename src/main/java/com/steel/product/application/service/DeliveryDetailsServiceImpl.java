@@ -114,6 +114,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
         delivery.setCreatedBy(userId);
         delivery.setUpdatedBy(userId);
         delivery.setVehicleNo(deliveryDto.getVehicleNo());
+        delivery.setTallyStatus("PENDING");
         delivery.setPackingRateId( deliveryDto.getPackingRateId());
 
         deliveryItemDetails = deliveryDto.getDeliveryItemDetails();
@@ -337,13 +338,23 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
     }
 
 	@Override
-	public Page<DeliveryDetails> billingInvoiceList(int pageNo, int pageSize) {
+	public Page<DeliveryDetails> findAllDeliveriesForBillingNew(int pageNo, int pageSize) {
 		if (pageSize > 10) {
 			pageSize = 10;
 		}
 		Pageable pageable = PageRequest.of((pageNo - 1), pageSize);
-		List<Object[]> kk = deliveryDetailsRepo.findAllDeliveriesForBilling(pageable);
+		Page<DeliveryDetails> page = deliveryDetailsRepo.findAllDeliveriesForBillingNew(pageable);
+		return page;
+	}
+	
+	@Override
+	public Page<DeliveryDetails> billingInvoiceList(int pageNo, int pageSize) {
+		if (pageSize > 10) {
+			pageSize = 10;
+		}
 		List<DeliveryDetails> billingInvoiceList = new ArrayList<>();
+		Pageable pageable = PageRequest.of((pageNo - 1), pageSize);
+		List<Object[]> kk = deliveryDetailsRepo.findAllDeliveriesForBilling(pageable);
 
 		for (Object[] objs : kk) {
 			DeliveryDetails invoiceListDTO = new DeliveryDetails();
@@ -495,11 +506,11 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 				amount=amount.add(priceCalculateDTO.getPackingPrice() );
 			}
 			if(amount!=null ) {
-				priceCalculateDTO.setRate(amount);
+				priceCalculateDTO.setRate(amount.setScale(3, RoundingMode.HALF_EVEN));
 				BigDecimal totalAmount = new BigDecimal(BigInteger.ZERO,  2);
 				totalAmount = (amount.multiply(BigDecimal.valueOf(priceCalculateDTO.getActualWeight())));
 				totalAmount = totalAmount.divide(BigDecimal.valueOf(1000));
-				priceCalculateDTO.setTotalPrice(totalAmount);
+				priceCalculateDTO.setTotalPrice(totalAmount.setScale(3, RoundingMode.HALF_EVEN));
 			}
 			if (priceCalculateDTO.getBasePrice() != null && priceCalculateDTO.getBasePrice().compareTo(BigDecimal.ZERO) > 0) {
 				if (priceCalculateDTO.getPackingPrice() != null && priceCalculateDTO.getPackingPrice().compareTo(BigDecimal.ZERO) > 0) {

@@ -39,4 +39,7 @@ public interface DeliveryDetailsService {
 	public PriceCalculateResponseDTO validatePriceMapping(DeliveryDto deliveryDto, int userId);
 
 	DeliveryDetails updateTallyStatus(TallyUpdateSttsRequestDTO deliveryDto);
+
+	Page<DeliveryDetails> findAllDeliveriesForBillingNew(int pageNo, int pageSize);
+
 }
