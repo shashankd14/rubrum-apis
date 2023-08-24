@@ -28,7 +28,6 @@ public class PdfService {
     private SpringTemplateEngine templateEngine;
     private InstructionService instructionService;
 	private AWSS3Service awsS3Service; 
-	private PackingMasterService packingMasterService;
 	private PartDetailsService partDetailsService;
 
     @Value("${aws.s3.bucketPDFs}")
@@ -37,13 +36,12 @@ public class PdfService {
 	@Autowired
 	public PdfService(InwardEntryService inwardEntryService, CompanyDetailsService companyDetailsService,
 			SpringTemplateEngine templateEngine, InstructionService instructionService, AWSS3Service awsS3Service,
-			PackingMasterService packingMasterService, PartDetailsService partDetailsService) {
+			PartDetailsService partDetailsService) {
 		this.inwardEntryService = inwardEntryService;
 		this.companyDetailsService = companyDetailsService;
 		this.templateEngine = templateEngine;
 		this.instructionService = instructionService;
 		this.awsS3Service = awsS3Service;
-		this.packingMasterService = packingMasterService;
 		this.partDetailsService = partDetailsService;
 	}
 
@@ -77,7 +75,12 @@ public class PdfService {
     }
 
     private String loadAndFillDeliveryTemplate(Context context, DeliveryPdfDto deliveryPdfDto) {
-        return templateEngine.process("DC-slit", context);
+    	DeliveryChallanPdfDto deliveryChallanPdfDto = (DeliveryChallanPdfDto)context.getVariable("deliveryChallan");
+        if("Y".equals(deliveryChallanPdfDto.getShowAmtDcPdfFlg())) {
+            return templateEngine.process("DC-slit", context);
+        } else {
+            return templateEngine.process("DC-slit-without_price.html", context);
+        }
     }
 
     private Context getDeliveryContext(DeliveryPdfDto deliveryPdfDto) {

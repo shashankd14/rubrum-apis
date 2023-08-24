@@ -2,7 +2,6 @@ package com.steel.product.application.dto.pdf;
 
 import com.steel.product.application.entity.*;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,6 +17,7 @@ public class DeliveryChallanPdfDto {
     private Float totalDeliveryWeight;
     private Float totalValueOfGoods;
     private Float totalPrice;
+	private String showAmtDcPdfFlg;
 
     public DeliveryChallanPdfDto() {
     }
@@ -28,6 +28,7 @@ public class DeliveryChallanPdfDto {
         this.addressBranch = companyDetails.getAddressBranch();
         this.addressOffice = companyDetails.getAddressOffice();
         this.email = companyDetails.getEmail();
+        
         if(this.inwardPdfDtos == null){
             this.inwardPdfDtos = new ArrayList<>();
         }
@@ -43,6 +44,9 @@ public class DeliveryChallanPdfDto {
         this.totalPrice = inwardPdfDtos.stream().flatMap(inw -> inw.getInstructions().stream())
                 .reduce(0f,(sum,ins) -> sum+Float.parseFloat( ins.getTotalPrice()) ,Float::sum);
 
+        for(InwardEntry kk : inwardEntries) {
+        	this.showAmtDcPdfFlg=kk.getParty().getShowAmtDcPdfFlg();
+        }
     }
 
     public String getCompanyName() {
@@ -115,6 +119,14 @@ public class DeliveryChallanPdfDto {
 
 	public void setTotalPrice(Float totalPrice) {
 		this.totalPrice = totalPrice;
+	}
+
+	public String getShowAmtDcPdfFlg() {
+		return showAmtDcPdfFlg;
+	}
+
+	public void setShowAmtDcPdfFlg(String showAmtDcPdfFlg) {
+		this.showAmtDcPdfFlg = showAmtDcPdfFlg;
 	}
     
 }

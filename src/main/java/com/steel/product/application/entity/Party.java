@@ -98,6 +98,9 @@ public class Party {
 	inverseJoinColumns = @JoinColumn(name="tagId"))
 	private Set<EndUserTagsEntity> endUserTags = new HashSet<>();
 	
+	@Column(name = "show_amt_dcpdf_flg")
+	private String showAmtDcPdfFlg;
+	
 	@Transient
 	private List<QualityPartyMappingRequestNew> templateIdList = new ArrayList<>();
 
@@ -352,6 +355,14 @@ public class Party {
 
 	public void setTemplateIdList(List<QualityPartyMappingRequestNew> templateIdList) {
 		this.templateIdList = templateIdList;
+	}
+
+	public String getShowAmtDcPdfFlg() {
+		return showAmtDcPdfFlg;
+	}
+
+	public void setShowAmtDcPdfFlg(String showAmtDcPdfFlg) {
+		this.showAmtDcPdfFlg = showAmtDcPdfFlg;
 	}
  
 	
