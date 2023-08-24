@@ -14,7 +14,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -188,13 +187,10 @@ public class Instruction {
         return instructionResponseDto;
     }
 
-	public static InstructionResponsePdfDto valueOfInstructionPdf(Instruction instruction, InwardEntry inwardEntry,
-			BigDecimal packingRateMain) {
+	public static InstructionResponsePdfDto valueOfInstructionPdf(Instruction instruction, InwardEntry inwardEntry) {
 		
-		Float totalPrice= 0f;
 		InstructionResponsePdfDto instructionResponsePdfDto = new InstructionResponsePdfDto();
-		instructionResponsePdfDto.setPacketClassification(instruction.getPacketClassification() != null ?
-				instruction.getPacketClassification() : null);
+		instructionResponsePdfDto.setPacketClassification(instruction.getPacketClassification() != null ? instruction.getPacketClassification() : null);
 		instructionResponsePdfDto.setProcess(Process.valueOf(instruction.getProcess()));
 		instructionResponsePdfDto.setPlannedLength(instruction.getPlannedLength());
 		instructionResponsePdfDto.setPlannedNoOfPieces(instruction.getPlannedNoOfPieces());
@@ -205,33 +201,39 @@ public class Instruction {
 		instructionResponsePdfDto.setActualWeight(instruction.getActualWeight());
 		instructionResponsePdfDto.setActualWidth(instruction.getActualWidth());
 		
+		String packingPrice = "0.00";
 		String baseTotalPrice = "0.00";
 		String additionalTotalPrice = "0.00";
+		String totalPrice = "0.00";
 		if (instruction.getPriceDetails() != null) {
 			try {
 				JSONParser parser = new JSONParser();
 				JSONObject json = (JSONObject) parser.parse(instruction.getPriceDetails());
-				if (json.containsKey("BasePrice")) {
-					baseTotalPrice = json.get("BasePrice").toString();
-					totalPrice = totalPrice + Float.parseFloat(baseTotalPrice);
+				if (json.containsKey("basePrice")) {
+					baseTotalPrice = json.get("basePrice").toString();
 				}
-				if (json.containsKey("AdditionalTotalPrice")) {
-					additionalTotalPrice = json.get("AdditionalTotalPrice").toString();
-					totalPrice = totalPrice + Float.parseFloat(additionalTotalPrice);
+				if (json.containsKey("additionalPrice")) {
+					additionalTotalPrice = json.get("additionalPrice").toString();
 				}
+				if (json.containsKey("packingPrice")) {
+					packingPrice =   json.get("packingPrice").toString() ;
+				}
+				if (json.containsKey("totalPrice")) {
+					totalPrice =   json.get("totalPrice").toString() ;
+				} 
 			} catch (ParseException e) {
 			}
 		}
 		instructionResponsePdfDto.setBaseTotalPrice( baseTotalPrice );
 		instructionResponsePdfDto.setAdditionalTotalPrice( additionalTotalPrice );
+		instructionResponsePdfDto.setPackingRate(packingPrice);
+		instructionResponsePdfDto.setTotalPrice( totalPrice );
 		Float actualWeight = (instruction.getProcess().getProcessId() == 7 ? instruction.getPlannedWeight():instruction.getActualWeight());
-		
-		if (packingRateMain != null && packingRateMain.compareTo(BigDecimal.ZERO) > 0 && actualWeight > 0) {
-			float kk = packingRateMain.floatValue() * (actualWeight/1000);
-			instructionResponsePdfDto.setPackingRate(Float.toString(kk));
-			totalPrice=totalPrice+Float.parseFloat(instructionResponsePdfDto.getPackingRate());
-		}
-		instructionResponsePdfDto.setTotalPrice(Float.toString(totalPrice));
+		//if (packingRateMain != null && packingRateMain.compareTo(BigDecimal.ZERO) > 0 && actualWeight > 0) {
+			//float kk = packingRateMain.floatValue() * (actualWeight/1000);
+			//instructionResponsePdfDto.setPackingRate(Float.toString(kk));
+			//totalPrice=totalPrice+Float.parseFloat(instructionResponsePdfDto.getPackingRate());
+		//}
 		instructionResponsePdfDto.setDeliveryDetails(instruction.getDeliveryDetails() != null ? DeliveryDetails.valueOf(instruction.getDeliveryDetails()) : null);
 		instructionResponsePdfDto.setRemarks(instruction.getRemarks());
 		if (inwardEntry != null) {

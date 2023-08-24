@@ -1,7 +1,6 @@
 package com.steel.product.application.service;
 
 import com.lowagie.text.DocumentException;
-import com.steel.product.application.dto.packingmaster.PackingRateMasterResponse;
 import com.steel.product.application.dto.pdf.*;
 import com.steel.product.application.entity.CompanyDetails;
 import com.steel.product.application.entity.Instruction;
@@ -18,7 +17,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -86,16 +84,8 @@ public class PdfService {
         Context context = new Context();
         List<InwardEntry> inwardEntries = inwardEntryService.findDeliveryItemsByInstructionIds(deliveryPdfDto.getInstructionIds());
         CompanyDetails companyDetails = companyDetailsService.findById(1);
-        BigDecimal packingRate=new BigDecimal("0.00");
-        
-        if(deliveryPdfDto.getPackingRateId()!=null && deliveryPdfDto.getPackingRateId()>0) {
-        	PackingRateMasterResponse packingRateResponse = packingMasterService.getByIdRate(deliveryPdfDto.getPackingRateId());
-        	if(packingRateResponse!=null && packingRateResponse.getPackingRate()!=null) {
-        		packingRate=packingRateResponse.getPackingRate();
-        	}
-        }
-    	
-        DeliveryChallanPdfDto deliveryChallanPdfDto = new DeliveryChallanPdfDto(companyDetails,inwardEntries, packingRate);
+            	
+        DeliveryChallanPdfDto deliveryChallanPdfDto = new DeliveryChallanPdfDto(companyDetails,inwardEntries);
         context.setVariable("deliveryChallan",deliveryChallanPdfDto);
         return context;
     }
@@ -182,11 +172,11 @@ public class PdfService {
             inwardEntry = instructions.get(0).getInwardId();
             instructionsCut = instructions.stream()
                     .filter(ins -> ins.getProcess().getProcessId() == 3)
-                    .map(ins -> Instruction.valueOfInstructionPdf(ins, null, null))
+                    .map(ins -> Instruction.valueOfInstructionPdf(ins, null))
                     .collect(Collectors.toList());
             instructionsSlit = instructions.stream()
                     .filter(ins -> ins.getProcess().getProcessId() == 2)
-                    .map(ins -> Instruction.valueOfInstructionPdf(ins, null, null))
+                    .map(ins -> Instruction.valueOfInstructionPdf(ins, null))
                     .collect(Collectors.toList());
             instructionResponsePdfDtos = null;
             inwardEntryPdfDto = InwardEntry.valueOf(inwardEntry, instructionsCut, instructionsSlit);
@@ -194,7 +184,7 @@ public class PdfService {
             inwardEntry = inwardEntryService.getByEntryId(pdfDto.getInwardId());
             instructionResponsePdfDtos = inwardEntry.getInstructions()
                     .stream().filter(ins -> ins.getProcess().getProcessId() == pdfDto.getProcessId())
-                    .map(i -> Instruction.valueOfInstructionPdf(i, null, null))
+                    .map(i -> Instruction.valueOfInstructionPdf(i, null))
                     .collect(Collectors.toList());
             inwardEntryPdfDto = InwardEntry.valueOf(inwardEntry, instructionResponsePdfDtos);
         } else {

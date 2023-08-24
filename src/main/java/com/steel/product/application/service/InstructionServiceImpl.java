@@ -703,7 +703,7 @@ public class InstructionServiceImpl implements InstructionService {
         for (Object[] obj : objects) {
             PartDetails partDetails = (PartDetails) obj[0];
             Instruction instruction = (Instruction) obj[1];
-            instructions.add(Instruction.valueOfInstructionPdf(instruction, null, null));
+            instructions.add(Instruction.valueOfInstructionPdf(instruction, null));
             if (inwardId == null) {
                 try {
 					inwardId = instruction.getInwardId().getInwardEntryId();
