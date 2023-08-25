@@ -49,5 +49,7 @@ public class PartyDto {
 	private List<EndUserTagsRequest> endUserTags;
 
 	private List<QualityPartyMappingRequestNew> templateIdList;
+	
+	private String showAmtDcPdfFlg;
 
 }

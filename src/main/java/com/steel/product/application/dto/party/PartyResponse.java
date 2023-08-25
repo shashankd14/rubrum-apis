@@ -29,6 +29,7 @@ public class PartyResponse {
     private String phone2;
     private AddressDto address1;
     private AddressDto address2;
+    private String showAmtDcPdfFlg;
     private List<PacketClassificationResponse> packetClassificationTags;
     private List<EndUserTagsResponse> endUserTags;
 	private List<QualityPartyMappingRequestNew> templateIdList = new ArrayList<>();
@@ -168,7 +169,13 @@ public class PartyResponse {
 	public void setTemplateIdList(List<QualityPartyMappingRequestNew> templateIdList) {
 		this.templateIdList = templateIdList;
 	}
-    
-    
-    
+
+	public String getShowAmtDcPdfFlg() {
+		return showAmtDcPdfFlg;
+	}
+
+	public void setShowAmtDcPdfFlg(String showAmtDcPdfFlg) {
+		this.showAmtDcPdfFlg = showAmtDcPdfFlg;
+	}
+
 }

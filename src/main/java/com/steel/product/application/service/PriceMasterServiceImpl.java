@@ -385,13 +385,15 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 				}
 			}
 			
-			PackingRateMasterResponse packrate = packingMasterService.getByIdRate(packingRateId);
+			PackingRateMasterResponse packrate = null;//packingMasterService.getByIdRate(packingRateId);
 			if(packrate != null && packrate.getPackingRate() !=null && packrate.getPackingRate().compareTo(BigDecimal.ZERO) > 0) {
 				//BigDecimal packingRate = new BigDecimal(BigInteger.ZERO,  2);
 				//packingRate = (packrate.getPackingRate().multiply(BigDecimal.valueOf(actualWeight)));
 				//packingRate = packingRate.divide(BigDecimal.valueOf(1000));
 				priceCalculateDTO.setPackingPrice(packrate.getPackingRate());
 				totalPrice = totalPrice.add(priceCalculateDTO.getPackingPrice());
+			} else {
+				priceCalculateDTO.setPackingPrice(BigDecimal.ZERO);
 			}
 			
 			List<AdditionalPriceMasterResponse> addPriceList = additionalPriceMasterService.getAllPriceDetails();

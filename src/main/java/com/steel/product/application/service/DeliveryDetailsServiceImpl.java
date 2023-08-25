@@ -384,6 +384,16 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 			invoiceListDTO.setAddress1("" + objs[8] != null ? (String) objs[8] : null);
 			invoiceListDTO.setAddress2("" + objs[9] != null ? (String) objs[9] : null);
 			invoiceListDTO.setAddress3("" + objs[10] != null ? (String) objs[10] : null);
+
+			if(!(invoiceListDTO.getAddress1()!=null && invoiceListDTO.getAddress1().length() >0 )) {
+				invoiceListDTO.setAddress1("");
+			}
+			if(!(invoiceListDTO.getAddress2()!=null && invoiceListDTO.getAddress2().length() >0 )) {
+				invoiceListDTO.setAddress2("");
+			}
+			if(!(invoiceListDTO.getAddress3()!=null && invoiceListDTO.getAddress3().length() >0 )) {
+				invoiceListDTO.setAddress3("");
+			}
 			invoiceListDTO.setCity("" + objs[11] != null ? (String) objs[11] : null);
 			invoiceListDTO.setPincode(objs[12] != null ? (String) objs[12] : null);
 			invoiceListDTO.setState(objs[13] != null ? (String) objs[13] : null);
@@ -424,38 +434,38 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 			BigDecimal amount =new BigDecimal("0.00");
 			
 			if(priceCalculateDTO!=null && priceCalculateDTO.getBasePrice() !=null) {
-				invoiceListDTO.setBasePrice( priceCalculateDTO.getBasePrice());
-				amount=amount.add(invoiceListDTO.getBasePrice());
+				//invoiceListDTO.setBasePrice( priceCalculateDTO.getBasePrice());
+				amount=amount.add( priceCalculateDTO.getBasePrice());
 			}
 			if(priceCalculateDTO!=null && priceCalculateDTO.getAdditionalPrice() != null) {
-				invoiceListDTO.setAdditionalPrice( priceCalculateDTO.getAdditionalPrice());
-				amount=amount.add(invoiceListDTO.getAdditionalPrice());
+				//invoiceListDTO.setAdditionalPrice( priceCalculateDTO.getAdditionalPrice());
+				amount=amount.add( priceCalculateDTO.getAdditionalPrice());
 			}
 			if(priceCalculateDTO!=null && priceCalculateDTO.getPackingPrice() != null) {
-				invoiceListDTO.setPackingRate(  priceCalculateDTO.getPackingPrice());
-				amount=amount.add(invoiceListDTO.getPackingRate());
+				//invoiceListDTO.setPackingRate(  priceCalculateDTO.getPackingPrice());
+				amount=amount.add(priceCalculateDTO.getPackingPrice());
 			}
+			invoiceListDTO.setGstPercentage(new BigDecimal("12.00"));
+
 			BigDecimal totalAmount = new BigDecimal(BigInteger.ZERO, 3);
-			if(amount!=null ) {
+			if(amount!=null && amount.compareTo(BigDecimal.ZERO) > 0) {
 				amount = amount.setScale(3, RoundingMode.HALF_EVEN); 
 				invoiceListDTO.setRate(amount);
 				totalAmount = (amount.multiply(BigDecimal.valueOf(actualWeight)));
 				totalAmount = totalAmount.divide(BigDecimal.valueOf(1000));
-				invoiceListDTO.setAmount(totalAmount);
-				invoiceListDTO.setTotal( totalAmount);
+				//invoiceListDTO.setAmount(totalAmount);
+				invoiceListDTO.setTotalPrice(totalAmount.setScale(3, RoundingMode.HALF_EVEN));
+				//BigDecimal grandTotal = new BigDecimal(BigInteger.ZERO,  3);
+				//grandTotal=grandTotal.add(totalAmount).setScale(3, RoundingMode.HALF_EVEN);
+				//invoiceListDTO.setTotal( grandTotal);
+			} else {
+				invoiceListDTO.setRate(new BigDecimal(BigInteger.ZERO,  2));
+				invoiceListDTO.setTotalPrice(new BigDecimal(BigInteger.ZERO,  2));
 			}
-			invoiceListDTO.setGstPercentage(new BigDecimal("12.00"));
-			BigDecimal grandTotal = new BigDecimal(BigInteger.ZERO,  2);
-			grandTotal=grandTotal.add(totalAmount).setScale(3, RoundingMode.HALF_EVEN);
-			invoiceListDTO.setTotal( grandTotal);
-			/*invoiceListDTO.setLedger1(objs[34] != null ? (String) objs[34] : null);
-			invoiceListDTO.setLedger2(objs[35] != null ? (String) objs[35] : null);
-			invoiceListDTO.setLedger3(objs[36] != null ? (String) objs[36] : null);
-			invoiceListDTO.setLedger4(objs[37] != null ? (String) objs[37] : null);
-			invoiceListDTO.setLedger5(objs[38] != null ? (String) objs[38] : null);
-			invoiceListDTO.setLedger6(objs[39] != null ? (String) objs[39] : null);
-			invoiceListDTO.setLedger7(objs[40] != null ? (String) objs[40] : null);
-			invoiceListDTO.setRoundOff(objs[41] != null ? (String) objs[41] : null);*/
+			
+			invoiceListDTO.setLedger1("");
+			invoiceListDTO.setLedger2("");
+			invoiceListDTO.setLedger3("");
 			invoiceListDTO.setRemarks("");
 			billingInvoiceList.add(invoiceListDTO);
 		}

@@ -61,6 +61,7 @@ public class PartyMapperImpl implements PartyMapper {
         party.setEmail2( partyDto.getEmail2() );
         party.setPhone1( partyDto.getPhone1() );
         party.setPhone2( partyDto.getPhone2() );
+        party.setShowAmtDcPdfFlg(partyDto.getShowAmtDcPdfFlg() );
         party.setAddress1( addressMapper.toEntity( partyDto.getAddress1() ) );
         party.setAddress2( addressMapper.toEntity( partyDto.getAddress2() ) );
         return party;
@@ -86,6 +87,7 @@ public class PartyMapperImpl implements PartyMapper {
         partyResponse.setEmail2( party.getEmail2() );
         partyResponse.setPhone1( party.getPhone1() );
         partyResponse.setPhone2( party.getPhone2() );
+        partyResponse.setShowAmtDcPdfFlg(party.getShowAmtDcPdfFlg() );
         partyResponse.setAddress1( addressToAddressDto( party.getAddress1() ) );
         partyResponse.setAddress2( addressToAddressDto( party.getAddress2() ) );
         partyResponse.setPacketClassificationTags( packetClassificationSetToPacketClassificationResponseList( party.getPacketClassificationTags() ) );

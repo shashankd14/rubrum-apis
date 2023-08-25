@@ -33,18 +33,18 @@ public class TallyBillingInvoiceListDTO {
 	private String hsnCode;
 	private String godown;
 	private String uom;
-	private Float quantity;
-	private BigDecimal basePrice;
-	private BigDecimal additionalPrice;
-	private BigDecimal packingRate;
-	private BigDecimal rate;
-	private BigDecimal amount;
 	private BigDecimal gstPercentage;
+	private Float quantity;
+	//private BigDecimal basePrice;
+	//private BigDecimal additionalPrice;
+	//private BigDecimal packingRate;
+	private BigDecimal rate;
+	private BigDecimal totalPrice;
+	//private BigDecimal amount;
 	private String ledger1;
 	private String ledger2;
 	private String ledger3;
-	private String roundOff;
-	private BigDecimal total;
+	//private String roundOff;
 	private String remarks;
 
 }
