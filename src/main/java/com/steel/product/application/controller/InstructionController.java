@@ -1,8 +1,11 @@
 package com.steel.product.application.controller;
 
+import com.google.zxing.WriterException;
+import com.itextpdf.text.DocumentException;
 import com.steel.product.application.dto.instruction.*;
 import com.steel.product.application.dto.pdf.InwardEntryPdfDto;
 import com.steel.product.application.dto.pdf.PartDto;
+import com.steel.product.application.dto.pdf.PdfResponseDto;
 import com.steel.product.application.dto.qrcode.QRCodeResponse;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.exception.MockException;
@@ -11,6 +14,7 @@ import com.steel.product.application.util.CommonUtil;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -19,6 +23,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -133,23 +139,21 @@ public class InstructionController {
 	}
 
 	@PostMapping({ "/qrcode/plan" })
-	public ResponseEntity<Object> qrcode(@RequestBody PartDto partDto) {
+	public ResponseEntity<PdfResponseDto> qrcode(@RequestBody PartDto partDto) {
 		InputStreamResource inputStreamResource = null;
-		ResponseEntity<Object> kk = null ;
+		ResponseEntity<PdfResponseDto> kk = null ;
 		try {
-
 	        InwardEntryPdfDto inwardEntryPdfDto = instructionService.findQRCodeInwardJoinFetchInstructionsAndPartDetails(partDto.getPartDetailsId(), partDto.getGroupIds());
-
 	        List<QRCodeResponse> resp = instructionService.getQRCodeDetails(inwardEntryPdfDto);
-
 			inputStreamResource = pdfGenerator.planInputStreamResource( resp, partDto);
-			HttpHeaders headers = new HttpHeaders();
-			headers.add("Content-Disposition", "inline; filename=QRCode_PLAN" + partDto.getPartDetailsId() + ".pdf");
-			
-			kk = ResponseEntity.ok().headers(headers).contentType(MediaType.APPLICATION_OCTET_STREAM).body(inputStreamResource);
-			
-			
-		} catch ( Exception e) {
+			byte[] sourceBytes = IOUtils.toByteArray(inputStreamResource.getInputStream());
+			StringBuilder builder = new StringBuilder();
+			builder.append(Base64.getEncoder().encodeToString(sourceBytes));
+			String encodedFile = builder.toString();
+			kk = new ResponseEntity<PdfResponseDto>(new PdfResponseDto(encodedFile), HttpStatus.OK);
+		} catch (WriterException | IOException e) {
+			e.printStackTrace();
+		} catch (DocumentException e) {
 			e.printStackTrace();
 		}
 		return kk;

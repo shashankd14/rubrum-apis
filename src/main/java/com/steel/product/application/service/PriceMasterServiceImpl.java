@@ -354,7 +354,7 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 	
 	@Override
 	public PriceCalculateDTO calculateInstructionWisePrice(int partyId, BigDecimal fThickness, int processId,
-			int gradeId, int packingRateId, Float actualWeight, Float actualLength1, int plannedNoOfPieces1,
+			int gradeId, int packingRateId, BigDecimal bundleWeight, Float actualLength1, int plannedNoOfPieces1,
 			int instrSize, Long partDetailsId) {
 
 		PriceCalculateDTO priceCalculateDTO=new PriceCalculateDTO();
@@ -398,7 +398,7 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 			
 			List<AdditionalPriceMasterResponse> addPriceList = additionalPriceMasterService.getAllPriceDetails();
 			BigDecimal plannedNoOfPieces = new BigDecimal(Float.toString(plannedNoOfPieces1));
-			BigDecimal bundleWeight = new BigDecimal(Float.toString(actualWeight));
+			//BigDecimal bundleWeight = actualWeight; //new BigDecimal(Float.toString(actualWeight));
 			BigDecimal noofPlans = BigDecimal.valueOf(instrSize);
 			BigDecimal actualLength = new BigDecimal(Float.toString(actualLength1));
 

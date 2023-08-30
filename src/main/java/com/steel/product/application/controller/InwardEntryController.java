@@ -5,6 +5,7 @@ import com.itextpdf.text.DocumentException;
 import com.steel.product.application.dto.inward.InwardDto;
 import com.steel.product.application.dto.inward.InwardEntryResponseDto;
 import com.steel.product.application.dto.pdf.PdfDto;
+import com.steel.product.application.dto.pdf.PdfResponseDto;
 import com.steel.product.application.dto.qrcode.QRCodeResponse;
 import com.steel.product.application.entity.InwardDoc;
 import com.steel.product.application.entity.InwardEntry;
@@ -14,18 +15,18 @@ import com.steel.product.application.util.CommonUtil;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import net.minidev.json.JSONObject;
 
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -375,9 +376,9 @@ public class InwardEntryController {
 	}
 
 	@PostMapping({ "/qrcode/inward" })
-	public ResponseEntity<Object> qrcode(@RequestBody PdfDto pdfDto ) {
+	public ResponseEntity<PdfResponseDto> qrcode(@RequestBody PdfDto pdfDto ) {
 		InputStreamResource inputStreamResource = null;
-		ResponseEntity<Object> kk = null ;
+		ResponseEntity<PdfResponseDto> kk = null ;
 		try {
 
 			QRCodeResponse resp = inwdEntrySvc.getQRCodeDetails(pdfDto.getInwardId());
@@ -393,9 +394,11 @@ public class InwardEntryController {
 			text.append("\nGross Weight : " + resp.getGrossWeight());
 			pngData = pdfGenerator.getQRCode(text.toString(), 0, 0);
 			inputStreamResource = pdfGenerator.inputStreamResource(pngData, pdfDto.getInwardId());
-			HttpHeaders headers = new HttpHeaders();
-			headers.add("Content-Disposition", "inline; filename=QRCode_" + resp.getCustomerBatchNo() + ".pdf");
-			kk = ResponseEntity.ok().headers(headers).contentType(MediaType.APPLICATION_OCTET_STREAM).body(inputStreamResource);
+			byte[] sourceBytes = IOUtils.toByteArray(inputStreamResource.getInputStream());
+			StringBuilder builder = new StringBuilder();
+			builder.append(Base64.getEncoder().encodeToString(sourceBytes));
+			String encodedFile = builder.toString();
+			kk = new ResponseEntity<PdfResponseDto>(new PdfResponseDto(encodedFile), HttpStatus.OK);
 		} catch (WriterException | IOException e) {
 			e.printStackTrace();
 		} catch (DocumentException e) {

@@ -34,7 +34,7 @@ public class TallyBillingInvoiceListDTO {
 	private String godown;
 	private String uom;
 	private BigDecimal gstPercentage;
-	private Float quantity;
+	private BigDecimal quantity;
 	//private BigDecimal basePrice;
 	//private BigDecimal additionalPrice;
 	//private BigDecimal packingRate;

@@ -414,8 +414,8 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 			invoiceListDTO.setLength(actualLength);
 			invoiceListDTO.setGodown(objs[25] != null ? (String) objs[25] : null);
 			invoiceListDTO.setUom(objs[26] != null ? (String) objs[26] : null);
-			invoiceListDTO.setQuantity(actualWeight);
-
+			BigDecimal quantity = new BigDecimal(Float.toString(actualWeight));  
+			invoiceListDTO.setQuantity(quantity.divide(BigDecimal.valueOf(1000)).setScale(3, RoundingMode.HALF_EVEN));
 			Integer packingRateId = objs[28] != null ? (Integer) objs[28] : 0;
 			Integer partyId = objs[29] != null ? (Integer) objs[29] : 0;
 			Integer processId = objs[30] != null ? (Integer) objs[30] : 0;

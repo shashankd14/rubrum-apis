@@ -4,10 +4,10 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.steel.product.application.dto.LoginRequest;
@@ -34,8 +34,8 @@ public class LoginController {
 		log.debug("*** Login Method Invoked ***");
 		return userService.login(loginReq);
 	}
-
-	@GetMapping("/auth")
+	
+	@RequestMapping(value = "/auth", method = { RequestMethod.GET, RequestMethod.POST })
 	public LoginResponse loginTally(@Valid @RequestBody LoginRequest loginReq) throws MockException {
 
 		log.debug("*** loginTally Method Invoked ***");

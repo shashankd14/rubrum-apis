@@ -26,7 +26,7 @@ public class TallyController {
 	@Autowired
 	private DeliveryDetailsService deliveryDetailsService;
 
-	@GetMapping({ "/billingInvoiceList/{pageNo}/{pageSize}" })
+	@RequestMapping(value = "/billingInvoiceList/{pageNo}/{pageSize}", method = { RequestMethod.GET, RequestMethod.POST })
 	public ResponseEntity<Object> findAllWithPagination(@PathVariable int pageNo, @PathVariable int pageSize) {
 
 		Map<String, Object> response = new HashMap<>();
