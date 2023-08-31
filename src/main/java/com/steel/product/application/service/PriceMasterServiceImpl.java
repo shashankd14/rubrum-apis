@@ -385,7 +385,7 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 				}
 			}
 			
-			PackingRateMasterResponse packrate = null;//packingMasterService.getByIdRate(packingRateId);
+			PackingRateMasterResponse packrate = packingMasterService.getByIdRate(packingRateId);
 			if(packrate != null && packrate.getPackingRate() !=null && packrate.getPackingRate().compareTo(BigDecimal.ZERO) > 0) {
 				//BigDecimal packingRate = new BigDecimal(BigInteger.ZERO,  2);
 				//packingRate = (packrate.getPackingRate().multiply(BigDecimal.valueOf(actualWeight)));

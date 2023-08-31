@@ -43,7 +43,7 @@ public interface AdditionalPriceMasterRepository extends JpaRepository<Additiona
             + " (SELECT partyName from Party party where party.nPartyId=pc.partyId) as partyName, "
             + " (SELECT processName from Process process where process.processId=pc.processId) as processName, "
             + " (SELECT priceDesc from AdditionalPriceStaticEntity ap where ap.id = pc.additionalPriceId) as additionalPriceDesc"
-			+ " from AdditionalPriceMasterEntity pc")
+			+ " from AdditionalPriceMasterEntity pc where pc.partyId is not null ")
 	List<Object[]> findAll1();
 	
 }
