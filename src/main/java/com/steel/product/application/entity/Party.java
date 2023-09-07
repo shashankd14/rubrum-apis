@@ -328,6 +328,7 @@ public class Party {
 		partyDto.setPhone1(party.getPhone1());
 		partyDto.setPhone2(party.getPhone2());
 		partyDto.setTanNumber(party.getTanNumber());
+		partyDto.setShowAmtDcPdfFlg(party.getShowAmtDcPdfFlg());
 		List<PacketClassificationRequest> list = new ArrayList<>();
 		for(PacketClassification pc: party.getPacketClassificationTags()){
 			PacketClassificationRequest req = new PacketClassificationRequest();

@@ -96,9 +96,8 @@
     </div>
 
     <hr style="text-align:center;color:black;"/>
-
-    <div>
-        <div class="inline-block w-60 font-size-small">
+	<div>
+        <div class="inline-block w-40 font-size-small">
             <p>
                 <strong>DC Date : </strong>
                 <th:block th:each="inw : ${deliveryChallan.inwardPdfDtos}">
@@ -109,19 +108,22 @@
             <p class="col"><strong>DC Number : </strong><span
                     th:text="${deliveryChallan?.inwardPdfDtos[0]?.instructions[0]?.deliveryDetails.deliveryId}"></span>
             </p>
-
-        </div>
-        <div class="inline-block w-30 font-size-small">
-            <p class="col"><strong>To M/s. : </strong><span
-                    th:text="${deliveryChallan.inwardPdfDtos[0]?.partyName}"></span></p>
-            <p class="col"><strong>Desp By Lorry No : </strong>
+			<p class="col"><strong>Desp By Lorry No : </strong>
                 <th:block th:each="inw : ${deliveryChallan.inwardPdfDtos}">
                     <span th:if="${inwStat.first}" th:text="${inw.instructions[0].deliveryDetails.vehicleNo}"></span>
                 </th:block>
             </p>
         </div>
+         <div class="inline-block w-50 font-size-small">
+            <p class="col"><strong>To M/s. : </strong><span
+                    th:text="${deliveryChallan.inwardPdfDtos[0]?.partyName}"></span></p>
+           <p class="font-size-small"><strong>Address: </strong><span
+                    th:text="${deliveryChallan?.partyAddress}"></span></p>
+            <p class="font-size-small" style="vertical-align: top;">
+            	<strong>GST No: </strong><span th:text="${deliveryChallan?.partyGSTNo}"></span></p>
+        </div>
     </div>
-    <div style="margin-top: 5%;">
+    <div style="margin-top: 1%;">
         <table style="width:100%">
             <tr>
                 <th class="t-head font-size-small" >Coil No</th>

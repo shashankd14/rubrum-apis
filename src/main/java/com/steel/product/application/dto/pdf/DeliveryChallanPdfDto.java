@@ -18,6 +18,8 @@ public class DeliveryChallanPdfDto {
     private Float totalValueOfGoods;
     private Float totalPrice;
 	private String showAmtDcPdfFlg;
+    private String partyGSTNo;
+    private String partyAddress;
 
     public DeliveryChallanPdfDto() {
     }
@@ -46,6 +48,8 @@ public class DeliveryChallanPdfDto {
 
         for(InwardEntry kk : inwardEntries) {
         	this.showAmtDcPdfFlg=kk.getParty().getShowAmtDcPdfFlg();
+        	this.partyGSTNo=kk.getParty().getGstNumber();
+        	this.partyAddress=kk.getParty().getAddress1().getDetails();
         }
     }
 
@@ -127,6 +131,22 @@ public class DeliveryChallanPdfDto {
 
 	public void setShowAmtDcPdfFlg(String showAmtDcPdfFlg) {
 		this.showAmtDcPdfFlg = showAmtDcPdfFlg;
+	}
+
+	public String getPartyGSTNo() {
+		return partyGSTNo;
+	}
+
+	public void setPartyGSTNo(String partyGSTNo) {
+		this.partyGSTNo = partyGSTNo;
+	}
+
+	public String getPartyAddress() {
+		return partyAddress;
+	}
+
+	public void setPartyAddress(String partyAddress) {
+		this.partyAddress = partyAddress;
 	}
     
 }
