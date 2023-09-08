@@ -171,7 +171,7 @@ public class UserInfoService
 			} else {
 				
 				List<String> errors = new ArrayList<>();
-				errors.add("Unable to connect to the authorization server, please contact Bank");
+				errors.add("Unable to connect to the authorization server, please contact Administrator");
 				throw new MockException("MSG-0002", errors);
 			}
 		}

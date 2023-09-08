@@ -33,7 +33,7 @@ public interface PackingMasterService {
 
 	ResponseEntity<Object> deleteRate(int id);
 
-	PackingRateMasterResponse getByIdRate(int id);
+	PackingRateMasterResponse getByIdRate(Integer id);
 
 	List<PackingRateMasterResponse> getAllRateList();
 

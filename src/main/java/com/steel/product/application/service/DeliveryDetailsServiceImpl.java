@@ -473,73 +473,77 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 	}
 	
 	@Override
-    public PriceCalculateResponseDTO validatePriceMapping(DeliveryDto deliveryDto, int userId) {
-        LOGGER.info("in validatePriceMapping delivery api");
-        List<DeliveryItemDetails> deliveryItemDetails = deliveryDto.getDeliveryItemDetails();
-    	boolean mainStts = false;
-    	PriceCalculateResponseDTO priceCalculateResponseDTO= new PriceCalculateResponseDTO();
-        List<PriceCalculateDTO> priceDetailsList=new ArrayList<>();
-        List<Integer> statusIdList=new ArrayList<>();
-        statusIdList.add(4);statusIdList.add(3);
-        
-        List<Instruction> instructions = instructionService.findAllByInstructionIdInAndStatus(deliveryItemDetails.stream().map(d -> d.getInstructionId()).collect(Collectors.toList()), statusIdList);
-        
-		for (Instruction instruction : instructions) {
-			boolean innerStts = false;
-			InwardEntry inwardEntry = instruction.getInwardId();
+    public PriceCalculateResponseDTO validatePriceMapping(DeliveryDto deliveryDto, Integer userId) {
+		PriceCalculateResponseDTO priceCalculateResponseDTO= new PriceCalculateResponseDTO();
+        try {
+			LOGGER.info("in validatePriceMapping delivery api");
+			List<DeliveryItemDetails> deliveryItemDetails = deliveryDto.getDeliveryItemDetails();
+			boolean mainStts = false;
+			List<PriceCalculateDTO> priceDetailsList=new ArrayList<>();
+			List<Integer> statusIdList=new ArrayList<>();
+			statusIdList.add(4);statusIdList.add(3);
 			
-			/*PriceCalculateDTO priceCalculateDTO = priceMasterService.calculateInstructionWisePrice(
-					inwardEntry.getParty().getnPartyId(), BigDecimal.valueOf(inwardEntry.getfThickness()),
-					instruction.getProcess().getProcessId(), inwardEntry.getMaterialGrade().getGradeId(),
-					deliveryDto.getPackingRateId(), instruction.getActualWeight(), instruction.getActualLength(),
-					instruction.getPlannedNoOfPieces(), inwardEntry.getInstructions().size(),
-					instruction.getPartDetails().getId());*/
+			List<Instruction> instructions = instructionService.findAllByInstructionIdInAndStatus(deliveryItemDetails.stream().map(d -> d.getInstructionId()).collect(Collectors.toList()), statusIdList);
 			
-			PriceCalculateDTO priceCalculateDTO = priceMasterService.calculateInstructionWisePrice(instruction, deliveryDto.getPackingRateId());
+			for (Instruction instruction : instructions) {
+				boolean innerStts = false;
+				InwardEntry inwardEntry = instruction.getInwardId();
+				
+				/*PriceCalculateDTO priceCalculateDTO = priceMasterService.calculateInstructionWisePrice(
+						inwardEntry.getParty().getnPartyId(), BigDecimal.valueOf(inwardEntry.getfThickness()),
+						instruction.getProcess().getProcessId(), inwardEntry.getMaterialGrade().getGradeId(),
+						deliveryDto.getPackingRateId(), instruction.getActualWeight(), instruction.getActualLength(),
+						instruction.getPlannedNoOfPieces(), inwardEntry.getInstructions().size(),
+						instruction.getPartDetails().getId());*/
+				
+				PriceCalculateDTO priceCalculateDTO = priceMasterService.calculateInstructionWisePrice(instruction, deliveryDto.getPackingRateId());
 
-			priceCalculateDTO.setCoilNo(inwardEntry.getCoilNumber());
-			priceCalculateDTO.setCustomerBatchNo(inwardEntry.getCustomerBatchId());
-			priceCalculateDTO.setInstructionId(instruction.getInstructionId());
-			priceCalculateDTO.setThickness(BigDecimal.valueOf(inwardEntry.getfThickness()));
-			priceCalculateDTO.setMatGradeName(inwardEntry.getMaterialGrade().getGradeName());
-			priceCalculateDTO.setActualWeight(instruction.getActualWeight());
+				priceCalculateDTO.setCoilNo(inwardEntry.getCoilNumber());
+				priceCalculateDTO.setCustomerBatchNo(inwardEntry.getCustomerBatchId());
+				priceCalculateDTO.setInstructionId(instruction.getInstructionId());
+				priceCalculateDTO.setThickness(BigDecimal.valueOf(inwardEntry.getfThickness()));
+				priceCalculateDTO.setMatGradeName(inwardEntry.getMaterialGrade().getGradeName());
+				priceCalculateDTO.setActualWeight(instruction.getActualWeight());
 
-			BigDecimal amount =new BigDecimal("0.00");
-			
-			if(priceCalculateDTO!=null && priceCalculateDTO.getBasePrice() !=null) {
-				amount=amount.add(priceCalculateDTO.getBasePrice());
-			}
-			if(priceCalculateDTO!=null && priceCalculateDTO.getAdditionalPrice() != null) {
-				amount=amount.add(priceCalculateDTO.getAdditionalPrice());
-			}
-			if(priceCalculateDTO!=null && priceCalculateDTO.getPackingPrice() != null) {
-				amount=amount.add(priceCalculateDTO.getPackingPrice() );
-			}
-			if(amount!=null ) {
-				priceCalculateDTO.setRate(amount.setScale(3, RoundingMode.HALF_EVEN));
-				BigDecimal totalAmount = new BigDecimal(BigInteger.ZERO,  2);
-				totalAmount = (amount.multiply(BigDecimal.valueOf(priceCalculateDTO.getActualWeight())));
-				totalAmount = totalAmount.divide(BigDecimal.valueOf(1000));
-				priceCalculateDTO.setTotalPrice(totalAmount.setScale(3, RoundingMode.HALF_EVEN));
-			}
-			if (priceCalculateDTO.getBasePrice() != null && priceCalculateDTO.getBasePrice().compareTo(BigDecimal.ZERO) > 0) {
-				if (priceCalculateDTO.getPackingPrice() != null && priceCalculateDTO.getPackingPrice().compareTo(BigDecimal.ZERO) > 0) {
-					innerStts = true;
+				BigDecimal amount =new BigDecimal("0.00");
+				
+				if(priceCalculateDTO!=null && priceCalculateDTO.getBasePrice() !=null) {
+					amount=amount.add(priceCalculateDTO.getBasePrice());
 				}
+				if(priceCalculateDTO!=null && priceCalculateDTO.getAdditionalPrice() != null) {
+					amount=amount.add(priceCalculateDTO.getAdditionalPrice());
+				}
+				if(priceCalculateDTO!=null && priceCalculateDTO.getPackingPrice() != null) {
+					amount=amount.add(priceCalculateDTO.getPackingPrice() );
+				}
+				if(amount!=null ) {
+					priceCalculateDTO.setRate(amount.setScale(3, RoundingMode.HALF_EVEN));
+					BigDecimal totalAmount = new BigDecimal(BigInteger.ZERO,  2);
+					totalAmount = (amount.multiply(BigDecimal.valueOf(priceCalculateDTO.getActualWeight())));
+					totalAmount = totalAmount.divide(BigDecimal.valueOf(1000));
+					priceCalculateDTO.setTotalPrice(totalAmount.setScale(3, RoundingMode.HALF_EVEN));
+				}
+				if (priceCalculateDTO.getBasePrice() != null && priceCalculateDTO.getBasePrice().compareTo(BigDecimal.ZERO) > 0) {
+					//if (priceCalculateDTO.getPackingPrice() != null && priceCalculateDTO.getPackingPrice().compareTo(BigDecimal.ZERO) > 0) {
+						innerStts = true;
+					//}
+				}
+				priceDetailsList.add(priceCalculateDTO);
+				mainStts = innerStts;
 			}
-			priceDetailsList.add(priceCalculateDTO);
-			mainStts = innerStts;
+			
+			priceCalculateResponseDTO.setValidationStatus(mainStts);
+			if(priceCalculateResponseDTO.isValidationStatus()) {
+			    priceCalculateResponseDTO.setRemarks("Thickness range found for all selected packets");
+			} else {
+			    priceCalculateResponseDTO.setRemarks("This thickness range already has a value (rate) defined. Please recheck.");
+			}
+			priceCalculateResponseDTO.setPriceDetailsList(priceDetailsList);
+      
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-        
-        priceCalculateResponseDTO.setValidationStatus(mainStts);
-        if(priceCalculateResponseDTO.isValidationStatus()) {
-            priceCalculateResponseDTO.setRemarks("Thickness range found for all selected packets");
-        } else {
-            priceCalculateResponseDTO.setRemarks("This thickness range already has a value (rate) defined. Please recheck.");
-        }
-        priceCalculateResponseDTO.setPriceDetailsList(priceDetailsList);
-       
-        return priceCalculateResponseDTO;
+		return priceCalculateResponseDTO;
 	}
 
 	@Override

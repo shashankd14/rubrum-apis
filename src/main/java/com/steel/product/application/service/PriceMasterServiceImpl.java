@@ -354,7 +354,7 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 	
 	@Override
 	public PriceCalculateDTO calculateInstructionWisePrice(int partyId, BigDecimal fThickness, int processId,
-			int gradeId, int packingRateId, BigDecimal bundleWeight, Float actualLength1, int plannedNoOfPieces1,
+			int gradeId, Integer packingRateId, BigDecimal bundleWeight, Float actualLength1, int plannedNoOfPieces1,
 			int instrSize, Long partDetailsId) {
 
 		PriceCalculateDTO priceCalculateDTO=new PriceCalculateDTO();
@@ -473,7 +473,7 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 	}
 	
 	@Override
-	public PriceCalculateDTO calculateInstructionWisePrice(Instruction ins, int packingRateId) {
+	public PriceCalculateDTO calculateInstructionWisePrice(Instruction ins, Integer packingRateId) {
 
 		PriceCalculateDTO priceCalculateDTO=new PriceCalculateDTO();
 		

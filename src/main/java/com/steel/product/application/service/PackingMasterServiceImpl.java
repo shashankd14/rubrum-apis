@@ -248,7 +248,7 @@ public class PackingMasterServiceImpl implements PackingMasterService {
 	}
 
 	@Override
-	public PackingRateMasterResponse getByIdRate(int id) {
+	public PackingRateMasterResponse getByIdRate(Integer id) {
 		PackingRateMasterResponse resp = null;
 		Optional<PackingRateEntity> list = packingRateRepository.findById(id);
 		if (list.isPresent()) {

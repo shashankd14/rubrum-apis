@@ -2,7 +2,6 @@ package com.steel.product.application.controller;
 
 import com.steel.product.application.dto.delivery.DeliveryDto;
 import com.steel.product.application.dto.delivery.DeliveryPacketsDto;
-import com.steel.product.application.dto.packingmaster.PackingRateMasterResponse;
 import com.steel.product.application.dto.pricemaster.PriceCalculateResponseDTO;
 import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.Instruction;
@@ -81,12 +80,9 @@ public class DeliveryDetailsController {
 		headers.set("Content-Type", "application/json");
 		try {
 			int userId = (request.getHeader("userId") == null ? 1 : Integer.parseInt(request.getHeader("userId")));
-
-			PackingRateMasterResponse packrate = packingMasterService.getByIdRate(deliveryDto.getPackingRateId());
-			if(!(packrate!=null && packrate.getPackingRateId()>0)) {
-				return new ResponseEntity<>("{\"validationStatus\": \"failure\", \"remarks\":\"Please enter valid packing rate details\"}", headers, HttpStatus.BAD_REQUEST);
+			if(deliveryDto.getPackingRateId() == null ) {
+				deliveryDto.setPackingRateId(0);
 			}
-
 			PriceCalculateResponseDTO priceCalculateResponseDTO = deliveryDetailsService.validatePriceMapping(deliveryDto, deliveryDto.getPackingRateId());
 			if (priceCalculateResponseDTO.isValidationStatus()) {
 				result = new ResponseEntity<>(priceCalculateResponseDTO, headers, HttpStatus.OK);
@@ -94,6 +90,7 @@ public class DeliveryDetailsController {
 				result = new ResponseEntity<>(priceCalculateResponseDTO, headers, HttpStatus.OK);
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			result = new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		return result;
@@ -106,7 +103,9 @@ public class DeliveryDetailsController {
 		DeliveryDetails deliveryDetails = new DeliveryDetails();
 		try {
 			int userId = (request.getHeader("userId")==null ? 1: Integer.parseInt(request.getHeader("userId")));
-
+			if(deliveryDto.getPackingRateId() == null ) {
+				deliveryDto.setPackingRateId(0);
+			}
 			deliveryDetails = deliveryDetailsService.save(deliveryDto, userId);
 			result = new ResponseEntity<>("Delivery details saved successfully!", HttpStatus.OK);
 		} catch (Exception e) {

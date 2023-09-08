@@ -36,7 +36,7 @@ public interface DeliveryDetailsService {
 
 	public List<TallyBillingInvoiceListDTO> billingDCDetails(List<Integer> dcIds);
 
-	public PriceCalculateResponseDTO validatePriceMapping(DeliveryDto deliveryDto, int userId);
+	public PriceCalculateResponseDTO validatePriceMapping(DeliveryDto deliveryDto, Integer userId);
 
 	DeliveryDetails updateTallyStatus(TallyUpdateSttsRequestDTO deliveryDto);
 
