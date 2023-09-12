@@ -339,9 +339,9 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 
 	@Override
 	public Page<DeliveryDetails> findAllDeliveriesForBillingNew(int pageNo, int pageSize) {
-		if (pageSize > 10) {
-			pageSize = 10;
-		}
+		//if (pageSize > 10) {
+			pageSize = 20;
+		//}
 		Pageable pageable = PageRequest.of((pageNo - 1), pageSize);
 		Page<DeliveryDetails> page = deliveryDetailsRepo.findAllDeliveriesForBillingNew(pageable);
 		return page;
@@ -349,9 +349,9 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 	
 	@Override
 	public Page<DeliveryDetails> billingInvoiceList(int pageNo, int pageSize) {
-		if (pageSize > 10) {
-			pageSize = 10;
-		}
+		//if (pageSize > 10) {
+			pageSize = 20;
+		//}
 		List<DeliveryDetails> billingInvoiceList = new ArrayList<>();
 		Pageable pageable = PageRequest.of((pageNo - 1), pageSize);
 		List<Object[]> kk = deliveryDetailsRepo.findAllDeliveriesForBilling(pageable);

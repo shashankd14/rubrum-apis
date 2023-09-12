@@ -362,26 +362,27 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 		try {
 			BigDecimal totalPrice = new BigDecimal(BigInteger.ZERO,  2);
 			BigDecimal additionalPrice = new BigDecimal(BigInteger.ZERO,  2);
-			
-			if(processId==8 || processId==7) {
-				processId = 7;
-			}
-			
 			List<PriceMasterResponse> basePriceList = getPartyGradeWiseDetails(partyId, processId, gradeId);
 						
 			for (PriceMasterResponse priceMasterResponse : basePriceList) {
-
-				if (gradeId == priceMasterResponse.getMatGradeId()
+				if(processId==8 || processId==7) {
+					if (gradeId == priceMasterResponse.getMatGradeId()
+						&& partyId == priceMasterResponse.getPartyId()
+						&& processId == priceMasterResponse.getProcessId() ) {
+						
+						priceCalculateDTO.setBasePrice(priceMasterResponse.getPrice());
+						totalPrice = totalPrice.add(priceCalculateDTO.getBasePrice()); 
+					}
+				} else {
+					if (gradeId == priceMasterResponse.getMatGradeId()
 						&& partyId == priceMasterResponse.getPartyId()
 						&& processId == priceMasterResponse.getProcessId()
 						&& fThickness.compareTo(priceMasterResponse.getThicknessFrom()) >= 0
 						&& priceMasterResponse.getThicknessTo().compareTo(fThickness) >= 0) {
-
-					//BigDecimal basePrice = new BigDecimal(BigInteger.ZERO,  2);
-					//basePrice = (priceMasterResponse.getPrice().multiply(BigDecimal.valueOf(actualWeight)));
-					//basePrice = basePrice.divide(BigDecimal.valueOf(1000));
-					priceCalculateDTO.setBasePrice(priceMasterResponse.getPrice());
-					totalPrice = totalPrice.add(priceCalculateDTO.getBasePrice());
+						
+						priceCalculateDTO.setBasePrice(priceMasterResponse.getPrice());
+						totalPrice = totalPrice.add(priceCalculateDTO.getBasePrice());
+					}
 				}
 			}
 			
@@ -482,25 +483,28 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 			BigDecimal additionalPrice = new BigDecimal(BigInteger.ZERO,  2);
 			
 			int processId=ins.getProcess().getProcessId();
-			if(processId==8 || processId==7) {
-				processId = 7;
-			}
 			
 			List<PriceMasterResponse> basePriceList = getPartyGradeWiseDetails(ins.getInwardId().getParty().getnPartyId(), processId, ins.getInwardId().getMaterialGrade().getGradeId());
 						
 			for (PriceMasterResponse priceMasterResponse : basePriceList) {
+				if(processId==8 || processId==7) {
+					if (ins.getInwardId().getMaterialGrade().getGradeId() == priceMasterResponse.getMatGradeId()
+							&& ins.getInwardId().getParty().getnPartyId() == priceMasterResponse.getPartyId()
+							&& processId == priceMasterResponse.getProcessId()) {
 
-				if (ins.getInwardId().getMaterialGrade().getGradeId() == priceMasterResponse.getMatGradeId()
-						&& ins.getInwardId().getParty().getnPartyId() == priceMasterResponse.getPartyId()
-						&& processId == priceMasterResponse.getProcessId()
-						&& BigDecimal.valueOf(ins.getInwardId().getfThickness()).compareTo(priceMasterResponse.getThicknessFrom()) >= 0
-						&& priceMasterResponse.getThicknessTo().compareTo(BigDecimal.valueOf(ins.getInwardId().getfThickness())) >= 0) {
+						priceCalculateDTO.setBasePrice(priceMasterResponse.getPrice());
+						totalPrice = totalPrice.add(priceCalculateDTO.getBasePrice()); 
+					} 
+				} else {
+					if (ins.getInwardId().getMaterialGrade().getGradeId() == priceMasterResponse.getMatGradeId()
+							&& ins.getInwardId().getParty().getnPartyId() == priceMasterResponse.getPartyId()
+							&& processId == priceMasterResponse.getProcessId()
+							&& BigDecimal.valueOf(ins.getInwardId().getfThickness()).compareTo(priceMasterResponse.getThicknessFrom()) >= 0
+							&& priceMasterResponse.getThicknessTo().compareTo(BigDecimal.valueOf(ins.getInwardId().getfThickness())) >= 0) {
 
-					//BigDecimal basePrice = new BigDecimal(BigInteger.ZERO,  2);
-					//basePrice = (priceMasterResponse.getPrice().multiply(BigDecimal.valueOf(ins.getActualWeight())));
-					//basePrice = basePrice.divide(BigDecimal.valueOf(1000));
-					priceCalculateDTO.setBasePrice(priceMasterResponse.getPrice());
-					totalPrice = totalPrice.add(priceCalculateDTO.getBasePrice()); 
+						priceCalculateDTO.setBasePrice(priceMasterResponse.getPrice());
+						totalPrice = totalPrice.add(priceCalculateDTO.getBasePrice()); 
+					}
 				}
 			}
 			

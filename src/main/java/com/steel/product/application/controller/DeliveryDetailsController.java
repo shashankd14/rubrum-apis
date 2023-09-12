@@ -114,25 +114,6 @@ public class DeliveryDetailsController {
 		return result;
 	}
 
-//    @PutMapping("/update/{deliveryId}")
-//    public ResponseEntity<Object> update(@PathVariable int deliveryId){
-//        try{
-//            DeliveryDetails delivery = deliveryDetailsService.getById(deliveryId);
-//            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-//
-//            delivery.setCreatedBy(1);
-//            delivery.setUpdatedBy(1);
-//            delivery.setCreatedOn(timestamp);
-//            delivery.setUpdatedOn(timestamp);
-//            delivery.setDeleted(false);
-//
-//            deliveryDetailsService.save(delivery);
-//            return new ResponseEntity<>("Delivery details saved successfully!", HttpStatus.OK);
-//        }catch (Exception e){
-//            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-//        }
-//    }
-
     @DeleteMapping("/deleteById/{deliveryId}")
 	public ResponseEntity<Object> deleteById(@PathVariable("deliveryId") Integer id) {
 		try {
