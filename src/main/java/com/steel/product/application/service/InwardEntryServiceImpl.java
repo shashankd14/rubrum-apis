@@ -222,6 +222,7 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 		finalResp.put("plan_pdfs", response);
 		finalResp.put("inward_pdf", "");
 		finalResp.put("qrcode_inward_pdf", "");
+		finalResp.put("qrcode_editfinish_pdf", "");
 		
 		String s3URL = this.inwdEntryRepo.getS3URL(inwardId);
 		if(s3URL !=null && s3URL.length()>0) {
@@ -230,6 +231,10 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 		String qrcodeInwardPdf = this.inwdEntryRepo.getQRCodeS3URL(inwardId);
 		if(qrcodeInwardPdf !=null && qrcodeInwardPdf.length()>0) {
 			finalResp.put("qrcode_inward_pdf", awsS3Service.generatePresignedUrl(qrcodeInwardPdf));
+		}
+		String qrCodeEditFinishS3URL = this.inwdEntryRepo.getQRCodeEditFinishS3URL(inwardId);
+		if(qrCodeEditFinishS3URL !=null && qrCodeEditFinishS3URL.length()>0) {
+			finalResp.put("qrcode_editfinish_pdf", awsS3Service.generatePresignedUrl(qrCodeEditFinishS3URL));
 		}
 		
 		List<PartDetailsPDFResponse> response2 = new ArrayList<PartDetailsPDFResponse>();
@@ -276,5 +281,9 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 	@Override
 	public void updateQRCodeS3InwardPDF(String inwardId, String url) {
 		inwdEntryRepo.updateQRCodeS3InwardPDF(Integer.parseInt(inwardId), url);
+	}
+	@Override
+	public void updateQRCodeEditFinish(String inwardId, String url) {
+		inwdEntryRepo.updateQRCodeEditFinish( Integer.parseInt(inwardId), url);
 	}
 }

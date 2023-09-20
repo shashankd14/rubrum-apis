@@ -5,6 +5,7 @@ import com.itextpdf.text.DocumentException;
 import com.steel.product.application.dto.instruction.*;
 import com.steel.product.application.dto.pdf.InwardEntryPdfDto;
 import com.steel.product.application.dto.pdf.PartDto;
+import com.steel.product.application.dto.pdf.PdfDto;
 import com.steel.product.application.dto.pdf.PdfResponseDto;
 import com.steel.product.application.dto.qrcode.QRCodeResponse;
 import com.steel.product.application.entity.Instruction;
@@ -17,9 +18,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -146,6 +145,26 @@ public class InstructionController {
 	        InwardEntryPdfDto inwardEntryPdfDto = instructionService.findQRCodeInwardJoinFetchInstructionsAndPartDetails(partDto.getPartDetailsId(), partDto.getGroupIds());
 	        List<QRCodeResponse> resp = instructionService.getQRCodeDetails(inwardEntryPdfDto);
 			inputStreamResource = pdfGenerator.planInputStreamResource( resp, partDto);
+			byte[] sourceBytes = IOUtils.toByteArray(inputStreamResource.getInputStream());
+			StringBuilder builder = new StringBuilder();
+			builder.append(Base64.getEncoder().encodeToString(sourceBytes));
+			String encodedFile = builder.toString();
+			kk = new ResponseEntity<PdfResponseDto>(new PdfResponseDto(encodedFile), HttpStatus.OK);
+		} catch (WriterException | IOException e) {
+			e.printStackTrace();
+		} catch (DocumentException e) {
+			e.printStackTrace();
+		}
+		return kk;
+	}
+
+	@PostMapping({ "/qrcode/editfinish" })
+	public ResponseEntity<PdfResponseDto> editFinishQRCode(@RequestBody PdfDto pdfDto ) {
+		InputStreamResource inputStreamResource = null;
+		ResponseEntity<PdfResponseDto> kk = null ;
+		try {
+	        List<QRCodeResponse> instructionList = instructionService.getQRCodeDetails_Finish(pdfDto.getInwardId());
+			inputStreamResource = pdfGenerator.planInputStreamResource_Finish( instructionList, pdfDto);
 			byte[] sourceBytes = IOUtils.toByteArray(inputStreamResource.getInputStream());
 			StringBuilder builder = new StringBuilder();
 			builder.append(Base64.getEncoder().encodeToString(sourceBytes));

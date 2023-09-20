@@ -226,7 +226,9 @@ public class PackingMasterServiceImpl implements PackingMasterService {
 		packingRateEntity.setUpdatedBy(userId);
 		packingRateEntity.setCreatedOn(new Date());
 		packingRateEntity.setUpdatedOn(new Date());
-		packingRateRepository.save (packingRateEntity);
+		if( packingRateMasterRequest.getPackingRate() !=null) {
+			packingRateRepository.save (packingRateEntity);
+		}
 		if (packingRateMasterRequest.getPackingRateId() != null && packingRateMasterRequest.getPackingRateId() > 0) {
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Packing Rate details updated successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
 		} else {

@@ -152,6 +152,12 @@ public class PdfService {
 				out.close();
 				fileUrl = awsS3Service.uploadPDFFileToS3Bucket(bucketName, file, "QRCODE_PLAN_" + id);
 				partDetailsService.updatePartDetailsS3PDF(id, "QRCODE_PLAN_" + id);
+			}  else if ("QRCODE_EDITFINISH_PDF".equals(processType)) {
+				OutputStream out = new FileOutputStream(file);
+				out.write(byteArray);
+				out.close();
+				fileUrl = awsS3Service.uploadPDFFileToS3Bucket(bucketName, file, "QRCODE_EDITFINISH_" + id);
+				inwardEntryService.updateQRCodeEditFinish(id, "QRCODE_EDITFINISH_" + id);
 			} 
 			System.out.println("fileUrl == "+fileUrl);
 		} catch (Exception e) {

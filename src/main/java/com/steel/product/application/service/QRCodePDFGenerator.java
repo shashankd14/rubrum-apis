@@ -29,6 +29,7 @@ import com.itextpdf.text.Image;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.steel.product.application.dto.pdf.PartDto;
+import com.steel.product.application.dto.pdf.PdfDto;
 import com.steel.product.application.dto.qrcode.QRCodeResponse;
 
 @Component
@@ -125,6 +126,55 @@ public class QRCodePDFGenerator {
 			pdfService.renderQRCodePdfInstruction("qrcode_plan"+"_"+partDto.getPartDetailsId(), partDto.getPartDetailsId(), "QRCODE_PLAN_PDF", out.toByteArray());
 		} catch (Exception e) {
 			logger.error("error while uploading the QRCODE PLAN == "+partDto.getPartDetailsId());
+		}
+		
+		ByteArrayInputStream bis = new ByteArrayInputStream(out.toByteArray());
+		return new InputStreamResource(bis);
+	}
+
+	public InputStreamResource planInputStreamResource_Finish( List<QRCodeResponse> instructionList, PdfDto pdfDto)
+			throws DocumentException, MalformedURLException, IOException, WriterException {
+
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+		Document document = new Document();
+		PdfWriter.getInstance(document, out);
+		document.open();
+
+		for (QRCodeResponse entry : instructionList) {
+			document.newPage();
+			byte[] pngData;
+			StringBuilder text = new StringBuilder();
+			text.append("Coil NO : " + entry.getCoilNo());
+			text.append("\nPacket Id : " + entry.getInstructionId() );
+			text.append("\nCustomer BatchNo : " + entry.getCustomerBatchNo());
+			text.append("\nCustomer Name : " + entry.getPartyName() );
+			text.append("\nMaterial Description : " + entry.getMaterialDesc());
+			text.append("\nMaterial Grade : " + entry.getMaterialGrade());
+			text.append("\nT * W * L : " + entry.getFthickness() +" * "+entry.getFwidth() +" * "+entry.getFlength() );
+			text.append("\nNet Weight : " + entry.getNetWeight());
+			text.append("\nEnd User Tag : " + entry.getGrossWeight());
+			pngData = getQRCode(text.toString(), 0, 0);
+
+			Font font = FontFactory.getFont(FontFactory.COURIER, 14, BaseColor.BLACK);
+			Paragraph para = new Paragraph("Scan Plan Details", font);
+			para.setAlignment(Element.ALIGN_CENTER);
+			document.add(para);
+			document.add(Chunk.NEWLINE);
+
+			Image image = Image.getInstance(pngData);
+			image.scaleAbsolute(170f, 170f);
+			image.setAlignment(Element.ALIGN_CENTER);
+
+			document.add(image);
+		}
+		
+		document.close();
+
+		try {
+			pdfService.renderQRCodePdfInstruction("edit_finish_qrcode_plan"+"_"+pdfDto.getInwardId(), String.valueOf(pdfDto.getInwardId()), "QRCODE_EDITFINISH_PDF", out.toByteArray());
+		} catch (Exception e) {
+			logger.error("error while uploading the edit_finish_qrcode_plan == "+pdfDto.getInwardId());
 		}
 		
 		ByteArrayInputStream bis = new ByteArrayInputStream(out.toByteArray());

@@ -1186,8 +1186,36 @@ public class InstructionServiceImpl implements InstructionService {
 		}
 		return respo;
 	}
-	
-	
-	
-	
+
+	@Override
+	public List<QRCodeResponse> getQRCodeDetails_Finish(Integer inwardId) {
+
+		Optional<InwardEntry> result = inwardEntryRepository.findById(inwardId);
+		InwardEntry theEntry = null;
+		if (result.isPresent()) {
+			theEntry = result.get();
+		}
+		List<QRCodeResponse> resp = new ArrayList<>();
+
+		for (Instruction instruction : theEntry.getInstructions()) {
+			if (instruction.getStatus().getStatusId() == 3) {
+				QRCodeResponse obj = new QRCodeResponse();
+				obj.setCoilNo(instruction.getInwardId().getCoilNumber());
+				obj.setCustomerBatchNo(instruction.getInwardId().getCustomerBatchId());
+				obj.setMaterialDesc(instruction.getInwardId().getMaterial().getDescription());
+				obj.setMaterialGrade(instruction.getInwardId().getMaterialGrade().getGradeName());
+				obj.setPartyName(instruction.getInwardId().getParty().getPartyName());
+				obj.setInstructionId(instruction.getInstructionId());
+
+				obj.setFthickness(decfor.format(instruction.getInwardId().getfThickness()));
+				obj.setFwidth("" + instruction.getActualWidth());
+				obj.setFlength("" + instruction.getActualLength());
+				obj.setNetWeight(decfor.format(instruction.getInwardId().getfQuantity()));
+				obj.setGrossWeight(decfor.format(instruction.getInwardId().getGrossWeight()));
+				resp.add(obj);
+			}
+		}
+		return resp;
+	}
+
 }

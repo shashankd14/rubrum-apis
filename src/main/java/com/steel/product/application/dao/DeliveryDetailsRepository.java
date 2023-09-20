@@ -73,7 +73,12 @@ public interface DeliveryDetailsRepository extends JpaRepository<DeliveryDetails
     @Query(value="SELECT DISTINCT instructionid, dc.deliveryid, DATE_FORMAT( dc.createdon, '%d-%m-%Y') ,\r\n " + 
     		"    'DC' AS voucher_type, '' as custcode, partyname,\r\n " + 
     		"    phone1, 'Sundry Debtors' AS Under_Group,\r\n " + 
-    		"    concat(' ','', address1),  concat(' ','', address2),  '' as address3,  'Bangalore' AS city, '560078' AS pincode, 'Karnataka' AS state, '' AS gstno, '' AS Product_NO, " + 
+    		"    (SELECT details FROM  product_address adds WHERE adds.addressid = party.address1 limit 1) as address1, " + 
+    		"    concat(' ','', address2),  '' as address3, " + 
+    		"    (SELECT city FROM  product_address adds WHERE adds.addressid = party.address1 limit 1) as city, " + 
+    		"    (SELECT concat('','', pincode)  FROM  product_address adds WHERE adds.addressid = party.address1 limit 1) as pincode, " + 
+    		"    (SELECT state FROM  product_address adds WHERE adds.addressid = party.address1 limit 1) as state, " + 
+    		"    '' AS gstno, '' AS Product_NO, " + 
     		"    case when processid=1 then 'CUTTING AND PACKING'\r\n  " + 
     		"    when processid=2 then 'SLITTING AND PACKING'  \r\n" + 
     		"    when processid=3 then 'SLIT AND CUT AND PACKING'\r\n " + 

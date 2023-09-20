@@ -395,7 +395,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 				invoiceListDTO.setAddress3("");
 			}
 			invoiceListDTO.setCity("" + objs[11] != null ? (String) objs[11] : null);
-			invoiceListDTO.setPincode(objs[12] != null ? (String) objs[12] : null);
+			invoiceListDTO.setPincode( objs[12] != null ? (String) objs[12] : null);
 			invoiceListDTO.setState(objs[13] != null ? (String) objs[13] : null);
 			invoiceListDTO.setGstno(objs[14] != null ? (String) objs[14] : null);
 			invoiceListDTO.setProductNo(objs[15] != null ? (String) objs[15] : null);

@@ -52,4 +52,6 @@ public interface InwardEntryService {
 	QRCodeResponse getQRCodeDetails(int inwardEntryId);
 
 	void updateQRCodeS3InwardPDF(String inwardId, String url);
+
+	void updateQRCodeEditFinish(String inwardId, String url);
 }

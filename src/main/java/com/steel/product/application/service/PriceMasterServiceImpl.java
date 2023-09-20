@@ -65,7 +65,9 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 					priceMasterEntity.setUpdatedBy(userId);
 					priceMasterEntity.setCreatedOn(new Date());
 					priceMasterEntity.setUpdatedOn(new Date());
-					list.add(priceMasterEntity);
+					if(priceMasterRequest.getPrice()!=null) {
+						list.add(priceMasterEntity);
+					}
 				}
 			}
 		}

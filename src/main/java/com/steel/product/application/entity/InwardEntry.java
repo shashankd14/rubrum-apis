@@ -147,6 +147,9 @@ public class InwardEntry {
     @Column(name = "qrcode_s3_url")
     private String qrcodeS3Url;
 
+    @Column(name = "qrcode_editfinish_s3_url")
+    private String qrcodeEditfinishS3Url;
+
 	public void addInstruction(Instruction instruction){
 		if(this.instructions == null){
 			this.instructions = new HashSet<>();
@@ -509,6 +512,14 @@ public class InwardEntry {
 		this.qrcodeS3Url = qrcodeS3Url;
 	}
 
+	public String getQrcodeEditfinishS3Url() {
+		return qrcodeEditfinishS3Url;
+	}
+
+	public void setQrcodeEditfinishS3Url(String qrcodeEditfinishS3Url) {
+		this.qrcodeEditfinishS3Url = qrcodeEditfinishS3Url;
+	}
+	
 	public static InwardEntryPdfDto valueOf(InwardEntry inwardEntry, List<InstructionResponsePdfDto> instructionResponsePdfDtos){
         InwardEntryPdfDto inwardEntryPdfDto = new InwardEntryPdfDto();
         inwardEntryPdfDto.setInwardEntryId(inwardEntry.getInwardEntryId());

@@ -91,5 +91,6 @@ public interface InstructionService {
 
 	InwardEntryPdfDto findQRCodeInwardJoinFetchInstructionsAndPartDetails(String partDetailsId, List<Integer> groupIds);
 
+	public List<QRCodeResponse> getQRCodeDetails_Finish(Integer inwardId);
 }
 
