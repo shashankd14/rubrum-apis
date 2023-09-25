@@ -64,7 +64,10 @@ public class KQPPartyTemplateEntity {
 		KQPPartyMappingResponse dtoResponse = new KQPPartyMappingResponse();
 		dtoResponse.setId( entity.getId());
 		dtoResponse.setPartyId(entity.getParty().getnPartyId());
-		dtoResponse.setPartyName(entity.getParty().getPartyName());
+		try {
+			dtoResponse.setPartyName(entity.getParty().getPartyName());
+		} catch (Exception e) {
+		}
 		dtoResponse.setKqpName(entity.getKqpEntity().getKqpName());
 		dtoResponse.setKqpId(entity.getKqpEntity().getKqpId());
 		dtoResponse.setEndUserTagId(entity.getEndUserTagId());

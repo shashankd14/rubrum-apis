@@ -59,9 +59,15 @@ public class QualityPartyTemplateEntity {
 		QualityPartyMappingResponse dtoResponse = new QualityPartyMappingResponse();
 		dtoResponse.setId( entity.getId());
 		dtoResponse.setPartyId(entity.getParty().getnPartyId());
-		dtoResponse.setPartyName(entity.getParty().getPartyName());
-		dtoResponse.setTemplateName(entity.getTemplateEntity().getTemplateName());
-		dtoResponse.setTemplateId(entity.getTemplateEntity().getTemplateId());
+		try {
+			dtoResponse.setPartyName(entity.getParty().getPartyName());
+		} catch (Exception e) {
+		}
+		try {
+			dtoResponse.setTemplateName(entity.getTemplateEntity().getTemplateName());
+			dtoResponse.setTemplateId(entity.getTemplateEntity().getTemplateId());
+		} catch (Exception e) {
+		}
 		dtoResponse.setEndUserTagId(entity.getEndUserTagId());
 		dtoResponse.setMatGradeId(entity.getMatGradeId());
 		dtoResponse.setThickness(entity.getThickness());
