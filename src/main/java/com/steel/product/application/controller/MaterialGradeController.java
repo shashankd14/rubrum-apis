@@ -2,6 +2,9 @@ package com.steel.product.application.controller;
 
 import com.steel.product.application.entity.MaterialGrade;
 import com.steel.product.application.service.MaterialGradeService;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +17,8 @@ import java.util.stream.Collectors;
 @Controller
 //@CrossOrigin(origins = {"http://rubrum-frontend.s3-website.ap-south-1.amazonaws.com"})
 @CrossOrigin
-@RequestMapping({"/api/materialGrade"})
+@Tag(name = "Material Grade", description = "Material Grade")
+@RequestMapping({"/materialGrade"})
 public class MaterialGradeController {
 	@Autowired
 	private MaterialGradeService materialGradeService;

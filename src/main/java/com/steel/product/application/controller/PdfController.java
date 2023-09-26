@@ -8,6 +8,8 @@ import com.steel.product.application.dto.pdf.PdfResponseDto;
 import com.steel.product.application.service.AddressService;
 import com.steel.product.application.service.PdfService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -23,7 +24,7 @@ import java.util.Base64;
 
 @RestController
 @CrossOrigin
-@RequestMapping("/api/pdf")
+@RequestMapping("/pdf")
 public class PdfController {
     private AddressService addressService;
     private PdfService pdfService;

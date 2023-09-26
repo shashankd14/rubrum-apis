@@ -4,6 +4,9 @@ import com.steel.product.application.dto.instruction.InstructionGroupDto;
 import com.steel.product.application.entity.InstructionGroup;
 import com.steel.product.application.service.InstructionGroupService;
 import com.steel.product.application.service.InstructionService;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,7 +14,8 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @CrossOrigin
-@RequestMapping("/api/instructionGroup")
+@Tag(name = "Instruction Group", description = "Instruction Group")
+@RequestMapping("/instructionGroup")
 public class InstructionGroupController {
 
     @Autowired

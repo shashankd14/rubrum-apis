@@ -2,6 +2,9 @@ package com.steel.product.application.controller;
 
 import com.steel.product.application.entity.Rates;
 import com.steel.product.application.service.RatesService;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,7 +14,8 @@ import java.util.List;
 
 @RestController
 @CrossOrigin
-@RequestMapping("/api/rates")
+@Tag(name = "Rates", description = "Rates")
+@RequestMapping("/rates")
 public class RatesController {
 
     @Autowired

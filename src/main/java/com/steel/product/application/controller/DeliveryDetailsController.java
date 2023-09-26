@@ -2,11 +2,13 @@ package com.steel.product.application.controller;
 
 import com.steel.product.application.dto.delivery.DeliveryDto;
 import com.steel.product.application.dto.delivery.DeliveryPacketsDto;
-import com.steel.product.application.dto.delivery.DeliveryResponseDto;
 import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.service.DeliveryDetailsService;
 import com.steel.product.application.service.InstructionService;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +19,8 @@ import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin
-@RequestMapping("/api/delivery")
+@Tag(name = "Delivery Details", description = "Delivery Details")
+@RequestMapping("/delivery")
 public class DeliveryDetailsController {
 
     @Autowired

@@ -4,17 +4,20 @@ import com.steel.product.application.dto.packetClassification.PacketClassificati
 import com.steel.product.application.dto.packetClassification.PacketClassificationResponse;
 import com.steel.product.application.entity.PacketClassification;
 import com.steel.product.application.service.PacketClassificationService;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
 @CrossOrigin
-@RequestMapping({"/api/packetClassification"})
+@Tag(name = "Packet Classification", description = "Packet Classification")
+@RequestMapping({"/packetClassification"})
 public class PacketClassificationController {
 
     @Resource
