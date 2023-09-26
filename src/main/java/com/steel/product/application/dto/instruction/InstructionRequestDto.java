@@ -1,7 +1,7 @@
 package com.steel.product.application.dto.instruction;
 
-
 import com.fasterxml.jackson.annotation.JsonFormat;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -40,6 +40,8 @@ public class InstructionRequestDto {
 
     private Integer packetClassificationId;
 
+    private Integer endUserTagId;
+
     private Integer groupId ;
 
     private Integer parentGroupId ;
@@ -65,4 +67,6 @@ public class InstructionRequestDto {
     private String remarks;
 
     private Boolean isSlitAndCut;
+
+    private Boolean isScrapWeightUsed;
 }

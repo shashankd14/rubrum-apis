@@ -1,7 +1,6 @@
 package com.steel.product.application.entity;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -49,6 +48,12 @@ public class PartDetails {
 
     @Column(name = "is_deleted", columnDefinition = "bit default 0")
     private Boolean isDeleted;
+    
+    @Column(name = "pdf_s3_url")
+    private String pdfS3Url;
+
+    @Column(name = "qrcode_s3_url")
+    private String qrcodeS3Url;
 
     public void addInstruction(Instruction instruction) {
         if (this.instructions == null) {

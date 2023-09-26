@@ -1,7 +1,6 @@
 package com.steel.product.application.entity;
 
 import javax.persistence.*;
-import java.util.Set;
 
 @Entity
 @Table(name = "product_instruction_group")

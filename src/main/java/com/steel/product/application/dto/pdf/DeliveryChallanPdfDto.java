@@ -16,6 +16,10 @@ public class DeliveryChallanPdfDto {
     private List<InwardEntryPdfDto> inwardPdfDtos;
     private Float totalDeliveryWeight;
     private Float totalValueOfGoods;
+    private Float totalPrice;
+	private String showAmtDcPdfFlg;
+    private String partyGSTNo;
+    private String partyAddress;
 
     public DeliveryChallanPdfDto() {
     }
@@ -26,16 +30,27 @@ public class DeliveryChallanPdfDto {
         this.addressBranch = companyDetails.getAddressBranch();
         this.addressOffice = companyDetails.getAddressOffice();
         this.email = companyDetails.getEmail();
+        
         if(this.inwardPdfDtos == null){
             this.inwardPdfDtos = new ArrayList<>();
         }
         this.inwardPdfDtos = inwardEntries.stream().map(inw -> InwardEntry.valueOf(inw, inw.getInstructions()
                 .stream().map(ins -> Instruction.valueOfInstructionPdf(ins, inw)).collect(Collectors.toList()))).collect(Collectors.toList());
+
         this.totalDeliveryWeight = inwardPdfDtos.stream().flatMap(inw -> inw.getInstructions().stream())
-                .reduce(0f, (sum, ins) -> sum + ins.getActualWeight(), Float::sum);
+                .reduce(0f, (sum, ins) -> sum + (ins.getProcess().getProcessId() == 7 ? ins.getPlannedWeight():ins.getActualWeight()) , Float::sum);
+        
         this.totalValueOfGoods = inwardPdfDtos.stream().flatMap(inw -> inw.getInstructions().stream())
                 .reduce(0f,(sum,ins) -> sum+ins.getValueOfGoods(),Float::sum);
 
+        this.totalPrice = inwardPdfDtos.stream().flatMap(inw -> inw.getInstructions().stream())
+                .reduce(0f,(sum,ins) -> sum+Float.parseFloat( ins.getTotalPrice()) ,Float::sum);
+
+        for(InwardEntry kk : inwardEntries) {
+        	this.showAmtDcPdfFlg=kk.getParty().getShowAmtDcPdfFlg();
+        	this.partyGSTNo=kk.getParty().getGstNumber();
+        	this.partyAddress=kk.getParty().getAddress1().getDetails();
+        }
     }
 
     public String getCompanyName() {
@@ -101,4 +116,37 @@ public class DeliveryChallanPdfDto {
     public void setTotalValueOfGoods(Float totalValueOfGoods) {
         this.totalValueOfGoods = totalValueOfGoods;
     }
+
+	public Float getTotalPrice() {
+		return totalPrice;
+	}
+
+	public void setTotalPrice(Float totalPrice) {
+		this.totalPrice = totalPrice;
+	}
+
+	public String getShowAmtDcPdfFlg() {
+		return showAmtDcPdfFlg;
+	}
+
+	public void setShowAmtDcPdfFlg(String showAmtDcPdfFlg) {
+		this.showAmtDcPdfFlg = showAmtDcPdfFlg;
+	}
+
+	public String getPartyGSTNo() {
+		return partyGSTNo;
+	}
+
+	public void setPartyGSTNo(String partyGSTNo) {
+		this.partyGSTNo = partyGSTNo;
+	}
+
+	public String getPartyAddress() {
+		return partyAddress;
+	}
+
+	public void setPartyAddress(String partyAddress) {
+		this.partyAddress = partyAddress;
+	}
+    
 }

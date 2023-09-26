@@ -20,6 +20,9 @@ public class DeliveryDetails {
     @Column(name = "vehicleno")
     private String vehicleNo;
 
+    @Column(name = "packing_rate_id")
+    private Integer packingRateId;
+
     @Column(name = "totalweight")
     private Float totalWeight;
 
@@ -46,6 +49,15 @@ public class DeliveryDetails {
     @Column(name = "customerInvoiceDate")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private Date customerInvoiceDate;
+
+    @Column(name = "pdf_s3_url")
+    private String pdfS3Url;
+
+    @Column(name = "tally_status")
+    private String tallyStatus;
+
+    @Column(name = "tally_date")
+    private Date tallyDate;
 
     @OneToMany(mappedBy = "deliveryDetails", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH,
             CascadeType.REFRESH })
@@ -177,7 +189,34 @@ public class DeliveryDetails {
         deliveryResponseDto.setUpdatedBy(deliveryDetails.getUpdatedBy());
         deliveryResponseDto.setUpdatedOn(deliveryDetails.getUpdatedOn());
         deliveryResponseDto.setVehicleNo(deliveryDetails.getVehicleNo());
+        deliveryResponseDto.setPackingRateId( deliveryDetails.getPackingRateId());
 //        deliveryResponseDto.setInstruction(deliveryDetails.getInstruction().stream().map(i -> Instruction.valueOf(i)).collect(Collectors.toList()));
         return deliveryResponseDto;
     }
+
+	public Integer getPackingRateId() {
+		return packingRateId;
+	}
+
+	public void setPackingRateId(Integer packingRateId) {
+		this.packingRateId = packingRateId;
+	}
+
+	public String getPdfS3Url() {
+		return pdfS3Url;
+	}
+
+	public void setPdfS3Url(String pdfS3Url) {
+		this.pdfS3Url = pdfS3Url;
+	}
+
+	public String getTallyStatus() {
+		return tallyStatus;
+	}
+
+	public void setTallyStatus(String tallyStatus) {
+		this.tallyStatus = tallyStatus;
+	}
+    
+    
 }

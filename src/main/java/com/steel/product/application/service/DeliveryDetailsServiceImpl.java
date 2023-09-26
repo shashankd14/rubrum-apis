@@ -1,27 +1,42 @@
 package com.steel.product.application.service;
 
 import com.steel.product.application.dao.DeliveryDetailsRepository;
+import com.steel.product.application.dto.TallyBillingInvoiceListDTO;
 import com.steel.product.application.dto.delivery.DeliveryDto;
 import com.steel.product.application.dto.delivery.DeliveryItemDetails;
 import com.steel.product.application.dto.delivery.DeliveryPacketsDto;
+import com.steel.product.application.dto.delivery.TallyUpdateStatusDTO;
+import com.steel.product.application.dto.delivery.TallyUpdateSttsRequestDTO;
+import com.steel.product.application.dto.pricemaster.PriceCalculateDTO;
+import com.steel.product.application.dto.pricemaster.PriceCalculateResponseDTO;
+import com.steel.product.application.entity.AdminUserEntity;
 import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.entity.Status;
+import com.steel.product.application.entity.UserPartyMap;
+import com.steel.product.application.util.CommonUtil;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Timestamp;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(DeliveryDetails.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(DeliveryDetailsServiceImpl.class);
 
     private DeliveryDetailsRepository deliveryDetailsRepo;
 
@@ -31,13 +46,21 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 
     private InwardEntryService inwardEntryService;
 
-    @Autowired
-    public DeliveryDetailsServiceImpl(DeliveryDetailsRepository deliveryDetailsRepo, InstructionService instructionService, StatusService statusService, InwardEntryService inwardEntryService) {
-        this.deliveryDetailsRepo = deliveryDetailsRepo;
-        this.instructionService = instructionService;
-        this.statusService = statusService;
-        this.inwardEntryService = inwardEntryService;
-    }
+    private PriceMasterService priceMasterService;
+    
+	private CommonUtil commonUtil;
+
+	@Autowired
+	public DeliveryDetailsServiceImpl(DeliveryDetailsRepository deliveryDetailsRepo,
+			InstructionService instructionService, StatusService statusService, InwardEntryService inwardEntryService,
+			PriceMasterService priceMasterService, CommonUtil commonUtil) {
+		this.deliveryDetailsRepo = deliveryDetailsRepo;
+		this.instructionService = instructionService;
+		this.statusService = statusService;
+		this.inwardEntryService = inwardEntryService;
+		this.priceMasterService = priceMasterService;
+		this.commonUtil = commonUtil;
+	}
 
     @Override
     public List<Instruction> getAll() {
@@ -69,28 +92,30 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 
     @Override
     @Transactional
-    public DeliveryDetails save(DeliveryDto deliveryDto) {
+    public DeliveryDetails save(DeliveryDto deliveryDto, int userId) {
         LOGGER.info("in save delivery api");
         List<DeliveryItemDetails> deliveryItemDetails;
         DeliveryDetails delivery;
-            if(deliveryDto.getDeliveryId() != null){
-                LOGGER.info("Updating delivery with id "+deliveryDto.getDeliveryId());
-                delivery = getById(deliveryDto.getDeliveryId());
-                if(deliveryDto.getCustomerInvoiceNo() != null) {
-                    delivery.setCustomerInvoiceNo(deliveryDto.getCustomerInvoiceNo());
-                }
-                if(deliveryDto.getCustomerInvoiceDate() != null){
-                    delivery.setCustomerInvoiceDate(deliveryDto.getCustomerInvoiceDate());
-                }
-                deliveryDetailsRepo.save(delivery);
-                return delivery;
+        if(deliveryDto.getDeliveryId() != null){
+            LOGGER.info("Updating delivery with id "+deliveryDto.getDeliveryId());
+            delivery = getById(deliveryDto.getDeliveryId());
+            if(deliveryDto.getCustomerInvoiceNo() != null) {
+                delivery.setCustomerInvoiceNo(deliveryDto.getCustomerInvoiceNo());
             }
-            LOGGER.info("adding new delivery with id");
-            delivery = new DeliveryDetails();
+            if(deliveryDto.getCustomerInvoiceDate() != null){
+                delivery.setCustomerInvoiceDate(deliveryDto.getCustomerInvoiceDate());
+            }
+            deliveryDetailsRepo.save(delivery);
+            return delivery;
+        }
+        LOGGER.info("adding new delivery with id");
+        delivery = new DeliveryDetails();
 
-            delivery.setCreatedBy(1);
-            delivery.setUpdatedBy(1);
+        delivery.setCreatedBy(userId);
+        delivery.setUpdatedBy(userId);
         delivery.setVehicleNo(deliveryDto.getVehicleNo());
+        delivery.setTallyStatus("PENDING");
+        delivery.setPackingRateId( deliveryDto.getPackingRateId());
 
         deliveryItemDetails = deliveryDto.getDeliveryItemDetails();
 
@@ -98,11 +123,16 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
         Integer deliveredStatusId = 4;
         Status deliveredStatus = statusService.getStatusById(deliveredStatusId);
         Integer readyToDeliverStatusId = 3;
-        Map<Integer, String> instructionRemarksMap = deliveryItemDetails.stream().filter(d -> d.getRemarks() != null)
-                .collect(Collectors.toMap(d -> d.getInstructionId(), d -> d.getRemarks()));
-        List<Instruction> instructions = instructionService.findAllByInstructionIdInAndStatus(deliveryItemDetails.stream()
-                .map(d -> d.getInstructionId()).collect(Collectors.toList()), readyToDeliverStatusId);
+        
+        List<Integer> statusIdList=new ArrayList<>();
+        statusIdList.add(readyToDeliverStatusId);
+        statusIdList.add(deliveredStatusId);
+        Map<Integer, String> instructionRemarksMap = deliveryItemDetails.stream().filter(d -> d.getRemarks() != null).collect(Collectors.toMap(d -> d.getInstructionId(), d -> d.getRemarks()));
+        
+        List<Instruction> instructions = instructionService.findAllByInstructionIdInAndStatus(deliveryItemDetails.stream().map(d -> d.getInstructionId()).collect(Collectors.toList()), statusIdList);
+        
         instructions.forEach(ins -> ins.setStatus(deliveredStatus));
+        instructions.forEach(ins -> ins.setPriceDetails( priceMasterService.calculateInstructionPrice(ins, deliveryDto.getPackingRateId())));
         instructions = instructionService.saveAll(instructions);
 
         InwardEntry inwardEntry;
@@ -110,62 +140,63 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
         List<Instruction> groupInstructions = null;
         Set<Instruction> parentGroupInstructions = null;
         Set<Instruction> childrenInstructions;
-            Set<InwardEntry> inwardEntryList = new HashSet<>();
-            Integer parentGroupId;
-            boolean isAnyInstructionNotDelivered = true;
-            try {
-                for (Instruction instruction : instructions) {
-                    inwardEntry = instruction.getInwardId();
-                    parentInstruction = instruction.getParentInstruction();
-                    if (inwardEntry == null) {
-                        inwardEntry = parentInstruction.getInwardId();
+        Set<InwardEntry> inwardEntryList = new HashSet<>();
+        Integer parentGroupId;
+        boolean isAnyInstructionNotDelivered = true;
+        try {
+            for (Instruction instruction : instructions) {
+                inwardEntry = instruction.getInwardId();
+                parentInstruction = instruction.getParentInstruction();
+                if (inwardEntry == null) {
+                    inwardEntry = parentInstruction.getInwardId();
+                }
+                parentGroupId = instruction.getParentGroupId();
+                inStockWeight = inwardEntry.getInStockWeight();
+                if (parentGroupId != null) {
+                    LOGGER.info("instruction has inward id,parentGroupId " + inwardEntry.getInwardEntryId() + " " + parentGroupId);
+                    if(parentGroupInstructions == null || !parentGroupInstructions.contains(instruction)) {
+                        parentGroupInstructions = new HashSet<>();
+                        parentGroupInstructions.addAll(instructionService.findAllByParentGroupId(parentGroupId));
+                        LOGGER.info("total parent group instructions "+parentGroupInstructions.size());
                     }
-                    parentGroupId = instruction.getParentGroupId();
-                    inStockWeight = inwardEntry.getInStockWeight();
-                    if (parentGroupId != null) {
-                        LOGGER.info("instruction has inward id,parentGroupId " + inwardEntry.getInwardEntryId() + " " + parentGroupId);
-                        if(parentGroupInstructions == null || !parentGroupInstructions.contains(instruction)) {
-                            parentGroupInstructions = new HashSet<>();
-                            parentGroupInstructions.addAll(instructionService.findAllByParentGroupId(parentGroupId));
-                            LOGGER.info("total parent group instructions "+parentGroupInstructions.size());
+                    isAnyInstructionNotDelivered = parentGroupInstructions.stream().anyMatch(ins -> !ins.getStatus().equals(deliveredStatus));
+                    if (!isAnyInstructionNotDelivered) {
+                        if(groupInstructions == null || (groupInstructions != null && !groupInstructions.isEmpty() &&!groupInstructions.get(0).getGroupId().equals(parentGroupId))) {
+                            groupInstructions = instructionService.findAllByGroupId(parentGroupId);
+                            groupInstructions.forEach(ins -> ins.setStatus(deliveredStatus));
                         }
-                        isAnyInstructionNotDelivered = parentGroupInstructions.stream().anyMatch(ins -> !ins.getStatus().equals(deliveredStatus));
-                        if (!isAnyInstructionNotDelivered) {
-                            if(groupInstructions == null || (groupInstructions != null && !groupInstructions.isEmpty() &&!groupInstructions.get(0).getGroupId().equals(parentGroupId))) {
-                                groupInstructions = instructionService.findAllByGroupId(parentGroupId);
-                                groupInstructions.forEach(ins -> ins.setStatus(deliveredStatus));
-                            }
-                        }
+                    }
+                    weightToDeliver = instruction.getActualWeight();
+                } else if (parentInstruction != null) {
+                    LOGGER.info("instruction has parent instruction id " + instruction.getParentInstruction().getInstructionId());
                         weightToDeliver = instruction.getActualWeight();
-                    } else if (parentInstruction != null) {
-                        LOGGER.info("instruction has parent instruction id " + instruction.getParentInstruction().getInstructionId());
-                            weightToDeliver = instruction.getActualWeight();
-                            childrenInstructions = parentInstruction.getChildInstructions();
-                            LOGGER.info("parent instruction has " + childrenInstructions.size() + " children");
-                            isAnyInstructionNotDelivered = childrenInstructions.stream().anyMatch(ins -> !ins.getStatus().equals(deliveredStatus));
-                            if (!isAnyInstructionNotDelivered) {
-                                LOGGER.info("setting parent instruction status delivered as all children of parent instruction " + parentInstruction.getInstructionId() + " have status delivered");
-                                parentInstruction.setStatus(deliveredStatus);
-                            }
-                            LOGGER.info("no status change for parent instruction " + parentInstruction.getInstructionId() + " as all children not delivered");
+                        childrenInstructions = parentInstruction.getChildInstructions();
+                        LOGGER.info("parent instruction has " + childrenInstructions.size() + " children");
+                        isAnyInstructionNotDelivered = childrenInstructions.stream().anyMatch(ins -> !ins.getStatus().equals(deliveredStatus));
+                        if (!isAnyInstructionNotDelivered) {
+                            LOGGER.info("setting parent instruction status delivered as all children of parent instruction " + parentInstruction.getInstructionId() + " have status delivered");
+                            parentInstruction.setStatus(deliveredStatus);
+                        }
+                        LOGGER.info("no status change for parent instruction " + parentInstruction.getInstructionId() + " as all children not delivered");
 
+                } else {
+                	
+                    LOGGER.info("instruction has inward id " + inwardEntry.getInwardEntryId());
+                	//parentWeight = inwardEntry.getInStockWeight();
+                    if(instruction.getProcess().getProcessId() == 7 ) {
+                        weightToDeliver = instruction.getPlannedWeight();
                     } else {
-                        LOGGER.info("instruction has inward id " + inwardEntry.getInwardEntryId());
-                    	//parentWeight = inwardEntry.getInStockWeight();
-                        if(instruction.getProcess().getProcessId() == 7 ) {
-                            weightToDeliver = instruction.getPlannedWeight();
-                        } else {
-                            weightToDeliver = instruction.getActualWeight();
-                        }
-                        childrenInstructions = instruction.getChildInstructions();
-                        if (childrenInstructions != null && !childrenInstructions.isEmpty()) {
-                            LOGGER.info("inward id" + inwardEntry.getInwardEntryId() + " is a parent instruction with " + childrenInstructions.size() + " children");
-                            if (childrenInstructions.stream().anyMatch(ins -> !ins.getStatus().equals(deliveredStatus))) {
-                                throw new RuntimeException("instruction with id " + instruction.getInstructionId() + " has undelivered children instructions");
-                            }
-
-                        }
+                        weightToDeliver = instruction.getActualWeight();
                     }
+                    childrenInstructions = instruction.getChildInstructions();
+                    if (childrenInstructions != null && !childrenInstructions.isEmpty()) {
+                        LOGGER.info("inward id" + inwardEntry.getInwardEntryId() + " is a parent instruction with " + childrenInstructions.size() + " children");
+                        if (childrenInstructions.stream().anyMatch(ins -> !ins.getStatus().equals(deliveredStatus))) {
+                            throw new RuntimeException("instruction with id " + instruction.getInstructionId() + " has undelivered children instructions");
+                        }
+
+                    }
+                }
 //                    else {
 //                        LOGGER.error("No inward id or parent instruction id found in instruction with id " + instruction.getInstructionId());
 //                        throw new RuntimeException("No inward id or parent instruction id found in instruction with id " + instruction.getInstructionId());
@@ -174,29 +205,28 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 //                    LOGGER.error("weight to deliver "+weightToDeliver+" exceeds parent weight "+parentWeight);
 //                    throw new RuntimeException("weight to deliver "+weightToDeliver+" exceeds parent weight "+parentWeight);
 //                }
-                    if (weightToDeliver > inStockWeight) {
-                        LOGGER.error("weight to deliver " + weightToDeliver + " exceeds in stock weight " + inStockWeight);
-                        throw new RuntimeException("weight to deliver " + weightToDeliver + " exceeds in stock weight " + inStockWeight);
-                    }
-                    inwardEntry.setInStockWeight(inStockWeight - weightToDeliver);
-                    if (Math.abs(inwardEntry.getInStockWeight()) < 1f) {
-                        inwardEntry.setStatus(deliveredStatus);
-                    }
-                    inwardEntryList.add(inwardEntry);
-                    instruction.setRemarks(instructionRemarksMap.get(instruction.getInstructionId()));
-
+                if (weightToDeliver > inStockWeight) {
+                    LOGGER.error("weight to deliver " + weightToDeliver + " exceeds in stock weight " + inStockWeight);
+                    throw new RuntimeException("weight to deliver " + weightToDeliver + " exceeds in stock weight " + inStockWeight);
                 }
-            }catch (Exception e){
-                e.printStackTrace();
-                throw e;
+                inwardEntry.setInStockWeight(inStockWeight - weightToDeliver);
+                if (Math.abs(inwardEntry.getInStockWeight()) < 1f) {
+                    inwardEntry.setStatus(deliveredStatus);
+                }
+                inwardEntryList.add(inwardEntry);
+                instruction.setRemarks(instructionRemarksMap.get(instruction.getInstructionId()));
             }
-            delivery.addAllInstructions(instructions);
-            float totalWeight = deliveryItemDetails.stream().reduce(0f,(sum,d) -> sum + d.getWeight().floatValue(),Float::sum);
-            delivery.setTotalWeight(totalWeight);
-            LOGGER.info("saving "+inwardEntryList.size()+" inward entries");
-            inwardEntryService.saveAll(inwardEntryList);
-            LOGGER.info("saving delivery details");
-            deliveryDetailsRepo.save(delivery);
+        }catch (Exception e){
+            e.printStackTrace();
+            throw e;
+        }
+        delivery.addAllInstructions(instructions);
+        float totalWeight = deliveryItemDetails.stream().reduce(0f,(sum,d) -> sum + d.getWeight().floatValue(),Float::sum);
+        delivery.setTotalWeight(totalWeight);
+        LOGGER.info("saving "+inwardEntryList.size()+" inward entries");
+        inwardEntryService.saveAll(inwardEntryList);
+        LOGGER.info("saving delivery details");
+        deliveryDetailsRepo.save(delivery);
         return delivery;
     }
 
@@ -262,7 +292,6 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
             deliveryDetails.removeInstruction(ins);
         }
         deliveryDetailsRepo.deleteById(deliveryId);
-
     }
 
     @Override
@@ -270,7 +299,32 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
         List<DeliveryDetails> inwardEntryList = deliveryDetailsRepo.findAllDeliveries();
         LOGGER.info("Delivery details list size "+inwardEntryList.size());
         return inwardEntryList.stream().map(inw -> new DeliveryPacketsDto(inw)).collect(Collectors.toList());
-
+    }
+    
+    @Override
+    public Page<DeliveryDetails> deliveryListPagination(int pageNo, int pageSize, String searchText, String partyId) {
+    	Pageable pageable = PageRequest.of((pageNo-1), pageSize);
+    	
+		if(partyId!=null && partyId.length()>0) {
+	    	Page<DeliveryDetails> deliveryList = deliveryDetailsRepo.findAllDeliveries(searchText, Integer.parseInt(partyId), pageable);
+	        LOGGER.info("Delivery details list size "+deliveryList.getSize());
+	        return deliveryList;
+		} else {
+			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
+			if(adminUserEntity.getUserPartyMap()!=null && adminUserEntity.getUserPartyMap().size()>0) {
+				List<Integer> partyIds=new ArrayList<>();
+				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
+					partyIds.add(userPartyMap.getPartyId());
+					LOGGER.info("In partyIds === "+partyIds);
+				}
+				Page<DeliveryDetails> deliveryList = deliveryDetailsRepo.findAllDeliveries(searchText, partyIds, pageable);
+				return deliveryList;
+			} else {
+				Page<DeliveryDetails> deliveryList = deliveryDetailsRepo.findAllDeliveries(searchText, pageable);
+		        LOGGER.info("Delivery details list size "+deliveryList.getSize());
+		        return deliveryList;
+			}
+		}
     }
 
     @Override
@@ -283,5 +337,230 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
         return deliveryDetailsRepo.findInstructionByInwardIdAndInstructionId(inwardId,instructionId);
     }
 
+	@Override
+	public Page<DeliveryDetails> findAllDeliveriesForBillingNew(int pageNo, int pageSize) {
+		//if (pageSize > 10) {
+			pageSize = 20;
+		//}
+		Pageable pageable = PageRequest.of((pageNo - 1), pageSize);
+		Page<DeliveryDetails> page = deliveryDetailsRepo.findAllDeliveriesForBillingNew(pageable);
+		return page;
+	}
+	
+	@Override
+	public Page<DeliveryDetails> billingInvoiceList(int pageNo, int pageSize) {
+		//if (pageSize > 10) {
+			pageSize = 20;
+		//}
+		List<DeliveryDetails> billingInvoiceList = new ArrayList<>();
+		Pageable pageable = PageRequest.of((pageNo - 1), pageSize);
+		List<Object[]> kk = deliveryDetailsRepo.findAllDeliveriesForBilling(pageable);
+
+		for (Object[] objs : kk) {
+			DeliveryDetails invoiceListDTO = new DeliveryDetails();
+			invoiceListDTO.setDeliveryId( objs[0] != null ? (Integer) objs[0] : null);
+			billingInvoiceList.add(invoiceListDTO);
+		}
+		
+		Page<DeliveryDetails> page = new PageImpl<>(billingInvoiceList);
+		return page;
+	}
+
+	@Override
+	public List<TallyBillingInvoiceListDTO> billingDCDetails(List<Integer> dcIds) {
+		List<TallyBillingInvoiceListDTO> billingInvoiceList = new ArrayList<>();
+
+		List<Object[]> results = deliveryDetailsRepo.billingInvoiceList(dcIds);
+		for (Object[] objs : results) {
+			TallyBillingInvoiceListDTO invoiceListDTO = new TallyBillingInvoiceListDTO();
+			invoiceListDTO.setVoucherRef(objs[0] != null ? (Integer) objs[0] : null);
+			invoiceListDTO.setDcNo(objs[1] != null ? (Integer) objs[1] : null);
+			invoiceListDTO.setDcDate(objs[2] != null ? (String) objs[2] : null);
+			invoiceListDTO.setVoucherType(objs[3] != null ? (String) objs[3] : null);
+			invoiceListDTO.setCustomerCode(objs[4] != null ? (String) objs[4] : null);
+			invoiceListDTO.setCustomerName(objs[5] != null ? (String) objs[5] : null);
+			invoiceListDTO.setCustomerMobileNo(objs[6] != null ? (String) objs[6] : null);
+			invoiceListDTO.setUnderGroup(objs[7] != null ? (String) objs[7] : null);
+			invoiceListDTO.setAddress1("" + objs[8] != null ? (String) objs[8] : null);
+			invoiceListDTO.setAddress2("" + objs[9] != null ? (String) objs[9] : null);
+			invoiceListDTO.setAddress3("" + objs[10] != null ? (String) objs[10] : null);
+
+			if(!(invoiceListDTO.getAddress1()!=null && invoiceListDTO.getAddress1().length() >0 )) {
+				invoiceListDTO.setAddress1("");
+			}
+			if(!(invoiceListDTO.getAddress2()!=null && invoiceListDTO.getAddress2().length() >0 )) {
+				invoiceListDTO.setAddress2("");
+			}
+			if(!(invoiceListDTO.getAddress3()!=null && invoiceListDTO.getAddress3().length() >0 )) {
+				invoiceListDTO.setAddress3("");
+			}
+			invoiceListDTO.setCity("" + objs[11] != null ? (String) objs[11] : null);
+			invoiceListDTO.setPincode( objs[12] != null ? (String) objs[12] : null);
+			invoiceListDTO.setState(objs[13] != null ? (String) objs[13] : null);
+			invoiceListDTO.setGstno(objs[14] != null ? (String) objs[14] : null);
+			invoiceListDTO.setProductNo(objs[15] != null ? (String) objs[15] : null);
+			invoiceListDTO.setProductDesc(objs[16] != null ? (String) objs[16] : null);
+			invoiceListDTO.setCoilNo(objs[17] != null ? (String) objs[17] : null);
+			invoiceListDTO.setCustomerBatchNo(objs[18] != null ? (String) objs[18] : null);
+			invoiceListDTO.setMaterialGrade(objs[19] != null ? (String) objs[19] : null);
+			invoiceListDTO.setMaterialDesc(objs[20] != null ? (String) objs[20] : null);
+			invoiceListDTO.setHsnCode(objs[21] != null ? (String) objs[21] : null);
+			Float fThickness = objs[22] != null ? (Float) objs[22] : null;
+			Float actualWidth = objs[23] != null ? (Float) objs[23] : null;
+			Float actualLength = objs[24] != null ? (Float) objs[24] : null;
+			Float actualWeight = objs[27] != null ? (Float) objs[27] : null;
+			invoiceListDTO.setThickness(fThickness);
+			invoiceListDTO.setWidth(actualWidth);
+			invoiceListDTO.setLength(actualLength);
+			invoiceListDTO.setGodown(objs[25] != null ? (String) objs[25] : null);
+			invoiceListDTO.setUom(objs[26] != null ? (String) objs[26] : null);
+			BigDecimal quantity = new BigDecimal(Float.toString(actualWeight));  
+			invoiceListDTO.setQuantity(quantity.divide(BigDecimal.valueOf(1000)).setScale(3, RoundingMode.HALF_EVEN));
+			Integer packingRateId = objs[28] != null ? (Integer) objs[28] : 0;
+			Integer partyId = objs[29] != null ? (Integer) objs[29] : 0;
+			Integer processId = objs[30] != null ? (Integer) objs[30] : 0;
+			Integer materialGradeId = objs[31] != null ? (Integer) objs[31] : 0;
+			//String priceDetails = objs[32] != null ? (String) objs[32] : "";
+			Integer plannedNoOfPieces = objs[33] != null ? (Integer) objs[33] : 0;
+			Integer noofPlans = objs[34] != null ? ((BigInteger) objs[34]).intValue() : 0;
+			Integer partDetailsId = objs[35] != null ? (Integer) objs[35] : 0;
+			//String companyGSTIN = objs[36] != null ? (String) objs[36] : "29";
+			//String partyGSTIN = objs[37] != null ? (String) objs[37] : "29";
+
+			PriceCalculateDTO priceCalculateDTO = priceMasterService.calculateInstructionWisePrice(partyId,
+					BigDecimal.valueOf(fThickness), processId, materialGradeId, packingRateId,
+					invoiceListDTO.getQuantity(), actualLength, plannedNoOfPieces, noofPlans, partDetailsId.longValue());
+
+			BigDecimal amount =new BigDecimal("0.00");
+			
+			if(priceCalculateDTO!=null && priceCalculateDTO.getBasePrice() !=null) {
+				//invoiceListDTO.setBasePrice( priceCalculateDTO.getBasePrice());
+				amount=amount.add( priceCalculateDTO.getBasePrice());
+			}
+			if(priceCalculateDTO!=null && priceCalculateDTO.getAdditionalPrice() != null) {
+				//invoiceListDTO.setAdditionalPrice( priceCalculateDTO.getAdditionalPrice());
+				amount=amount.add( priceCalculateDTO.getAdditionalPrice());
+			}
+			if(priceCalculateDTO!=null && priceCalculateDTO.getPackingPrice() != null) {
+				//invoiceListDTO.setPackingRate(  priceCalculateDTO.getPackingPrice());
+				amount=amount.add(priceCalculateDTO.getPackingPrice());
+			}
+			invoiceListDTO.setGstPercentage(new BigDecimal("12.00"));
+
+			BigDecimal totalAmount = new BigDecimal(BigInteger.ZERO, 3);
+			if(amount!=null && amount.compareTo(BigDecimal.ZERO) > 0) {
+				amount = amount.setScale(3, RoundingMode.HALF_EVEN); 
+				invoiceListDTO.setRate(amount);
+				totalAmount = (amount.multiply(BigDecimal.valueOf(actualWeight)));
+				totalAmount = totalAmount.divide(BigDecimal.valueOf(1000));
+				//invoiceListDTO.setAmount(totalAmount);
+				invoiceListDTO.setTotalPrice(totalAmount.setScale(3, RoundingMode.HALF_EVEN));
+				//BigDecimal grandTotal = new BigDecimal(BigInteger.ZERO,  3);
+				//grandTotal=grandTotal.add(totalAmount).setScale(3, RoundingMode.HALF_EVEN);
+				//invoiceListDTO.setTotal( grandTotal);
+			} else {
+				invoiceListDTO.setRate(new BigDecimal(BigInteger.ZERO,  2));
+				invoiceListDTO.setTotalPrice(new BigDecimal(BigInteger.ZERO,  2));
+			}
+			
+			invoiceListDTO.setLedger1("");
+			invoiceListDTO.setLedger2("");
+			invoiceListDTO.setLedger3("");
+			invoiceListDTO.setRemarks("");
+			billingInvoiceList.add(invoiceListDTO);
+		}
+		return billingInvoiceList;
+	}
+	
+	@Override
+    public PriceCalculateResponseDTO validatePriceMapping(DeliveryDto deliveryDto, Integer userId) {
+		PriceCalculateResponseDTO priceCalculateResponseDTO= new PriceCalculateResponseDTO();
+        try {
+			LOGGER.info("in validatePriceMapping delivery api");
+			List<DeliveryItemDetails> deliveryItemDetails = deliveryDto.getDeliveryItemDetails();
+			boolean mainStts = false;
+			List<PriceCalculateDTO> priceDetailsList=new ArrayList<>();
+			List<Integer> statusIdList=new ArrayList<>();
+			statusIdList.add(4);statusIdList.add(3);
+			
+			List<Instruction> instructions = instructionService.findAllByInstructionIdInAndStatus(deliveryItemDetails.stream().map(d -> d.getInstructionId()).collect(Collectors.toList()), statusIdList);
+			
+			for (Instruction instruction : instructions) {
+				boolean innerStts = false;
+				InwardEntry inwardEntry = instruction.getInwardId();
+				
+				/*PriceCalculateDTO priceCalculateDTO = priceMasterService.calculateInstructionWisePrice(
+						inwardEntry.getParty().getnPartyId(), BigDecimal.valueOf(inwardEntry.getfThickness()),
+						instruction.getProcess().getProcessId(), inwardEntry.getMaterialGrade().getGradeId(),
+						deliveryDto.getPackingRateId(), instruction.getActualWeight(), instruction.getActualLength(),
+						instruction.getPlannedNoOfPieces(), inwardEntry.getInstructions().size(),
+						instruction.getPartDetails().getId());*/
+				
+				PriceCalculateDTO priceCalculateDTO = priceMasterService.calculateInstructionWisePrice(instruction, deliveryDto.getPackingRateId());
+
+				priceCalculateDTO.setCoilNo(inwardEntry.getCoilNumber());
+				priceCalculateDTO.setCustomerBatchNo(inwardEntry.getCustomerBatchId());
+				priceCalculateDTO.setInstructionId(instruction.getInstructionId());
+				priceCalculateDTO.setThickness(BigDecimal.valueOf(inwardEntry.getfThickness()));
+				priceCalculateDTO.setMatGradeName(inwardEntry.getMaterialGrade().getGradeName());
+				priceCalculateDTO.setActualWeight(instruction.getActualWeight());
+
+				BigDecimal amount =new BigDecimal("0.00");
+				
+				if(priceCalculateDTO!=null && priceCalculateDTO.getBasePrice() !=null) {
+					amount=amount.add(priceCalculateDTO.getBasePrice());
+				}
+				if(priceCalculateDTO!=null && priceCalculateDTO.getAdditionalPrice() != null) {
+					amount=amount.add(priceCalculateDTO.getAdditionalPrice());
+				}
+				if(priceCalculateDTO!=null && priceCalculateDTO.getPackingPrice() != null) {
+					amount=amount.add(priceCalculateDTO.getPackingPrice() );
+				}
+				if(amount!=null ) {
+					priceCalculateDTO.setRate(amount.setScale(3, RoundingMode.HALF_EVEN));
+					BigDecimal totalAmount = new BigDecimal(BigInteger.ZERO,  2);
+					totalAmount = (amount.multiply(BigDecimal.valueOf(priceCalculateDTO.getActualWeight())));
+					totalAmount = totalAmount.divide(BigDecimal.valueOf(1000));
+					priceCalculateDTO.setTotalPrice(totalAmount.setScale(3, RoundingMode.HALF_EVEN));
+				}
+				if (priceCalculateDTO.getBasePrice() != null && priceCalculateDTO.getBasePrice().compareTo(BigDecimal.ZERO) > 0) {
+					//if (priceCalculateDTO.getPackingPrice() != null && priceCalculateDTO.getPackingPrice().compareTo(BigDecimal.ZERO) > 0) {
+						innerStts = true;
+					//}
+				}
+				priceDetailsList.add(priceCalculateDTO);
+				mainStts = innerStts;
+			}
+			
+			priceCalculateResponseDTO.setValidationStatus(mainStts);
+			if(priceCalculateResponseDTO.isValidationStatus()) {
+			    priceCalculateResponseDTO.setRemarks("Thickness range found for all selected packets");
+			} else {
+			    priceCalculateResponseDTO.setRemarks("This thickness range already has a value (rate) defined. Please recheck.");
+			}
+			priceCalculateResponseDTO.setPriceDetailsList(priceDetailsList);
+      
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return priceCalculateResponseDTO;
+	}
+
+	@Override
+	@Transactional
+	public DeliveryDetails updateTallyStatus(TallyUpdateSttsRequestDTO deliveryDto) {
+		LOGGER.info("in updateTallyStatus");
+		List<Integer> dcList= new ArrayList<>();
+		try {
+			for (TallyUpdateStatusDTO tallyUpdateStatusDTO : deliveryDto.getDcList()) {
+				dcList.add( tallyUpdateStatusDTO.getDcId() );
+			}
+			deliveryDetailsRepo.updateTallyStatus(dcList);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
+		}
+		return null;
+	}
 
 }

@@ -1,19 +1,43 @@
 package com.steel.product.application.service;
 
+import com.steel.product.application.dao.FGReportViewRepository;
+import com.steel.product.application.dao.RMReportViewRepository;
+import com.steel.product.application.dao.StockReportViewRepository;
+import com.steel.product.application.dao.StockSummaryReportViewRepository;
+import com.steel.product.application.dao.WIPReportViewRepository;
 import com.steel.product.application.dto.report.StockReportRequest;
+import com.steel.product.application.entity.FGReportViewEntity;
 import com.steel.product.application.entity.InwardEntry;
+import com.steel.product.application.entity.RMReportViewEntity;
+import com.steel.product.application.entity.StockReportViewEntity;
+import com.steel.product.application.entity.StockSummaryReportViewEntity;
+import com.steel.product.application.entity.WIPReportViewEntity;
 import com.steel.product.application.util.CSVUtil;
 import com.steel.product.application.util.EmailUtil;
+
+import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
+import java.io.FileOutputStream;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Service
 public class ReportsServiceImpl implements ReportsService {
@@ -21,14 +45,32 @@ public class ReportsServiceImpl implements ReportsService {
     private final static Logger LOGGER = LoggerFactory.getLogger(ReportsServiceImpl.class);
 
     private final InwardEntryService inwardEntryService;
+
+	@Autowired
+	StockReportViewRepository stockReportViewRepository;
+	
+	@Autowired
+	FGReportViewRepository fgReportViewRepository;
+	
+	@Autowired
+	WIPReportViewRepository wipReportViewRepository;
+	
+	@Autowired
+	RMReportViewRepository rmReportViewRepository;
+	
+	@Autowired
+	StockSummaryReportViewRepository stockSummaryReportViewRepository;
+	
     private final InstructionService instructionService;
     private final CSVUtil csvUtil;
     private final EmailUtil emailUtil;
-    private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 
     @Value("#{'${stock.report.headers}'.split(',')}")
     private List<String> stockReportHeaders;
 
+	@Autowired 
+	Environment env;
+	
     @Autowired
     public ReportsServiceImpl(InwardEntryService inwardEntryService, InstructionService instructionService, CSVUtil csvUtil, EmailUtil emailUtil) {
         this.inwardEntryService = inwardEntryService;
@@ -58,121 +100,475 @@ public class ReportsServiceImpl implements ReportsService {
         }
         return "email sent ok !!";
     }
+    
+	@Override
+	public boolean createStockReport(int partyId, String strDate, MimeMessageHelper helper ) {
 
-//    @Override
-//    public void uploadCSV() throws IOException, ParseException {
-//        FileReader in = new FileReader("RM-REPORT-CSV.csv");
-////        CSVParser parser = new CSVParser(br, CSVFormat.DEFAULT);
-//        Iterable<CSVRecord> records = CSVFormat.RFC4180.withFirstRecordAsHeader().parse(in);
-////        SimpleDateFormat sdf1 = new SimpleDateFormat("dd-MM-yyyy");
-////        SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd");
-//        for(CSVRecord rec:records){
-//            InwardDto dto = new InwardDto();
-//            dto.setCoilNumber(rec.get(0));
-//            dto.setBatchNumber(rec.get(1));
-//            dto.setCustomerBatchId(rec.get(2));
-//            dto.setInwardDate(rec.get(3)+" 00:00:00");
-//            String matDesc = rec.get(4);
-//            Material mat = materialDescriptionService.findByDesc(matDesc);
-//            dto.setThickness(Float.parseFloat(rec.get(5)));
-//            dto.setWidth(Float.parseFloat(rec.get(6)));
-//            dto.setPresentWeight(Float.parseFloat(rec.get(7)));
-//            float denominator = dto.getThickness() * (dto.getWidth() / 1000f) * 7.85f;
-//            float lengthUnprocessed = dto.getPresentWeight() / denominator;
-//            dto.setLength(lengthUnprocessed);
-//            dto.setGrossWeight(Float.parseFloat(rec.get(8)));
-//            dto.setInvoiceNumber(rec.get(9));
-//            dto.setInvoiceDate(rec.get(10)+" 00:00:00");
-//            dto.setParentCoilNumber(rec.get(11));
-//            String gradeName = rec.get(12);
-//            MaterialGrade mg = materialGradeRepo.findByGradeName(gradeName);
-//            dto.setTestCertificateNumber(rec.get(13));
-//            dto.setValueOfGoods(Float.parseFloat(rec.get(14)));
-//            dto.setPurposeType(rec.get(15));
-//            dto.setRemarks(rec.get(16));
-//            if(mat == null){
-//                mat = new Material();
-//                mat.setDescription(matDesc);
-//                mat = materialDescriptionRepository.save(mat);
-//            }
-//            dto.setMaterialId(mat.getMatId());
-//            if(mg == null){
-//                mg = new MaterialGrade();
-//                mg.setGradeName(gradeName);
-//                mg.setParentMaterial(mat);
-//                materialGradeRepo.save(mg);
-//            }
-//            dto.setMaterialGradeId(mg.getGradeId());
-//            dto.setPartyId(8);
-////            String d = "2022-01-06"+" 00:00:00";
-////            dto.setInwardDate(d);
-////            dto.setBillDate(d);
-//            dto.setCreatedBy(1);
-//            dto.setUpdatedBy(1);
-//            this.saveInwardEntry(dto);
-//
-//
-//        }
-//    }
-//
-//    public void saveInwardEntry(@ModelAttribute InwardDto inward) throws ParseException {
-//        InwardEntry inwardEntry = new InwardEntry();
-//            inwardEntry.setInwardEntryId(0);
-//            inwardEntry.setPurposeType(inward.getPurposeType());
-//            inwardEntry.setParty(this.partyDetailsService.getPartyById(inward.getPartyId()));
-//            inwardEntry.setCoilNumber(inward.getCoilNumber());
-//            inwardEntry.setBatchNumber(inward.getBatchNumber());
-//            inwardEntry.setdReceivedDate(sdf.parse(inward.getInwardDate()));
-//            inwardEntry.setInStockWeight(inward.getPresentWeight());
-//
-//            if(inward.getBillDate()!=null)
-//                inwardEntry.setdBillDate(Timestamp.valueOf(inward.getBillDate()));
-//
-//            inwardEntry.setvLorryNo(inward.getVehicleNumber());
-//            inwardEntry.setvInvoiceNo(inward.getInvoiceNumber());
-//            inwardEntry.setdInvoiceDate(sdf.parse(inward.getInvoiceDate()));
-//
-//            inwardEntry.setCustomerCoilId(String.valueOf(inward.getPartyId()));
-//            inwardEntry.setCustomerInvoiceNo(inward.getInvoiceNumber());
-//            inwardEntry.setCustomerBatchId(inward.getCustomerBatchId());
-//
-//
-//            //inwardEntry.setCustomerInvoiceDate(Timestamp.valueOf(inward.getCustomerInvoiceDate()));
-//
-//            inwardEntry.setMaterial(this.matDescService.getMatById(inward.getMaterialId()));
-//            inwardEntry.setMaterialGrade(matGradeService.getById(inward.getMaterialGradeId()));
-//
-//            inwardEntry.setfWidth(inward.getWidth());
-//            inwardEntry.setfThickness(inward.getThickness());
-//            inwardEntry.setfLength(inward.getLength());
-//            inwardEntry.setAvailableLength(inward.getLength());
-//            inwardEntry.setfQuantity(inward.getPresentWeight());
-//            inwardEntry.setGrossWeight(inward.getGrossWeight());
-//            inwardEntry.setTestCertificateNumber(inward.getTestCertificateNumber());
-//
-//            //inwardEntry.setStatus(this.statusService.getStatusById(inward.getStatusId()));
-//            inwardEntry.setStatus(this.statusService.getStatusById(1));
-//
-//            inwardEntry.setvProcess(inward.getProcess());
-//            inwardEntry.setFpresent(inward.getPresentWeight());
-//            inwardEntry.setValueOfGoods(inward.getValueOfGoods());
-//
-//            inwardEntry.setBilledweight(0);
-//            inwardEntry.setvParentBundleNumber(0);
-//
-//            inwardEntry.setRemarks(inward.getRemarks());
-//            inwardEntry.setParentCoilNumber(inward.getParentCoilNumber());
-//
-//            inwardEntry.setIsDeleted(Boolean.valueOf(false));
-//            inwardEntry.setCreatedOn(new Date());
-//            inwardEntry.setUpdatedOn(new Date());
-//
-//            inwardEntry.setCreatedBy(this.userService.getUserById(inward.getCreatedBy()));
-//            inwardEntry.setUpdatedBy(this.userService.getUserById(inward.getUpdatedBy()));
-//            inwardEntryService.saveEntry(inwardEntry);
-//
-//
-//    }
+		boolean attachmentRequired=true;
+		try {
+			// Create blank workbook
+			XSSFWorkbook workbook = new XSSFWorkbook();
+			
+			CellStyle borderStyle = workbook.createCellStyle();
+			borderStyle.setBorderBottom(BorderStyle.THIN);
+		    borderStyle.setBorderLeft(BorderStyle.THIN);
+			borderStyle.setBorderRight(BorderStyle.THIN);
+			borderStyle.setBorderTop(BorderStyle.THIN);
+			borderStyle.setAlignment(HorizontalAlignment.CENTER);
+			
+			// Create a blank sheet
+			XSSFSheet spreadsheet = workbook.createSheet("Stock_Report");
 
+			// Create row object
+			XSSFRow row;
 
+			Map<String, Object[]> acctStatementMap = getStockReportDetails(partyId);
+
+			// Iterate over data and write to sheet
+			Set<String> keyid = acctStatementMap.keySet();
+			int rowid = 0;
+
+			for (String key : keyid) {
+				row = spreadsheet.createRow(rowid++);
+				Object[] objectArr = acctStatementMap.get(key);
+				int cellid = 0;
+
+				for (Object obj : objectArr) {
+					Cell cell = row.createCell(cellid++);
+				    cell.setCellStyle(borderStyle);
+					cell.setCellValue((String) obj);
+				}
+			
+			}
+			
+            String baseDirectory = env.getProperty("email.folderpath")+File.separator;
+            //System.out.println("folderpath -- "+baseDirectory);
+            
+			File outputPojoDirectory = new File(baseDirectory);
+			outputPojoDirectory.mkdirs();
+			
+			File fullPath = new File(baseDirectory +File.separator+"StockReport_"+strDate+".xlsx");
+			
+			FileOutputStream out = new FileOutputStream(fullPath);
+			workbook.write(out);
+			
+			FileSystemResource file = new FileSystemResource(fullPath);
+			if(acctStatementMap!=null && acctStatementMap.size()>1) {
+				attachmentRequired=false;
+				helper.addAttachment("StockReport_" + strDate + ".xlsx", file);
+			}
+			
+			out.close();
+			fullPath.deleteOnExit();
+			//System.out.println("File Created At -- " + baseDirectory);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return attachmentRequired;
+	}
+
+	public Map<String, Object[]> getStockReportDetails(int partyId) {
+
+		Map<String, Object[]> acctStatementMap = new LinkedHashMap<>();
+
+		try {
+			List<StockReportViewEntity> partyList = stockReportViewRepository.findByPartyId(partyId);
+
+			acctStatementMap.put("1", new Object[] { "CoilNumber", "CustomerBatchId", "MaterialDesc", "MaterialGrade", "Thickness", "Width", "Length", "NetWeight", "UnprocessedWeight", "InStockWeight", "InwardStatus" });
+
+			int cnt = 1;
+			for (StockReportViewEntity kk : partyList) {
+				cnt++;
+
+				acctStatementMap.put("" + cnt,
+						new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getMaterialDesc(),
+								kk.getMaterialGrade(), kk.getFthickness(), kk.getFwidth(), kk.getFlength(),
+								kk.getNetWeight(), kk.getUnProcessedWeight(), kk.getInStockWeight(),kk.getInwardStatus()});
+			}
+		} catch (Exception e) {
+			LOGGER.error("Error at getStockReportDetails " + e.getMessage());
+		}
+		return acctStatementMap;
+	}
+
+	@Override
+	public boolean createFGReport(int partyId, String strDate, MimeMessageHelper helper) {
+
+		boolean attachmentRequired=true;
+		try {
+			// Create blank workbook
+			XSSFWorkbook workbook = new XSSFWorkbook();
+			
+			CellStyle borderStyle = workbook.createCellStyle();
+			borderStyle.setBorderBottom(BorderStyle.THIN);
+		    borderStyle.setBorderLeft(BorderStyle.THIN);
+			borderStyle.setBorderRight(BorderStyle.THIN);
+			borderStyle.setBorderTop(BorderStyle.THIN);
+			borderStyle.setAlignment(HorizontalAlignment.CENTER);
+			
+			// Create a blank sheet
+			XSSFSheet spreadsheet = workbook.createSheet("FG_Report");
+
+			// Create row object
+			XSSFRow row;
+
+			Map<String, Object[]> acctStatementMap = getFGReportDetails(partyId);
+
+			// Iterate over data and write to sheet
+			Set<String> keyid = acctStatementMap.keySet();
+			int rowid = 0;
+
+			for (String key : keyid) {
+				row = spreadsheet.createRow(rowid++);
+				Object[] objectArr = acctStatementMap.get(key);
+				int cellid = 0;
+
+				for (Object obj : objectArr) {
+					Cell cell = row.createCell(cellid++);
+				    cell.setCellStyle(borderStyle);
+					cell.setCellValue((String) obj);
+				}
+			
+			}
+			
+            String baseDirectory = env.getProperty("email.folderpath")+File.separator;
+            
+			File outputPojoDirectory = new File(baseDirectory);
+			outputPojoDirectory.mkdirs();
+			
+			File fullPath = new File(baseDirectory +File.separator+"FGReport_"+strDate+".xlsx");
+			
+			FileOutputStream out = new FileOutputStream(fullPath);
+			workbook.write(out);
+			
+			FileSystemResource file = new FileSystemResource(fullPath);
+			if(acctStatementMap!=null && acctStatementMap.size()>1) {
+				attachmentRequired=false;
+				helper.addAttachment("FGReport_" + strDate + ".xlsx", file);
+			}
+			
+			out.close();
+			fullPath.deleteOnExit();
+			//System.out.println("File Created At -- " + baseDirectory);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return attachmentRequired;
+	}
+
+	public Map<String, Object[]> getFGReportDetails(int partyId) {
+
+		Map<String, Object[]> acctStatementMap = new LinkedHashMap<>();
+
+		try {
+			List<FGReportViewEntity> partyList = fgReportViewRepository.findByPartyId(partyId);
+
+			acctStatementMap.put("1",
+					new Object[] { "CoilNumber", "CustomerBatchId", "Finishing Date","MaterialDesc", "MaterialGrade","Packet Id",
+							"Thickness", "Actual Width", "Actual Length", "Actual Weight", "Classification Tag", "End User Tag" });
+
+			int cnt = 1;
+			for (FGReportViewEntity kk : partyList) {
+				cnt++;
+
+				acctStatementMap.put("" + cnt,
+						new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getFinishingDate(), kk.getMaterialDesc(),
+								kk.getMaterialGrade(),kk.getPacketId(),
+								kk.getThickness(), kk.getActualwidth(), kk.getActuallength(), kk.getActualweight(),
+								kk.getClassificationTag(), kk.getEnduserTagName() });
+			}
+		} catch (Exception e) {
+			LOGGER.error("Error at getFGReportDetails " + e.getMessage());
+		}
+		return acctStatementMap;
+	}
+
+	@Override
+	public boolean createWIPReport(int partyId, String strDate, MimeMessageHelper helper) {
+
+		boolean attachmentRequired=true;
+		try {
+			// Create blank workbook
+			XSSFWorkbook workbook = new XSSFWorkbook();
+			
+			CellStyle borderStyle = workbook.createCellStyle();
+			borderStyle.setBorderBottom(BorderStyle.THIN);
+		    borderStyle.setBorderLeft(BorderStyle.THIN);
+			borderStyle.setBorderRight(BorderStyle.THIN);
+			borderStyle.setBorderTop(BorderStyle.THIN);
+			borderStyle.setAlignment(HorizontalAlignment.CENTER);
+			
+			// Create a blank sheet
+			XSSFSheet spreadsheet = workbook.createSheet("WIP_Report");
+
+			// Create row object
+			XSSFRow row;
+
+			Map<String, Object[]> acctStatementMap = getWIPReportDetails(partyId);
+
+			// Iterate over data and write to sheet
+			Set<String> keyid = acctStatementMap.keySet();
+			int rowid = 0;
+
+			for (String key : keyid) {
+				row = spreadsheet.createRow(rowid++);
+				Object[] objectArr = acctStatementMap.get(key);
+				int cellid = 0;
+
+				for (Object obj : objectArr) {
+					Cell cell = row.createCell(cellid++);
+				    cell.setCellStyle(borderStyle);
+					cell.setCellValue((String) obj);
+				}
+			
+			}
+			
+            String baseDirectory = env.getProperty("email.folderpath")+File.separator;
+            
+			File outputPojoDirectory = new File(baseDirectory);
+			outputPojoDirectory.mkdirs();
+			
+			File fullPath = new File(baseDirectory +File.separator+"WIPReport_"+strDate+".xlsx");
+			
+			FileOutputStream out = new FileOutputStream(fullPath);
+			workbook.write(out);
+			
+			FileSystemResource file = new FileSystemResource(fullPath);
+			if(acctStatementMap!=null && acctStatementMap.size()>1) {
+				attachmentRequired=false;
+				helper.addAttachment("WIPReport_" + strDate + ".xlsx", file);
+			}
+			
+			out.close();
+			fullPath.deleteOnExit();
+			//System.out.println("File Created At -- " + baseDirectory);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return attachmentRequired;
+	}
+
+	public Map<String, Object[]> getWIPReportDetails(int partyId) {
+
+		Map<String, Object[]> acctStatementMap = new LinkedHashMap<>();
+
+		try {
+			List<WIPReportViewEntity> partyList = wipReportViewRepository.findByPartyId(partyId);
+
+			acctStatementMap.put("1",
+					new Object[] { "CoilNumber", "CustomerBatchId", "MaterialDesc", "MaterialGrade", "Thickness",
+							"Width", "Length", "Net Weight", "In Stock Weight", "WIP Weight", "Packet id","Thickness",
+							"Planned Width", "Planned Length", "Planned Weight", "Inward Status", "Classification Tag",
+							"End User Tag" });
+
+			int cnt = 1;
+			for (WIPReportViewEntity kk : partyList) {
+				cnt++;
+
+				acctStatementMap.put("" + cnt, new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(),
+						kk.getMaterialDesc(), kk.getMaterialGrade(), kk.getFthickness(), kk.getFwidth(),
+						kk.getFlength(), kk.getNetWeight(), kk.getInStockWeight(), kk.getWipWeight(), kk.getPacketId(), 
+						kk.getThickness(), kk.getPlannedWidth(), kk.getPlannedLength(), kk.getPlannedWeight(), 
+						kk.getInwardStatus(), kk.getClassificationTag(), kk.getEnduserTagName() });
+			}
+		} catch (Exception e) {
+			LOGGER.error("Error at getWIPReportDetails " + e.getMessage());
+		}
+		return acctStatementMap;
+	}
+
+	@Override
+	public boolean createStockSummaryReport(int partyId, String strDate, MimeMessageHelper helper) {
+
+		boolean attachmentRequired=true;
+		try {
+			// Create blank workbook
+			XSSFWorkbook workbook = new XSSFWorkbook();
+			
+			CellStyle borderStyle = workbook.createCellStyle();
+			borderStyle.setBorderBottom(BorderStyle.THIN);
+		    borderStyle.setBorderLeft(BorderStyle.THIN);
+			borderStyle.setBorderRight(BorderStyle.THIN);
+			borderStyle.setBorderTop(BorderStyle.THIN);
+			borderStyle.setAlignment(HorizontalAlignment.CENTER);
+			
+			// Create a blank sheet
+			XSSFSheet spreadsheet = workbook.createSheet("StockSummary_Report");
+
+			// Create row object
+			XSSFRow row;
+
+			Map<String, Object[]> acctStatementMap = getStockSummaryReportDetails(partyId);
+
+			// Iterate over data and write to sheet
+			Set<String> keyid = acctStatementMap.keySet();
+			int rowid = 0;
+
+			for (String key : keyid) {
+				row = spreadsheet.createRow(rowid++);
+				Object[] objectArr = acctStatementMap.get(key);
+				int cellid = 0;
+
+				for (Object obj : objectArr) {
+					Cell cell = row.createCell(cellid++);
+				    cell.setCellStyle(borderStyle);
+					cell.setCellValue((String) obj);
+				}
+			
+			}
+			
+            String baseDirectory = env.getProperty("email.folderpath")+File.separator;
+            
+			File outputPojoDirectory = new File(baseDirectory);
+			outputPojoDirectory.mkdirs();
+			
+			File fullPath = new File(baseDirectory +File.separator+"StockSummaryReport_"+strDate+".xlsx");
+			
+			FileOutputStream out = new FileOutputStream(fullPath);
+			workbook.write(out);
+			
+			FileSystemResource file = new FileSystemResource(fullPath);
+			if(acctStatementMap!=null && acctStatementMap.size()>1) {
+				attachmentRequired=false;
+				helper.addAttachment("StockSummaryReport_" + strDate + ".xlsx", file);
+			}
+			
+			out.close();
+			fullPath.deleteOnExit();
+			//System.out.println("File Created At -- " + baseDirectory);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return attachmentRequired;
+	}
+
+	public Map<String, Object[]> getStockSummaryReportDetails(int partyId) {
+
+		Map<String, Object[]> acctStatementMap = new LinkedHashMap<>();
+
+		try {
+			List<StockSummaryReportViewEntity> partyList = stockSummaryReportViewRepository.findByPartyId(partyId);
+
+			acctStatementMap.put("1",
+					new Object[] { "Coil No", "Batch No", "MaterialDesc", "MaterialGrade", "Thickness", "Width",
+							"Length", "NetWeight", "InStockWeight", "FG Qty", "FG_Classification",
+							"CUT-ENDS_Classification", "EDGE-TRIM_Classification", "OTHERS_Classification",
+							"WIP_Classification", "BLANK_Classification", "Quality Defects", "UnprocessedWeight", "WIP Qty",
+							"Dispatched Qty", "InwardStatus" });
+
+			int cnt = 1;
+			for (StockSummaryReportViewEntity kk : partyList) {
+				cnt++;
+
+				acctStatementMap.put("" + cnt,
+						new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getMaterialDesc(),
+								kk.getMaterialGrade(), kk.getFthickness(), kk.getFwidth(), kk.getFlength(),
+								kk.getNetweight(), kk.getInstockweight(), kk.getFgqty(), kk.getFgclassification(),
+								kk.getCutendsclassification(), kk.getEdgetrimclassification(),
+								kk.getOthersclassification(), kk.getWipclassification(), kk.getBlankclassification(),
+								kk.getQualitydefects(), kk.getUnprocessedweight(), kk.getWipqty(),
+								kk.getDispatchedweight(), kk.getInwardstatus() });
+			}
+		} catch (Exception e) {
+			LOGGER.error("Error at createStockSummaryReport " + e.getMessage());
+		}
+		return acctStatementMap;
+	}
+
+	@Override
+	public boolean createRMReport(int partyId, String strDate, MimeMessageHelper helper) {
+
+		boolean attachmentRequired=true;
+		try {
+			// Create blank workbook
+			XSSFWorkbook workbook = new XSSFWorkbook();
+			
+			CellStyle borderStyle = workbook.createCellStyle();
+			borderStyle.setBorderBottom(BorderStyle.THIN);
+		    borderStyle.setBorderLeft(BorderStyle.THIN);
+			borderStyle.setBorderRight(BorderStyle.THIN);
+			borderStyle.setBorderTop(BorderStyle.THIN);
+			borderStyle.setAlignment(HorizontalAlignment.CENTER);
+			
+			// Create a blank sheet
+			XSSFSheet spreadsheet = workbook.createSheet("RM_Report");
+
+			// Create row object
+			XSSFRow row;
+
+			Map<String, Object[]> acctStatementMap = getRMReportDetails(partyId);
+
+			// Iterate over data and write to sheet
+			Set<String> keyid = acctStatementMap.keySet();
+			int rowid = 0;
+
+			for (String key : keyid) {
+				row = spreadsheet.createRow(rowid++);
+				Object[] objectArr = acctStatementMap.get(key);
+				int cellid = 0;
+
+				for (Object obj : objectArr) {
+					Cell cell = row.createCell(cellid++);
+				    cell.setCellStyle(borderStyle);
+					cell.setCellValue((String) obj);
+				}
+			
+			}
+			
+            String baseDirectory = env.getProperty("email.folderpath")+File.separator;
+            
+			File outputPojoDirectory = new File(baseDirectory);
+			outputPojoDirectory.mkdirs();
+			
+			File fullPath = new File(baseDirectory +File.separator+"RMReport_"+strDate+".xlsx");
+			
+			FileOutputStream out = new FileOutputStream(fullPath);
+			workbook.write(out);
+			
+			FileSystemResource file = new FileSystemResource(fullPath);
+			if(acctStatementMap!=null && acctStatementMap.size()>1) {
+				attachmentRequired=false;
+				helper.addAttachment("RMReport_" + strDate + ".xlsx", file);
+			}
+			
+			out.close();
+			fullPath.deleteOnExit();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return attachmentRequired;
+	}
+
+	public Map<String, Object[]> getRMReportDetails(int partyId) {
+
+		Map<String, Object[]> acctStatementMap = new LinkedHashMap<>();
+
+		try {
+			List<RMReportViewEntity> partyList = rmReportViewRepository.findByPartyId(partyId);
+
+			acctStatementMap.put("1",
+					new Object[] { "CoilNumber", "CustomerBatchId", "Received Date","MaterialDesc", "MaterialGrade", "Thickness",
+							"Width", "Length", "Net Weight", "Customer Invoice Number", "Customer Invoice Date", "Status", "Created On" });
+
+			int cnt = 1;
+			for (RMReportViewEntity kk : partyList) {
+				cnt++;
+
+				acctStatementMap.put("" + cnt,
+						new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getReceivedDate(),
+								kk.getDescription(), kk.getMaterialGrade(), kk.getFthickness(), kk.getFwidth(),
+								kk.getFlength(), kk.getNetWeight(), kk.getCustInvNo(), kk.getCustInvDate(),
+								kk.getInwardStatus(), kk.getCreatedOn() });
+			}
+		} catch (Exception e) {
+			LOGGER.error("Error at getWIPReportDetails " + e.getMessage());
+		}
+		return acctStatementMap;
+	}
+
+	@Override
+	public List<StockSummaryReportViewEntity> reconcileReport(String coilNumber) {
+		return stockSummaryReportViewRepository.findByCoilNumber(coilNumber);
+	}
+	
 }

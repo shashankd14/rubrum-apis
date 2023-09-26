@@ -2,7 +2,6 @@ package com.steel.product.application.dto.partDetails;
 
 import lombok.*;
 
-
 @Getter
 @Setter
 public class partDetailsRequest {

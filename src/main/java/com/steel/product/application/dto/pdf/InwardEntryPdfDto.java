@@ -74,9 +74,9 @@ public class InwardEntryPdfDto {
 
     private String remarks;
 
-    private User createdBy;
+    private AdminUserEntity createdBy;
 
-    private User updatedBy;
+    private AdminUserEntity updatedBy;
 
     private Date createdOn;
 

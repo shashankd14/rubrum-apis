@@ -8,8 +8,6 @@ import com.steel.product.application.dto.pdf.PdfResponseDto;
 import com.steel.product.application.service.AddressService;
 import com.steel.product.application.service.PdfService;
 
-import io.swagger.v3.oas.annotations.tags.Tag;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,13 +24,13 @@ import java.util.Base64;
 @CrossOrigin
 @RequestMapping("/pdf")
 public class PdfController {
-    private AddressService addressService;
+    //private AddressService addressService;
     private PdfService pdfService;
-    private Base64.Encoder encoder = Base64.getEncoder();
+    //private Base64.Encoder encoder = Base64.getEncoder();
 
     @Autowired
     public PdfController(AddressService addressService, PdfService pdfService) {
-        this.addressService = addressService;
+        //this.addressService = addressService;
         this.pdfService = pdfService;
     }
 
@@ -62,6 +60,12 @@ public class PdfController {
             file = Paths.get(pdfService.generateDeliveryPdf(deliveryPdfDto).getAbsolutePath());
             bytes = Files.readAllBytes(file);
             builder.append(Base64.getEncoder().encodeToString(bytes));
+            
+            /*File fileaa = new File("D:/newfile.pdf");
+            FileOutputStream fos = new FileOutputStream(fileaa);
+            fos.write(bytes);
+            System.out.println("PDF File Saved");*/
+            
         } catch (IOException | DocumentException | org.dom4j.DocumentException ex) {
             ex.printStackTrace();
         }

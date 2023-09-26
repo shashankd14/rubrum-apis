@@ -15,13 +15,15 @@ import java.util.Optional;
 
 @Repository
 public interface InstructionRepository extends JpaRepository<Instruction, Integer> {
-    @Modifying
-    @Transactional
-    @Query("update Instruction set deliveryId =:deliveryId, remarks =:remarks, status=4 " +
-            " where instructionId =:instructionId")
-    public void updateInstructionWithDeliveryRemarks(@Param("instructionId") int instructionId,
-                                                  @Param("deliveryId") int deliveryId,
-                                                  @Param("remarks") String remarks);
+	
+	@Modifying
+	@Transactional
+	@Query("update Instruction set deliveryId =:deliveryId, remarks =:remarks, status=4 where instructionId =:instructionId")
+	public void updateInstructionWithDeliveryRemarks(@Param("instructionId") int instructionId,
+			@Param("deliveryId") int deliveryId, @Param("remarks") String remarks);
+
+    @Query(" from Instruction order by instructionId desc")
+    public List<Instruction> getAll();
 
     @Query(" from Instruction where processId !=7")
     public List<Instruction> getAllWIP();
@@ -53,6 +55,12 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
             " where inw.inwardEntryId = :inwardId and (ins.groupId is not null or ins.parentGroupId is not null)")
     List<Instruction> findSlitAndCutInstructionByInwardId(@Param("inwardId") Integer inwardId);
 
+    @Query("select ins from Instruction ins join fetch ins.inwardId inw where inw.inwardEntryId = :inwardId and ins.groupId >0 ")
+    List<Instruction> findSlitAndCutInstructionByInwardId1(@Param("inwardId") Integer inwardId);
+
+    @Query("select ins from Instruction ins where ins.status != 4 and ins.parentGroupId = :groupId")
+    List<Instruction> findSlitAndCutInstructionByGroupId (@Param("groupId") Integer groupId);
+
     @Query("select COALESCE(SUM(ins.plannedWeight),0) from Instruction ins where ins.groupId = :groupId")
     Float sumOfPlannedWeightOfInstructionsHavingGroupId(@Param("groupId") Integer groupId);
 
@@ -70,13 +78,13 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
 
     List<Instruction> getAllByInstructionIdIn(List<Integer> instructionIds);
 
-    @Query("select pd,ins,COUNT(ins.plannedWeight) from PartDetails pd join fetch pd.instructions ins where pd.partDetailsId = :partDetailsId group by ins.plannedWeight,ins.partDetails,ins.process order by ins.createdOn")
+    @Query("select pd,ins,COUNT(ins.plannedWeight) from PartDetails pd join fetch pd.instructions ins where pd.partDetailsId = :partDetailsId group by ins.plannedWeight,ins.partDetails,ins.process,ins.endUserTagsEntity order by ins.createdOn")
     List<Object[]> findPartDetailsJoinFetchInstructions(@Param("partDetailsId") String partDetailsId);
 
-    @Query("select pd,ins,COUNT(ins.plannedWeight) from PartDetails pd join fetch pd.instructions ins where parentGroupId in :groupIds group by ins.plannedWeight,ins.partDetails,ins.process order by ins.createdOn")
+    @Query("select pd,ins,COUNT(ins.plannedWeight) from PartDetails pd join fetch pd.instructions ins where parentGroupId in :groupIds group by ins.plannedWeight,ins.partDetails,ins.process,ins.endUserTagsEntity order by ins.createdOn")
     List<Object[]> findPartDetailsJoinFetchInstructionsAndGroupIds(@Param("groupIds")List<Integer> groupIds);
 
-    @Query("select pd,ins,COUNT(ins.plannedWeight) from PartDetails pd join fetch pd.instructions ins where pd.partDetailsId = :partDetailsId or parentGroupId in :groupIds group by ins.plannedWeight,ins.partDetails,ins.process order by ins.createdOn")
+    @Query("select pd,ins,COUNT(ins.plannedWeight) from PartDetails pd join fetch pd.instructions ins where pd.partDetailsId = :partDetailsId or parentGroupId in :groupIds group by ins.plannedWeight,ins.partDetails,ins.process,ins.endUserTagsEntity order by ins.createdOn")
     List<Object[]> findPartDetailsJoinFetchInstructionsByPartDetailsIdOrGroupIds(@Param("partDetailsId") String partDetailsId,@Param("groupIds")List<Integer> groupIds);
 
 //    @Query(value = "SELECT ANY_VALUE(pd.target_weight) as targetWeight,ANY_VALUE(pd.length) AS length, ANY_VALUE(ins.inwardId) AS inwardId, ANY_VALUE(ins.processId) as processId" +
@@ -97,4 +105,48 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
             " from product_instruction where status < 4 and groupId is null and isDeleted is false group by inwardId order by inwardId",nativeQuery = true)
     List<Object[]> findSumOfPlannedWeightAndActualWeightForUnprocessed();
 
+    @Query("select count(ins.instructionId) from Instruction ins where ins.partDetails.id = :partDetailsId")
+    int getPartCount(@Param("partDetailsId") Long partDetailsId);
+
+	@Modifying
+	@Transactional
+	@Query("update PartDetails set pdfS3Url=:url where partDetailsId= :partDetailsId ")
+	public void updateS3PlanPDF(@Param("partDetailsId") String partDetailsId, @Param("url") String url);
+
+	@Query("select ins from Instruction ins left join fetch ins.inwardId left join fetch ins.parentInstruction where ins.inwardId.inwardEntryId = :inwardId and ins.status.statusId = :statusId")
+	public List<Instruction> findByStatus(@Param("inwardId") Integer inwardId, @Param("statusId") Integer statusId);
+
+    @Query("select ins from Instruction ins left join fetch ins.inwardId left join fetch ins.parentInstruction where ins.instructionId in :instructionIds and ins.status.statusId in :statusId")
+    public List<Instruction> findAllByInstructionIdInAndStatus(@Param("instructionIds") List<Integer> instructionIds, @Param("statusId") List<Integer> statusId);
+
+	@Modifying
+	@Transactional
+	@Query("update Instruction set groupId =:groupId where instructionId in :instructionIds ")
+	public void updateInstructionGroupId(@Param("groupId") int groupId, @Param("instructionIds") List<Integer> instructionIds);
+
+	@Query(value = "SELECT distinct coilnumber `Coil No`,customerbatchid `Batch No`," + 
+			" (select desc2.vdescription from product_tblmatdescription desc2 where desc2.nmatid=inward.nmatid) as material_desc," + 
+			" (select aa.`gradename` from `product_material_grades` aa where aa.`gradeid` = `inward`.`materialgradeid`) AS `material_grade`," + 
+			" ROUND(`fthickness`, 2) as `fthickness`, round(fquantity,2) as `net weight`, " +
+			" ROUND(`grossweight`, 2) as `grossweight`, ROUND(`fwidth`, 2) as `fwidth` " +
+			" FROM product_tblinwardentry inward WHERE inwardentryid=:inwardId ", nativeQuery = true)
+	public List<Object[]> getQRCodeDetails1(@Param("inwardId") Integer inwardId);
+	
+	@Query("select ins from Instruction ins left join fetch ins.inwardId where ins.inwardId.inwardEntryId = :inwardId and ins.status.statusId = :statusId ")
+	public List<Instruction> getQRCodeDetails(@Param("inwardId") Integer inwardId, @Param("statusId") Integer statusId);
+	
+	@Query(value = "SELECT \r\n" + 
+			"    coilnumber, customercoilid, instructionid,\r\n" + 
+			"    (select partyname from product_tblpartydetails partt where partt.npartyid = inw.npartyid) custname,\r\n" + 
+			"    (select desc2.vdescription from product_tblmatdescription desc2 where desc2.nmatid=inw.nmatid) as material_desc,\r\n" + 
+			"    (select tagg.tag_name from product_enduser_tags tagg where tagg.tag_id=instruction.enduser_tag_id) as enduser_tag_name,\r\n" + 
+			"     (select aa.`gradename` from `product_material_grades` aa where aa.`gradeid` = inw.`materialgradeid`) AS `material_grade`,     \r\n" + 
+			"     ROUND(`fthickness`, 2) as thickness, round(actualweight, 3) as weight, \r\n" + 
+			"     ROUND(`actuallength`, 2) as length, ROUND(`actualwidth`, 2) as width\r\n" + 
+			" FROM product_instruction instruction, product_tblinwardentry inw\r\n" + 
+			" WHERE instruction.inwardid = inw.inwardentryid\r\n" + 
+			" AND instruction.inwardid = :inwardId AND instruction.status = 3 ", nativeQuery = true)
+	public List<Object[]> getQRCodeDetails_Finish(@Param("inwardId") Integer inwardId);
+	
+	
 }

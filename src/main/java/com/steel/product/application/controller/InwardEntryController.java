@@ -1,30 +1,44 @@
 package com.steel.product.application.controller;
 
+import com.google.zxing.WriterException;
+import com.itextpdf.text.DocumentException;
 import com.steel.product.application.dto.inward.InwardDto;
 import com.steel.product.application.dto.inward.InwardEntryResponseDto;
+import com.steel.product.application.dto.pdf.PdfDto;
+import com.steel.product.application.dto.pdf.PdfResponseDto;
+import com.steel.product.application.dto.qrcode.QRCodeResponse;
 import com.steel.product.application.entity.InwardDoc;
 import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.service.*;
+import com.steel.product.application.util.CommonUtil;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import net.minidev.json.JSONObject;
 
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+import javax.servlet.http.HttpServletRequest;
 
 @RestController
-// @CrossOrigin(origins =
-// {"http://rubrum-frontend.s3-website.ap-south-1.amazonaws.com"})
 @CrossOrigin
 @Tag(name = "Inward Entry", description = "Inward Entry")
 @RequestMapping({ "/inwardEntry" })
 public class InwardEntryController {
+	
 	private InwardEntryService inwdEntrySvc;
 
 	private PartyDetailsService partyDetailsService;
@@ -35,36 +49,38 @@ public class InwardEntryController {
 
 	private MaterialGradeService matGradeService;
 
-	private UserService userSerive;
-
 	private AWSS3Service awsS3Service;
+
+	private CommonUtil commonUtil;
 
 	private InwardDocService inwardDocService;
 
-	private Timestamp timestamp = new Timestamp(
+	private QRCodePDFGenerator pdfGenerator;
 
-			System.currentTimeMillis());
+	private Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 
 	@Autowired
 	public InwardEntryController(InwardEntryService inwdEntrySvc, PartyDetailsService partyDetailsService,
 			StatusService statusService, MaterialDescriptionService matDescService,
 			MaterialGradeService matGradeService, UserService userSerive, AWSS3Service awsS3Service,
-			InwardDocService inwardDocService) {
+			InwardDocService inwardDocService, CommonUtil commonUtil, QRCodePDFGenerator pdfGenerator) {
 		this.inwdEntrySvc = inwdEntrySvc;
 		this.partyDetailsService = partyDetailsService;
 		this.statusService = statusService;
 		this.matDescService = matDescService;
 		this.matGradeService = matGradeService;
-		this.userSerive = userSerive;
 		this.awsS3Service = awsS3Service;
 		this.inwardDocService = inwardDocService;
+		this.commonUtil = commonUtil;
+		this.pdfGenerator = pdfGenerator;
 	}
 
 	@PostMapping("/addNew")
-	public ResponseEntity<Object> saveInwardEntry(@ModelAttribute InwardDto inward) {
+	public ResponseEntity<Object> saveInwardEntry(@ModelAttribute InwardDto inward, HttpServletRequest request) {
 		InwardEntry inwardEntry = new InwardEntry();
 		System.out.println("DTO details " + inward);
 		try {
+			int userId = commonUtil.getUserId();
 			inwardEntry.setInwardEntryId(0);
 			inwardEntry.setPurposeType(inward.getPurposeType());
 			inwardEntry.setParty(this.partyDetailsService.getPartyById(inward.getPartyId()));
@@ -86,8 +102,6 @@ public class InwardEntryController {
 			inwardEntry.setCustomerCoilId(inward.getCustomerCoilId());
 			inwardEntry.setCustomerInvoiceNo(inward.getCustomerInvoiceNo());
 			inwardEntry.setCustomerBatchId(inward.getCustomerBatchId());
-
-			// inwardEntry.setCustomerInvoiceDate(Timestamp.valueOf(inward.getCustomerInvoiceDate()));
 
 			inwardEntry.setMaterial(this.matDescService.getMatById(inward.getMaterialId()));
 			inwardEntry.setMaterialGrade(matGradeService.getById(inward.getMaterialGradeId()));
@@ -115,9 +129,8 @@ public class InwardEntryController {
 			inwardEntry.setIsDeleted(Boolean.valueOf(false));
 			inwardEntry.setCreatedOn(this.timestamp);
 			inwardEntry.setUpdatedOn(this.timestamp);
-
-			inwardEntry.setCreatedBy(this.userSerive.getUserById(inward.getCreatedBy()));
-			inwardEntry.setUpdatedBy(this.userSerive.getUserById(inward.getUpdatedBy()));
+			inwardEntry.setCreatedBy(userId);
+			inwardEntry.setUpdatedBy(userId);
 
 			if (inward.getTestCertificateFile() != null) {
 
@@ -148,12 +161,12 @@ public class InwardEntryController {
 	}
 
 	@PutMapping({ "/update" })
-	public ResponseEntity<Object> updateEntry(@RequestBody InwardDto inward) {
+	public ResponseEntity<Object> updateEntry(@RequestBody InwardDto inward, HttpServletRequest request) {
 		InwardEntry inwardEntry = new InwardEntry();
 		System.out.println("DTO details " + inward);
 		try {
+			int userId = commonUtil.getUserId();
 			inwardEntry = inwdEntrySvc.getByEntryId(inward.getInwardId());
-
 			inwardEntry.setPurposeType(inward.getPurposeType());
 			inwardEntry.setParty(this.partyDetailsService.getPartyById(inward.getPartyId()));
 			inwardEntry.setCoilNumber(inward.getCoilNumber());
@@ -185,11 +198,8 @@ public class InwardEntryController {
 			inwardEntry.setBilledweight(0);
 			inwardEntry.setParentCoilNumber(null);
 			inwardEntry.setvParentBundleNumber(0);
-
 			inwardEntry.setIsDeleted(Boolean.valueOf(false));
-
-			inwardEntry.setCreatedBy(this.userSerive.getUserById(inward.getCreatedBy()));
-			inwardEntry.setUpdatedBy(this.userSerive.getUserById(inward.getUpdatedBy()));
+			inwardEntry.setUpdatedBy( userId );
 
 			if (inward.getTestCertificateFile() != null) {
 
@@ -222,11 +232,43 @@ public class InwardEntryController {
 		}
 	}
 
-	@GetMapping({ "/list" })
-	public ResponseEntity<Object> findAll() {
+	@GetMapping({ "/list/{pageNo}/{pageSize}" })
+	public ResponseEntity<Object> findAllWithPagination(@PathVariable int pageNo, @PathVariable int pageSize,
+			@RequestParam(required = false, name = "searchText") String searchText,
+			@RequestParam(required = false, name = "partyId") String partyId) {
+
+		Map<String, Object> response = new HashMap<>();
+		Page<InwardEntry> pageResult = inwdEntrySvc.findAllWithPagination(pageNo, pageSize, searchText, partyId);
+		List<Object> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponse(inw)).collect(Collectors.toList());
+		response.put("content", inwardList);
+		response.put("currentPage", pageResult.getNumber());
+		response.put("totalItems", pageResult.getTotalElements());
+		response.put("totalPages", pageResult.getTotalPages());
+		return new ResponseEntity<Object>(response, HttpStatus.OK);
+	}
+
+	@GetMapping({ "/wiplist/{pageNo}/{pageSize}" })
+	public ResponseEntity<Object> findAllWIPlistWithPagination(@PathVariable int pageNo, @PathVariable int pageSize,
+			@RequestParam(required = false, name = "searchText") String searchText,
+			@RequestParam(required = false, name = "partyId") String partyId) {
+
+		Map<String, Object> response = new HashMap<>();
+		Page<InwardEntry> pageResult = inwdEntrySvc.findAllWIPlistWithPagination(pageNo, pageSize, searchText, partyId);
+		List<Object> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponse(inw)).collect(Collectors.toList());
+		response.put("content", inwardList);
+		response.put("currentPage", pageResult.getNumber());
+		response.put("totalItems", pageResult.getTotalElements());
+		response.put("totalPages", pageResult.getTotalPages());
+		return new ResponseEntity<Object>(response, HttpStatus.OK);
+	}
+	
+	@GetMapping({ "/listold" })
+	public ResponseEntity<Object> listold() {
 		try {
+			
 			List<InwardEntryResponseDto> inwardEntries = inwdEntrySvc.findAllInwards();
 			return new ResponseEntity<Object>(inwardEntries, HttpStatus.OK);
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -319,5 +361,49 @@ public class InwardEntryController {
 		} catch (Exception e) {
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+	}
+
+	@GetMapping({ "/getPlanPDFs/{inwardEntryId}" })
+	public ResponseEntity<Object> getPlanPDFs(@PathVariable int inwardEntryId) {
+		try {
+			JSONObject entry = this.inwdEntrySvc.getPlanPDFs(inwardEntryId);
+			if (entry == null)
+				throw new RuntimeException("Entry id not found - " + inwardEntryId);
+			return new ResponseEntity<Object>(entry, HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@PostMapping({ "/qrcode/inward" })
+	public ResponseEntity<PdfResponseDto> qrcode(@RequestBody PdfDto pdfDto ) {
+		InputStreamResource inputStreamResource = null;
+		ResponseEntity<PdfResponseDto> kk = null ;
+		try {
+
+			QRCodeResponse resp = inwdEntrySvc.getQRCodeDetails(pdfDto.getInwardId());
+			byte[] pngData;
+			StringBuilder text = new StringBuilder();
+			text.append("Coil NO : " + resp.getCoilNo());
+			text.append("\nCustomer BatchNo : " + resp.getCustomerBatchNo());
+			text.append("\nMaterial Type : " + resp.getMaterialDesc());
+			text.append("\nMaterial Grade : " + resp.getMaterialGrade());
+			text.append("\nThickness : " + resp.getFthickness());
+			text.append("\nWidth : " + resp.getFwidth());
+			text.append("\nNet Weight : " + resp.getNetWeight());
+			text.append("\nGross Weight : " + resp.getGrossWeight());
+			pngData = pdfGenerator.getQRCode(text.toString(), 0, 0);
+			inputStreamResource = pdfGenerator.inputStreamResource(pngData, pdfDto.getInwardId());
+			byte[] sourceBytes = IOUtils.toByteArray(inputStreamResource.getInputStream());
+			StringBuilder builder = new StringBuilder();
+			builder.append(Base64.getEncoder().encodeToString(sourceBytes));
+			String encodedFile = builder.toString();
+			kk = new ResponseEntity<PdfResponseDto>(new PdfResponseDto(encodedFile), HttpStatus.OK);
+		} catch (WriterException | IOException e) {
+			e.printStackTrace();
+		} catch (DocumentException e) {
+			e.printStackTrace();
+		}
+		return kk;
 	}
 }

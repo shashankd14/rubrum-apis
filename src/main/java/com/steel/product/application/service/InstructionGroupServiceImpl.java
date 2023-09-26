@@ -26,14 +26,14 @@ public class InstructionGroupServiceImpl implements InstructionGroupService{
         List<Instruction> instructions = instructionService.getAllByInstructionIdIn(instructionGroupDto.getInstructionId());
         InstructionGroup savedInstructionGroup = instructionGroupRepository.save(instructionGroup);
         savedInstructionGroup = this.createBundle(instructions,savedInstructionGroup);
-        instructionService.saveAll(instructions);
+        //instructionService.saveAll(instructions);
         return instructionGroupRepository.save(savedInstructionGroup);
     }
 
     private InstructionGroup createBundle(List<Instruction> instructions, InstructionGroup savedInstructionGroup) {
-        for(Instruction ins:instructions){
-            ins.setGroupId(savedInstructionGroup.getGroupId());
-        }
+        //for(Instruction ins:instructions){
+          //  ins.setGroupId(savedInstructionGroup.getGroupId());
+        //}
         savedInstructionGroup.setInstructionCount(instructions.size());
         return savedInstructionGroup;
     }

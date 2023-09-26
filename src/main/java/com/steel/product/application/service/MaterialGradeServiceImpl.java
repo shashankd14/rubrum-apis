@@ -10,31 +10,31 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class MaterialGradeServiceImpl implements MaterialGradeService {
-  @Autowired
-  private MaterialGradeRepository materialGradeRepo;
-  
-  public MaterialGrade getById(int gradeId) {
-    Optional<MaterialGrade> result = this.materialGradeRepo.findById(Integer.valueOf(gradeId));
-    MaterialGrade grade = null;
-    if (result.isPresent()) {
-      grade = result.get();
-    } else {
-      throw new RuntimeException("Did not find grade id - " + gradeId);
-    } 
-    return grade;
-  }
-  
-  public List<MaterialGrade> getAll() {
-    return this.materialGradeRepo.findAll();
-  }
+	@Autowired
+	private MaterialGradeRepository materialGradeRepo;
 
-@Override
-public List<MaterialGrade> getByMaterialId(int materialId) {
-	return materialGradeRepo.getGradesByMaterialId(materialId);
-}
+	public MaterialGrade getById(int gradeId) {
+		Optional<MaterialGrade> result = this.materialGradeRepo.findById(Integer.valueOf(gradeId));
+		MaterialGrade grade = null;
+		if (result.isPresent()) {
+			grade = result.get();
+		} else {
+			throw new RuntimeException("Did not find grade id - " + gradeId);
+		}
+		return grade;
+	}
 
-  @Override
-  public MaterialGrade findByGradeName(String gradeName) {
-    return materialGradeRepo.findByGradeName(gradeName);
-  }
+	public List<MaterialGrade> getAll() {
+		return this.materialGradeRepo.findAll();
+	}
+
+	@Override
+	public List<MaterialGrade> getByMaterialId(int materialId) {
+		return materialGradeRepo.getGradesByMaterialId(materialId);
+	}
+
+	@Override
+	public MaterialGrade findByGradeName(String gradeName) {
+		return materialGradeRepo.findByGradeName(gradeName);
+	}
 }

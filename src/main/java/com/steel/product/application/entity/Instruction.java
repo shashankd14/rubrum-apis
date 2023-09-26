@@ -1,18 +1,19 @@
 package com.steel.product.application.entity;
 
-
-
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.steel.product.application.dto.instruction.InstructionResponseDto;
 import com.steel.product.application.dto.pdf.InstructionResponsePdfDto;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.FetchMode;
-import org.hibernate.annotations.ColumnDefault;
+import net.minidev.json.JSONObject;
+import net.minidev.json.parser.JSONParser;
+import net.minidev.json.parser.ParseException;
+
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
+
 import java.util.Date;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -71,6 +72,11 @@ public class Instruction {
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "packet_classification_id")
 	private PacketClassification packetClassification;
+
+	@JsonManagedReference
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "enduser_tag_id")
+	private EndUserTagsEntity endUserTagsEntity;
 	
 	@Column(name = "groupid")
 	private Integer groupId ;
@@ -104,6 +110,9 @@ public class Instruction {
 
     @Column(name = "remarks")
     private String remarks;
+
+    @Column(name = "price_details", length=1500)
+    private String priceDetails;
 
     @Column(name = "createdby")
     private Integer createdBy;
@@ -142,10 +151,9 @@ public class Instruction {
 	public static InstructionResponseDto valueOf(Instruction instruction){
 		InstructionResponseDto instructionResponseDto = new InstructionResponseDto();
 		instructionResponseDto.setStatus(Status.valueOf(instruction.getStatus()));
-		instructionResponseDto.setParentInstructionId(instruction.getParentInstruction() != null ?
-				instruction.getParentInstruction().getInstructionId() : null);
-		instructionResponseDto.setPacketClassification(instruction.getPacketClassification() != null ?
-				instruction.getPacketClassification(): null);
+		instructionResponseDto.setParentInstructionId(instruction.getParentInstruction() != null ? instruction.getParentInstruction().getInstructionId() : null);
+		instructionResponseDto.setPacketClassification(instruction.getPacketClassification() != null ? instruction.getPacketClassification(): null);
+		instructionResponseDto.setEndUserTagsentity( instruction.getEndUserTagsEntity() != null ? instruction.getEndUserTagsEntity(): null);		
 		instructionResponseDto.setInstructionDate(instruction.getInstructionDate());
         instructionResponseDto.setInstructionId(instruction.getInstructionId());
         instructionResponseDto.setProcess(instruction.getProcess() != null ? Process.valueOf(instruction.getProcess()) : null);
@@ -175,13 +183,14 @@ public class Instruction {
         instructionResponseDto.setIsSlitAndCut(instruction.getIsSlitAndCut());
 		instructionResponseDto.setPartId(instruction.getPartDetails() != null ? instruction.getPartDetails().getId() : null);
 		instructionResponseDto.setPartDetailsId(instruction.getPartDetails() != null ? instruction.getPartDetails().getPartDetailsId(): null);
+		instructionResponseDto.setPdfS3Url(instruction.getPartDetails() != null ? instruction.getPartDetails().getPdfS3Url() : null);
         return instructionResponseDto;
     }
 
 	public static InstructionResponsePdfDto valueOfInstructionPdf(Instruction instruction, InwardEntry inwardEntry) {
+		
 		InstructionResponsePdfDto instructionResponsePdfDto = new InstructionResponsePdfDto();
-		instructionResponsePdfDto.setPacketClassification(instruction.getPacketClassification() != null ?
-				instruction.getPacketClassification() : null);
+		instructionResponsePdfDto.setPacketClassification(instruction.getPacketClassification() != null ? instruction.getPacketClassification() : null);
 		instructionResponsePdfDto.setProcess(Process.valueOf(instruction.getProcess()));
 		instructionResponsePdfDto.setPlannedLength(instruction.getPlannedLength());
 		instructionResponsePdfDto.setPlannedNoOfPieces(instruction.getPlannedNoOfPieces());
@@ -191,11 +200,45 @@ public class Instruction {
 		instructionResponsePdfDto.setActualNoOfPieces(instruction.getActualNoOfPieces());
 		instructionResponsePdfDto.setActualWeight(instruction.getActualWeight());
 		instructionResponsePdfDto.setActualWidth(instruction.getActualWidth());
+		
+		String packingPrice = "0.00";
+		String baseTotalPrice = "0.00";
+		String additionalTotalPrice = "0.00";
+		String totalPrice = "0.00";
+		if (instruction.getPriceDetails() != null) {
+			try {
+				JSONParser parser = new JSONParser();
+				JSONObject json = (JSONObject) parser.parse(instruction.getPriceDetails());
+				if (json.containsKey("basePrice")) {
+					baseTotalPrice = json.get("basePrice").toString();
+				}
+				if (json.containsKey("additionalPrice")) {
+					additionalTotalPrice = json.get("additionalPrice").toString();
+				}
+				if (json.containsKey("packingPrice")) {
+					packingPrice =   json.get("packingPrice").toString() ;
+				}
+				if (json.containsKey("totalPrice")) {
+					totalPrice =   json.get("totalPrice").toString() ;
+				} 
+			} catch (ParseException e) {
+			}
+		}
+		instructionResponsePdfDto.setBaseTotalPrice( baseTotalPrice );
+		instructionResponsePdfDto.setAdditionalTotalPrice( additionalTotalPrice );
+		instructionResponsePdfDto.setPackingRate(packingPrice);
+		instructionResponsePdfDto.setTotalPrice( totalPrice );
+		Float actualWeight = (instruction.getProcess().getProcessId() == 7 ? instruction.getPlannedWeight():instruction.getActualWeight());
+		//if (packingRateMain != null && packingRateMain.compareTo(BigDecimal.ZERO) > 0 && actualWeight > 0) {
+			//float kk = packingRateMain.floatValue() * (actualWeight/1000);
+			//instructionResponsePdfDto.setPackingRate(Float.toString(kk));
+			//totalPrice=totalPrice+Float.parseFloat(instructionResponsePdfDto.getPackingRate());
+		//}
 		instructionResponsePdfDto.setDeliveryDetails(instruction.getDeliveryDetails() != null ? DeliveryDetails.valueOf(instruction.getDeliveryDetails()) : null);
 		instructionResponsePdfDto.setRemarks(instruction.getRemarks());
 		if (inwardEntry != null) {
-			instructionResponsePdfDto.setValueOfGoods((float) ((instruction.getActualWeight() / inwardEntry.getfQuantity()) * inwardEntry.getValueOfGoods()));
+			instructionResponsePdfDto.setValueOfGoods((float) ((actualWeight / inwardEntry.getfQuantity()) * inwardEntry.getValueOfGoods()));
 		}
 		return instructionResponsePdfDto;
-	}
+	} 
 }

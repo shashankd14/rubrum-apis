@@ -1,15 +1,15 @@
 package com.steel.product.application.dto.party;
 
 import com.steel.product.application.dto.address.AddressDto;
-import com.steel.product.application.dto.packetClassification.PacketClassificationRequest;
+import com.steel.product.application.dto.endusertags.EndUserTagsResponse;
 import com.steel.product.application.dto.packetClassification.PacketClassificationResponse;
+import com.steel.product.application.dto.quality.QualityPartyMappingRequestNew;
+
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
-
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -29,8 +29,11 @@ public class PartyResponse {
     private String phone2;
     private AddressDto address1;
     private AddressDto address2;
+    private String showAmtDcPdfFlg;
     private List<PacketClassificationResponse> packetClassificationTags;
-
+    private List<EndUserTagsResponse> endUserTags;
+	private List<QualityPartyMappingRequestNew> templateIdList = new ArrayList<>();
+    
     public Integer getnPartyId() {
         return nPartyId;
     }
@@ -150,4 +153,29 @@ public class PartyResponse {
     public void setPacketClassificationTags(List<PacketClassificationResponse> packetClassificationTags) {
         this.packetClassificationTags = packetClassificationTags;
     }
+
+	public List<EndUserTagsResponse> getEndUserTags() {
+		return endUserTags;
+	}
+
+	public void setEndUserTags(List<EndUserTagsResponse> endUserTags) {
+		this.endUserTags = endUserTags;
+	}
+
+	public List<QualityPartyMappingRequestNew> getTemplateIdList() {
+		return templateIdList;
+	}
+
+	public void setTemplateIdList(List<QualityPartyMappingRequestNew> templateIdList) {
+		this.templateIdList = templateIdList;
+	}
+
+	public String getShowAmtDcPdfFlg() {
+		return showAmtDcPdfFlg;
+	}
+
+	public void setShowAmtDcPdfFlg(String showAmtDcPdfFlg) {
+		this.showAmtDcPdfFlg = showAmtDcPdfFlg;
+	}
+
 }

@@ -1,20 +1,19 @@
 package com.steel.product.application.entity;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.steel.product.application.dto.endusertags.EndUserTagsRequest;
 import com.steel.product.application.dto.packetClassification.PacketClassificationRequest;
 import com.steel.product.application.dto.party.PartyDto;
-import com.steel.product.application.mapper.PacketClassificationMapper;
+import com.steel.product.application.dto.quality.QualityPartyMappingRequestNew;
+
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import javax.persistence.*;
 import java.util.*;
 
 @Entity
 @Table(name = "product_tblpartydetails")
 public class Party {
-
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -93,6 +92,28 @@ public class Party {
 	inverseJoinColumns = @JoinColumn(name="classificationId"))
 	private Set<PacketClassification> packetClassificationTags = new HashSet<>();
 
+	@ManyToMany(cascade = {CascadeType.PERSIST,CascadeType.MERGE,CascadeType.REFRESH})
+	@JoinTable(name="product_endusertag_party",
+	joinColumns = @JoinColumn(name="party_id"),
+	inverseJoinColumns = @JoinColumn(name="tagId"))
+	private Set<EndUserTagsEntity> endUserTags = new HashSet<>();
+	
+	@Column(name = "show_amt_dcpdf_flg")
+	private String showAmtDcPdfFlg;
+	
+	@Transient
+	private List<QualityPartyMappingRequestNew> templateIdList = new ArrayList<>();
+
+	public void addEndUserTags(EndUserTagsEntity endUserTagsEntity){
+		this.endUserTags.add(endUserTagsEntity);
+		endUserTagsEntity.getParties().add(this);
+	}
+
+	public void removeEndUserTags(EndUserTagsEntity endUserTagsEntity){
+		this.endUserTags.remove(endUserTagsEntity);
+		endUserTagsEntity.getParties().remove(this);
+	}
+	
 	public void addPacketClassification(PacketClassification packetClassification){
 		this.packetClassificationTags.add(packetClassification);
 		packetClassification.getParties().add(this);
@@ -279,9 +300,18 @@ public class Party {
 		this.packetClassificationTags = packetClassificationTags;
 	}
 
+	public Set<EndUserTagsEntity> getEndUserTags() {
+		return endUserTags;
+	}
+
+	public void setEndUserTags(Set<EndUserTagsEntity> endUserTags) {
+		this.endUserTags = endUserTags;
+	}
+
 	public static PartyDto valueOf(Party party){
 		PartyDto partyDto = new PartyDto();
 		partyDto.setPartyName(party.getPartyName());
+		partyDto.setNPartyId(party.getnPartyId());
 		partyDto.setPartyNickname(party.getPartyNickname());
 		if(party.getAddress1() != null) {
 			partyDto.setAddress1(Address.valueOf(party.getAddress1()));
@@ -298,6 +328,7 @@ public class Party {
 		partyDto.setPhone1(party.getPhone1());
 		partyDto.setPhone2(party.getPhone2());
 		partyDto.setTanNumber(party.getTanNumber());
+		partyDto.setShowAmtDcPdfFlg(party.getShowAmtDcPdfFlg());
 		List<PacketClassificationRequest> list = new ArrayList<>();
 		for(PacketClassification pc: party.getPacketClassificationTags()){
 			PacketClassificationRequest req = new PacketClassificationRequest();
@@ -306,6 +337,36 @@ public class Party {
 			list.add(req);
 		}
 		partyDto.setTags(list);
+		
+		List<EndUserTagsRequest> endUserTagsList = new ArrayList<>();
+		for(EndUserTagsEntity pc: party.getEndUserTags()){
+			EndUserTagsRequest req = new EndUserTagsRequest();
+			req.setTagId(pc.getTagId());
+			req.setTagName( pc.getTagName());
+			endUserTagsList.add(req);
+		}
+		partyDto.setEndUserTags(endUserTagsList);
+		partyDto.setTemplateIdList(party.getTemplateIdList());
 		return partyDto;
 	}
+
+	public List<QualityPartyMappingRequestNew> getTemplateIdList() {
+		return templateIdList;
+	}
+
+	public void setTemplateIdList(List<QualityPartyMappingRequestNew> templateIdList) {
+		this.templateIdList = templateIdList;
+	}
+
+	public String getShowAmtDcPdfFlg() {
+		return showAmtDcPdfFlg;
+	}
+
+	public void setShowAmtDcPdfFlg(String showAmtDcPdfFlg) {
+		this.showAmtDcPdfFlg = showAmtDcPdfFlg;
+	}
+ 
+	
+	
+	
 }

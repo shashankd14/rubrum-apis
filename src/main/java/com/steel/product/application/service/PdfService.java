@@ -6,6 +6,7 @@ import com.steel.product.application.entity.CompanyDetails;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
@@ -26,47 +27,71 @@ public class PdfService {
     private CompanyDetailsService companyDetailsService;
     private SpringTemplateEngine templateEngine;
     private InstructionService instructionService;
+	private AWSS3Service awsS3Service; 
+	private PartDetailsService partDetailsService;
 
-    @Autowired
-    public PdfService(InwardEntryService inwardEntryService, CompanyDetailsService companyDetailsService, SpringTemplateEngine templateEngine, InstructionService instructionService) {
-        this.inwardEntryService = inwardEntryService;
-        this.companyDetailsService = companyDetailsService;
-        this.templateEngine = templateEngine;
-        this.instructionService = instructionService;
-    }
+    @Value("${aws.s3.bucketPDFs}")
+    private String bucketName;
+
+	@Autowired
+	public PdfService(InwardEntryService inwardEntryService, CompanyDetailsService companyDetailsService,
+			SpringTemplateEngine templateEngine, InstructionService instructionService, AWSS3Service awsS3Service,
+			PartDetailsService partDetailsService) {
+		this.inwardEntryService = inwardEntryService;
+		this.companyDetailsService = companyDetailsService;
+		this.templateEngine = templateEngine;
+		this.instructionService = instructionService;
+		this.awsS3Service = awsS3Service;
+		this.partDetailsService = partDetailsService;
+	}
 
     public File generatePdf(PdfDto pdfDto) throws IOException, org.dom4j.DocumentException, DocumentException {
         Context context = getContext(pdfDto);
         String html = loadAndFillTemplate(context, pdfDto.getProcessId());
-        return renderPdf(html, "inward");
+        return renderPdfInstruction(html, "inward", ""+pdfDto.getInwardId(), "INWARD_PDF");
     }
 
     public File generatePdf(PartDto partDto) throws IOException, org.dom4j.DocumentException, DocumentException {
         Context context = getContext(partDto);
         InwardEntryPdfDto inwardEntryPdfDto = (InwardEntryPdfDto)context.getVariable("inward");
         String html = loadAndFillTemplate(context,Integer.parseInt(inwardEntryPdfDto.getVProcess()));
-        return renderPdf(html, "inward");
+        return renderPdfInstruction(html, "inward", partDto.getPartDetailsId(), "PLAN_PDF");
     }
 
     public File generateDeliveryPdf(DeliveryPdfDto deliveryPdfDto) throws IOException, org.dom4j.DocumentException, DocumentException {
         Context context = getDeliveryContext(deliveryPdfDto);
         String html = loadAndFillDeliveryTemplate(context, deliveryPdfDto);
-        return renderPdf(html, "delivery");
+        int deliverId=0;
+        
+        if(deliveryPdfDto.getInstructionIds()!=null && deliveryPdfDto.getInstructionIds().size()>0) {
+            List<InwardEntry> inwardEntries = inwardEntryService.findDeliveryItemsByInstructionIds(deliveryPdfDto.getInstructionIds());
+            InwardEntry inwardEntry =inwardEntries.get(0);
+            for ( Instruction instruction : inwardEntry.getInstructions()) {
+            	deliverId = instruction.getDeliveryDetails().getDeliveryId();
+            }
+        }
+        
+        return renderPdfInstruction(html, "delivery", ""+deliverId, "DC_PDF");
     }
 
     private String loadAndFillDeliveryTemplate(Context context, DeliveryPdfDto deliveryPdfDto) {
-        return templateEngine.process("DC-slit", context);
+    	DeliveryChallanPdfDto deliveryChallanPdfDto = (DeliveryChallanPdfDto)context.getVariable("deliveryChallan");
+        if("Y".equals(deliveryChallanPdfDto.getShowAmtDcPdfFlg())) {
+            return templateEngine.process("DC-slit", context);
+        } else {
+            return templateEngine.process("DC-slit-without_price.html", context);
+        }
     }
 
     private Context getDeliveryContext(DeliveryPdfDto deliveryPdfDto) {
         Context context = new Context();
         List<InwardEntry> inwardEntries = inwardEntryService.findDeliveryItemsByInstructionIds(deliveryPdfDto.getInstructionIds());
         CompanyDetails companyDetails = companyDetailsService.findById(1);
+            	
         DeliveryChallanPdfDto deliveryChallanPdfDto = new DeliveryChallanPdfDto(companyDetails,inwardEntries);
         context.setVariable("deliveryChallan",deliveryChallanPdfDto);
         return context;
     }
-
 
     private File renderPdf(String html,String filename) throws IOException, DocumentException {
         File file = File.createTempFile("aspen-steel-"+filename, ".pdf");
@@ -74,8 +99,71 @@ public class PdfService {
         ITextRenderer renderer = new ITextRenderer(20f * 4f / 3f, 20);
         renderer.setDocumentFromString(html, new ClassPathResource("/").getURL().toExternalForm());
         renderer.layout();
-        renderer.createPDF(outputStream);
+        renderer.createPDF(outputStream);        
         outputStream.close();
+        file.deleteOnExit();
+        return file;
+    }
+
+    private File renderPdfInstruction(String html, String filename, String id, String processType) throws IOException, DocumentException {
+        File file = File.createTempFile("aspen-steel-"+filename, ".pdf");
+        OutputStream outputStream = new FileOutputStream(file);
+        ITextRenderer renderer = new ITextRenderer(20f * 4f / 3f, 20);
+        renderer.setDocumentFromString(html, new ClassPathResource("/").getURL().toExternalForm());
+        renderer.layout();
+        renderer.createPDF(outputStream);
+    
+		try {
+			String fileUrl = "";
+			if("INWARD_PDF".equals(processType)) {
+				fileUrl = awsS3Service.uploadPDFFileToS3Bucket(bucketName, file, "INWARD_"+id);
+				instructionService.updateS3InwardPDF(Integer.parseInt(id), "INWARD_"+id);
+			} else if("PLAN_PDF".equals(processType)) {
+				fileUrl = awsS3Service.uploadPDFFileToS3Bucket(bucketName, file, id);
+				instructionService.updateS3PlanPDF(id, fileUrl);
+			} else if("DC_PDF".equals(processType)) {
+				fileUrl = awsS3Service.uploadPDFFileToS3Bucket(bucketName, file, "DC_"+id);
+				instructionService.updateS3DCPDF(Integer.parseInt(id), "DC_"+id);
+			}
+			System.out.println("fileUrl == "+fileUrl);
+		} catch (Exception e) {
+			System.out.println("Error while uploading pdf - " + e.getMessage());
+		}
+       
+        outputStream.close();
+        file.deleteOnExit();
+        return file;
+    }
+
+    public File renderQRCodePdfInstruction(String filename, String id, String processType, byte[] byteArray) throws IOException {
+        File file = File.createTempFile(filename, ".pdf");
+    
+		try {
+			String fileUrl = "";
+			if ("QRCODE_INWARD_PDF".equals(processType)) {
+				OutputStream out = new FileOutputStream(file);
+				out.write(byteArray);
+				out.close();
+				fileUrl = awsS3Service.uploadPDFFileToS3Bucket(bucketName, file, "QRCODE_INWARD_" + id);
+				inwardEntryService.updateQRCodeS3InwardPDF(id, "QRCODE_INWARD_" + id);
+			} else if ("QRCODE_PLAN_PDF".equals(processType)) {
+				OutputStream out = new FileOutputStream(file);
+				out.write(byteArray);
+				out.close();
+				fileUrl = awsS3Service.uploadPDFFileToS3Bucket(bucketName, file, "QRCODE_PLAN_" + id);
+				partDetailsService.updatePartDetailsS3PDF(id, "QRCODE_PLAN_" + id);
+			}  else if ("QRCODE_EDITFINISH_PDF".equals(processType)) {
+				OutputStream out = new FileOutputStream(file);
+				out.write(byteArray);
+				out.close();
+				fileUrl = awsS3Service.uploadPDFFileToS3Bucket(bucketName, file, "QRCODE_EDITFINISH_" + id);
+				inwardEntryService.updateQRCodeEditFinish(id, "QRCODE_EDITFINISH_" + id);
+			} 
+			System.out.println("fileUrl == "+fileUrl);
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("Error while uploading pdf - " + e.getMessage());
+		}
         file.deleteOnExit();
         return file;
     }
@@ -119,7 +207,7 @@ public class PdfService {
 
     private Context getContext(PartDto partDto) {
         Context context = new Context();
-        InwardEntryPdfDto inwardEntryPdfDto = instructionService.findInwardJoinFetchInstructionsAndPartDetails(partDto.getPartDetailsId(), partDto.getGroupIds());
+        InwardEntryPdfDto inwardEntryPdfDto = instructionService.findQRCodeInwardJoinFetchInstructionsAndPartDetails(partDto.getPartDetailsId(), partDto.getGroupIds());
         context.setVariable("inward", inwardEntryPdfDto);
         return context;
     }

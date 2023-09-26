@@ -1,8 +1,6 @@
 package com.steel.product.application.dto.delivery;
 
 import com.steel.product.application.dto.instruction.InstructionResponseDto;
-import com.steel.product.application.entity.DeliveryDetails;
-
 import java.util.Date;
 import java.util.List;
 
@@ -11,6 +9,8 @@ public class DeliveryResponseDto {
     private Integer deliveryId;
 
     private String vehicleNo;
+    
+    private Integer packingRateId;
 
     private Float totalWeight;
 
@@ -117,6 +117,14 @@ public class DeliveryResponseDto {
     public void setInstruction(List<InstructionResponseDto> instruction) {
         this.instruction = instruction;
     }
+
+	public Integer getPackingRateId() {
+		return packingRateId;
+	}
+
+	public void setPackingRateId(Integer packingRateId) {
+		this.packingRateId = packingRateId;
+	}
 
 
 }

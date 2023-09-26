@@ -1,6 +1,5 @@
 package com.steel.product.application.entity;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.steel.product.application.dto.inward.InwardEntryResponseDto;
 import com.steel.product.application.dto.pdf.InstructionResponsePdfDto;
 import com.steel.product.application.dto.pdf.InwardEntryPdfDto;
@@ -101,6 +100,9 @@ public class InwardEntry {
 	@Column(name = "billedweight")
 	private float billedweight;
 
+	@Column(name = "scrapWeight")
+	private Float scrapWeight;
+
 	@Column(name = "parentcoilnumber")
 	private String parentCoilNumber;
 
@@ -110,15 +112,11 @@ public class InwardEntry {
 	@Column(name = "remarks")
 	private String remarks;
 
-	@JsonManagedReference
-	@ManyToOne
-	@JoinColumn(name = "createdby")
-	private User createdBy;
+	@Column(name = "createdby")
+	private int createdBy;
 
-	@JsonManagedReference
-	@ManyToOne
-	@JoinColumn(name = "updatedby")
-	private User updatedBy;
+	@Column(name = "updatedby")
+	private int updatedBy;
 
 	@CreationTimestamp
 	@Column(name = "createdon", nullable = false,updatable = false)
@@ -143,6 +141,14 @@ public class InwardEntry {
 	@Column(name = "available_length")
 	private Float availableLength;
 
+    @Column(name = "pdf_s3_url")
+    private String pdfS3Url;
+
+    @Column(name = "qrcode_s3_url")
+    private String qrcodeS3Url;
+
+    @Column(name = "qrcode_editfinish_s3_url")
+    private String qrcodeEditfinishS3Url;
 
 	public void addInstruction(Instruction instruction){
 		if(this.instructions == null){
@@ -335,19 +341,19 @@ public class InwardEntry {
 		this.status = status;
 	}
 
-	public User getCreatedBy() {
+	public int getCreatedBy() {
 		return this.createdBy;
 	}
 
-	public void setCreatedBy(User createdBy) {
+	public void setCreatedBy(int createdBy) {
 		this.createdBy = createdBy;
 	}
 
-	public User getUpdatedBy() {
+	public int getUpdatedBy() {
 		return this.updatedBy;
 	}
 
-	public void setUpdatedBy(User updatedBy) {
+	public void setUpdatedBy(int updatedBy) {
 		this.updatedBy = updatedBy;
 	}
 
@@ -481,6 +487,39 @@ public class InwardEntry {
 		this.availableLength = availableLength;
 	}
 
+	public Float getScrapWeight() {
+		return scrapWeight;
+	}
+
+	public void setScrapWeight(Float scrapWeight) {
+		this.scrapWeight = scrapWeight;
+	}
+
+	public String getPdfS3Url() {
+		return pdfS3Url;
+	}
+
+	public void setPdfS3Url(String pdfS3Url) {
+		this.pdfS3Url = pdfS3Url;
+	}
+
+
+	public String getQrcodeS3Url() {
+		return qrcodeS3Url;
+	}
+
+	public void setQrcodeS3Url(String qrcodeS3Url) {
+		this.qrcodeS3Url = qrcodeS3Url;
+	}
+
+	public String getQrcodeEditfinishS3Url() {
+		return qrcodeEditfinishS3Url;
+	}
+
+	public void setQrcodeEditfinishS3Url(String qrcodeEditfinishS3Url) {
+		this.qrcodeEditfinishS3Url = qrcodeEditfinishS3Url;
+	}
+	
 	public static InwardEntryPdfDto valueOf(InwardEntry inwardEntry, List<InstructionResponsePdfDto> instructionResponsePdfDtos){
         InwardEntryPdfDto inwardEntryPdfDto = new InwardEntryPdfDto();
         inwardEntryPdfDto.setInwardEntryId(inwardEntry.getInwardEntryId());
@@ -576,6 +615,10 @@ public class InwardEntry {
 		inwardEntryResponseDto.setInstruction(inwardEntry.getInstructions() != null ?
 				inwardEntry.getInstructions().stream().filter(i -> !i.getIsDeleted())
 						.map(i -> Instruction.valueOf(i)).collect(Collectors.toList()): null);
+		if(inwardEntryResponseDto.getInstruction()!=null && inwardEntryResponseDto.getInstruction().size()>0) {
+			Collections.sort(inwardEntryResponseDto.getInstruction(), new MyInstructionIdComp());
+		}
+		
 		inwardEntryResponseDto.setPurposeType(inwardEntry.getPurposeType());
 		inwardEntryResponseDto.setdReceivedDate(inwardEntry.getdReceivedDate());
 		inwardEntryResponseDto.setvLorryNo(inwardEntry.getvLorryNo());
@@ -597,9 +640,8 @@ public class InwardEntry {
 		inwardEntryResponseDto.setAvailableLength(inwardEntry.getAvailableLength());
 		inwardEntryResponseDto.setCustomerInvoiceNo(inwardEntry.getCustomerInvoiceNo());
 		inwardEntryResponseDto.setParentCoilNumber(inwardEntry.getParentCoilNumber());
+		inwardEntryResponseDto.setScrapWeight( inwardEntry.getScrapWeight() );
 		return inwardEntryResponseDto;
 	}
-
-
 
 }

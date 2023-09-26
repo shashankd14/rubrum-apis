@@ -3,9 +3,7 @@ package com.steel.product.application.entity;
 import com.steel.product.application.dto.process.ProcessDto;
 
 import javax.persistence.*;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Table(name = "product_process")

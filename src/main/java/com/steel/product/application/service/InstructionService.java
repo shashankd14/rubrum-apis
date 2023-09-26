@@ -2,7 +2,9 @@ package com.steel.product.application.service;
 
 import com.steel.product.application.dto.instruction.*;
 import com.steel.product.application.dto.pdf.InwardEntryPdfDto;
+import com.steel.product.application.dto.qrcode.QRCodeResponse;
 import com.steel.product.application.entity.Instruction;
+import com.steel.product.application.exception.MockException;
 import com.steel.product.application.mapper.TotalLengthAndWeight;
 import org.springframework.http.ResponseEntity;
 
@@ -39,9 +41,9 @@ public interface InstructionService {
 
     public Instruction save(Instruction instruction);
 
-    public InstructionResponseDto saveUnprocessedForDelivery(Integer inwardId);
+    public InstructionResponseDto saveUnprocessedForDelivery(Integer inwardId, int userId);
 
-    ResponseEntity<Object> updateInstruction(InstructionFinishDto instructionFinishDto);
+    ResponseEntity<Object> updateInstruction(InstructionFinishDto instructionFinishDto, int userId);
 
     public List<Instruction> findAllByInstructionIdInAndStatus(List<Integer> instructionIds, Integer statusId);
 
@@ -57,10 +59,9 @@ public interface InstructionService {
 
     List<Instruction> getAllByInstructionIdIn(List<Integer> instructionIds);
 
-    ResponseEntity<Object> addInstruction(List<InstructionSaveRequestDto> instructionSaveRequestDtos);
+    ResponseEntity<Object> addInstruction(List<InstructionSaveRequestDto> instructionSaveRequestDtos, int userId);
 
     InwardEntryPdfDto findInwardJoinFetchInstructionsAndPartDetails(String partDetailsId,List<Integer> groupIds);
-
 
     ResponseEntity<Object> deleteCut(CutInstructionDeleteRequest cutInstructionDeleteRequest);
 
@@ -71,5 +72,25 @@ public interface InstructionService {
     Instruction findFirstByGroupIdAndIsDeletedFalse(Integer groupId);
 
     HashMap<Integer,Double> findSumOfPlannedWeightAndActualWeightForUnprocessed();
+
+    List<InstructionResponseDto> saveFullHandlingDispatch(List<Integer> inwardList, int userId) throws MockException;
+
+	int getPartCount(Long theId);
+
+	public void updateS3PlanPDF(String partDetailsId, String url);
+
+	public void updateS3InwardPDF(Integer inwardId, String url);
+
+	public void updateS3DCPDF(Integer inwardId, String url);
+
+	List<Instruction> findAllByInstructionIdInAndStatus(List<Integer> instructionIds, List<Integer> statusId);
+
+	List<Instruction> findSlitAndCutInstructionByInwardId1(Integer inwardId);
+
+	public List<QRCodeResponse> getQRCodeDetails(InwardEntryPdfDto inwardEntryPdfDto);
+
+	InwardEntryPdfDto findQRCodeInwardJoinFetchInstructionsAndPartDetails(String partDetailsId, List<Integer> groupIds);
+
+	public List<QRCodeResponse> getQRCodeDetails_Finish(Integer inwardId);
 }
 

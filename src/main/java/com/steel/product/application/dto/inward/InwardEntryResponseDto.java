@@ -71,9 +71,9 @@ public class InwardEntryResponseDto {
 
     private String remarks;
 
-    private User createdBy;
+    private int createdBy;
 
-    private User updatedBy;
+    private int updatedBy;
 
     private Date createdOn;
 
@@ -89,6 +89,8 @@ public class InwardEntryResponseDto {
 
     private Float availableLength;
 
+	private Float scrapWeight;
+    
     public Integer getInwardEntryId() {
         return inwardEntryId;
     }
@@ -329,19 +331,19 @@ public class InwardEntryResponseDto {
         this.remarks = remarks;
     }
 
-    public User getCreatedBy() {
+    public int getCreatedBy() {
         return createdBy;
     }
 
-    public void setCreatedBy(User createdBy) {
+    public void setCreatedBy(int createdBy) {
         this.createdBy = createdBy;
     }
 
-    public User getUpdatedBy() {
+    public int getUpdatedBy() {
         return updatedBy;
     }
 
-    public void setUpdatedBy(User updatedBy) {
+    public void setUpdatedBy(int updatedBy) {
         this.updatedBy = updatedBy;
     }
 
@@ -400,4 +402,14 @@ public class InwardEntryResponseDto {
     public void setAvailableLength(Float availableLength) {
         this.availableLength = availableLength;
     }
+
+	public Float getScrapWeight() {
+		return scrapWeight;
+	}
+
+	public void setScrapWeight(Float scrapWeight) {
+		this.scrapWeight = scrapWeight;
+	}
+    
+    
 }

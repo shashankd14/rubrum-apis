@@ -17,72 +17,82 @@ import java.util.stream.Collectors;
 @Service
 public class MaterialDescriptionServiceImpl implements MaterialDescriptionService {
 
-    private MaterialDescriptionRepository matDescRepo;
+	private MaterialDescriptionRepository matDescRepo;
 
-    private MaterialGradeRepository materialGradeRepository;
+	private MaterialGradeRepository materialGradeRepository;
 
-    @Autowired
-    public MaterialDescriptionServiceImpl(MaterialDescriptionRepository matDescRepo, MaterialGradeRepository materialGradeRepository) {
-        this.matDescRepo = matDescRepo;
-        this.materialGradeRepository = materialGradeRepository;
-    }
+	@Autowired
+	public MaterialDescriptionServiceImpl(MaterialDescriptionRepository matDescRepo,
+			MaterialGradeRepository materialGradeRepository) {
+		this.matDescRepo = matDescRepo;
+		this.materialGradeRepository = materialGradeRepository;
+	}
 
-    public Material saveMatDesc(Material matDesc) {
-        return (Material) this.matDescRepo.save(matDesc);
-    }
+	@Override
+	public Material saveMatDesc(MaterialRequestDto materialRequestDto, int userId) {
 
-  @Override
-  public Material saveMatDesc(MaterialRequestDto materialRequestDto) {
+		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+		Material material = new Material();
+		Material savedMaterial = new Material();
+		if (materialRequestDto.getMatId() != 0) {
+			material = getMatById(materialRequestDto.getMatId());
+		}
+		material.setDescription(materialRequestDto.getMaterial());
+		material.setCreatedBy(userId);
+		material.setUpdatedBy(userId);
+		material.setCreatedOn(timestamp);
+		material.setUpdatedOn(timestamp);
+		material.setIsDeleted(false);
+		material.setHsnCode(materialRequestDto.getHsnCode());
+		material.setMaterialCode(materialRequestDto.getMaterialCode());
 
-    Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-    Material material = new Material();
-    Material savedMaterial = new Material();
-    if(materialRequestDto.getMatId() !=0){
-      material = getMatById(materialRequestDto.getMatId());
-    }
-    material.setDescription(materialRequestDto.getMaterial());
-    material.setCreatedBy(1);
-    material.setUpdatedBy(1);
-    material.setCreatedOn(timestamp);
-    material.setUpdatedOn(timestamp);
-    material.setIsDeleted(false);
-    material.setHsnCode(materialRequestDto.getHsnCode());
-    material.setMaterialCode(materialRequestDto.getMaterialCode());
+		savedMaterial = matDescRepo.save(material);
 
-    savedMaterial = matDescRepo.save(material);
+		//if (materialRequestDto.getMatId() != 0) {
+			//materialGradeRepository.deleteGradesByMaterialId(materialRequestDto.getMatId());
+		//}
+		List<MaterialGrade> materialGradeList = materialGradeRepository.getGradesByMaterialId( materialRequestDto.getMatId());
+		for (MaterialGrade materialGradeEntity : materialGradeList) {
+			if(materialGradeEntity.getInwardEntry().size() ==0) {
+				materialGradeRepository.deleteById( materialGradeEntity.getGradeId());
+			}
+		}
+		
+		for (String grade : materialRequestDto.getGrade()) {
+			MaterialGrade materialGrade = materialGradeRepository.getGradesByMaterialIdName( materialRequestDto.getMatId(), grade);
+			if(materialGrade!=null && materialGrade.getGradeId()>0) {
+				materialGrade.setParentMaterial(savedMaterial);
+				materialGrade.setGradeName(grade);
+			} else {
+				materialGrade = new MaterialGrade();
+				materialGrade.setParentMaterial(savedMaterial);
+				materialGrade.setGradeName(grade);
+			}
+			materialGradeRepository.save(materialGrade);
+		}
 
-    if(materialRequestDto.getMatId() != 0){
-      materialGradeRepository.deleteGradesByMaterialId(materialRequestDto.getMatId());
-    }
-    for(String grade : materialRequestDto.getGrade()){
-      MaterialGrade materialGrade = new MaterialGrade();
-      materialGrade.setParentMaterial(savedMaterial);
-      materialGrade.setGradeName(grade);
-      materialGradeRepository.save(materialGrade);
-    }
+		return material;
 
-    return material;
+	}
 
-  }
+	public List<MaterialResponseDetailsDto> getAllMatDesc() {
+		List<Material> materials = matDescRepo.findAll();
+		return materials.stream().map(m -> Material.valueOfMat(m)).collect(Collectors.toList());
+	}
 
-  public List<MaterialResponseDetailsDto> getAllMatDesc() {
-    List<Material> materials = matDescRepo.findAll();
-    return materials.stream().map(m -> Material.valueOfMat(m)).collect(Collectors.toList());
-  }
-  
-  public Material getMatById(int MatId) {
-    Optional<Material> result = this.matDescRepo.findById(Integer.valueOf(MatId));
-    Material theMatDesc = null;
-    if (result.isPresent()) {
-      theMatDesc = result.get();
-    } else {
-      throw new RuntimeException("Did not find Material id - " + MatId);
-    } 
-    return theMatDesc;
-  }
+	public Material getMatById(int MatId) {
+		Optional<Material> result = this.matDescRepo.findById(Integer.valueOf(MatId));
+		Material theMatDesc = null;
+		if (result.isPresent()) {
+			theMatDesc = result.get();
+		} else {
+			throw new RuntimeException("Did not find Material id - " + MatId);
+		}
+		return theMatDesc;
+	}
 
-  @Override
-  public Material findByDesc(String desc) {
-    return matDescRepo.findByDescription(desc);
-  }
+	@Override
+	public Material findByDesc(String desc) {
+		return matDescRepo.findByDescription(desc);
+	}
 }

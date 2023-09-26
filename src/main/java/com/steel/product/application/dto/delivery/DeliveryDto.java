@@ -11,9 +11,13 @@ public class DeliveryDto {
 
     private Integer deliveryId;
 
+    private String taskType;
+
     private String customerInvoiceNo;
 
     private Date customerInvoiceDate;
+    
+    private Integer packingRateId;
 
     public List<DeliveryItemDetails> getDeliveryItemDetails() {
         return deliveryItemDetails;
@@ -54,4 +58,24 @@ public class DeliveryDto {
     public void setDeliveryId(Integer deliveryId) {
         this.deliveryId = deliveryId;
     }
+
+	public String getTaskType() {
+		return taskType;
+	}
+
+	public void setTaskType(String taskType) {
+		this.taskType = taskType;
+	}
+
+	public Integer getPackingRateId() {
+		return packingRateId;
+	}
+
+	public void setPackingRateId(Integer packingRateId) {
+		this.packingRateId = packingRateId;
+	}
+
+
 }
+
+

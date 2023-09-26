@@ -1,6 +1,5 @@
 package com.steel.product.application.dao;
 
-
 import com.steel.product.application.entity.PacketClassification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -11,10 +10,14 @@ import java.util.List;
 import java.util.Set;
 
 @Repository
-public interface PacketClassificationRepository extends JpaRepository<PacketClassification, Integer>  {
-    List<PacketClassification> findAllByClassificationIdIn(List<Integer> packetClassificationIds);
-    Set<PacketClassification> findAllByClassificationNameIn(List<String> classificationNames);
+public interface PacketClassificationRepository extends JpaRepository<PacketClassification, Integer> {
 
-    @Query("select pc from PacketClassification pc left join fetch pc.parties p where p.nPartyId = :partyId")
-    List<PacketClassification> findByPartyId(@Param("partyId")Integer partyId);
+	List<PacketClassification> findAllByClassificationIdIn(List<Integer> packetClassificationIds);
+
+	Set<PacketClassification> findAllByClassificationNameIn(List<String> classificationNames);
+
+	PacketClassification findByClassificationName(String classificationName);
+
+	@Query("select pc from PacketClassification pc left join fetch pc.parties p where p.nPartyId = :partyId")
+	List<PacketClassification> findByPartyId(@Param("partyId") Integer partyId);
 }
