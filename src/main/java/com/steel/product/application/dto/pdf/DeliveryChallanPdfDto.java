@@ -20,6 +20,7 @@ public class DeliveryChallanPdfDto {
 	private String showAmtDcPdfFlg;
     private String partyGSTNo;
     private String partyAddress;
+    private String customerInvoiceNo;
 
     public DeliveryChallanPdfDto() {
     }
@@ -27,6 +28,7 @@ public class DeliveryChallanPdfDto {
     public DeliveryChallanPdfDto(CompanyDetails companyDetails, List<InwardEntry> inwardEntries){
         this.companyName = companyDetails.getCompanyName();
         this.gstN = companyDetails.getGstN();
+        this.customerInvoiceNo = companyDetails.getGstN();
         this.addressBranch = companyDetails.getAddressBranch();
         this.addressOffice = companyDetails.getAddressOffice();
         this.email = companyDetails.getEmail();
@@ -46,10 +48,11 @@ public class DeliveryChallanPdfDto {
         this.totalPrice = inwardPdfDtos.stream().flatMap(inw -> inw.getInstructions().stream())
                 .reduce(0f,(sum,ins) -> sum+Float.parseFloat( ins.getTotalPrice()) ,Float::sum);
 
-        for(InwardEntry kk : inwardEntries) {
-        	this.showAmtDcPdfFlg=kk.getParty().getShowAmtDcPdfFlg();
-        	this.partyGSTNo=kk.getParty().getGstNumber();
-        	this.partyAddress=kk.getParty().getAddress1().getDetails();
+        for(InwardEntry inwardEntry : inwardEntries) {
+        	this.showAmtDcPdfFlg=inwardEntry.getParty().getShowAmtDcPdfFlg();
+        	this.partyGSTNo=inwardEntry.getParty().getGstNumber();
+        	this.partyAddress=inwardEntry.getParty().getAddress1().getDetails();
+        	this.customerInvoiceNo=inwardEntry.getCustomerInvoiceNo();
         }
     }
 
@@ -147,6 +150,14 @@ public class DeliveryChallanPdfDto {
 
 	public void setPartyAddress(String partyAddress) {
 		this.partyAddress = partyAddress;
+	}
+
+	public String getCustomerInvoiceNo() {
+		return customerInvoiceNo;
+	}
+
+	public void setCustomerInvoiceNo(String customerInvoiceNo) {
+		this.customerInvoiceNo = customerInvoiceNo;
 	}
     
 }

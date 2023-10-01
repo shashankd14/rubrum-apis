@@ -9,7 +9,6 @@ import com.steel.product.application.dto.pricemaster.PriceCalculateDTO;
 import com.steel.product.application.dto.pricemaster.PriceMasterRequest;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.PriceMasterEntity;
-
 import lombok.extern.log4j.Log4j2;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -19,6 +18,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +41,15 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 	
 	@Autowired
 	AdditionalPriceMasterService additionalPriceMasterService;
+	
+	@Autowired
+	PartyDetailsService partyDetailsService;
+	
+	@Autowired
+	MaterialGradeService materialGradeService;
+	
+	@Autowired
+	ProcessService processService;
 
 	@Override
 	public ResponseEntity<Object> save(List<PriceMasterRequest> priceMasterRequestList, int userId) {
@@ -55,9 +66,9 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 					if (priceMasterRequest.getId() != null && priceMasterRequest.getId() > 0) {
 						priceMasterEntity.setId(priceMasterRequest.getId());
 					}
-					priceMasterEntity.setPartyId(partyId);
-					priceMasterEntity.setProcessId(priceMasterRequest.getProcessId());
-					priceMasterEntity.setMatGradeId(matGradeId);
+					priceMasterEntity.setParty(partyDetailsService.getPartyById(partyId));
+					priceMasterEntity.setMatGrade( materialGradeService.getById(matGradeId));
+					priceMasterEntity.setProcess( processService.getById(priceMasterRequest.getProcessId()));
 					priceMasterEntity.setPrice(priceMasterRequest.getPrice());
 					priceMasterEntity.setThicknessFrom(priceMasterRequest.getThicknessFrom());
 					priceMasterEntity.setThicknessTo(priceMasterRequest.getThicknessTo());
@@ -74,8 +85,8 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 		
 		for (PriceMasterEntity entity : list) {
 			
-			List<PriceMasterEntity> fromList = priceMasterRepository.validateRange(entity.getPartyId(),
-					entity.getProcessId(), entity.getMatGradeId(), entity.getThicknessFrom());
+			List<PriceMasterEntity> fromList = priceMasterRepository.validateRange(entity.getParty().getnPartyId(),
+					entity.getProcess().getProcessId(), entity.getMatGrade().getGradeId(), entity.getThicknessFrom());
 			
 			if(fromList!=null && fromList.size()>0) {
 				if(fromList.size()==1) {
@@ -87,8 +98,8 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered From Range Already Exists.\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 				}
 			} 
-			List<PriceMasterEntity> toList = priceMasterRepository.validateRange(entity.getPartyId(),
-					entity.getProcessId(), entity.getMatGradeId(), entity.getThicknessTo());
+			List<PriceMasterEntity> toList = priceMasterRepository.validateRange(entity.getParty().getnPartyId(),
+					entity.getProcess().getProcessId(), entity.getMatGrade().getGradeId(), entity.getThicknessTo());
 			if(toList!=null && toList.size()>0) {
 				if(toList.size()==1) {
 					PriceMasterEntity duplicateEntity=toList.get(0);
@@ -135,7 +146,7 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 	@Override
 	public List<PriceMasterResponse> getPartyGradeWiseDetails(int partyId, int processId, int gradeId) {
 
-		List<Object[]> list = priceMasterRepository.findByPartyIdAndProcessIdAndMatGradeId(partyId, processId, gradeId);
+		List<Object[]> list = priceMasterRepository.findByPartyIdAndProcessIdAndMatGradeIdss(partyId, processId, gradeId);
 		return prepareDataList(list);
 	}
 	
@@ -159,10 +170,6 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 					priceMasterResponse.setThicknessFrom(result[4] != null ? (BigDecimal) result[4] : null);
 					priceMasterResponse.setThicknessTo(result[5] != null ? (BigDecimal) result[5] : null);
 					priceMasterResponse.setPrice(result[6] != null ? (BigDecimal) result[6] : null);
-					priceMasterResponse.setCreatedBy(result[7] != null ? (Integer) result[7] : null);
-					priceMasterResponse.setUpdatedBy(result[8] != null ? (Integer) result[8] : null);
-					priceMasterResponse.setCreatedOn(result[9] != null ? (Date) result[9] : null);
-					priceMasterResponse.setUpdatedOn(result[10] != null ? (Date) result[10] : null);
 					priceMasterResponse.setPartyName(result[11] != null ? (String) result[11] : null);
 					priceMasterResponse.setProcessName(result[12] != null ? (String) result[12] : null);
 					priceMasterResponse.setMatGradeName(result[13] != null ? (String) result[13] : null);
@@ -190,10 +197,6 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 					priceMasterResponse.setThicknessFrom(result[4] != null ? (BigDecimal) result[4] : null);
 					priceMasterResponse.setThicknessTo(result[5] != null ? (BigDecimal) result[5] : null);
 					priceMasterResponse.setPrice(result[6] != null ? (BigDecimal) result[6] : null);
-					priceMasterResponse.setCreatedBy(result[7] != null ? (Integer) result[7] : null);
-					priceMasterResponse.setUpdatedBy(result[8] != null ? (Integer) result[8] : null);
-					priceMasterResponse.setCreatedOn(result[9] != null ? (Date) result[9] : null);
-					priceMasterResponse.setUpdatedOn(result[10] != null ? (Date) result[10] : null);
 					priceMasterResponse.setPartyName(result[11] != null ? (String) result[11] : null);
 					priceMasterResponse.setProcessName(result[12] != null ? (String) result[12] : null);
 					priceMasterResponse.setMatGradeName(result[13] != null ? (String) result[13] : null);
@@ -599,5 +602,11 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 		return priceCalculateDTO;
 	}
 
-	
+    @Override
+    public Page<PriceMasterEntity> findAllWithPagination(int pageNo, int pageSize, String searchText) {
+    	Pageable pageable = PageRequest.of((pageNo-1), pageSize);
+    	Page<PriceMasterEntity> pageResult = priceMasterRepository.findAll(searchText, pageable);
+		return pageResult ;
+    }
+
 }

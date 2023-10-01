@@ -32,12 +32,4 @@ public class PriceMasterResponse {
 
 	private BigDecimal price;
 
-	private Integer createdBy;
-
-	private Integer updatedBy;
-
-	private Date createdOn;
-
-	private Date updatedOn;
-
 }

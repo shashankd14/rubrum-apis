@@ -3,10 +3,13 @@ package com.steel.product.application.service;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 
 import com.steel.product.application.dto.pricemaster.PriceMasterResponse;
 import com.steel.product.application.entity.Instruction;
+import com.steel.product.application.entity.PriceMasterEntity;
+import com.steel.product.application.entity.Rates;
 import com.steel.product.application.dto.pricemaster.PriceCalculateDTO;
 import com.steel.product.application.dto.pricemaster.PriceMasterRequest;
 
@@ -31,5 +34,7 @@ public interface PriceMasterService {
 	PriceCalculateDTO calculateInstructionWisePrice(Instruction ins, Integer packingRateId);
 
 	String calculateInstructionPrice(Instruction ins, int packingRateId);
+
+	Page<PriceMasterEntity> findAllWithPagination(int pageNo, int pageSize, String searchText);
 
 }

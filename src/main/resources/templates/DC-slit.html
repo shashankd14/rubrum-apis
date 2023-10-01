@@ -80,7 +80,7 @@
     </div>
     <div style="margin: auto;">
         <h1 style="text-align:center;" th:text="${deliveryChallan?.companyName}"></h1>
-    </div>
+    </div> 
     <div>
         <div class="inline-block w-60">
             <p class="font-size-small"><strong>Head Office At: </strong><span
@@ -89,6 +89,7 @@
                     th:text="${deliveryChallan?.addressBranch}"></span></p>
         </div>
         <div class="inline-block w-30">
+        	<p class="font-size-small"><strong>Inward Doc No: </strong><span th:text="${deliveryChallan?.customerInvoiceNo}"></span></p>
             <p class="font-size-small"><strong>Email: </strong><span th:text="${deliveryChallan?.email}"></span></p>
             <p class="font-size-small inline-block" style="vertical-align: top;"><strong>GST No: </strong><span
                     th:text="${deliveryChallan?.gstN}"></span></p>
