@@ -9,8 +9,8 @@ import org.springframework.http.ResponseEntity;
 import com.steel.product.application.dto.pricemaster.PriceMasterResponse;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.PriceMasterEntity;
-import com.steel.product.application.entity.Rates;
 import com.steel.product.application.dto.pricemaster.PriceCalculateDTO;
+import com.steel.product.application.dto.pricemaster.PriceMasterListPageRequest;
 import com.steel.product.application.dto.pricemaster.PriceMasterRequest;
 
 public interface PriceMasterService {
@@ -35,6 +35,6 @@ public interface PriceMasterService {
 
 	String calculateInstructionPrice(Instruction ins, int packingRateId);
 
-	Page<PriceMasterEntity> findAllWithPagination(int pageNo, int pageSize, String searchText);
+	Page<PriceMasterEntity> findAllWithPagination(PriceMasterListPageRequest request);
 
 }

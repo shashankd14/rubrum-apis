@@ -1,9 +1,9 @@
 package com.steel.product.application.controller;
 
 import com.steel.product.application.dto.pricemaster.PriceMasterResponse;
-import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.entity.PriceMasterEntity;
 import com.steel.product.application.dto.pricemaster.CalculatePriceRequest;
+import com.steel.product.application.dto.pricemaster.PriceMasterListPageRequest;
 import com.steel.product.application.dto.pricemaster.PriceMasterRequest;
 import com.steel.product.application.service.PriceMasterService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -60,20 +60,18 @@ public class PriceMasterController {
 		return list;
 	}
 
-	@GetMapping({ "/list/{pageNo}/{pageSize}" })
-	public ResponseEntity<Object> findAllWithPagination(@PathVariable int pageNo, @PathVariable int pageSize,
-			@RequestParam(required = false, name = "searchText") String searchText) {
+	@PostMapping({ "/list" })
+	public ResponseEntity<Object> findAllWithPagination(@RequestBody PriceMasterListPageRequest request) {
 		Map<String, Object> response = new HashMap<>();
 
 		try {
-			Page<PriceMasterEntity> pageResult = priceMasterService.findAllWithPagination(pageNo, pageSize, searchText);
+			Page<PriceMasterEntity> pageResult = priceMasterService.findAllWithPagination(request);
 			List<Object> inwardList = pageResult.stream().map(entity -> PriceMasterEntity.valueOf(entity)).collect(Collectors.toList());
 			response.put("content", inwardList);
 			response.put("currentPage", pageResult.getNumber());
 			response.put("totalItems", pageResult.getTotalElements());
 			response.put("totalPages", pageResult.getTotalPages());
 			return new ResponseEntity(response, HttpStatus.OK);
-
 		} catch (Exception e) {
 			return new ResponseEntity(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}

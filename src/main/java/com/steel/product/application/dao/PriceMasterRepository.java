@@ -59,10 +59,13 @@ public interface PriceMasterRepository extends JpaRepository<PriceMasterEntity, 
 	List<Object[]> findAllDetails(@Param("partyId") Integer partyId);
 	
 	@Query("select pc from PriceMasterEntity pc where "
-			+ " pc.party.partyName like %:searchText% or "
+			+ " ( pc.thicknessFrom = CASE WHEN :thicknesRange IS NOT NULL THEN :thicknesRange ELSE pc.thicknessFrom END or "
+			+ " pc.thicknessTo = CASE WHEN :thicknesRange IS NOT NULL THEN :thicknesRange ELSE pc.thicknessTo END ) and "
+			+ " ( pc.party.partyName like %:searchText% or "
 			+ " pc.process.processName like %:searchText% or "
 			+ " pc.matGrade.gradeName like %:searchText% or "
-			+ " pc.matGrade.parentMaterial.description like %:searchText% ")
-	Page<PriceMasterEntity> findAll(@Param("searchText") String searchText, Pageable pageable);
+			+ " pc.matGrade.parentMaterial.description like %:searchText% ) ")
+	Page<PriceMasterEntity> findAll(@Param("searchText") String searchText, 
+			@Param("thicknesRange") BigDecimal thicknesRange, Pageable pageable);
 
 }

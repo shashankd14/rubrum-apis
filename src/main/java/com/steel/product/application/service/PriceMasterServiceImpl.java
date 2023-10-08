@@ -6,6 +6,7 @@ import com.steel.product.application.dto.pricemaster.PriceMasterResponse;
 import com.steel.product.application.dto.additionalpricemaster.AdditionalPriceMasterResponse;
 import com.steel.product.application.dto.packingmaster.PackingRateMasterResponse;
 import com.steel.product.application.dto.pricemaster.PriceCalculateDTO;
+import com.steel.product.application.dto.pricemaster.PriceMasterListPageRequest;
 import com.steel.product.application.dto.pricemaster.PriceMasterRequest;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.PriceMasterEntity;
@@ -602,11 +603,12 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 		return priceCalculateDTO;
 	}
 
-    @Override
-    public Page<PriceMasterEntity> findAllWithPagination(int pageNo, int pageSize, String searchText) {
-    	Pageable pageable = PageRequest.of((pageNo-1), pageSize);
-    	Page<PriceMasterEntity> pageResult = priceMasterRepository.findAll(searchText, pageable);
-		return pageResult ;
-    }
+	@Override
+	public Page<PriceMasterEntity> findAllWithPagination(PriceMasterListPageRequest request) {
+		Pageable pageable = PageRequest.of((request.getPageNo() - 1), request.getPageSize());
+		Page<PriceMasterEntity> pageResult = priceMasterRepository.findAll(request.getSearchText(),
+				request.getThicknessRange(), pageable);
+		return pageResult;
+	}
 
 }

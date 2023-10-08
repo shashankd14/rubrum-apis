@@ -97,9 +97,18 @@ public class Party {
 	joinColumns = @JoinColumn(name="party_id"),
 	inverseJoinColumns = @JoinColumn(name="tagId"))
 	private Set<EndUserTagsEntity> endUserTags = new HashSet<>();
-	
+
 	@Column(name = "show_amt_dcpdf_flg")
 	private String showAmtDcPdfFlg;
+
+	@Column(name = "report_scheduler_type")
+	private String reportSchedulerType;
+
+	@Column(name = "daily_reports_list")
+	private String dailyReportsList;
+	
+	@Column(name = "monthly_reports_list")
+	private String monthlyReportsList;
 	
 	@Transient
 	private List<QualityPartyMappingRequestNew> templateIdList = new ArrayList<>();
@@ -364,6 +373,30 @@ public class Party {
 
 	public void setShowAmtDcPdfFlg(String showAmtDcPdfFlg) {
 		this.showAmtDcPdfFlg = showAmtDcPdfFlg;
+	}
+
+	public String getReportSchedulerType() {
+		return reportSchedulerType;
+	}
+
+	public void setReportSchedulerType(String reportSchedulerType) {
+		this.reportSchedulerType = reportSchedulerType;
+	}
+
+	public String getDailyReportsList() {
+		return dailyReportsList;
+	}
+
+	public void setDailyReportsList(String dailyReportsList) {
+		this.dailyReportsList = dailyReportsList;
+	}
+
+	public String getMonthlyReportsList() {
+		return monthlyReportsList;
+	}
+
+	public void setMonthlyReportsList(String monthlyReportsList) {
+		this.monthlyReportsList = monthlyReportsList;
 	}
  
 	

@@ -58,7 +58,7 @@ public class ReportsController {
 		List<Party> partyList = partyRepo.findAll();
 		for (Party party : partyList) {
 			if (party.getEmail1() != null && party.getEmail1().length() > 0 && party.getnPartyId() == partyId) {
-				mailSender.sendMail(party.getPartyName(), party.getEmail1(), party.getEmail2(), strDate, party.getnPartyId());
+				mailSender.sendMail(party, strDate);
 			}
 		}
 		return new ResponseEntity<>("{\"status\": \"success\", \"message\":\"Email Report Sent Successfully..!\"}", new HttpHeaders(), HttpStatus.OK);

@@ -48,10 +48,33 @@ public class ReportsEmailScheduler {
 			List<Party> partyList = partyRepo.findAll();
 			for (Party party : partyList) {
 				if (party.getEmail1()!=null && party.getEmail1().length()>0) {
-					mailSender.sendMail(party.getPartyName(), party.getEmail1(), party.getEmail2(), strDate, party.getnPartyId());
+					mailSender.sendMail(party, strDate);
 				}
 			}
 		
 		}
 	}
+	
+	@Scheduled(cron = "${email.reportsMonthlyScheduleTime}")
+	public void sendMonthlyNotifications() {
+		
+		if(apiAlertRequired) {
+			logger.info( "apiAlertRequired == "+apiAlertRequired);
+			Calendar cal = Calendar.getInstance();
+			Date date = cal.getTime();
+			DateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy");
+			String strDate = dateFormat.format(date);
+			
+			List<Party> partyList = partyRepo.findAll();
+			for (Party party : partyList) {
+				if (party.getEmail1() != null && party.getEmail1().length() > 0
+					&& ("MONTHLY".equals(party.getReportSchedulerType()) || "BOTH".equals(party.getReportSchedulerType()))) {
+					//mailSender.sendMail(party, strDate);
+				}
+			}
+		
+		}
+	}
+	
+	
 }

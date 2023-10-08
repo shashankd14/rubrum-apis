@@ -17,6 +17,8 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
+import com.steel.product.application.entity.Party;
+
 @Component("apiEmailReports")
 public class MailSender {
 
@@ -47,29 +49,56 @@ public class MailSender {
         velocityEngine.setProperty( "classpath.resource.loader.class", ClasspathResourceLoader.class.getName() );
     }
 	
-	public void sendMail(String partyName, String emailId1, String emailId2, String strDate, int partyId) {
+	public void sendMail(Party party, String strDate) {
 
 		logger.info("******MailSender.sendMail**************");
+		boolean mailStts=false;
 		try {
+			System.out.println("Party name is : "+party.getPartyName()+", partyId == "+party.getnPartyId());
+
 			MimeMessage message = javaMailSender.createMimeMessage();
 			MimeMessageHelper helper = new MimeMessageHelper(message, true);
-			reportsService.createStockReport(partyId, strDate, helper);
-			reportsService.createFGReport(partyId, strDate, helper);
-			reportsService.createWIPReport(partyId, strDate, helper);
-			reportsService.createStockSummaryReport( partyId, strDate, helper);
-			reportsService.createRMReport( partyId, strDate, helper);
-			helper.setFrom(fromMailId);
-			helper.setTo(emailId1);
 			
-			StringTokenizer st = new StringTokenizer(emailId2, ",");
-			while (st.hasMoreTokens()) {
-				String ccEmailId=st.nextToken();
-				helper.addCc(ccEmailId);
+			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0
+					&& party.getDailyReportsList().contains("STOCKREPORT")) {
+				mailStts = true;
+				reportsService.createStockReport(party.getnPartyId(), strDate, helper);
 			}
-			helper.setSubject(partyName +" - Daily Reports on "+strDate);
+			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0
+					&& party.getDailyReportsList().contains("FGREPORT")) {
+				mailStts = true;
+				reportsService.createFGReport(party.getnPartyId(), strDate, helper);
+			}
+			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0
+					&& party.getDailyReportsList().contains("WIPREPORT")) {
+				mailStts = true;
+				reportsService.createWIPReport(party.getnPartyId(), strDate, helper);
+			}
+			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0
+					&& party.getDailyReportsList().contains("STOCKSUMMARYREPORT")) {
+				mailStts = true;
+				reportsService.createStockSummaryReport(party.getnPartyId(), strDate, helper);
+			}
+			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0
+					&& party.getDailyReportsList().contains("RMREPORT")) {
+				mailStts = true;
+				reportsService.createRMReport(party.getnPartyId(), strDate, helper);
+			}
+			helper.setFrom(fromMailId);
+			helper.setTo(party.getEmail1());
+			if (party.getEmail2() != null && party.getEmail2().length() > 0) {
+				StringTokenizer st = new StringTokenizer(party.getEmail2(), ",");
+				while (st.hasMoreTokens()) {
+					String ccEmailId = st.nextToken();
+					helper.addCc(ccEmailId);
+				}
+			}
+			helper.setSubject(party.getPartyName() +" - Daily Reports on "+strDate);
 			helper.setText(emailBody, true);
-			javaMailSender.send(message);
-			logger.info("Email Sent Successfully to "+emailId1);
+			if(mailStts) {
+				javaMailSender.send(message);
+			}
+			logger.info("Email Sent Successfully to "+party.getEmail1());
 		} catch (Exception e) {
 			e.printStackTrace();
 			logger.info("MailSender.Fail1: "+e.getMessage());
