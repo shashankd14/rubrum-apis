@@ -8,7 +8,6 @@ import lombok.Data;
 import lombok.ToString;
 import javax.persistence.*;
 
-import java.math.BigDecimal;
 import java.util.Date;
 
 @Entity
@@ -31,20 +30,20 @@ public class KQPPartyTemplateEntity {
 	@JoinColumn(name = "npartyid")
 	private Party party = new Party();
 
-	@Column(name = "enduser_tag_id")
-	private Integer endUserTagId;
+	@Column(name = "enduser_tag_id_list")
+	private String endUserTagIdList;
 
-	@Column(name = "thickness")
-	private BigDecimal thickness;
+	@Column(name = "thickness_list")
+	private String thicknessList;
 
-	@Column(name = "width")
-	private BigDecimal width;
+	@Column(name = "width_list")
+	private String widthList;
 
-	@Column(name = "length")
-	private BigDecimal length;
+	@Column(name = "length_list")
+	private String lengthList;
 
-	@Column(name = "mat_grade_id")
-	private Integer matGradeId;
+	@Column(name = "mat_grade_id_list")
+	private String matGradeIdList;
 
 	@Column(name = "created_by")
 	private Integer createdBy;
@@ -68,13 +67,15 @@ public class KQPPartyTemplateEntity {
 			dtoResponse.setPartyName(entity.getParty().getPartyName());
 		} catch (Exception e) {
 		}
+		dtoResponse.setUserId( entity.getKqpEntity().getCreatedBy());
+		dtoResponse.setStageName( entity.getKqpEntity().getStageName());
 		dtoResponse.setKqpName(entity.getKqpEntity().getKqpName());
 		dtoResponse.setKqpId(entity.getKqpEntity().getKqpId());
-		dtoResponse.setEndUserTagId(entity.getEndUserTagId());
-		dtoResponse.setMatGradeId(entity.getMatGradeId());
-		dtoResponse.setThickness(entity.getThickness());
-		dtoResponse.setWidth(entity.getWidth() );
-		dtoResponse.setLength(entity.getLength());
+		dtoResponse.setEndUserTagIdList( entity.getEndUserTagIdList() );
+		dtoResponse.setMatGradeIdList( entity.getMatGradeIdList() );
+		dtoResponse.setThicknessList( entity.getThicknessList() );
+		dtoResponse.setWidthList( entity.getWidthList());
+		dtoResponse.setLengthList( entity.getLengthList());
 		return dtoResponse;
 	}
 

@@ -19,11 +19,14 @@ public class QualityPartyMappingResponse {
 
 	private Integer templateId;
 
-	private Integer endUserTagId;
-
-	private Integer matGradeId;
+	private String stageName;
 
 	private Integer userId;
 
-	private BigDecimal thickness;
+	private String endUserTagIdList;
+
+	private String thicknessList;
+
+	private String matGradeIdList;
+
 }

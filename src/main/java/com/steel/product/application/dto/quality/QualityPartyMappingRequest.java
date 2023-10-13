@@ -14,13 +14,13 @@ public class QualityPartyMappingRequest {
 
 	private Integer templateId;
 
-	private Integer endUserTagId;
-
-	private Integer matGradeId;
-
 	private Integer userId;
 
-	private BigDecimal thickness;
+	private List<Integer> endUserTagIdList;
+
+	private List<BigDecimal> thicknessList;
+
+	private List<Integer> matGradeIdList;
 
 	private List<Integer> partyIdList;
 

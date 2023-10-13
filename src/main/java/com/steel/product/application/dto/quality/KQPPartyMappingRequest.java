@@ -14,17 +14,17 @@ public class KQPPartyMappingRequest {
 
 	private Integer kqpId;
 
-	private Integer endUserTagId;
-
-	private Integer matGradeId;
-
 	private Integer userId;
 
-	private BigDecimal thickness;
+	private List<Integer> endUserTagIdList;
 
-	private BigDecimal width;
+	private List<BigDecimal> thicknessList;
 
-	private BigDecimal length;
+	private List<Integer> matGradeIdList;
+	
+	private List<BigDecimal> widthList;
+
+	private List<BigDecimal> lengthList;
 
 	private List<Integer> partyIdList;
 

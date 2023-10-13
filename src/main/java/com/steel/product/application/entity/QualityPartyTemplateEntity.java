@@ -8,8 +8,6 @@ import com.steel.product.application.dto.quality.QualityPartyMappingResponse;
 import lombok.Data;
 import lombok.ToString;
 import javax.persistence.*;
-
-import java.math.BigDecimal;
 import java.util.Date;
 
 @Entity
@@ -32,14 +30,14 @@ public class QualityPartyTemplateEntity {
 	@JoinColumn(name = "npartyid")
 	private Party party = new Party();
 
-	@Column(name = "enduser_tag_id")
-	private Integer endUserTagId;
+	@Column(name = "enduser_tag_id_list")
+	private String endUserTagIdList;
 
-	@Column(name = "thickness")
-	private BigDecimal thickness;
+	@Column(name = "thickness_list")
+	private String thicknessList;
 
-	@Column(name = "mat_grade_id")
-	private Integer matGradeId;
+	@Column(name = "mat_grade_id_list")
+	private String matGradeIdList;
 
 	@Column(name = "created_by")
 	private Integer createdBy;
@@ -58,19 +56,21 @@ public class QualityPartyTemplateEntity {
 	public static QualityPartyMappingResponse valueOf(QualityPartyTemplateEntity entity) {
 		QualityPartyMappingResponse dtoResponse = new QualityPartyMappingResponse();
 		dtoResponse.setId( entity.getId());
-		dtoResponse.setPartyId(entity.getParty().getnPartyId());
 		try {
+			dtoResponse.setPartyId(entity.getParty().getnPartyId());
 			dtoResponse.setPartyName(entity.getParty().getPartyName());
 		} catch (Exception e) {
 		}
 		try {
+			dtoResponse.setStageName( entity.getTemplateEntity().getStageName());
 			dtoResponse.setTemplateName(entity.getTemplateEntity().getTemplateName());
 			dtoResponse.setTemplateId(entity.getTemplateEntity().getTemplateId());
 		} catch (Exception e) {
 		}
-		dtoResponse.setEndUserTagId(entity.getEndUserTagId());
-		dtoResponse.setMatGradeId(entity.getMatGradeId());
-		dtoResponse.setThickness(entity.getThickness());
+		dtoResponse.setUserId( entity.getCreatedBy());
+		dtoResponse.setEndUserTagIdList(entity.getEndUserTagIdList() );
+		dtoResponse.setMatGradeIdList(entity.getMatGradeIdList() );
+		dtoResponse.setThicknessList(entity.getThicknessList() );
 		return dtoResponse;
 	}
 

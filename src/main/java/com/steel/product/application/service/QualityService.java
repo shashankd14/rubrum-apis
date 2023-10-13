@@ -83,7 +83,7 @@ public interface QualityService {
 
 	ResponseEntity<Object> kqpPartyMapSave(KQPPartyMappingRequest qualityPartyMappingRequest);
 
-	ResponseEntity<Object> deleteKQPPartyMap(int kqpId);
+	ResponseEntity<Object> deleteKQPPartyMap(Integer kqpId);
 
 	List<KQPPartyMappingResponse> getByKQPId(int kqpId);
 

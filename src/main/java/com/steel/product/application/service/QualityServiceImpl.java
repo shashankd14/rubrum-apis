@@ -277,9 +277,9 @@ public class QualityServiceImpl implements QualityService {
 			QualityPartyTemplateEntity qualityPartyTemplateEntity = new QualityPartyTemplateEntity();
 			qualityPartyTemplateEntity.getTemplateEntity().setTemplateId(qualityPartyMappingRequest.getTemplateId());
 			qualityPartyTemplateEntity.getParty().setnPartyId(partyId);
-			qualityPartyTemplateEntity.setThickness(qualityPartyMappingRequest.getThickness());
-			qualityPartyTemplateEntity.setEndUserTagId(qualityPartyMappingRequest.getEndUserTagId());
-			qualityPartyTemplateEntity.setMatGradeId( qualityPartyMappingRequest.getMatGradeId());
+			qualityPartyTemplateEntity.setThicknessList(qualityPartyMappingRequest.getThicknessList().toString() );
+			qualityPartyTemplateEntity.setEndUserTagIdList(qualityPartyMappingRequest.getEndUserTagIdList().toString()  );
+			qualityPartyTemplateEntity.setMatGradeIdList( qualityPartyMappingRequest.getMatGradeIdList().toString()  );
 			qualityPartyTemplateEntity.setCreatedBy(qualityPartyMappingRequest.getUserId());
 			qualityPartyTemplateEntity.setUpdatedBy(qualityPartyMappingRequest.getUserId());
 			qualityPartyTemplateEntity.setCreatedOn(new Date());
@@ -296,12 +296,8 @@ public class QualityServiceImpl implements QualityService {
 		ResponseEntity<Object> response = null;
 		try {
 
-			List<QualityPartyTemplateEntity> list1 = qualityPartyTemplateRepository.findByTemplateId(templateId);
-			for (QualityPartyTemplateEntity qqualityPartyTemplateEntity : list1) {
-				qualityPartyTemplateRepository.deleteById(qqualityPartyTemplateEntity.getId());
-			}
-			response = new ResponseEntity<>( "{\"status\": \"success\", \"message\": \"Party Template mapping deleted successfully..! \"}",
-					new HttpHeaders(), HttpStatus.OK);
+			qualityPartyTemplateRepository.deleteById(templateId);
+			response = new ResponseEntity<>( "{\"status\": \"success\", \"message\": \"Party Template mapping deleted successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
 			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"" + e.getMessage() + "\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -643,11 +639,11 @@ public class QualityServiceImpl implements QualityService {
 			KQPPartyTemplateEntity kqpPartyTemplateEntity = new KQPPartyTemplateEntity();
 			kqpPartyTemplateEntity.getKqpEntity().setKqpId(kqpPartyMappingRequest.getKqpId());
 			kqpPartyTemplateEntity.getParty().setnPartyId(partyId);
-			kqpPartyTemplateEntity.setThickness(kqpPartyMappingRequest.getThickness());
-			kqpPartyTemplateEntity.setLength(kqpPartyMappingRequest.getLength());
-			kqpPartyTemplateEntity.setWidth(kqpPartyMappingRequest.getWidth());
-			kqpPartyTemplateEntity.setEndUserTagId(kqpPartyMappingRequest.getEndUserTagId());
-			kqpPartyTemplateEntity.setMatGradeId(kqpPartyMappingRequest.getMatGradeId());
+			kqpPartyTemplateEntity.setThicknessList( kqpPartyMappingRequest.getThicknessList().toString() );
+			kqpPartyTemplateEntity.setLengthList(kqpPartyMappingRequest.getLengthList().toString() );
+			kqpPartyTemplateEntity.setWidthList(kqpPartyMappingRequest.getWidthList().toString() );
+			kqpPartyTemplateEntity.setEndUserTagIdList(kqpPartyMappingRequest.getEndUserTagIdList().toString() );
+			kqpPartyTemplateEntity.setMatGradeIdList(kqpPartyMappingRequest.getMatGradeIdList().toString() );
 			kqpPartyTemplateEntity.setCreatedBy(kqpPartyMappingRequest.getUserId());
 			kqpPartyTemplateEntity.setUpdatedBy(kqpPartyMappingRequest.getUserId());
 			kqpPartyTemplateEntity.setCreatedOn(new Date());
@@ -661,16 +657,11 @@ public class QualityServiceImpl implements QualityService {
 	}
 
 	@Override
-	public ResponseEntity<Object> deleteKQPPartyMap(int kqpId) {
+	public ResponseEntity<Object> deleteKQPPartyMap(Integer kqpId) {
 		ResponseEntity<Object> response = null;
 		try {
-
-			List<KQPPartyTemplateEntity> list1 = kqpPartyTemplateRepository.findByKqpId(kqpId);
-			for (KQPPartyTemplateEntity kqpPartyTemplateEntity : list1) {
-				kqpPartyTemplateRepository.deleteById(kqpPartyTemplateEntity.getId());
-			}
-			response = new ResponseEntity<>( "{\"status\": \"success\", \"message\": \"KQP-Party mapping deleted successfully..! \"}",
-					new HttpHeaders(), HttpStatus.OK);
+			kqpPartyTemplateRepository.deleteById(kqpId);
+			response = new ResponseEntity<>( "{\"status\": \"success\", \"message\": \"KQP-Party mapping deleted successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
 			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"" + e.getMessage() + "\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
