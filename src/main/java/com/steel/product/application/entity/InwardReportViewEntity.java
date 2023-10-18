@@ -12,21 +12,30 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Data
 @Entity
-@Table(name = "stock_report_vw")
-public class StockReportViewEntity {
+@Table(name = "inward_report_vw")
+public class InwardReportViewEntity {
 
 	@Id
 	@Column(name = "id")
 	private Integer id;
+	
+	@Column(name = "mnth")
+	private Integer mnth;
+
+	@Column(name = "customer_name")
+	private String customerName;
 
 	@Column(name = "coilnumber")
-	private String coilNumber;
+	private String coilnumber;
 
 	@Column(name = "customerbatchid")
-	private String customerBatchId;
-
+	private String customerbatchid;
+	
+	@Column(name = "received_date")
+	private String receivedDate;
+	
 	@Column(name = "material_desc")
-	private String materialDesc;
+	private String materialdesc;
 
 	@Column(name = "material_grade")
 	private String materialGrade;
@@ -40,22 +49,19 @@ public class StockReportViewEntity {
 	@Column(name = "flength")
 	private String flength;
 
-	@Column(name = "netWeight")
+	@Column(name = "net_weight")
 	private String netWeight;
 
 	@Column(name = "inward_status")
 	private String inwardStatus;
 
-	@Column(name = "in_stock_weight")
-	private String inStockWeight;
+	@Column(name = "customerinvoiceno")
+	private String customerinvoiceno;
 
-	@Column(name = "Unprocessed_Weight")
-	private String unProcessedWeight;
-	
-	@Column(name = "mnth")
-	private Integer mnth;
+	@Column(name = "customerinvoicedate")
+	private String customerinvoicedate;
 
-	@Column(name = "partyId")
+	@Column(name = "party_id")
 	private int partyId;
 
 }

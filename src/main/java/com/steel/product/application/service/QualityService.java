@@ -34,7 +34,7 @@ public interface QualityService {
 
 	ResponseEntity<Object> templateMapSave(QualityPartyMappingRequest qualityPartyMappingRequest);
 
-	ResponseEntity<Object> deleteTemplateMap(int templateId);
+	ResponseEntity<Object> deleteTemplateMap(Integer templateId);
 
 	List<QualityPartyMappingResponse> getByPartyId(int partyId);
 

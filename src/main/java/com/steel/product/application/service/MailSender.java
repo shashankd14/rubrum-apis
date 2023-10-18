@@ -1,5 +1,7 @@
 package com.steel.product.application.service;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.annotation.PostConstruct;
@@ -102,6 +104,64 @@ public class MailSender {
 		} catch (Exception e) {
 			e.printStackTrace();
 			logger.info("MailSender.Fail1: "+e.getMessage());
+		}
+	}
+	
+	public void sendMonthlyReportsMail(Party party, Integer month) {
+
+		logger.info("******MailSender.sendMonthlyReportsMail**************");
+		boolean mailStts=false;
+		try {
+			
+			Map<Integer, String> months =new HashMap<>();
+			months.put(1, "January");
+			months.put(2, "February");
+			months.put(3, "March");
+			months.put(4, "April");
+			months.put(5, "May");
+			months.put(6, "June");
+			months.put(7, "July");
+			months.put(8, "August");
+			months.put(9, "September");
+			months.put(10, "October");
+			months.put(11, "November");
+			months.put(12, "December");
+			
+			System.out.println("Party name is : "+party.getPartyName()+", partyId == "+party.getnPartyId());
+
+			MimeMessage message = javaMailSender.createMimeMessage();
+			MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+			if (party.getMonthlyReportsList() != null && party.getMonthlyReportsList().length() > 0) {
+
+				if (party.getMonthlyReportsList().contains("INWARD")) {
+					mailStts = true;
+					reportsService.createInwardMonthlyReport(party.getnPartyId(), helper, month, months);
+				}
+				if (party.getMonthlyReportsList().contains("STOCK")) {
+					mailStts = true;
+					reportsService.createStockMonthlyReport(party.getnPartyId(), helper, month, months);
+				}
+			}
+			 
+			helper.setFrom(fromMailId);
+			helper.setTo(party.getEmail1());
+			if (party.getEmail2() != null && party.getEmail2().length() > 0) {
+				StringTokenizer st = new StringTokenizer(party.getEmail2(), ",");
+				while (st.hasMoreTokens()) {
+					String ccEmailId = st.nextToken();
+					helper.addCc(ccEmailId);
+				}
+			}
+			helper.setSubject(party.getPartyName() +" - Monthly Reports for the month of - "+months.get(month));
+			helper.setText(emailBody, true);
+			if(mailStts) {
+				javaMailSender.send(message);
+			}
+			logger.info("Email Sent Successfully to "+party.getEmail1());
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.info("MailSender.sendMonthlyReportsMail: "+e.getMessage());
 		}
 	}
 

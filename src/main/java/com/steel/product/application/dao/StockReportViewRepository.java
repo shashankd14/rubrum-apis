@@ -11,4 +11,6 @@ public interface StockReportViewRepository extends JpaRepository<StockReportView
 
 	List<StockReportViewEntity> findByPartyId(int partyId);
 
+	List<StockReportViewEntity> findByPartyIdAndMnth(int partyId, Integer mnth);
+
 }

@@ -292,12 +292,18 @@ public class QualityServiceImpl implements QualityService {
 	}
 
 	@Override
-	public ResponseEntity<Object> deleteTemplateMap(int templateId) {
+	public ResponseEntity<Object> deleteTemplateMap(Integer templateId) {
 		ResponseEntity<Object> response = null;
 		try {
-
-			qualityPartyTemplateRepository.deleteById(templateId);
-			response = new ResponseEntity<>( "{\"status\": \"success\", \"message\": \"Party Template mapping deleted successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
+			List<QualityPartyTemplateEntity> list1 = qualityPartyTemplateRepository.findByTemplateId(templateId);
+			if(list1!=null && list1.size()>0) {
+				for (QualityPartyTemplateEntity qqualityPartyTemplateEntity : list1) {
+					qualityPartyTemplateRepository.deleteById(qqualityPartyTemplateEntity.getId());
+				}
+				response = new ResponseEntity<>( "{\"status\": \"success\", \"message\": \"Party Template mapping deleted successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
+			} else {
+				response = new ResponseEntity<>( "{\"status\": \"failure\", \"message\": \"Please enter valid data..! \"}", new HttpHeaders(), HttpStatus.BAD_REQUEST);
+			}
 		} catch (Exception e) {
 			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"" + e.getMessage() + "\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -660,8 +666,15 @@ public class QualityServiceImpl implements QualityService {
 	public ResponseEntity<Object> deleteKQPPartyMap(Integer kqpId) {
 		ResponseEntity<Object> response = null;
 		try {
-			kqpPartyTemplateRepository.deleteById(kqpId);
-			response = new ResponseEntity<>( "{\"status\": \"success\", \"message\": \"KQP-Party mapping deleted successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
+			List<KQPPartyTemplateEntity> list1 = kqpPartyTemplateRepository.findByKqpId(kqpId);
+			if (list1 != null && list1.size() > 0) {
+				for (KQPPartyTemplateEntity kqpPartyTemplateEntity : list1) {
+					kqpPartyTemplateRepository.deleteById(kqpPartyTemplateEntity.getId());
+				}
+				response = new ResponseEntity<>( "{\"status\": \"success\", \"message\": \"KQP-Party mapping deleted successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
+			} else {
+				response = new ResponseEntity<>( "{\"status\": \"failure\", \"message\": \"Please enter valid data..! \"}", new HttpHeaders(), HttpStatus.BAD_REQUEST);
+			}
 		} catch (Exception e) {
 			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"" + e.getMessage() + "\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
