@@ -53,10 +53,10 @@ public class MailSender {
 	
 	public void sendMail(Party party, String strDate) {
 
-		logger.info("******MailSender.sendMail**************");
+		logger.info("******MailSender.sendDailyMail**************");
 		boolean mailStts=false;
 		try {
-			System.out.println("Party name is : "+party.getPartyName()+", partyId == "+party.getnPartyId());
+			logger.info("Party name is : "+party.getPartyName()+", DailyReportsList == "+party.getDailyReportsList());
 
 			MimeMessage message = javaMailSender.createMimeMessage();
 			MimeMessageHelper helper = new MimeMessageHelper(message, true);
@@ -127,18 +127,18 @@ public class MailSender {
 			months.put(11, "November");
 			months.put(12, "December");
 			
-			System.out.println("Party name is : "+party.getPartyName()+", partyId == "+party.getnPartyId());
+			logger.info("Party Name is : "+party.getPartyName()+",  MonthlyReportsList == "+party.getMonthlyReportsList());
 
 			MimeMessage message = javaMailSender.createMimeMessage();
 			MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
 			if (party.getMonthlyReportsList() != null && party.getMonthlyReportsList().length() > 0) {
 
-				if (party.getMonthlyReportsList().contains("INWARD")) {
+				if (party.getMonthlyReportsList().contains("INWARDREPORT")) {
 					mailStts = true;
 					reportsService.createInwardMonthlyReport(party.getnPartyId(), helper, month, months);
 				}
-				if (party.getMonthlyReportsList().contains("STOCK")) {
+				if (party.getMonthlyReportsList().contains("STOCKREPORT")) {
 					mailStts = true;
 					reportsService.createStockMonthlyReport(party.getnPartyId(), helper, month, months);
 				}

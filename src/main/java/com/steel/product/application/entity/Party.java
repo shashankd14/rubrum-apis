@@ -101,9 +101,6 @@ public class Party {
 	@Column(name = "show_amt_dcpdf_flg")
 	private String showAmtDcPdfFlg;
 
-	@Column(name = "report_scheduler_type")
-	private String reportSchedulerType;
-
 	@Column(name = "daily_reports_list")
 	private String dailyReportsList;
 	
@@ -356,6 +353,9 @@ public class Party {
 		}
 		partyDto.setEndUserTags(endUserTagsList);
 		partyDto.setTemplateIdList(party.getTemplateIdList());
+		partyDto.setShowAmtDcPdfFlg( party.getShowAmtDcPdfFlg());
+		partyDto.setDailyReportsList( party.getDailyReportsList());
+		partyDto.setMonthlyReportsList( party.getMonthlyReportsList());
 		return partyDto;
 	}
 
@@ -373,14 +373,6 @@ public class Party {
 
 	public void setShowAmtDcPdfFlg(String showAmtDcPdfFlg) {
 		this.showAmtDcPdfFlg = showAmtDcPdfFlg;
-	}
-
-	public String getReportSchedulerType() {
-		return reportSchedulerType;
-	}
-
-	public void setReportSchedulerType(String reportSchedulerType) {
-		this.reportSchedulerType = reportSchedulerType;
 	}
 
 	public String getDailyReportsList() {

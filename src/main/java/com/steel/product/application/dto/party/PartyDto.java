@@ -8,7 +8,6 @@ import com.steel.product.application.dto.quality.QualityPartyMappingRequestNew;
 
 import lombok.Getter;
 import lombok.Setter;
-
 import java.util.List;
 
 @Getter
@@ -49,7 +48,11 @@ public class PartyDto {
 	private List<EndUserTagsRequest> endUserTags;
 
 	private List<QualityPartyMappingRequestNew> templateIdList;
-	
+
 	private String showAmtDcPdfFlg;
+
+	private String dailyReportsList;
+
+	private String monthlyReportsList;
 
 }

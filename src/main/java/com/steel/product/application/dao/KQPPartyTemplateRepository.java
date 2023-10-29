@@ -23,7 +23,8 @@ public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTempla
 			" DATE_FORMAT(createdon,'%d/%m/%Y') `Plan Date`," + 
 			" (select aa.`gradename` from `product_material_grades` aa where aa.`gradeid` = `inward`.`materialgradeid`) AS `material_grade`," + 
 			" fthickness, grossweight, inward.npartyid, " + 
-			" (SELECT rpt.qir_id FROM quality_inspection_report rpt where rpt.coil_no=inward.coilnumber limit 1) qirid " +
+			" (SELECT rpt.qir_id FROM quality_inspection_report rpt where rpt.coil_no=inward.coilnumber limit 1) qirid, " +
+			" (SELECT aaa.partyname from product_tblpartydetails aaa where aaa.npartyid=inward.npartyid) partyname " +
 			" FROM product_tblinwardentry inward WHERE 1=1 ", nativeQuery = true)
 	List<Object[]> qirInwardListPage();
 	

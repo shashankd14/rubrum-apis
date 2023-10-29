@@ -35,4 +35,16 @@ public class KQPPartyMappingResponse {
 
 	private Integer updatedBy;
 
+	private String anyPartyFlag;
+	
+	private String anyMatgradeFlag;
+	
+	private String anyEndusertagFlag;
+	
+	private String anyWidthFlag;
+	
+	private String anyLengthFlag;
+	
+	private String anyThicknessFlag;
+
 }

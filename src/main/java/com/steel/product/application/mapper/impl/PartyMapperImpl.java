@@ -43,29 +43,29 @@ public class PartyMapperImpl implements PartyMapper {
 	private QualityService qualityService;
 	
     @Override
-    public Party toEntity(PartyDto partyDto) {
-        if ( partyDto == null ) {
-            return null;
-        }
-
-        Party party = new Party();
-
-        party.setPartyName( partyDto.getPartyName() );
-        party.setPartyNickname( partyDto.getPartyNickname() );
-        party.setContactName( partyDto.getContactName() );
-        party.setContactNumber( partyDto.getContactNumber() );
-        party.setGstNumber( partyDto.getGstNumber() );
-        party.setPanNumber( partyDto.getPanNumber() );
-        party.setTanNumber( partyDto.getTanNumber() );
-        party.setEmail1( partyDto.getEmail1() );
-        party.setEmail2( partyDto.getEmail2() );
-        party.setPhone1( partyDto.getPhone1() );
-        party.setPhone2( partyDto.getPhone2() );
-        party.setShowAmtDcPdfFlg(partyDto.getShowAmtDcPdfFlg() );
-        party.setAddress1( addressMapper.toEntity( partyDto.getAddress1() ) );
-        party.setAddress2( addressMapper.toEntity( partyDto.getAddress2() ) );
-        return party;
-    }
+	public Party toEntity(PartyDto partyDto) {
+		if (partyDto == null) {
+			return null;
+		}
+		Party party = new Party();
+		party.setPartyName(partyDto.getPartyName());
+		party.setPartyNickname(partyDto.getPartyNickname());
+		party.setContactName(partyDto.getContactName());
+		party.setContactNumber(partyDto.getContactNumber());
+		party.setGstNumber(partyDto.getGstNumber());
+		party.setPanNumber(partyDto.getPanNumber());
+		party.setTanNumber(partyDto.getTanNumber());
+		party.setEmail1(partyDto.getEmail1());
+		party.setEmail2(partyDto.getEmail2());
+		party.setPhone1(partyDto.getPhone1());
+		party.setPhone2(partyDto.getPhone2());
+		party.setShowAmtDcPdfFlg(partyDto.getShowAmtDcPdfFlg());
+		party.setDailyReportsList(partyDto.getDailyReportsList());
+		party.setMonthlyReportsList(partyDto.getMonthlyReportsList());
+		party.setAddress1(addressMapper.toEntity(partyDto.getAddress1()));
+		party.setAddress2(addressMapper.toEntity(partyDto.getAddress2()));
+		return party;
+	}
 
     @Override
     public PartyResponse toResponse(Party party) {

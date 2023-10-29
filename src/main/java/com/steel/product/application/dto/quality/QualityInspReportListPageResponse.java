@@ -13,6 +13,8 @@ public class QualityInspReportListPageResponse {
 
 	private String customerBatchNo;
 
+	private String partyName;
+
 	private String planId;
 
 	private String planDate;

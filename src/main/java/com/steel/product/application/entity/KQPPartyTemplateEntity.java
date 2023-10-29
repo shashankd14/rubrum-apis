@@ -45,6 +45,24 @@ public class KQPPartyTemplateEntity {
 	@Column(name = "mat_grade_id_list")
 	private String matGradeIdList;
 
+	@Column(name = "any_party_flag")
+	private String anyPartyFlag;
+	
+	@Column(name = "any_matgrade_flag")
+	private String anyMatgradeFlag;
+	
+	@Column(name = "any_endusertag_flag")
+	private String anyEndusertagFlag;
+	
+	@Column(name = "any_width_flag")
+	private String anyWidthFlag;
+	
+	@Column(name = "any_length_flag")
+	private String anyLengthFlag;
+
+	@Column(name = "any_thickness_flag")
+	private String anyThicknessFlag;
+	
 	@Column(name = "created_by")
 	private Integer createdBy;
 
@@ -76,6 +94,12 @@ public class KQPPartyTemplateEntity {
 		dtoResponse.setThicknessList( entity.getThicknessList() );
 		dtoResponse.setWidthList( entity.getWidthList());
 		dtoResponse.setLengthList( entity.getLengthList());
+		dtoResponse.setAnyPartyFlag( entity.getAnyPartyFlag());
+		dtoResponse.setAnyMatgradeFlag( entity.getAnyMatgradeFlag());
+		dtoResponse.setAnyEndusertagFlag( entity.getAnyEndusertagFlag());
+		dtoResponse.setAnyLengthFlag( entity.getAnyLengthFlag());
+		dtoResponse.setAnyThicknessFlag( entity.getAnyThicknessFlag());
+		dtoResponse.setAnyWidthFlag ( entity.getAnyWidthFlag());
 		return dtoResponse;
 	}
 

@@ -28,4 +28,16 @@ public class KQPPartyMappingRequest {
 
 	private List<Integer> partyIdList;
 
+	private String anyPartyFlag;
+	
+	private String anyMatgradeFlag;
+	
+	private String anyEndusertagFlag;
+
+	private String anyWidthFlag;
+	
+	private String anyLengthFlag;
+	
+	private String anyThicknessFlag;
+
 }

@@ -645,11 +645,41 @@ public class QualityServiceImpl implements QualityService {
 			KQPPartyTemplateEntity kqpPartyTemplateEntity = new KQPPartyTemplateEntity();
 			kqpPartyTemplateEntity.getKqpEntity().setKqpId(kqpPartyMappingRequest.getKqpId());
 			kqpPartyTemplateEntity.getParty().setnPartyId(partyId);
-			kqpPartyTemplateEntity.setThicknessList( kqpPartyMappingRequest.getThicknessList().toString() );
-			kqpPartyTemplateEntity.setLengthList(kqpPartyMappingRequest.getLengthList().toString() );
-			kqpPartyTemplateEntity.setWidthList(kqpPartyMappingRequest.getWidthList().toString() );
-			kqpPartyTemplateEntity.setEndUserTagIdList(kqpPartyMappingRequest.getEndUserTagIdList().toString() );
-			kqpPartyTemplateEntity.setMatGradeIdList(kqpPartyMappingRequest.getMatGradeIdList().toString() );
+			kqpPartyTemplateEntity.setThicknessList(kqpPartyMappingRequest.getThicknessList().toString());
+			kqpPartyTemplateEntity.setLengthList(kqpPartyMappingRequest.getLengthList().toString());
+			kqpPartyTemplateEntity.setWidthList(kqpPartyMappingRequest.getWidthList().toString());
+			kqpPartyTemplateEntity.setEndUserTagIdList(kqpPartyMappingRequest.getEndUserTagIdList().toString());
+			kqpPartyTemplateEntity.setMatGradeIdList(kqpPartyMappingRequest.getMatGradeIdList().toString());
+			if (kqpPartyMappingRequest.getAnyPartyFlag() != null && "Y".equals(kqpPartyMappingRequest.getAnyPartyFlag())) {
+				kqpPartyTemplateEntity.setAnyPartyFlag("Y");
+			} else {
+				kqpPartyTemplateEntity.setAnyPartyFlag("N");
+			}
+			if (kqpPartyMappingRequest.getAnyMatgradeFlag() != null && "Y".equals(kqpPartyMappingRequest.getAnyMatgradeFlag())) {
+				kqpPartyTemplateEntity.setAnyMatgradeFlag("Y");
+			} else {
+				kqpPartyTemplateEntity.setAnyMatgradeFlag("N");
+			}
+			if (kqpPartyMappingRequest.getAnyEndusertagFlag() != null && "Y".equals(kqpPartyMappingRequest.getAnyEndusertagFlag())) {
+				kqpPartyTemplateEntity.setAnyEndusertagFlag("Y");
+			} else {
+				kqpPartyTemplateEntity.setAnyEndusertagFlag("N");
+			}
+			if (kqpPartyMappingRequest.getAnyWidthFlag() != null && "Y".equals(kqpPartyMappingRequest.getAnyWidthFlag())) {
+				kqpPartyTemplateEntity.setAnyWidthFlag("Y");
+			} else {
+				kqpPartyTemplateEntity.setAnyWidthFlag("N");
+			}
+			if (kqpPartyMappingRequest.getAnyLengthFlag() != null && "Y".equals(kqpPartyMappingRequest.getAnyLengthFlag())) {
+				kqpPartyTemplateEntity.setAnyLengthFlag("Y");
+			} else {
+				kqpPartyTemplateEntity.setAnyLengthFlag("N");
+			}
+			if (kqpPartyMappingRequest.getAnyThicknessFlag() != null && "Y".equals(kqpPartyMappingRequest.getAnyThicknessFlag())) {
+				kqpPartyTemplateEntity.setAnyThicknessFlag("Y");
+			} else {
+				kqpPartyTemplateEntity.setAnyThicknessFlag("N");
+			}
 			kqpPartyTemplateEntity.setCreatedBy(kqpPartyMappingRequest.getUserId());
 			kqpPartyTemplateEntity.setUpdatedBy(kqpPartyMappingRequest.getUserId());
 			kqpPartyTemplateEntity.setCreatedOn(new Date());
@@ -710,6 +740,7 @@ public class QualityServiceImpl implements QualityService {
 			resp.setFthickness(result[5] != null ? (Float) result[5] : null);
 			resp.setTargetWeight(result[6] != null ? (Float) result[6] : null);
 			resp.setNPartyId(result[7] != null ? Integer.parseInt(result[7].toString()) : null);
+			resp.setPartyName(result[9] != null ? (String) result[9] : null);
 			if(result[8] != null && result[8].toString().length() >0 ) {
 				resp.setQirId(Integer.parseInt(result[8].toString()));
 			} else {
