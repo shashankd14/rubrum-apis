@@ -46,7 +46,8 @@ public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTempla
 			+ " deli.deliveryid, customerbatchid, totalweight, vehicleno, inward.customerinvoiceno, "
 			+ " DATE_FORMAT(inward.dinvoicedate, '%d/%m/%Y'), "
 			+ " (SELECT group_concat( distinct `tag_name` SEPARATOR  ', ') FROM product_enduser_tags deli, product_instruction ins WHERE  deli.tag_id = ins.enduser_tag_id and ins.inwardid = inward.inwardentryid group by ins.inwardid ), "
-			+ " inward.npartyid, (SELECT rpt.qir_id FROM quality_inspection_report rpt where rpt.delivery_chalan_no=deli.deliveryid limit 1) qirid "
+			+ " inward.npartyid, (SELECT rpt.qir_id FROM quality_inspection_report rpt where rpt.delivery_chalan_no=deli.deliveryid limit 1) qirid, "
+			+ " (SELECT aaa.partyname from product_tblpartydetails aaa where aaa.npartyid=inward.npartyid) partyname " 
 			+ " FROM product_tbl_delivery_details deli, product_instruction ins, product_tblinwardentry inward "
 			+ " WHERE deli.deliveryid = ins.deliveryid and ins.inwardid = inward.inwardentryid", nativeQuery = true)
 	List<Object[]> qirDispatchList();

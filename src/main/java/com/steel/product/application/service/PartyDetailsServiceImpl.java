@@ -87,6 +87,19 @@ public class PartyDetailsServiceImpl implements PartyDetailsService {
 		Party party = partyMapper.toEntity(partyDto);
 		if(partyDto.getNPartyId() !=null && partyDto.getNPartyId() >0) {
 			party.setnPartyId( partyDto.getNPartyId());
+			
+			// below code will be removed once daily/monthly reports part added in UI
+			Party dummyParty = new Party();
+			Optional<Party> result = this.partyRepo.findById(Integer.valueOf( partyDto.getNPartyId()));
+			if (result.isPresent()) {
+				dummyParty = result.get();
+				if(!(partyDto.getDailyReportsList()!=null && partyDto.getDailyReportsList().length()>0)) {
+					party.setDailyReportsList(dummyParty.getDailyReportsList());
+				}
+				if(!(partyDto.getMonthlyReportsList()!=null && partyDto.getMonthlyReportsList().length()>0)) {
+					party.setMonthlyReportsList(dummyParty.getMonthlyReportsList());
+				}
+			}
 		}
 		/*
 	    Map<String,PacketClassification> savedPacketClassifications = packetClassificationService

@@ -809,6 +809,7 @@ public class QualityServiceImpl implements QualityService {
 			} else {
 				resp.setQirId(null);
 			}
+			resp.setPartyName(result[11] != null ? (String) result[11] : null);
 			qirList.add(resp);
 		}
 		return qirList;

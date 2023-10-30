@@ -38,6 +38,9 @@ public class MailSender {
 	@Value( "${email.text}" )
     private String emailBody;
 	
+	@Value( "${email.monthlyEmailBody}" )
+    private String monthlyEmailBody;
+	
 	private VelocityEngine velocityEngine;
 	
 	@Autowired 
@@ -142,6 +145,10 @@ public class MailSender {
 					mailStts = true;
 					reportsService.createStockMonthlyReport(party.getnPartyId(), helper, month, months);
 				}
+				if (party.getMonthlyReportsList().contains("OUTWARDREPORT")) {
+					mailStts = true;
+					reportsService.createOutwardMonthlyReport(party.getnPartyId(), helper, month, months);
+				}
 			}
 			 
 			helper.setFrom(fromMailId);
@@ -154,7 +161,7 @@ public class MailSender {
 				}
 			}
 			helper.setSubject(party.getPartyName() +" - Monthly Reports for the month of - "+months.get(month));
-			helper.setText(emailBody, true);
+			helper.setText(monthlyEmailBody, true);
 			if(mailStts) {
 				javaMailSender.send(message);
 			}

@@ -27,6 +27,9 @@ public interface ReportsService {
 	boolean createInwardMonthlyReport(Integer partyId, MimeMessageHelper helper, Integer month,
 			Map<Integer, String> months);
 
+	boolean createOutwardMonthlyReport(Integer partyId, MimeMessageHelper helper, Integer month,
+			Map<Integer, String> months);
+
 	boolean createStockMonthlyReport(Integer partyId, MimeMessageHelper helper, Integer month,
 			Map<Integer, String> months);
 }

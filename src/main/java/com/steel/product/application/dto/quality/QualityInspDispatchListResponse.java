@@ -25,10 +25,14 @@ public class QualityInspDispatchListResponse {
 
 	private String customerInvoiceNo;
 
+	private String partyName;
+	
 	private String customerInvoiceDate;
 
 	private int nPartyId;
 
 	private Integer qirId;
+	
+	
 	
 }
