@@ -720,7 +720,7 @@ public class QualityServiceImpl implements QualityService {
 
 	@Override
 	public List<KQPPartyMappingResponse> getAllKQPMappings() {
-		List<KQPPartyMappingResponse> instructionList = kqpPartyTemplateRepository.findAll().stream()
+		List<KQPPartyMappingResponse> instructionList = kqpPartyTemplateRepository.findByAll2().stream()
 				.map(i -> KQPPartyTemplateEntity.valueOf(i)).collect(Collectors.toList());
 		return instructionList;
 	}

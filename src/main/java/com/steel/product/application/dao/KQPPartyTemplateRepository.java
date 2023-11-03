@@ -18,6 +18,12 @@ public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTempla
 	
 	@Query("select ins from KQPPartyTemplateEntity ins where ins.kqpEntity.kqpId=:kqpId ")
 	List<KQPPartyTemplateEntity> findByKqpId(@Param("kqpId") Integer kqpId);	
+
+	@Query("select distinct kqpmap from KQPPartyTemplateEntity kqpmap "
+			+ " INNER JOIN KQPEntity kqp on kqp.kqpId =kqpmap.kqpEntity.kqpId "
+			+ " inner join Party party on party.nPartyId =kqpmap.party.nPartyId"
+			+ "  where 1=1 ")
+	List<KQPPartyTemplateEntity> findByAll2();	
 	
 	@Query(value = "SELECT distinct inwardentryid, coilnumber `Coil No`,customerbatchid `Batch No`," + 
 			" DATE_FORMAT(createdon,'%d/%m/%Y') `Plan Date`," + 
