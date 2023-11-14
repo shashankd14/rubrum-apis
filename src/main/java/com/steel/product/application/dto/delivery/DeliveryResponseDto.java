@@ -12,6 +12,8 @@ public class DeliveryResponseDto {
     
     private Integer packingRateId;
 
+    private Integer laminationId;
+
     private Float totalWeight;
 
     private Integer createdBy;
@@ -124,6 +126,14 @@ public class DeliveryResponseDto {
 
 	public void setPackingRateId(Integer packingRateId) {
 		this.packingRateId = packingRateId;
+	}
+
+	public Integer getLaminationId() {
+		return laminationId;
+	}
+
+	public void setLaminationId(Integer laminationId) {
+		this.laminationId = laminationId;
 	}
 
 

@@ -18,6 +18,8 @@ public class DeliveryDto {
     private Date customerInvoiceDate;
     
     private Integer packingRateId;
+    
+    private Integer laminationId;
 
     public List<DeliveryItemDetails> getDeliveryItemDetails() {
         return deliveryItemDetails;
@@ -73,6 +75,14 @@ public class DeliveryDto {
 
 	public void setPackingRateId(Integer packingRateId) {
 		this.packingRateId = packingRateId;
+	}
+
+	public Integer getLaminationId() {
+		return laminationId;
+	}
+
+	public void setLaminationId(Integer laminationId) {
+		this.laminationId = laminationId;
 	}
 
 

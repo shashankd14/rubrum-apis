@@ -24,6 +24,8 @@ public class PriceCalculateDTO {
 
 	private BigDecimal packingPrice = new BigDecimal(BigInteger.ZERO,  2);
 
+	private BigDecimal laminationCharges = new BigDecimal(BigInteger.ZERO,  2);
+
 	private BigDecimal additionalPrice  = new BigDecimal(BigInteger.ZERO,  2);
 
 	private BigDecimal rate  = new BigDecimal(BigInteger.ZERO,  2);

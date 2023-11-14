@@ -31,9 +31,9 @@ public interface PriceMasterService {
 			Integer packingRateId, BigDecimal actualWeight, Float actualLength1, int plannedNoOfPieces1, int instrSize,
 			Long partDetailsId);
 
-	PriceCalculateDTO calculateInstructionWisePrice(Instruction ins, Integer packingRateId);
+	PriceCalculateDTO calculateInstructionWisePrice(Instruction ins, Integer packingRateId, Integer laminationId);
 
-	String calculateInstructionPrice(Instruction ins, int packingRateId);
+	String calculateInstructionPrice(Instruction ins, int packingRateId, Integer laminationId);
 
 	Page<PriceMasterEntity> findAllWithPagination(PriceMasterListPageRequest request);
 

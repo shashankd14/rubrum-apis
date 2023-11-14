@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.steel.product.application.dao.PriceMasterRepository;
 import com.steel.product.application.dto.pricemaster.PriceMasterResponse;
 import com.steel.product.application.dto.additionalpricemaster.AdditionalPriceMasterResponse;
+import com.steel.product.application.dto.lamination.LaminationChargesResponse;
 import com.steel.product.application.dto.packingmaster.PackingRateMasterResponse;
 import com.steel.product.application.dto.pricemaster.PriceCalculateDTO;
 import com.steel.product.application.dto.pricemaster.PriceMasterListPageRequest;
@@ -39,6 +40,9 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 
 	@Autowired
 	PackingMasterService packingMasterService;	
+
+	@Autowired
+	LaminationChargesService laminationService;	
 	
 	@Autowired
 	AdditionalPriceMasterService additionalPriceMasterService;
@@ -315,9 +319,9 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 	 */
 
 	@Override
-	public String calculateInstructionPrice(Instruction ins, int packingRateId) {
+	public String calculateInstructionPrice(Instruction ins, int packingRateId, Integer laminationId) {
 		String jsonStr = "";
-		PriceCalculateDTO priceCalculateDTO = calculateInstructionWisePrice(ins, packingRateId);
+		PriceCalculateDTO priceCalculateDTO = calculateInstructionWisePrice(ins, packingRateId, laminationId);
 		ObjectMapper Obj = new ObjectMapper();
 		try {
 			
@@ -341,6 +345,9 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 				}
 				if(priceCalculateDTO!=null && priceCalculateDTO.getPackingPrice() != null) {
 					amount=amount.add(priceCalculateDTO.getPackingPrice() );
+				}
+				if(priceCalculateDTO!=null && priceCalculateDTO.getLaminationCharges() != null) {
+					amount=amount.add(priceCalculateDTO.getLaminationCharges() );
 				}
 				if(amount!=null ) {
 					priceCalculateDTO.setRate(amount.setScale(3, RoundingMode.HALF_EVEN));
@@ -480,7 +487,7 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 	}
 	
 	@Override
-	public PriceCalculateDTO calculateInstructionWisePrice(Instruction ins, Integer packingRateId) {
+	public PriceCalculateDTO calculateInstructionWisePrice(Instruction ins, Integer packingRateId, Integer laminationId) {
 
 		PriceCalculateDTO priceCalculateDTO=new PriceCalculateDTO();
 		
@@ -521,6 +528,12 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 				//packingRate = packingRate.divide(BigDecimal.valueOf(1000));
 				priceCalculateDTO.setPackingPrice(packrate.getPackingRate());
 				totalPrice = totalPrice.add(priceCalculateDTO.getPackingPrice());
+			}
+
+			LaminationChargesResponse laminationResponse = laminationService.getById(laminationId);
+			if(laminationResponse != null && laminationResponse.getCharges() !=null && laminationResponse.getCharges().compareTo(BigDecimal.ZERO) > 0) {
+				priceCalculateDTO.setLaminationCharges( laminationResponse.getCharges());
+				totalPrice = totalPrice.add(priceCalculateDTO.getLaminationCharges());
 			}
 			
 			List<AdditionalPriceMasterResponse> addPriceList = additionalPriceMasterService.getAllPriceDetails();

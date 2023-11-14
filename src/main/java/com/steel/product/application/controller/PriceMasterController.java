@@ -78,7 +78,7 @@ public class PriceMasterController {
 	}
 	@PostMapping(value = "/calculatePrice", produces = "application/json")
 	public String calculatePrice(@RequestBody CalculatePriceRequest calculatePriceRequest) {
-		return priceMasterService.calculateInstructionPrice(null, 0);
+		return priceMasterService.calculateInstructionPrice(null, 0, 0);
 	}
 
 }

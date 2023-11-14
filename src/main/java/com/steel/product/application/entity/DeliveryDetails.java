@@ -22,7 +22,10 @@ public class DeliveryDetails {
 
     @Column(name = "packing_rate_id")
     private Integer packingRateId;
-
+    
+    @Column(name = "lamination_id")
+    private Integer laminationId;
+    
     @Column(name = "totalweight")
     private Float totalWeight;
 
@@ -190,6 +193,7 @@ public class DeliveryDetails {
         deliveryResponseDto.setUpdatedOn(deliveryDetails.getUpdatedOn());
         deliveryResponseDto.setVehicleNo(deliveryDetails.getVehicleNo());
         deliveryResponseDto.setPackingRateId( deliveryDetails.getPackingRateId());
+        deliveryResponseDto.setLaminationId( deliveryDetails.getLaminationId() );
 //        deliveryResponseDto.setInstruction(deliveryDetails.getInstruction().stream().map(i -> Instruction.valueOf(i)).collect(Collectors.toList()));
         return deliveryResponseDto;
     }
@@ -216,6 +220,14 @@ public class DeliveryDetails {
 
 	public void setTallyStatus(String tallyStatus) {
 		this.tallyStatus = tallyStatus;
+	}
+
+	public Integer getLaminationId() {
+		return laminationId;
+	}
+
+	public void setLaminationId(Integer laminationId) {
+		this.laminationId = laminationId;
 	}
     
     

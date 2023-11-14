@@ -116,9 +116,8 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
         delivery.setVehicleNo(deliveryDto.getVehicleNo());
         delivery.setTallyStatus("PENDING");
         delivery.setPackingRateId( deliveryDto.getPackingRateId());
-
+        delivery.setLaminationId( deliveryDto.getLaminationId() );
         deliveryItemDetails = deliveryDto.getDeliveryItemDetails();
-
         float inStockWeight = 0f, weightToDeliver = 0f, parentWeight = 0f;
         Integer deliveredStatusId = 4;
         Status deliveredStatus = statusService.getStatusById(deliveredStatusId);
@@ -132,7 +131,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
         List<Instruction> instructions = instructionService.findAllByInstructionIdInAndStatus(deliveryItemDetails.stream().map(d -> d.getInstructionId()).collect(Collectors.toList()), statusIdList);
         
         instructions.forEach(ins -> ins.setStatus(deliveredStatus));
-        instructions.forEach(ins -> ins.setPriceDetails( priceMasterService.calculateInstructionPrice(ins, deliveryDto.getPackingRateId())));
+        instructions.forEach(ins -> ins.setPriceDetails( priceMasterService.calculateInstructionPrice(ins, deliveryDto.getPackingRateId(), deliveryDto.getLaminationId())));
         instructions = instructionService.saveAll(instructions);
 
         InwardEntry inwardEntry;
@@ -496,7 +495,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 						instruction.getPlannedNoOfPieces(), inwardEntry.getInstructions().size(),
 						instruction.getPartDetails().getId());*/
 				
-				PriceCalculateDTO priceCalculateDTO = priceMasterService.calculateInstructionWisePrice(instruction, deliveryDto.getPackingRateId());
+				PriceCalculateDTO priceCalculateDTO = priceMasterService.calculateInstructionWisePrice(instruction, deliveryDto.getPackingRateId(), deliveryDto.getLaminationId());
 
 				priceCalculateDTO.setCoilNo(inwardEntry.getCoilNumber());
 				priceCalculateDTO.setCustomerBatchNo(inwardEntry.getCustomerBatchId());

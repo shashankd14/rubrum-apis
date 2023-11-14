@@ -1,28 +1,35 @@
 package com.steel.product.application.controller;
 
-import com.steel.product.application.dto.delivery.DeliveryDto;
-import com.steel.product.application.dto.delivery.DeliveryPacketsDto;
-import com.steel.product.application.dto.pricemaster.PriceCalculateResponseDTO;
-import com.steel.product.application.entity.DeliveryDetails;
-import com.steel.product.application.entity.Instruction;
-import com.steel.product.application.service.DeliveryDetailsService;
-import com.steel.product.application.service.PackingMasterService;
-
-import io.swagger.v3.oas.annotations.tags.Tag;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.steel.product.application.dto.delivery.DeliveryDto;
+import com.steel.product.application.dto.delivery.DeliveryPacketsDto;
+import com.steel.product.application.dto.pricemaster.PriceCalculateResponseDTO;
+import com.steel.product.application.entity.DeliveryDetails;
+import com.steel.product.application.entity.Instruction;
+import com.steel.product.application.service.DeliveryDetailsService;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @CrossOrigin
@@ -32,9 +39,6 @@ public class DeliveryDetailsController {
 
     @Autowired
     private DeliveryDetailsService deliveryDetailsService;
-
-    @Autowired
-    private PackingMasterService packingMasterService;
 
 	@GetMapping({ "/list/{pageNo}/{pageSize}" })
 	public ResponseEntity<Object> findAllWithPagination(@PathVariable int pageNo, @PathVariable int pageSize,
@@ -80,8 +84,11 @@ public class DeliveryDetailsController {
 		headers.set("Content-Type", "application/json");
 		try {
 			int userId = (request.getHeader("userId") == null ? 1 : Integer.parseInt(request.getHeader("userId")));
-			if(deliveryDto.getPackingRateId() == null ) {
+			if(!(deliveryDto.getPackingRateId() !=null && deliveryDto.getPackingRateId() > 0 )) {
 				deliveryDto.setPackingRateId(0);
+			}		
+			if(!(deliveryDto.getLaminationId() !=null && deliveryDto.getLaminationId() > 0 )) {
+				deliveryDto.setLaminationId(0);
 			}
 			PriceCalculateResponseDTO priceCalculateResponseDTO = deliveryDetailsService.validatePriceMapping(deliveryDto, deliveryDto.getPackingRateId());
 			if (priceCalculateResponseDTO.isValidationStatus()) {
@@ -100,13 +107,15 @@ public class DeliveryDetailsController {
 	public ResponseEntity<Object> save(@RequestBody DeliveryDto deliveryDto, HttpServletRequest request) {
 		ResponseEntity<Object> result = null;
 
-		DeliveryDetails deliveryDetails = new DeliveryDetails();
 		try {
 			int userId = (request.getHeader("userId")==null ? 1: Integer.parseInt(request.getHeader("userId")));
-			if(deliveryDto.getPackingRateId() == null ) {
+			if(!(deliveryDto.getPackingRateId() !=null && deliveryDto.getPackingRateId() > 0 )) {
 				deliveryDto.setPackingRateId(0);
+			}		
+			if(!(deliveryDto.getLaminationId() !=null && deliveryDto.getLaminationId() > 0 )) {
+				deliveryDto.setLaminationId(0);
 			}
-			deliveryDetails = deliveryDetailsService.save(deliveryDto, userId);
+			DeliveryDetails deliveryDetails = deliveryDetailsService.save(deliveryDto, userId);
 			result = new ResponseEntity<>("Delivery details saved successfully!", HttpStatus.OK);
 		} catch (Exception e) {
 			result = new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
