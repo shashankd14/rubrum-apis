@@ -94,7 +94,7 @@ public interface DeliveryDetailsRepository extends JpaRepository<DeliveryDetails
     		"    dc.packing_rate_id, inward.npartyid, instr.processid, inward.materialgradeid, \r\n" + 
     		"    price_details, plannednoofpieces,  \r\n" + 
     		"    (select count(ins.instructionid) from product_instruction ins where ins.inwardid=inward.inwardentryid) as 'noofPlans', part_details_id, \r\n " + 
-    		"    (select SUBSTRING(gstn, 1, 2)  from product_company_details where id=1) as companygstin, SUBSTRING(gstnumber, 1, 2) \r\n " + 
+    		"    lamination_id \r\n " + 
     		" FROM product_tblinwardentry inward, " + 
     		"    product_tblpartydetails party, " + 
     		"    product_instruction instr, " + 

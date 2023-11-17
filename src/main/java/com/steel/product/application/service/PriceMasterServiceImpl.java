@@ -368,7 +368,7 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 	@Override
 	public PriceCalculateDTO calculateInstructionWisePrice(int partyId, BigDecimal fThickness, int processId,
 			int gradeId, Integer packingRateId, BigDecimal bundleWeight, Float actualLength1, int plannedNoOfPieces1,
-			int instrSize, Long partDetailsId) {
+			int instrSize, Long partDetailsId, Integer laminationId) {
 
 		PriceCalculateDTO priceCalculateDTO=new PriceCalculateDTO();
 		
@@ -408,6 +408,14 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 				totalPrice = totalPrice.add(priceCalculateDTO.getPackingPrice());
 			} else {
 				priceCalculateDTO.setPackingPrice(BigDecimal.ZERO);
+			}
+
+			LaminationChargesResponse laminationResponse = laminationService.getById(laminationId);
+			if(laminationResponse != null && laminationResponse.getCharges() !=null && laminationResponse.getCharges().compareTo(BigDecimal.ZERO) > 0) {
+				priceCalculateDTO.setLaminationCharges( laminationResponse.getCharges());
+				totalPrice = totalPrice.add(priceCalculateDTO.getLaminationCharges());
+			} else {
+				priceCalculateDTO.setLaminationCharges(BigDecimal.ZERO);
 			}
 			
 			List<AdditionalPriceMasterResponse> addPriceList = additionalPriceMasterService.getAllPriceDetails();

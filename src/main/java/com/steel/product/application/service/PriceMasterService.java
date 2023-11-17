@@ -29,7 +29,7 @@ public interface PriceMasterService {
 
 	PriceCalculateDTO calculateInstructionWisePrice(int partyId, BigDecimal fThickness, int processId, int gradeId,
 			Integer packingRateId, BigDecimal actualWeight, Float actualLength1, int plannedNoOfPieces1, int instrSize,
-			Long partDetailsId);
+			Long partDetailsId, Integer laminationId);
 
 	PriceCalculateDTO calculateInstructionWisePrice(Instruction ins, Integer packingRateId, Integer laminationId);
 

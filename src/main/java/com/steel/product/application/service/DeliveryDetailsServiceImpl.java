@@ -423,26 +423,27 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 			Integer plannedNoOfPieces = objs[33] != null ? (Integer) objs[33] : 0;
 			Integer noofPlans = objs[34] != null ? ((BigInteger) objs[34]).intValue() : 0;
 			Integer partDetailsId = objs[35] != null ? (Integer) objs[35] : 0;
-			//String companyGSTIN = objs[36] != null ? (String) objs[36] : "29";
+			Integer laminationId = objs[36] != null ? (Integer) objs[36] : 0;
 			//String partyGSTIN = objs[37] != null ? (String) objs[37] : "29";
 
 			PriceCalculateDTO priceCalculateDTO = priceMasterService.calculateInstructionWisePrice(partyId,
 					BigDecimal.valueOf(fThickness), processId, materialGradeId, packingRateId,
-					invoiceListDTO.getQuantity(), actualLength, plannedNoOfPieces, noofPlans, partDetailsId.longValue());
+					invoiceListDTO.getQuantity(), actualLength, plannedNoOfPieces, noofPlans, partDetailsId.longValue(),
+					laminationId);
 
 			BigDecimal amount =new BigDecimal("0.00");
 			
 			if(priceCalculateDTO!=null && priceCalculateDTO.getBasePrice() !=null) {
-				//invoiceListDTO.setBasePrice( priceCalculateDTO.getBasePrice());
 				amount=amount.add( priceCalculateDTO.getBasePrice());
 			}
 			if(priceCalculateDTO!=null && priceCalculateDTO.getAdditionalPrice() != null) {
-				//invoiceListDTO.setAdditionalPrice( priceCalculateDTO.getAdditionalPrice());
 				amount=amount.add( priceCalculateDTO.getAdditionalPrice());
 			}
 			if(priceCalculateDTO!=null && priceCalculateDTO.getPackingPrice() != null) {
-				//invoiceListDTO.setPackingRate(  priceCalculateDTO.getPackingPrice());
 				amount=amount.add(priceCalculateDTO.getPackingPrice());
+			}
+			if(priceCalculateDTO!=null && priceCalculateDTO.getLaminationCharges() != null) {
+				amount=amount.add(priceCalculateDTO.getLaminationCharges());
 			}
 			invoiceListDTO.setGstPercentage(new BigDecimal("12.00"));
 
