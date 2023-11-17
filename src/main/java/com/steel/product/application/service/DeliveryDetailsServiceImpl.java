@@ -516,6 +516,9 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 				if(priceCalculateDTO!=null && priceCalculateDTO.getPackingPrice() != null) {
 					amount=amount.add(priceCalculateDTO.getPackingPrice() );
 				}
+				if(priceCalculateDTO!=null && priceCalculateDTO.getLaminationCharges() != null) {
+					amount=amount.add(priceCalculateDTO.getLaminationCharges() );
+				}
 				if(amount!=null ) {
 					priceCalculateDTO.setRate(amount.setScale(3, RoundingMode.HALF_EVEN));
 					BigDecimal totalAmount = new BigDecimal(BigInteger.ZERO,  2);
