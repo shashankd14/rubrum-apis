@@ -78,13 +78,13 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
 
     List<Instruction> getAllByInstructionIdIn(List<Integer> instructionIds);
 
-    @Query("select pd,ins,COUNT(ins.plannedWeight) from PartDetails pd join fetch pd.instructions ins where pd.partDetailsId = :partDetailsId group by ins.plannedWeight,ins.partDetails,ins.process,ins.endUserTagsEntity order by ins.createdOn")
+    @Query("select pd,ins,COUNT(ins.plannedWeight) from PartDetails pd join fetch pd.instructions ins where pd.partDetailsId = :partDetailsId group by ins.plannedWeight,ins.partDetails,ins.process,ins.endUserTagsEntity order by pd.id asc ")
     List<Object[]> findPartDetailsJoinFetchInstructions(@Param("partDetailsId") String partDetailsId);
 
-    @Query("select pd,ins,COUNT(ins.plannedWeight) from PartDetails pd join fetch pd.instructions ins where parentGroupId in :groupIds group by ins.plannedWeight,ins.partDetails,ins.process,ins.endUserTagsEntity order by ins.createdOn")
+    @Query("select pd,ins,COUNT(ins.plannedWeight) from PartDetails pd join fetch pd.instructions ins where parentGroupId in :groupIds group by ins.plannedWeight,ins.partDetails,ins.process,ins.endUserTagsEntity order by ins.instructionId asc ")
     List<Object[]> findPartDetailsJoinFetchInstructionsAndGroupIds(@Param("groupIds")List<Integer> groupIds);
 
-    @Query("select pd,ins,COUNT(ins.plannedWeight) from PartDetails pd join fetch pd.instructions ins where pd.partDetailsId = :partDetailsId or parentGroupId in :groupIds group by ins.plannedWeight,ins.partDetails,ins.process,ins.endUserTagsEntity order by ins.createdOn")
+    @Query("select pd,ins,COUNT(ins.plannedWeight) from PartDetails pd join fetch pd.instructions ins where pd.partDetailsId = :partDetailsId or parentGroupId in :groupIds group by ins.plannedWeight,ins.partDetails,ins.process,ins.endUserTagsEntity  order by ins.instructionId asc")
     List<Object[]> findPartDetailsJoinFetchInstructionsByPartDetailsIdOrGroupIds(@Param("partDetailsId") String partDetailsId,@Param("groupIds")List<Integer> groupIds);
 
 //    @Query(value = "SELECT ANY_VALUE(pd.target_weight) as targetWeight,ANY_VALUE(pd.length) AS length, ANY_VALUE(ins.inwardId) AS inwardId, ANY_VALUE(ins.processId) as processId" +

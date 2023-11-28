@@ -133,6 +133,7 @@
                 <th class="t-head font-size-small" >Inward Dt</th>
                 <th class="t-head font-size-small" >Material Grade</th>
                 <th class="t-head font-size-small" >Material Desc</th>
+                <th class="t-head font-size-small" >No'of PCs</th>
                 <th class="t-head font-size-small" >Delivery Weight (Kg)</th>
                 <th class="t-head font-size-small" >Value of Goods (Rs)</th>
                 <th class="t-head font-size-small" >Base Price (Rs)</th>
@@ -153,6 +154,7 @@
                     <td class="font-size-x-small" th:text="${#dates.format(inw?.createdOn,'dd/MM/yyyy')}"></td>
                     <td class="font-size-x-small" th:text="${inw?.materialGradeName}"></td>
                     <td class="font-size-x-small" th:text="${inw?.matDescription}"></td>
+                    <td class="font-size-x-small" th:text="${ins?.actualNoOfPieces}"></td>
                     <td class="font-size-x-small" th:text="${ins?.actualWeight}"></td>
                     <td class="font-size-x-small" th:text="${#numbers.formatDecimal(ins?.valueOfGoods,1,2)}"></td>
                     <td class="font-size-x-small" th:text="${#numbers.formatDecimal(ins?.baseTotalPrice,1,2)}"></td>
@@ -163,7 +165,7 @@
 
             </th:block>
             <tr>
-                <td class="t-row font-size-small" colspan="6" style="text-align: center; font-weight: bold;">SUB TOTAL</td>
+                <td class="t-row font-size-small" colspan="7" style="text-align: center; font-weight: bold;">SUB TOTAL</td>
                 <td class="t-row font-size-small"  style="text-align: center; font-weight: bold;" th:text="${#numbers.formatDecimal(deliveryChallan?.totalDeliveryWeight,2,2)}"></td>
                 <td class="t-row font-size-small"  style="text-align: center; font-weight: bold;" th:text="${#numbers.formatDecimal(deliveryChallan?.totalValueOfGoods,2,2)}"></td>
                 <td class="t-row font-size-small" ></td>
@@ -187,7 +189,7 @@
                 <td class="font-size-small"></td>
             </tr> -->
             <tr>
-                <td class="t-row font-size-small"  style="text-align: center; font-weight: bold;" colspan="10">GRAND TOTAL</td>
+                <td class="t-row font-size-small"  style="text-align: center; font-weight: bold;" colspan="11">GRAND TOTAL</td>
                 <td class="t-row font-size-small" ></td>
                 <td class="t-row font-size-small" style="text-align: center; font-weight: bold;" th:text="${#numbers.formatDecimal(deliveryChallan?.totalPrice,2,2)}"></td>
             </tr>
@@ -198,8 +200,8 @@
         <div style="float: left;">
             Received the above goods in good condition
         </div>
-        <div style="width: 13%; float: right;">
-            For {company}
+        <div style="width: 25%; float: right;">
+        	For <br/><span th:text="${deliveryChallan?.companyName}"></span>
         </div>
     </div>
 
@@ -207,9 +209,7 @@
         <div style="float: left;">
             Receivers Signature
         </div>
-        <div style="width: 13%; float: right;">
-            Manager/Director
-        </div>
+        <div style="width: 25%; float: right;">Authorized Signatory</div>
     </div>
 
 </body>

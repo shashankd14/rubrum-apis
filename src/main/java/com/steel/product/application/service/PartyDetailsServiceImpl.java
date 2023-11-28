@@ -101,6 +101,7 @@ public class PartyDetailsServiceImpl implements PartyDetailsService {
 				}
 			}
 		}
+		
 		/*
 	    Map<String,PacketClassification> savedPacketClassifications = packetClassificationService
 	            .findAllByPacketClassificationIdIn(partyDto.getTags().stream().map(tag -> tag.getClassificationId()).collect(Collectors.toList()))

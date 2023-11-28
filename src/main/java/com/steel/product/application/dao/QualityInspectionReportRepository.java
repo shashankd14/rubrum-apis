@@ -12,7 +12,7 @@ public interface QualityInspectionReportRepository extends JpaRepository<Quality
 
 	QualityInspectionReportEntity findTop1ByCoilNoAndDeliveryChalanNo(String coilNo, String deliveryChalanNo);
 
-	QualityInspectionReportEntity findTop1ByCoilNo(String coilNo);
+	QualityInspectionReportEntity findTop1ByCoilNoOrderByQirIdDesc(String coilNo);
 	
 	QualityInspectionReportEntity findByQirId(Integer qirId); 
 }

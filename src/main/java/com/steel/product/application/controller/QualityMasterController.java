@@ -423,7 +423,7 @@ public class QualityMasterController {
 			@RequestParam(value = "strapping", required = false) MultipartFile strapping,
 			@RequestParam(value = "weighmentSlip", required = false) MultipartFile weighmentSlip,
 			@RequestParam(value = "weighment", required = false) MultipartFile weighment,
-			@RequestParam(value = "acknowledgementReceipt", required = false) MultipartFile acknowledgementReceipt,
+			@RequestParam(value = "ackReceipt", required = false) MultipartFile acknowledgementReceipt,
 			@RequestParam(value = "unloadingImproper", required = false) MultipartFile unloadingImproper,
 			@RequestParam(value = "templateId", required = false) String templateId,
 			@RequestParam(value = "processId", required = false) String processId,

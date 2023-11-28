@@ -924,7 +924,7 @@ public class QualityServiceImpl implements QualityService {
 	@Override
 	public QualityInspectionReportResponse getqirById(String coilNo, String planId) {
 
-		QualityInspectionReportEntity entity = qualityInspectionReportRepository.findTop1ByCoilNo(coilNo);
+		QualityInspectionReportEntity entity = qualityInspectionReportRepository.findTop1ByCoilNoOrderByQirIdDesc(coilNo);
 		QualityInspectionReportResponse resp = QualityInspectionReportEntity.valueOf(entity);
 
 		if (resp.getRustObserved() != null && resp.getRustObserved().length() > 0) {
@@ -982,10 +982,10 @@ public class QualityServiceImpl implements QualityService {
 		
 		QualityInspectionReportResponse resp = new QualityInspectionReportResponse();
 		try {
-			QualityInspectionReportEntity entity = qualityInspectionReportRepository.findTop1ByCoilNo(coilNo);
+			QualityInspectionReportEntity entity = null;//qualityInspectionReportRepository.findTop1ByCoilNoDesc(coilNo);
 			
 			if ("inward".equalsIgnoreCase(stageName)) {
-				entity = qualityInspectionReportRepository.findTop1ByCoilNo(coilNo);
+				entity = qualityInspectionReportRepository.findTop1ByCoilNoOrderByQirIdDesc(coilNo);
 			} else if ("processing".equalsIgnoreCase(stageName) || "postprocessing".equalsIgnoreCase(stageName)) {
 				entity = qualityInspectionReportRepository.findTop1ByCoilNoAndPlanId(coilNo, planId);
 			} else if ("predispatch".equalsIgnoreCase(stageName) || "postdispatch".equalsIgnoreCase(stageName)) {
