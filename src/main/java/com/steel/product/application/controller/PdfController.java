@@ -57,6 +57,11 @@ public class PdfController {
         byte[] bytes = null;
         StringBuilder builder = new StringBuilder();
         try {
+        	
+        	if(!(deliveryPdfDto.getLaminationId() !=null && deliveryPdfDto.getLaminationId() > 0 )) {
+        		deliveryPdfDto.setLaminationId(0);
+			}
+        	
             file = Paths.get(pdfService.generateDeliveryPdf(deliveryPdfDto).getAbsolutePath());
             bytes = Files.readAllBytes(file);
             builder.append(Base64.getEncoder().encodeToString(bytes));

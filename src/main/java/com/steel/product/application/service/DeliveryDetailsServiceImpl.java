@@ -105,7 +105,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
             if(deliveryDto.getCustomerInvoiceDate() != null){
                 delivery.setCustomerInvoiceDate(deliveryDto.getCustomerInvoiceDate());
             }
-            deliveryDetailsRepo.save(delivery);
+           // deliveryDetailsRepo.save(delivery);
             return delivery;
         }
         LOGGER.info("adding new delivery with id");
@@ -132,7 +132,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
         
         instructions.forEach(ins -> ins.setStatus(deliveredStatus));
         instructions.forEach(ins -> ins.setPriceDetails( priceMasterService.calculateInstructionPrice(ins, deliveryDto.getPackingRateId(), deliveryDto.getLaminationId())));
-        instructions = instructionService.saveAll(instructions);
+        //instructions = instructionService.saveAll(instructions);
 
         InwardEntry inwardEntry;
         Instruction parentInstruction;
@@ -225,7 +225,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
         LOGGER.info("saving "+inwardEntryList.size()+" inward entries");
         inwardEntryService.saveAll(inwardEntryList);
         LOGGER.info("saving delivery details");
-        deliveryDetailsRepo.save(delivery);
+        //deliveryDetailsRepo.save(delivery);
         return delivery;
     }
 

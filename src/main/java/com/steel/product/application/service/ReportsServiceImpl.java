@@ -204,7 +204,7 @@ public class ReportsServiceImpl implements ReportsService {
 	@Override
 	public boolean createFGReport(int partyId, String strDate, MimeMessageHelper helper) {
 
-		boolean attachmentRequired=true;
+		boolean attachmentRequired = false;
 		try {
 			// Create blank workbook
 			XSSFWorkbook workbook = new XSSFWorkbook();
@@ -217,28 +217,45 @@ public class ReportsServiceImpl implements ReportsService {
 			borderStyle.setAlignment(HorizontalAlignment.CENTER);
 			
 			// Create a blank sheet
-			XSSFSheet spreadsheet = workbook.createSheet("FG_Report");
+			XSSFSheet fgSpreadsheet = workbook.createSheet("FG_Classification");
+			XSSFSheet othersSpreadsheet = workbook.createSheet("Others_Classification");
 
 			// Create row object
 			XSSFRow row;
-
-			Map<String, Object[]> acctStatementMap = getFGReportDetails(partyId);
+			
+			List<FGReportViewEntity> fgReportDetailsList =getFGReportDetails(partyId);
+			
+			Map<String, Object[]> fgAcctStatementMap = getFGCassificationDetails(fgReportDetailsList);
+			Map<String, Object[]> othersActStatementMap = getOthersCassificationDetails( fgReportDetailsList);
 
 			// Iterate over data and write to sheet
-			Set<String> keyid = acctStatementMap.keySet();
+			Set<String> keyid = fgAcctStatementMap.keySet();
 			int rowid = 0;
 
 			for (String key : keyid) {
-				row = spreadsheet.createRow(rowid++);
-				Object[] objectArr = acctStatementMap.get(key);
+				row = fgSpreadsheet.createRow(rowid++);
+				Object[] objectArr = fgAcctStatementMap.get(key);
 				int cellid = 0;
-
 				for (Object obj : objectArr) {
 					Cell cell = row.createCell(cellid++);
 				    cell.setCellStyle(borderStyle);
 					cell.setCellValue((String) obj);
 				}
-			
+			}
+
+			// Iterate over data and write to sheet
+			Set<String> keyid1 = othersActStatementMap.keySet();
+			rowid = 0;
+
+			for (String key : keyid1) {
+				row = othersSpreadsheet.createRow(rowid++);
+				Object[] objectArr = othersActStatementMap.get(key);
+				int cellid = 0;
+				for (Object obj : objectArr) {
+					Cell cell = row.createCell(cellid++);
+				    cell.setCellStyle(borderStyle);
+					cell.setCellValue((String) obj);
+				}
 			}
 			
             String baseDirectory = env.getProperty("email.folderpath")+File.separator;
@@ -252,8 +269,12 @@ public class ReportsServiceImpl implements ReportsService {
 			workbook.write(out);
 			
 			FileSystemResource file = new FileSystemResource(fullPath);
-			if(acctStatementMap!=null && acctStatementMap.size()>1) {
-				attachmentRequired=false;
+			if(fgAcctStatementMap!=null && fgAcctStatementMap.size()>1) {
+				attachmentRequired=true;
+				helper.addAttachment("FGReport_" + strDate + ".xlsx", file);
+			}
+			if(othersActStatementMap!=null && othersActStatementMap.size()>1) {
+				attachmentRequired=true;
 				helper.addAttachment("FGReport_" + strDate + ".xlsx", file);
 			}
 			
@@ -266,12 +287,17 @@ public class ReportsServiceImpl implements ReportsService {
 		return attachmentRequired;
 	}
 
-	public Map<String, Object[]> getFGReportDetails(int partyId) {
+	public List<FGReportViewEntity> getFGReportDetails(int partyId) {
+
+		List<FGReportViewEntity> partyList = fgReportViewRepository.findByPartyId(partyId);
+		return partyList;
+	}
+
+	public Map<String, Object[]> getFGCassificationDetails(List<FGReportViewEntity> partyList ) {
 
 		Map<String, Object[]> acctStatementMap = new LinkedHashMap<>();
 
 		try {
-			List<FGReportViewEntity> partyList = fgReportViewRepository.findByPartyId(partyId);
 
 			acctStatementMap.put("1",
 					new Object[] { "CoilNumber", "CustomerBatchId", "Finishing Date","MaterialDesc", "MaterialGrade","Packet Id",
@@ -279,13 +305,41 @@ public class ReportsServiceImpl implements ReportsService {
 
 			int cnt = 1;
 			for (FGReportViewEntity kk : partyList) {
-				cnt++;
+				if("FG".equals(kk.getClassificationTag())) {
+					cnt++;
+					acctStatementMap.put("" + cnt,
+					new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getFinishingDate(), kk.getMaterialDesc(),
+					kk.getMaterialGrade(),kk.getPacketId(),
+					kk.getThickness(), kk.getActualwidth(), kk.getActuallength(), kk.getActualweight(),
+					kk.getClassificationTag(), kk.getEnduserTagName() });
+				}
+			}
+		} catch (Exception e) {
+			LOGGER.error("Error at getFGReportDetails " + e.getMessage());
+		}
+		return acctStatementMap;
+	}
 
-				acctStatementMap.put("" + cnt,
-						new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getFinishingDate(), kk.getMaterialDesc(),
-								kk.getMaterialGrade(),kk.getPacketId(),
-								kk.getThickness(), kk.getActualwidth(), kk.getActuallength(), kk.getActualweight(),
-								kk.getClassificationTag(), kk.getEnduserTagName() });
+	public Map<String, Object[]> getOthersCassificationDetails(List<FGReportViewEntity> partyList ) {
+
+		Map<String, Object[]> acctStatementMap = new LinkedHashMap<>();
+
+		try {
+
+			acctStatementMap.put("1",
+					new Object[] { "CoilNumber", "CustomerBatchId", "Finishing Date","MaterialDesc", "MaterialGrade","Packet Id",
+							"Thickness", "Actual Width", "Actual Length", "Actual Weight", "Classification Tag", "End User Tag" });
+
+			int cnt = 1;
+			for (FGReportViewEntity kk : partyList) {
+				if(!("FG".equals(kk.getClassificationTag()))) {
+					cnt++;
+					acctStatementMap.put("" + cnt,
+					new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getFinishingDate(), kk.getMaterialDesc(),
+					kk.getMaterialGrade(),kk.getPacketId(),
+					kk.getThickness(), kk.getActualwidth(), kk.getActuallength(), kk.getActualweight(),
+					kk.getClassificationTag(), kk.getEnduserTagName() });
+				}
 			}
 		} catch (Exception e) {
 			LOGGER.error("Error at getFGReportDetails " + e.getMessage());
@@ -841,7 +895,7 @@ public class ReportsServiceImpl implements ReportsService {
 		Map<String, Object[]> acctStatementMap = new LinkedHashMap<>();
 
 		try {
-			List<StockReportViewEntity> partyList = stockReportViewRepository.findByPartyIdAndMnth(partyId, month);
+			List<StockReportViewEntity> partyList = stockReportViewRepository.findByPartyId(partyId);
 
 			acctStatementMap.put("1", new Object[] { "CoilNumber", "CustomerBatchId", "MaterialDesc", "MaterialGrade", "Thickness", "Width", "Length", "NetWeight", "UnprocessedWeight", "InStockWeight", "InwardStatus" });
 

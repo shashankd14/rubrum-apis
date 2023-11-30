@@ -48,6 +48,8 @@ public class InstructionResponsePdfDto {
 
     private String additionalTotalPrice;
 
+    private String laminationCharges;
+
     private String packingRate;
     
     private String totalPrice;

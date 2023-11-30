@@ -51,7 +51,7 @@ public class ReportsEmailScheduler {
 			for (Party party : partyList) {
 				if (party.getEmail1() != null && party.getEmail1().length() > 0) {
 					mailSender.sendMail(party, strDate);
-					Thread.sleep(1500);
+					Thread.sleep(500);
 				}
 			}
 
@@ -72,7 +72,7 @@ public class ReportsEmailScheduler {
 			for (Party party : partyList) {
 				if (party.getEmail1() != null && party.getEmail1().length() > 0) {
 					mailSender.sendMonthlyReportsMail(party, month);
-					Thread.sleep(1500);
+					Thread.sleep(500);
 				}
 			}
 

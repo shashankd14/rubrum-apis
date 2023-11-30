@@ -14,6 +14,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -202,6 +203,7 @@ public class Instruction {
 		instructionResponsePdfDto.setActualWidth(instruction.getActualWidth());
 		
 		String packingPrice = "0.00";
+		String laminationCharges = "0.00";
 		String baseTotalPrice = "0.00";
 		String additionalTotalPrice = "0.00";
 		String totalPrice = "0.00";
@@ -218,6 +220,9 @@ public class Instruction {
 				if (json.containsKey("packingPrice")) {
 					packingPrice =   json.get("packingPrice").toString() ;
 				}
+				if (json.containsKey("laminationCharges")) {
+					laminationCharges =   json.get("laminationCharges").toString() ;
+				}
 				if (json.containsKey("totalPrice")) {
 					totalPrice =   json.get("totalPrice").toString() ;
 				} 
@@ -225,6 +230,10 @@ public class Instruction {
 			}
 		}
 		instructionResponsePdfDto.setBaseTotalPrice( baseTotalPrice );
+		instructionResponsePdfDto.setLaminationCharges( laminationCharges );
+		if(laminationCharges !=null && laminationCharges.length() > 0) {
+			additionalTotalPrice=""+new BigDecimal(additionalTotalPrice).add(new BigDecimal(laminationCharges));
+		}
 		instructionResponsePdfDto.setAdditionalTotalPrice( additionalTotalPrice );
 		instructionResponsePdfDto.setPackingRate(packingPrice);
 		instructionResponsePdfDto.setTotalPrice( totalPrice );
