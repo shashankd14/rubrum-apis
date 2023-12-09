@@ -89,8 +89,15 @@ public class MailSender {
 				mailStts = true;
 				reportsService.createRMReport(party.getnPartyId(), strDate, helper);
 			}
-			helper.setFrom(fromMailId);
-			helper.setTo(party.getEmail1());
+			helper.setFrom(fromMailId);			
+			if (party.getEmail1() != null && party.getEmail1().length() > 0) {
+				StringTokenizer st = new StringTokenizer(party.getEmail1(), ",");
+				while (st.hasMoreTokens()) {
+					String ccEmailId = st.nextToken();
+					helper.setTo(ccEmailId);
+					helper.addCc(ccEmailId);
+				}
+			}			
 			if (party.getEmail2() != null && party.getEmail2().length() > 0) {
 				StringTokenizer st = new StringTokenizer(party.getEmail2(), ",");
 				while (st.hasMoreTokens()) {
@@ -150,9 +157,17 @@ public class MailSender {
 					reportsService.createOutwardMonthlyReport(party.getnPartyId(), helper, month, months);
 				}
 			}
-			 
 			helper.setFrom(fromMailId);
-			helper.setTo(party.getEmail1());
+			
+			if (party.getEmail1() != null && party.getEmail1().length() > 0) {
+				StringTokenizer st = new StringTokenizer(party.getEmail1(), ",");
+				while (st.hasMoreTokens()) {
+					String ccEmailId = st.nextToken();
+					helper.setTo(ccEmailId);
+					helper.addCc(ccEmailId);
+				}
+			}
+			
 			if (party.getEmail2() != null && party.getEmail2().length() > 0) {
 				StringTokenizer st = new StringTokenizer(party.getEmail2(), ",");
 				while (st.hasMoreTokens()) {

@@ -641,51 +641,61 @@ public class QualityServiceImpl implements QualityService {
 
 		ResponseEntity<Object> response = null;
 		List<KQPPartyTemplateEntity> list = new ArrayList<>();
-		for (Integer partyId : kqpPartyMappingRequest.getPartyIdList()) {
-			KQPPartyTemplateEntity kqpPartyTemplateEntity = new KQPPartyTemplateEntity();
-			kqpPartyTemplateEntity.getKqpEntity().setKqpId(kqpPartyMappingRequest.getKqpId());
-			kqpPartyTemplateEntity.getParty().setnPartyId(partyId);
-			kqpPartyTemplateEntity.setThicknessList(kqpPartyMappingRequest.getThicknessList().toString());
-			kqpPartyTemplateEntity.setLengthList(kqpPartyMappingRequest.getLengthList().toString());
-			kqpPartyTemplateEntity.setWidthList(kqpPartyMappingRequest.getWidthList().toString());
-			kqpPartyTemplateEntity.setEndUserTagIdList(kqpPartyMappingRequest.getEndUserTagIdList().toString());
-			kqpPartyTemplateEntity.setMatGradeIdList(kqpPartyMappingRequest.getMatGradeIdList().toString());
-			if (kqpPartyMappingRequest.getAnyPartyFlag() != null && "Y".equals(kqpPartyMappingRequest.getAnyPartyFlag())) {
-				kqpPartyTemplateEntity.setAnyPartyFlag("Y");
-			} else {
-				kqpPartyTemplateEntity.setAnyPartyFlag("N");
-			}
-			if (kqpPartyMappingRequest.getAnyMatgradeFlag() != null && "Y".equals(kqpPartyMappingRequest.getAnyMatgradeFlag())) {
-				kqpPartyTemplateEntity.setAnyMatgradeFlag("Y");
-			} else {
-				kqpPartyTemplateEntity.setAnyMatgradeFlag("N");
-			}
-			if (kqpPartyMappingRequest.getAnyEndusertagFlag() != null && "Y".equals(kqpPartyMappingRequest.getAnyEndusertagFlag())) {
-				kqpPartyTemplateEntity.setAnyEndusertagFlag("Y");
-			} else {
-				kqpPartyTemplateEntity.setAnyEndusertagFlag("N");
-			}
-			if (kqpPartyMappingRequest.getAnyWidthFlag() != null && "Y".equals(kqpPartyMappingRequest.getAnyWidthFlag())) {
-				kqpPartyTemplateEntity.setAnyWidthFlag("Y");
-			} else {
-				kqpPartyTemplateEntity.setAnyWidthFlag("N");
-			}
-			if (kqpPartyMappingRequest.getAnyLengthFlag() != null && "Y".equals(kqpPartyMappingRequest.getAnyLengthFlag())) {
-				kqpPartyTemplateEntity.setAnyLengthFlag("Y");
-			} else {
-				kqpPartyTemplateEntity.setAnyLengthFlag("N");
-			}
-			if (kqpPartyMappingRequest.getAnyThicknessFlag() != null && "Y".equals(kqpPartyMappingRequest.getAnyThicknessFlag())) {
-				kqpPartyTemplateEntity.setAnyThicknessFlag("Y");
-			} else {
-				kqpPartyTemplateEntity.setAnyThicknessFlag("N");
-			}
-			kqpPartyTemplateEntity.setCreatedBy(kqpPartyMappingRequest.getUserId());
-			kqpPartyTemplateEntity.setUpdatedBy(kqpPartyMappingRequest.getUserId());
-			kqpPartyTemplateEntity.setCreatedOn(new Date());
-			kqpPartyTemplateEntity.setUpdatedOn(new Date());
-			list.add(kqpPartyTemplateEntity);
+		KQPPartyTemplateEntity kqpPartyTemplateEntity = new KQPPartyTemplateEntity();
+		kqpPartyTemplateEntity.getKqpEntity().setKqpId(kqpPartyMappingRequest.getKqpId());
+		if(kqpPartyMappingRequest.getPartyIdList()!=null && kqpPartyMappingRequest.getPartyIdList().size()>0) {
+			kqpPartyTemplateEntity.setPartyIdList(kqpPartyMappingRequest.getPartyIdList().toString());
 		}
+		if(kqpPartyMappingRequest.getThicknessList()!=null && kqpPartyMappingRequest.getThicknessList().size()>0) {
+			kqpPartyTemplateEntity.setThicknessList(kqpPartyMappingRequest.getThicknessList().toString());
+		}
+		if(kqpPartyMappingRequest.getLengthList()!=null && kqpPartyMappingRequest.getLengthList().size()>0) {
+			kqpPartyTemplateEntity.setLengthList(kqpPartyMappingRequest.getLengthList().toString());
+		}
+		if(kqpPartyMappingRequest.getWidthList()!=null && kqpPartyMappingRequest.getWidthList().size()>0) {
+			kqpPartyTemplateEntity.setWidthList(kqpPartyMappingRequest.getWidthList().toString());
+		}
+		if(kqpPartyMappingRequest.getEndUserTagIdList()!=null && kqpPartyMappingRequest.getEndUserTagIdList().size()>0) {
+			kqpPartyTemplateEntity.setEndUserTagIdList(kqpPartyMappingRequest.getEndUserTagIdList().toString());
+		}
+		if(kqpPartyMappingRequest.getMatGradeIdList()!=null && kqpPartyMappingRequest.getMatGradeIdList().size()>0) {
+			kqpPartyTemplateEntity.setMatGradeIdList(kqpPartyMappingRequest.getMatGradeIdList().toString());
+		}
+		if (kqpPartyMappingRequest.getAnyPartyFlag() != null && "Y".equals(kqpPartyMappingRequest.getAnyPartyFlag())) {
+			kqpPartyTemplateEntity.setAnyPartyFlag("Y");
+		} else {
+			kqpPartyTemplateEntity.setAnyPartyFlag("N");
+		}
+		if (kqpPartyMappingRequest.getAnyMatgradeFlag() != null && "Y".equals(kqpPartyMappingRequest.getAnyMatgradeFlag())) {
+			kqpPartyTemplateEntity.setAnyMatgradeFlag("Y");
+		} else {
+			kqpPartyTemplateEntity.setAnyMatgradeFlag("N");
+		}
+		if (kqpPartyMappingRequest.getAnyEndusertagFlag() != null && "Y".equals(kqpPartyMappingRequest.getAnyEndusertagFlag())) {
+			kqpPartyTemplateEntity.setAnyEndusertagFlag("Y");
+		} else {
+			kqpPartyTemplateEntity.setAnyEndusertagFlag("N");
+		}
+		if (kqpPartyMappingRequest.getAnyWidthFlag() != null && "Y".equals(kqpPartyMappingRequest.getAnyWidthFlag())) {
+			kqpPartyTemplateEntity.setAnyWidthFlag("Y");
+		} else {
+			kqpPartyTemplateEntity.setAnyWidthFlag("N");
+		}
+		if (kqpPartyMappingRequest.getAnyLengthFlag() != null && "Y".equals(kqpPartyMappingRequest.getAnyLengthFlag())) {
+			kqpPartyTemplateEntity.setAnyLengthFlag("Y");
+		} else {
+			kqpPartyTemplateEntity.setAnyLengthFlag("N");
+		}
+		if (kqpPartyMappingRequest.getAnyThicknessFlag() != null && "Y".equals(kqpPartyMappingRequest.getAnyThicknessFlag())) {
+			kqpPartyTemplateEntity.setAnyThicknessFlag("Y");
+		} else {
+			kqpPartyTemplateEntity.setAnyThicknessFlag("N");
+		}
+		kqpPartyTemplateEntity.setCreatedBy(kqpPartyMappingRequest.getUserId());
+		kqpPartyTemplateEntity.setUpdatedBy(kqpPartyMappingRequest.getUserId());
+		kqpPartyTemplateEntity.setCreatedOn(new Date());
+		kqpPartyTemplateEntity.setUpdatedOn(new Date());
+		list.add(kqpPartyTemplateEntity);
 		kqpPartyTemplateRepository.saveAll(list);
 		response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"KQP-Party mapping details saved successfully..! \"}",
 				new HttpHeaders(), HttpStatus.OK);

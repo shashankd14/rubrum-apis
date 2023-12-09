@@ -13,16 +13,15 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTemplateEntity, Integer> {
 
-	@Query("select ins from KQPPartyTemplateEntity ins where ins.party.nPartyId=:partyId ")
-	List<KQPPartyTemplateEntity> findByPartyId(@Param("partyId") Integer partyId);	
+	//@Query("select ins from KQPPartyTemplateEntity ins where ins.party.nPartyId=:partyId ")
+	//List<KQPPartyTemplateEntity> findByPartyId(@Param("partyId") Integer partyId);	
 	
 	@Query("select ins from KQPPartyTemplateEntity ins where ins.kqpEntity.kqpId=:kqpId ")
 	List<KQPPartyTemplateEntity> findByKqpId(@Param("kqpId") Integer kqpId);	
 
 	@Query("select distinct kqpmap from KQPPartyTemplateEntity kqpmap "
 			+ " INNER JOIN KQPEntity kqp on kqp.kqpId =kqpmap.kqpEntity.kqpId "
-			+ " inner join Party party on party.nPartyId =kqpmap.party.nPartyId"
-			+ "  where 1=1 ")
+			+ " where 1=1 ")
 	List<KQPPartyTemplateEntity> findByAll2();	
 	
 	@Query(value = "SELECT distinct inwardentryid, coilnumber `Coil No`,customerbatchid `Batch No`," + 

@@ -9,17 +9,21 @@ public class KQPPartyMappingResponse {
 
 	private Integer id;
 
-	private Integer partyId;
-
 	private String partyName;
 
 	private String stageName;
+	
+	private String kqpDesc;
+	
+	private String kqpSummary;
 
 	private String kqpName;
 
 	private Integer kqpId;
 
 	private Integer userId;
+
+	private String partyIdList;
 
 	private String endUserTagIdList;
 

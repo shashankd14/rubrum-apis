@@ -193,8 +193,26 @@
                     </tbody>
                 </table>
             </div>
-
         </div>
+        
+		<th:block th:unless="${#maps.isEmpty(inward?.kqpParamsList)}">
+			<div
+				style="padding: 20px; text-align: center; font-weight: bold;">KQP Details</div>
+			<div  style="width: 100%;">
+				<table class="m_des">
+					<tr class="m_tp">
+						<th class="m_DesTable">S.No</th>
+						<th class="m_DesTable">KQP Desc</th>
+					</tr>
+					<th:block th:each="cut: ${inward?.kqpParamsList}">
+						<tr class="m_tp">
+							<td class="m_DesTable" th:text="${cut.key}"></td>
+							<td class="m_DesTable" th:text="${cut.value}"></td>
+						</tr>
+					</th:block>
+				</table>
+			</div>
+		</th:block>        
 
         <div class="footer" style="width: 100%;">
             <table class="m_sign" style="width: 100%;">

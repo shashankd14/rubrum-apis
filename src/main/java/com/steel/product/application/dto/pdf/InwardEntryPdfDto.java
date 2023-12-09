@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -107,5 +108,7 @@ public class InwardEntryPdfDto {
     private Float inStockWeight;
 
     private String partDetailsId;
+    
+    private Map<Integer, String> kqpParamsList = new HashMap<>();
 
 }

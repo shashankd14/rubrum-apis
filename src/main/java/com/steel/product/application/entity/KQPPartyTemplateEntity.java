@@ -26,9 +26,8 @@ public class KQPPartyTemplateEntity {
 	@JoinColumn(name = "kqp_id")
 	private KQPEntity kqpEntity=new KQPEntity();
 	
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "npartyid")
-	private Party party = new Party();
+	@Column(name = "party_id_list")
+	private String partyIdList;
 
 	@Column(name = "enduser_tag_id_list")
 	private String endUserTagIdList;
@@ -80,12 +79,18 @@ public class KQPPartyTemplateEntity {
 	public static KQPPartyMappingResponse valueOf(KQPPartyTemplateEntity entity) {
 		KQPPartyMappingResponse dtoResponse = new KQPPartyMappingResponse();
 		dtoResponse.setId( entity.getId());
-		dtoResponse.setPartyId(entity.getParty().getnPartyId());
-		dtoResponse.setPartyName(entity.getParty().getPartyName());
+		//if (entity.getParty() != null && entity.getParty().getnPartyId() != null
+		//		&& entity.getParty().getnPartyId() > 0) {
+			//dtoResponse.setPartyId(entity.getParty().getnPartyId());
+		//	dtoResponse.setPartyName(entity.getParty().getPartyName());
+		//}
+		dtoResponse.setKqpDesc( entity.getKqpEntity().getKqpDesc());
+		dtoResponse.setKqpSummary( entity.getKqpEntity().getKqpSummary());
 		dtoResponse.setUserId( entity.getKqpEntity().getCreatedBy());
 		dtoResponse.setStageName( entity.getKqpEntity().getStageName());
 		dtoResponse.setKqpName(entity.getKqpEntity().getKqpName());
 		dtoResponse.setKqpId(entity.getKqpEntity().getKqpId());
+		dtoResponse.setPartyIdList( entity.getPartyIdList() );
 		dtoResponse.setEndUserTagIdList( entity.getEndUserTagIdList() );
 		dtoResponse.setMatGradeIdList( entity.getMatGradeIdList() );
 		dtoResponse.setThicknessList( entity.getThicknessList() );

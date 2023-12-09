@@ -10,6 +10,7 @@ import com.steel.product.application.dto.pdf.InstructionResponsePdfDto;
 import com.steel.product.application.dto.pdf.InwardEntryPdfDto;
 import com.steel.product.application.dto.pdf.PartDetailsPdfResponse;
 import com.steel.product.application.dto.qrcode.QRCodeResponse;
+import com.steel.product.application.dto.quality.KQPPartyMappingResponse;
 import com.steel.product.application.entity.*;
 import com.steel.product.application.entity.Process;
 import com.steel.product.application.exception.MockException;
@@ -25,6 +26,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -46,6 +48,8 @@ public class InstructionServiceImpl implements InstructionService {
     private InwardEntryRepository inwardEntryRepository;
 
     private DeliveryDetailsRepository deliveryDetailsRepository;
+
+    private QualityService qualityService;
     
     private InwardEntryService inwardService;
 
@@ -69,7 +73,8 @@ public class InstructionServiceImpl implements InstructionService {
 			ProcessService processService, StatusService statusService,
 			PacketClassificationService packetClassificationService, EndUserTagsService endUserTagsService,
 			PartDetailsService partDetailsService, PartDetailsMapper partDetailsMapper,
-			InstructionMapper instructionMapper, DeliveryDetailsRepository deliveryDetailsRepository) {
+			InstructionMapper instructionMapper, DeliveryDetailsRepository deliveryDetailsRepository,
+			QualityService qualityService) {
         this.instructionRepository = instructionRepository;
         this.inwardEntryRepository = inwardEntryRepository;
         this.deliveryDetailsRepository = deliveryDetailsRepository;
@@ -81,6 +86,7 @@ public class InstructionServiceImpl implements InstructionService {
         this.partDetailsService = partDetailsService;
         this.partDetailsMapper = partDetailsMapper;
         this.instructionMapper = instructionMapper;
+        this.qualityService = qualityService;
     }
 
     @Override
@@ -732,6 +738,8 @@ public class InstructionServiceImpl implements InstructionService {
                 partDetailsSlitMap = addInstructionToPartDetailsMap(partDetailsSlitMap,partDetailsPdfResponse,instructionResponsePdfDto);
             }
         }
+        
+        
         InwardEntry inwardEntry;
         InwardEntryPdfDto inwardEntryPdfDto;
 
@@ -744,7 +752,157 @@ public class InstructionServiceImpl implements InstructionService {
         inwardEntryPdfDto.setTotalWeightSlit(totalWeightSlit);
         inwardEntryPdfDto.setPartDetailsId(partDetailsId != null ? partDetailsId : cutPartDetailsId);
         inwardEntryPdfDto.setVProcess(String.valueOf(processId));
+        
+        Map<Integer, String> kqpParamsList = getKQPParams(partDetailsId, inwardEntry, partDetailsCutMap, partDetailsSlitMap);
+		System.out.println("kQPParamsList " + kqpParamsList);
+        inwardEntryPdfDto.setKqpParamsList(kqpParamsList);
         return inwardEntryPdfDto;
+    }
+
+	public Map<Integer, String> getKQPParams(String partDetailsId, InwardEntry inwardEntry,
+			Map<PartDetailsPdfResponse, List<InstructionResponsePdfDto>> partDetailsCutMap,
+			Map<PartDetailsPdfResponse, List<InstructionResponsePdfDto>> partDetailsSlitMap)
+	{
+		Map<Integer, String> kqpParamsList =new HashMap<>();
+		List<InstructionResponsePdfDto> instructions = new ArrayList<>();
+
+		for (Map.Entry<PartDetailsPdfResponse, List<InstructionResponsePdfDto>> entry : partDetailsSlitMap.entrySet()) {
+			instructions.addAll(entry.getValue());
+		}
+		for (Map.Entry<PartDetailsPdfResponse, List<InstructionResponsePdfDto>> entry : partDetailsCutMap.entrySet()) {
+			instructions.addAll(entry.getValue());
+		}
+		
+		Map<Integer, String> kk =new HashMap<>();
+    	try {
+			List<KQPPartyMappingResponse> kqpIdList = qualityService.getAllKQPMappings();
+			for (KQPPartyMappingResponse entity : kqpIdList) {
+				System.out.println("getKqpId ================================= " + entity.getKqpId());
+				System.out.println("inwardEntry.getMaterialGrade().getGradeId() = " + inwardEntry.getMaterialGrade().getGradeId());
+				for (InstructionResponsePdfDto instruction : instructions) {
+					boolean widthFlag=false;
+					boolean lengthFlag=false;
+					boolean endusertagFlag=false;
+					boolean partyFlag=false;
+					boolean matgradeFlag=false;
+					boolean thicknessFlag=false;
+					
+					if("Y".equals(entity.getAnyPartyFlag())) {
+						partyFlag=true;
+					} else {
+						List<Integer> partyIdList =new ArrayList<>();
+						String[] partyIdListStr = {};
+						if(entity.getPartyIdList()!=null && entity.getPartyIdList().length() > 0 ) {
+							partyIdListStr =  entity.getPartyIdList().replace("[","").replace("]","").split(",");
+						}
+						for(String kkk : partyIdListStr) {
+							if(kkk!=null && kkk.trim().length()>0 ) {
+								partyIdList.add(Integer.parseInt(kkk.trim()));
+							}
+						}
+						if (partyIdList.contains(inwardEntry.getParty().getnPartyId())) {
+							partyFlag = true;
+						}
+					}
+					if("Y".equals(entity.getAnyMatgradeFlag() )) {
+						matgradeFlag=true;
+					} else {
+						List<Integer> materialGradeList =new ArrayList<>();
+						String[] materialGradeListq =  entity.getMatGradeIdList().replace("[","").replace("]","").split(",");
+						for(String materialGradeId : materialGradeListq) {
+							if(materialGradeId!=null && materialGradeId!="null" && materialGradeId.trim().length()>0 ) {
+								materialGradeList.add(Integer.parseInt(materialGradeId.trim()));
+							}
+						}
+						if (materialGradeList.contains(inwardEntry.getMaterialGrade().getGradeId())) {
+							matgradeFlag = true;
+						}
+					}
+					if("Y".equals(entity.getAnyThicknessFlag() )) {
+						thicknessFlag=true;
+					} else {
+						List<Float> thicknessList =new ArrayList<>();
+						String[] thicknessListStr =  entity.getThicknessList().replace("[","").replace("]","").split(",");
+						for(String kkk : thicknessListStr) {
+							if(kkk!=null && kkk.trim().length()>0 ) {
+								thicknessList.add(new Float(kkk.trim()));
+							}
+						}
+						if( thicknessList.contains(inwardEntry.getfThickness())) {
+							thicknessFlag=true;
+						}
+					}
+
+					// packet level checking
+					if ("Y".equals(entity.getAnyLengthFlag())) {
+						lengthFlag = true;
+					} else {
+						List<Float> lengthList =new ArrayList<>();
+						String[] lengthListStr =  entity.getLengthList().replace("[","").replace("]","").split(",");
+						for(String kkk : lengthListStr) {
+							if(kkk!=null && kkk.trim().length()>0 ) {
+								lengthList.add(new Float(kkk.trim()));
+							}
+						}
+						if (lengthList.contains(instruction.getPlannedLength())) {
+							lengthFlag = true;
+						}
+					}
+					if ("Y".equals(entity.getAnyWidthFlag())) {
+						widthFlag = true;
+					} else {
+						List<Float> widthList =new ArrayList<>();
+						String[] widthListStr =  entity.getWidthList().replace("[","").replace("]","").split(",");
+						for(String kkk : widthListStr) {
+							if(kkk!=null && kkk.trim().length()>0 ) {
+								widthList.add(new Float(kkk.trim()));
+							}
+						}
+						if (widthList.contains(instruction.getPlannedWidth())) {
+							widthFlag = true;
+						}
+					}
+					if ("Y".equals(entity.getAnyEndusertagFlag())) {
+						endusertagFlag = true;
+					} else {
+						List<Integer> endUserTagIdList =new ArrayList<>();
+						String[] endUserTagIdListStr = {};
+						if(entity.getEndUserTagIdList()!=null && entity.getEndUserTagIdList().length()>0) {
+							endUserTagIdListStr = entity.getEndUserTagIdList().replace("[","").replace("]","").split(",");
+						}
+						for(String kkk : endUserTagIdListStr) {
+							if(kkk!=null && kkk.trim().length()>0 ) {
+								endUserTagIdList.add(Integer.parseInt(kkk.trim()));
+							}
+						}
+						if (instruction.getEndUserTagsEntity() != null
+								&& instruction.getEndUserTagsEntity().getTagId() != null
+								&& endUserTagIdList.contains(instruction.getEndUserTagsEntity().getTagId())) {
+							endusertagFlag = true;
+						}
+					}
+					/*System.out.println("partyFlag " + partyFlag);
+					System.out.println("matgradeFlag " + matgradeFlag);
+					System.out.println("thicknessFlag " + thicknessFlag);
+					System.out.println("widthFlag " + widthFlag);
+					System.out.println("lengthFlag " + lengthFlag);
+					System.out.println("endusertagFlag " + endusertagFlag);*/
+					
+					if (partyFlag && matgradeFlag && thicknessFlag && widthFlag && lengthFlag && endusertagFlag) {
+						kk.put (entity.getKqpId(), entity.getKqpDesc() );
+					}
+				}
+			}
+			
+			int cnt=0;
+			for (Map.Entry<Integer, String> entry : kk.entrySet()) {
+				cnt++;
+				kqpParamsList.put(cnt, entry.getValue());
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return kqpParamsList;
     }
 
     @Override

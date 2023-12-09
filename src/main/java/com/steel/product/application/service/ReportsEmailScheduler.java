@@ -39,24 +39,7 @@ public class ReportsEmailScheduler {
 
 	@Scheduled(cron = "${email.reportScheduleTime}")
 	public void sendNotificationAlert() throws InterruptedException {
-
-		if (apiAlertRequired) {
-			logger.info("sendDailyNotificationAlert apiAlertRequired == " + apiAlertRequired);
-			Calendar cal = Calendar.getInstance();
-			Date date = cal.getTime();
-			DateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy");
-			String strDate = dateFormat.format(date);
-
-			List<Party> partyList = partyRepo.findAll();
-			for (Party party : partyList) {
-				if (party.getEmail1() != null && party.getEmail1().length() > 0) {
-					mailSender.sendMail(party, strDate);
-					Thread.sleep(500);
-				}
-			}
-
-		}
-	}
+}
 
 	@Scheduled(cron = "${email.reportsMonthlyScheduleTime}")
 	public void sendMonthlyNotifications() throws InterruptedException {
@@ -72,7 +55,7 @@ public class ReportsEmailScheduler {
 			for (Party party : partyList) {
 				if (party.getEmail1() != null && party.getEmail1().length() > 0) {
 					mailSender.sendMonthlyReportsMail(party, month);
-					Thread.sleep(500);
+					Thread.sleep(200);
 				}
 			}
 
