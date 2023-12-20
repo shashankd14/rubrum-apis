@@ -5,8 +5,8 @@ import com.steel.product.application.dto.pdf.DeliveryPdfDto;
 import com.steel.product.application.dto.pdf.PartDto;
 import com.steel.product.application.dto.pdf.PdfDto;
 import com.steel.product.application.dto.pdf.PdfResponseDto;
-import com.steel.product.application.service.AddressService;
 import com.steel.product.application.service.PdfService;
+import com.steel.product.application.service.QualityService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,13 +24,14 @@ import java.util.Base64;
 @CrossOrigin
 @RequestMapping("/pdf")
 public class PdfController {
-    //private AddressService addressService;
+	
+    private QualityService qualityService;
+
     private PdfService pdfService;
-    //private Base64.Encoder encoder = Base64.getEncoder();
 
     @Autowired
-    public PdfController(AddressService addressService, PdfService pdfService) {
-        //this.addressService = addressService;
+    public PdfController(QualityService qualityService, PdfService pdfService) {
+        this.qualityService = qualityService;
         this.pdfService = pdfService;
     }
 
@@ -95,5 +96,21 @@ public class PdfController {
         return new ResponseEntity<PdfResponseDto>(new PdfResponseDto(encodedFile), HttpStatus.OK);
     }
 
+	@PostMapping("/qirpdf/{qirId}")
+	public ResponseEntity<PdfResponseDto> qirpdf(@PathVariable("qirId") Integer qirId) {
+        Path file;
+        byte[] bytes;
+        StringBuilder builder = new StringBuilder();
+        try {
+            file = Paths.get(qualityService.qirPDF(qirId).getAbsolutePath());
+            bytes = Files.readAllBytes(file);
+            builder.append(Base64.getEncoder().encodeToString(bytes));
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        String encodedFile = builder.toString();
+
+        return new ResponseEntity<PdfResponseDto>(new PdfResponseDto(encodedFile), HttpStatus.OK);
+	}
 
 }

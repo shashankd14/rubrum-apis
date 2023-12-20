@@ -24,6 +24,8 @@ public class QualityInspectionReportResponse {
 
 	private String rustObserved;
 
+	private String coilBend;
+
 	private String safetyIssues;
 
 	private String waterExposure;
@@ -45,6 +47,8 @@ public class QualityInspectionReportResponse {
 	private String unloadingImproper;
 	
 	private String rustObservedPreSingedURL;
+	
+	private String coilBendPreSingedURL;
 	
 	private String safetyIssuesPreSingedURL;
 	

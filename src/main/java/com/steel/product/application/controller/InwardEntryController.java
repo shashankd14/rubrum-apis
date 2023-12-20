@@ -2,6 +2,7 @@ package com.steel.product.application.controller;
 
 import com.google.zxing.WriterException;
 import com.itextpdf.text.DocumentException;
+import com.steel.product.application.dto.delivery.DeliveryPDFRequestDTO;
 import com.steel.product.application.dto.inward.InwardDto;
 import com.steel.product.application.dto.inward.InwardEntryResponseDto;
 import com.steel.product.application.dto.pdf.PdfDto;
@@ -369,6 +370,18 @@ public class InwardEntryController {
 			JSONObject entry = this.inwdEntrySvc.getPlanPDFs(inwardEntryId);
 			if (entry == null)
 				throw new RuntimeException("Entry id not found - " + inwardEntryId);
+			return new ResponseEntity<Object>(entry, HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@PostMapping({ "/getdcpdfs" })
+	public ResponseEntity<Object> getdcpdf(@RequestBody DeliveryPDFRequestDTO req) {
+		try {
+			JSONObject entry = this.inwdEntrySvc.getdcpdf(req);
+			if (entry == null)
+				throw new RuntimeException("Entry id not found - " );
 			return new ResponseEntity<Object>(entry, HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);

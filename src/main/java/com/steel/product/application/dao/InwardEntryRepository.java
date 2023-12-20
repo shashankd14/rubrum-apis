@@ -92,6 +92,9 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 
     @Query("select distinct pd from DeliveryDetails pd join fetch pd.instructions ins join ins.inwardId where ins.inwardId.inwardEntryId= :inwardId")
     List<Object[]> getDCPDFs(@Param("inwardId") Integer inwardId);
+    
+    @Query("select distinct pd from DeliveryDetails pd where pd.deliveryId in :dcidsList")
+    List<Object[]> getDCALLPDFs( @Param("dcidsList") List<Integer> dcidsList);
 
 	@Query("select inw from InwardEntry inw where inw.status.statusId=2 and (inw.coilNumber like %:searchText% or inw.customerBatchId like %:searchText% or "
 			+ " inw.customerInvoiceNo like %:searchText% or inw.party.partyName like %:searchText% ) and inw.party.nPartyId=:partyId order by inwardEntryId desc")
@@ -137,5 +140,6 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 	@Transactional
 	@Query("update InwardEntry set qrcodeEditfinishS3Url=:url where inwardEntryId= :inwardId ")
 	public void updateQRCodeEditFinish(@Param("inwardId") Integer inwardId, @Param("url") String url);
+
 
 }

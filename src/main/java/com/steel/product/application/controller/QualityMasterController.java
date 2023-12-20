@@ -13,7 +13,6 @@ import com.steel.product.application.dto.quality.QualityInspReportListPageRespon
 import com.steel.product.application.dto.quality.QualityInspectionReportResponse;
 import com.steel.product.application.dto.quality.QualityPartyMappingRequest;
 import com.steel.product.application.dto.quality.QualityPartyMappingResponse;
-import com.steel.product.application.dto.quality.QualityReportResponse;
 import com.steel.product.application.dto.quality.QualityTemplateResponse;
 import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.service.InwardEntryService;
@@ -172,7 +171,8 @@ public class QualityMasterController {
 	public ResponseEntity<Object> deleteStageDetails(@PathVariable("id") int id) {
 		return qualityService.delete(id);
 	}
-
+    
+	/*
 	@PostMapping(value = "/inspectionreport/save")
 	public ResponseEntity<Object> reportsSave(HttpServletRequest request,
 			@RequestParam(value = "rustObserved", required = false) MultipartFile rustObserved,
@@ -237,7 +237,7 @@ public class QualityMasterController {
 	@DeleteMapping(value = "/inspectionreport/{id}", produces = "application/json" )
 	public ResponseEntity<Object> deleteInspectionReport(@PathVariable("id") int id) {
 		return qualityService.deleteInspectionReport(id);
-	}
+	}*/
 	
 	@GetMapping({ "/reports/inwardlist/{pageNo}/{pageSize}" })
 	public ResponseEntity<Object> inwardlist(@PathVariable int pageNo, @PathVariable int pageSize,
@@ -434,12 +434,13 @@ public class QualityMasterController {
 			@RequestParam(value = "customerBatchNo", required = true) String customerBatchNo,
 			@RequestParam(value = "planId", required = false) String planId,
 			@RequestParam(value = "deliveryChalanNo", required = false) String deliveryChalanNo,
-			@RequestParam(value = "qirId", required = false) String qirId) {
+			@RequestParam(value = "qirId", required = false) String qirId,
+			@RequestParam(value = "coilBend", required = false) MultipartFile coilBend) {
 
 		return qualityService.qirReportSave(templateId, stageName, templateDetails, userId, processId, rustObserved,
 				safetyIssues, waterExposure, wireRopeDamages, packingIntact, improperStorage, strapping, weighmentSlip,
 				weighment, acknowledgementReceipt, unloadingImproper, coilNo, customerBatchNo, planId,
-				deliveryChalanNo, qirId);
+				deliveryChalanNo, qirId, coilBend);
 	}
 
 	@GetMapping(value = "/qir/{stageName}/{coilNo}/{planId}", produces = "application/json")

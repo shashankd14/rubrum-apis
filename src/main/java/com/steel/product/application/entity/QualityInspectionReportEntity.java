@@ -50,6 +50,9 @@ public class QualityInspectionReportEntity {
 	@Column(name = "rust_observed" )
 	private String rustObserved;
 	
+	@Column(name = "coil_bend" )
+	private String coilBend;
+	
 	@Column(name = "safety_issues" )
 	private String safetyIssues;
 	

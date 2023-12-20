@@ -1,6 +1,7 @@
 package com.steel.product.application.service;
 
 import com.steel.product.application.dao.InwardEntryRepository;
+import com.steel.product.application.dto.delivery.DeliveryPDFRequestDTO;
 import com.steel.product.application.dto.inward.InwardEntryResponseDto;
 import com.steel.product.application.dto.partDetails.PartDetailsPDFResponse;
 import com.steel.product.application.dto.qrcode.QRCodeResponse;
@@ -239,6 +240,25 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 		
 		List<PartDetailsPDFResponse> response2 = new ArrayList<PartDetailsPDFResponse>();
 		List<Object[]> result2 = this.inwdEntryRepo.getDCPDFs(inwardId);
+
+		for (Object[] obj2 : result2) {
+
+			PartDetailsPDFResponse kk = new PartDetailsPDFResponse();
+			DeliveryDetails partDetails = (DeliveryDetails) obj2[0];
+			kk.setId(partDetails.getDeliveryId().toString());
+			kk.setFileName(partDetails.getPdfS3Url());
+			kk.setPdfS3Url(awsS3Service.generatePresignedUrl(partDetails.getPdfS3Url()));
+			response2.add(kk);
+		}
+		finalResp.put("dc_pdfs", response2);
+		
+		return finalResp;
+	} 
+
+	public JSONObject getdcpdf(DeliveryPDFRequestDTO req) {
+		JSONObject finalResp =new JSONObject();
+		List<PartDetailsPDFResponse> response2 = new ArrayList<PartDetailsPDFResponse>();
+		List<Object[]> result2 = this.inwdEntryRepo.getDCALLPDFs(req.getDcIds());
 
 		for (Object[] obj2 : result2) {
 

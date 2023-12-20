@@ -1,5 +1,6 @@
 package com.steel.product.application.service;
 
+import java.io.File;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
@@ -52,7 +53,7 @@ public interface QualityService {
 			MultipartFile improperStorage, MultipartFile strapping, MultipartFile weighmentSlip,
 			MultipartFile weighment, MultipartFile acknowledgementReceipt, MultipartFile unloadingImproper);
 
-	ResponseEntity<Object> reportsSave(String inspectionId, String coilNumber, String inwardId, String templateId,
+	/*ResponseEntity<Object> reportsSave(String inspectionId, String coilNumber, String inwardId, String templateId,
 			String stageName, String templateDetails, String userId, MultipartFile rustObserved,
 			MultipartFile safetyIssues, MultipartFile waterExposure, MultipartFile wireRopeDamages,
 			MultipartFile packingIntact, MultipartFile improperStorage, MultipartFile strapping,
@@ -63,7 +64,7 @@ public interface QualityService {
 
 	ResponseEntity<Object> deleteInspectionReport(int id);
 
-	List<QualityReportResponse> inspectionreportGetAll();
+	List<QualityReportResponse> inspectionreportGetAll();*/
 
 	List<QualityPartyMappingResponse> getByPartyIdAndStageName(int partyId, String stageName);
 
@@ -102,7 +103,7 @@ public interface QualityService {
 			MultipartFile wireRopeDamages, MultipartFile packingIntact, MultipartFile improperStorage,
 			MultipartFile strapping, MultipartFile weighmentSlip, MultipartFile weighment,
 			MultipartFile acknowledgementReceipt, MultipartFile unloadingImproper, String inwardId,
-			String customerBatchNo, String planId, String deliveryChalanNo, String qirId);
+			String customerBatchNo, String planId, String deliveryChalanNo, String qirId, MultipartFile coilBend);
 
 	QualityInspectionReportResponse getqirById(String coilNo, String planId );
 
@@ -113,5 +114,7 @@ public interface QualityService {
 	List<QualityInspReportListPageResponse> qirInwardListPage();
 
 	QualityInspectionReportResponse getQIRReportById(int id);
+
+	File qirPDF(Integer id);
 
 }

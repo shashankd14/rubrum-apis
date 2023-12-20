@@ -1,5 +1,6 @@
 package com.steel.product.application.service;
 
+import com.steel.product.application.dto.delivery.DeliveryPDFRequestDTO;
 import com.steel.product.application.dto.inward.InwardEntryResponseDto;
 import com.steel.product.application.dto.qrcode.QRCodeResponse;
 import com.steel.product.application.entity.InwardEntry;
@@ -46,7 +47,7 @@ public interface InwardEntryService {
 	List<InwardEntry> findInwardByPartyId(Integer partyId);
 
 	JSONObject getPlanPDFs(int inwardEntryId);
-
+	
 	Page<InwardEntry> findAllWIPlistWithPagination(int pageNo, int pageSize, String searchText, String partyId);
 
 	QRCodeResponse getQRCodeDetails(int inwardEntryId);
@@ -54,4 +55,6 @@ public interface InwardEntryService {
 	void updateQRCodeS3InwardPDF(String inwardId, String url);
 
 	void updateQRCodeEditFinish(String inwardId, String url);
+
+	JSONObject getdcpdf(DeliveryPDFRequestDTO req);
 }

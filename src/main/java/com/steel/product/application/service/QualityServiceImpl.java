@@ -1,5 +1,22 @@
 package com.steel.product.application.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.itextpdf.text.Chunk;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.Image;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Phrase;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.BaseFont;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
+import com.lowagie.text.DocumentException;
 import com.steel.product.application.dao.KQPPartyTemplateRepository;
 import com.steel.product.application.dao.KQPRepository;
 import com.steel.product.application.dao.QualityInspectionReportRepository;
@@ -12,6 +29,7 @@ import com.steel.product.application.dto.quality.KQPPartyMappingResponse;
 import com.steel.product.application.dto.quality.KQPRequest;
 import com.steel.product.application.dto.quality.KQPResponse;
 import com.steel.product.application.dto.quality.QIRSaveDataRequest;
+import com.steel.product.application.dto.quality.QIRTemplateDtlsJsonArrayDTO;
 import com.steel.product.application.dto.quality.QualityCheckRequest;
 import com.steel.product.application.dto.quality.QualityCheckResponse;
 import com.steel.product.application.dto.quality.QualityInspDispatchListResponse;
@@ -20,19 +38,23 @@ import com.steel.product.application.dto.quality.QualityInspectionReportResponse
 import com.steel.product.application.dto.quality.QualityPartyMappingRequest;
 import com.steel.product.application.dto.quality.QualityPartyMappingRequestNew;
 import com.steel.product.application.dto.quality.QualityPartyMappingResponse;
-import com.steel.product.application.dto.quality.QualityReportResponse;
 import com.steel.product.application.dto.quality.QualityTemplateResponse;
+import com.steel.product.application.entity.CompanyDetails;
 import com.steel.product.application.entity.Instruction;
+import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.entity.KQPEntity;
 import com.steel.product.application.entity.KQPPartyTemplateEntity;
 import com.steel.product.application.entity.QualityInspectionReportEntity;
 import com.steel.product.application.entity.QualityPartyTemplateEntity;
-import com.steel.product.application.entity.QualityReportEntity;
 import com.steel.product.application.entity.QualityTemplateEntity;
 
 import lombok.extern.log4j.Log4j2;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -51,10 +73,10 @@ public class QualityServiceImpl implements QualityService {
 
 	@Autowired
 	QualityTemplateRepository qualityTemplateRepository;
-	
+
 	@Autowired
 	QualityInspectionReportRepository qualityInspectionReportRepository;
-	
+
 	@Autowired
 	KQPRepository kqpRepository;
 
@@ -63,86 +85,96 @@ public class QualityServiceImpl implements QualityService {
 
 	@Autowired
 	KQPPartyTemplateRepository kqpPartyTemplateRepository;
-	
+
 	@Autowired
 	QualityPartyTemplateRepository qualityPartyTemplateRepository;
-	
+
 	@Autowired
 	AWSS3Service awsS3Service;
+	
+	@Autowired
+	InwardEntryService inwdEntrySvc;
+	
+	@Autowired
+    CompanyDetailsService companyDetailsService;
 
 	@Value("${templateFilesPath}")
 	private String templateFilesPath;
-	
+
 	@Override
-	public ResponseEntity<Object> save(String templateId, String templateName, String stageName, String templateDetails, 
-			String userId, String processId,
-			MultipartFile rustObserved, MultipartFile safetyIssues, MultipartFile waterExposure, MultipartFile wireRopeDamages, 
-			MultipartFile packingIntact, MultipartFile improperStorage, MultipartFile strapping, MultipartFile weighmentSlip, 
+	public ResponseEntity<Object> save(String templateId, String templateName, String stageName, String templateDetails,
+			String userId, String processId, MultipartFile rustObserved, MultipartFile safetyIssues,
+			MultipartFile waterExposure, MultipartFile wireRopeDamages, MultipartFile packingIntact,
+			MultipartFile improperStorage, MultipartFile strapping, MultipartFile weighmentSlip,
 			MultipartFile weighment, MultipartFile ackReceipt, MultipartFile unloadingImproper) {
-		
+
 		ResponseEntity<Object> response = null;
-		String message="Quality Template details saved successfully..! ";
+		String message = "Quality Template details saved successfully..! ";
 		HttpHeaders header = new HttpHeaders();
 		header.set("Content-Type", "application/json");
 		try {
-			QualityTemplateEntity oldTemplateObj  = qualityTemplateRepository.findByTemplateNameAndStageName(templateName, stageName);
-			
+			QualityTemplateEntity oldTemplateObj = qualityTemplateRepository
+					.findByTemplateNameAndStageName(templateName, stageName);
+
 			log.info(" templateDetails == " + templateDetails);
 
 			QualityTemplateEntity qualityTemplateEntity = null;
-			if (templateId !=null && Integer.parseInt(templateId) > 0) {
-				
-				if (oldTemplateObj != null && oldTemplateObj.getTemplateId() > 0 && Integer.parseInt(templateId) != oldTemplateObj.getTemplateId()) {
-					return new ResponseEntity<>( "{\"status\": \"fail\", \"message\": \"Template - Stage Name already exists\"}", header, HttpStatus.BAD_REQUEST);
+			if (templateId != null && Integer.parseInt(templateId) > 0) {
+
+				if (oldTemplateObj != null && oldTemplateObj.getTemplateId() > 0
+						&& Integer.parseInt(templateId) != oldTemplateObj.getTemplateId()) {
+					return new ResponseEntity<>(
+							"{\"status\": \"fail\", \"message\": \"Template - Stage Name already exists\"}", header,
+							HttpStatus.BAD_REQUEST);
 				}
-				
-				message="Quality Template details updated successfully..! ";
+
+				message = "Quality Template details updated successfully..! ";
 				qualityTemplateEntity = qualityTemplateRepository.findByTemplateId(Integer.parseInt(templateId));
 				qualityTemplateEntity.setTemplateId(Integer.parseInt(templateId));
 			} else {
-				
+
 				if (oldTemplateObj != null && oldTemplateObj.getTemplateId() > 0) {
-					return new ResponseEntity<>( "{\"status\": \"fail\", \"message\": \"Template - Stage Name already exists\"}", header, HttpStatus.BAD_REQUEST);
+					return new ResponseEntity<>(
+							"{\"status\": \"fail\", \"message\": \"Template - Stage Name already exists\"}", header,
+							HttpStatus.BAD_REQUEST);
 				}
 				qualityTemplateEntity = new QualityTemplateEntity();
-				qualityTemplateEntity.setCreatedBy(Integer.parseInt(userId) );
+				qualityTemplateEntity.setCreatedBy(Integer.parseInt(userId));
 				qualityTemplateEntity.setCreatedOn(new Date());
 			}
 			qualityTemplateEntity.setStageName(stageName);
-			if(processId!=null && processId.length()>0) {
-				qualityTemplateEntity.setProcessId( Integer.parseInt(processId) );
+			if (processId != null && processId.length() > 0) {
+				qualityTemplateEntity.setProcessId(Integer.parseInt(processId));
 			}
-			
+
 			qualityTemplateEntity.setTemplateName(templateName);
-			qualityTemplateEntity.setTemplateDetails( templateDetails);
-			qualityTemplateEntity.setUpdatedBy(Integer.parseInt(userId) );
+			qualityTemplateEntity.setTemplateDetails(templateDetails);
+			qualityTemplateEntity.setUpdatedBy(Integer.parseInt(userId));
 			qualityTemplateEntity.setUpdatedOn(new Date());
 
 			if (rustObserved != null) {
 				String fileUrl = awsS3Service.persistFiles(templateFilesPath, stageName, templateName, rustObserved);
-				qualityTemplateEntity.setRustObserved( fileUrl);
+				qualityTemplateEntity.setRustObserved(fileUrl);
 				/*
-				JSONParser parser = new JSONParser();
-				JSONArray array = (JSONArray)parser.parse(templateDetails);
-				JSONObject jsonObject = new JSONObject();
-				for (Object dbRespObj : array) {
-					jsonObject = (JSONObject) dbRespObj;
-					if("PackingIntact".equals(jsonObject.get("type"))) {
-						
-					}
-				}*/
+				 * JSONParser parser = new JSONParser(); JSONArray array =
+				 * (JSONArray)parser.parse(templateDetails); JSONObject jsonObject = new
+				 * JSONObject(); for (Object dbRespObj : array) { jsonObject = (JSONObject)
+				 * dbRespObj; if("PackingIntact".equals(jsonObject.get("type"))) {
+				 * 
+				 * } }
+				 */
 			}
 			if (safetyIssues != null) {
 				String fileUrl = awsS3Service.persistFiles(templateFilesPath, stageName, templateName, safetyIssues);
-				qualityTemplateEntity.setSafetyIssues( fileUrl);
+				qualityTemplateEntity.setSafetyIssues(fileUrl);
 			}
 			if (waterExposure != null) {
 				String fileUrl = awsS3Service.persistFiles(templateFilesPath, stageName, templateName, waterExposure);
-				qualityTemplateEntity.setWaterExposure( fileUrl);
+				qualityTemplateEntity.setWaterExposure(fileUrl);
 			}
 			if (wireRopeDamages != null) {
 				String fileUrl = awsS3Service.persistFiles(templateFilesPath, stageName, templateName, wireRopeDamages);
-				qualityTemplateEntity.setWireRopeDamages( fileUrl);
+				qualityTemplateEntity.setWireRopeDamages(fileUrl);
 			}
 			if (packingIntact != null) {
 				String fileUrl = awsS3Service.persistFiles(templateFilesPath, stageName, templateName, packingIntact);
@@ -150,7 +182,7 @@ public class QualityServiceImpl implements QualityService {
 			}
 			if (improperStorage != null) {
 				String fileUrl = awsS3Service.persistFiles(templateFilesPath, stageName, templateName, improperStorage);
-				qualityTemplateEntity.setImproperStorage(  fileUrl);
+				qualityTemplateEntity.setImproperStorage(fileUrl);
 			}
 			if (strapping != null) {
 				String fileUrl = awsS3Service.persistFiles(templateFilesPath, stageName, templateName, strapping);
@@ -162,26 +194,29 @@ public class QualityServiceImpl implements QualityService {
 			}
 			if (weighment != null) {
 				String fileUrl = awsS3Service.persistFiles(templateFilesPath, stageName, templateName, weighment);
-				qualityTemplateEntity.setWeighment( fileUrl);
+				qualityTemplateEntity.setWeighment(fileUrl);
 			}
 			if (ackReceipt != null) {
 				String fileUrl = awsS3Service.persistFiles(templateFilesPath, stageName, templateName, ackReceipt);
-				qualityTemplateEntity.setAckReceipt( fileUrl);
+				qualityTemplateEntity.setAckReceipt(fileUrl);
 			}
 			if (unloadingImproper != null) {
-				String fileUrl = awsS3Service.persistFiles(templateFilesPath, stageName, templateName, unloadingImproper);
-				qualityTemplateEntity.setUnloadingImproper( fileUrl);
+				String fileUrl = awsS3Service.persistFiles(templateFilesPath, stageName, templateName,
+						unloadingImproper);
+				qualityTemplateEntity.setUnloadingImproper(fileUrl);
 			}
-			
+
 			qualityTemplateRepository.save(qualityTemplateEntity);
-			
-			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"" + message + "}", header, HttpStatus.OK);
+
+			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"" + message + "}", header,
+					HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
 			log.info("error is ==" + e.getMessage());
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.BAD_REQUEST);
+			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header,
+					HttpStatus.BAD_REQUEST);
 		}
-		
+
 		return response;
 	}
 
@@ -192,50 +227,54 @@ public class QualityServiceImpl implements QualityService {
 		header.set("Content-Type", "application/json");
 		try {
 			qualityTemplateRepository.deleteById(id);
-			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Template stage details deleted successfully..! \"}", header, HttpStatus.OK);
+			response = new ResponseEntity<>(
+					"{\"status\": \"success\", \"message\": \"Template stage details deleted successfully..! \"}",
+					header, HttpStatus.OK);
 		} catch (Exception e) {
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"" + e.getMessage() + "\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"" + e.getMessage() + "\"}", header,
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		return response;
 	}
 
 	@Override
 	public QualityTemplateResponse getById(int id) {
-		
-		QualityTemplateResponse resp = QualityTemplateEntity.valueOf(qualityTemplateRepository.findByTemplateId(id));;
-		
-		if(resp.getRustObserved()!=null && resp.getRustObserved().length() >0 ) {
-			resp.setRustObservedPreSingedURL(awsS3Service.generatePresignedUrl(resp.getRustObserved()) );
+
+		QualityTemplateResponse resp = QualityTemplateEntity.valueOf(qualityTemplateRepository.findByTemplateId(id));
+		;
+
+		if (resp.getRustObserved() != null && resp.getRustObserved().length() > 0) {
+			resp.setRustObservedPreSingedURL(awsS3Service.generatePresignedUrl(resp.getRustObserved()));
 		}
-		if(resp.getSafetyIssues()!=null && resp.getSafetyIssues().length() >0 ) {
-			resp.setSafetyIssuesPreSingedURL(awsS3Service.generatePresignedUrl(resp.getSafetyIssues()) );		
+		if (resp.getSafetyIssues() != null && resp.getSafetyIssues().length() > 0) {
+			resp.setSafetyIssuesPreSingedURL(awsS3Service.generatePresignedUrl(resp.getSafetyIssues()));
 		}
-		if(resp.getWaterExposure()!=null && resp.getWaterExposure().length() >0 ) {
-			resp.setWaterExposurePreSingedURL(awsS3Service.generatePresignedUrl(resp.getWaterExposure()) );		
+		if (resp.getWaterExposure() != null && resp.getWaterExposure().length() > 0) {
+			resp.setWaterExposurePreSingedURL(awsS3Service.generatePresignedUrl(resp.getWaterExposure()));
 		}
-		if(resp.getWireRopeDamages()!=null && resp.getWireRopeDamages().length() >0 ) {
-			resp.setWireRopeDamagesPreSingedURL(awsS3Service.generatePresignedUrl(resp.getWireRopeDamages()) );		
+		if (resp.getWireRopeDamages() != null && resp.getWireRopeDamages().length() > 0) {
+			resp.setWireRopeDamagesPreSingedURL(awsS3Service.generatePresignedUrl(resp.getWireRopeDamages()));
 		}
-		if(resp.getPackingIntact()!=null && resp.getPackingIntact().length() >0 ) {
-			resp.setPackingIntactPreSingedURL(awsS3Service.generatePresignedUrl(resp.getPackingIntact()) );		
+		if (resp.getPackingIntact() != null && resp.getPackingIntact().length() > 0) {
+			resp.setPackingIntactPreSingedURL(awsS3Service.generatePresignedUrl(resp.getPackingIntact()));
 		}
-		if(resp.getImproperStorage()!=null && resp.getImproperStorage().length() >0 ) {
-			resp.setImproperStoragePreSingedURL(awsS3Service.generatePresignedUrl(resp.getImproperStorage()) );		
+		if (resp.getImproperStorage() != null && resp.getImproperStorage().length() > 0) {
+			resp.setImproperStoragePreSingedURL(awsS3Service.generatePresignedUrl(resp.getImproperStorage()));
 		}
-		if(resp.getStrapping()!=null && resp.getStrapping().length() >0 ) {
-			resp.setStrappingPreSingedURL(awsS3Service.generatePresignedUrl(resp.getStrapping()) );		
+		if (resp.getStrapping() != null && resp.getStrapping().length() > 0) {
+			resp.setStrappingPreSingedURL(awsS3Service.generatePresignedUrl(resp.getStrapping()));
 		}
-		if(resp.getWeighmentSlip()!=null && resp.getWeighmentSlip().length() >0 ) {
-			resp.setWeighmentSlipPreSingedURL(awsS3Service.generatePresignedUrl(resp.getWeighmentSlip()) );		
+		if (resp.getWeighmentSlip() != null && resp.getWeighmentSlip().length() > 0) {
+			resp.setWeighmentSlipPreSingedURL(awsS3Service.generatePresignedUrl(resp.getWeighmentSlip()));
 		}
-		if(resp.getWeighment()!=null && resp.getWeighment().length() >0 ) {
-			resp.setWeighmentPreSingedURL(awsS3Service.generatePresignedUrl(resp.getWeighment()) );		
+		if (resp.getWeighment() != null && resp.getWeighment().length() > 0) {
+			resp.setWeighmentPreSingedURL(awsS3Service.generatePresignedUrl(resp.getWeighment()));
 		}
-		if(resp.getAckReceipt()!=null && resp.getAckReceipt().length() >0 ) {
-			resp.setAckReceiptPreSingedURL(awsS3Service.generatePresignedUrl(resp.getAckReceipt()) );
+		if (resp.getAckReceipt() != null && resp.getAckReceipt().length() > 0) {
+			resp.setAckReceiptPreSingedURL(awsS3Service.generatePresignedUrl(resp.getAckReceipt()));
 		}
-		if(resp.getUnloadingImproper()!=null && resp.getUnloadingImproper().length() >0 ) {
-			resp.setUnloadingImproperPreSingedURL(awsS3Service.generatePresignedUrl(resp.getUnloadingImproper()) );
+		if (resp.getUnloadingImproper() != null && resp.getUnloadingImproper().length() > 0) {
+			resp.setUnloadingImproperPreSingedURL(awsS3Service.generatePresignedUrl(resp.getUnloadingImproper()));
 		}
 		return resp;
 	}
@@ -245,7 +284,7 @@ public class QualityServiceImpl implements QualityService {
 
 		List<QualityTemplateResponse> instructionList = qualityTemplateRepository.findAllTemplates().stream()
 				.map(i -> QualityTemplateEntity.valueOf(i)).collect(Collectors.toList());
-		return instructionList ;
+		return instructionList;
 	}
 
 	@Override
@@ -254,32 +293,36 @@ public class QualityServiceImpl implements QualityService {
 		HttpHeaders header = new HttpHeaders();
 		header.set("Content-Type", "application/json");
 		try {
-			
+
 			qualityTemplateRepository.deleteById(id);
-			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Quality Template deleted successfully..! \"}", header, HttpStatus.OK);
+			response = new ResponseEntity<>(
+					"{\"status\": \"success\", \"message\": \"Quality Template deleted successfully..! \"}", header,
+					HttpStatus.OK);
 		} catch (Exception e) {
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"" + e.getMessage() + "\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"" + e.getMessage() + "\"}", header,
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		return response;
 	}
 
 	@Override
 	public ResponseEntity<Object> templateMapSave(QualityPartyMappingRequest qualityPartyMappingRequest) {
-		
-		List<QualityPartyTemplateEntity> list1 = qualityPartyTemplateRepository.findByTemplateId(qualityPartyMappingRequest.getTemplateId());
+
+		List<QualityPartyTemplateEntity> list1 = qualityPartyTemplateRepository
+				.findByTemplateId(qualityPartyMappingRequest.getTemplateId());
 		for (QualityPartyTemplateEntity qqualityPartyTemplateEntity : list1) {
 			qualityPartyTemplateRepository.deleteById(qqualityPartyTemplateEntity.getId());
 		}
-		
+
 		ResponseEntity<Object> response = null;
-		List<QualityPartyTemplateEntity> list=new ArrayList<QualityPartyTemplateEntity>();
+		List<QualityPartyTemplateEntity> list = new ArrayList<QualityPartyTemplateEntity>();
 		for (Integer partyId : qualityPartyMappingRequest.getPartyIdList()) {
 			QualityPartyTemplateEntity qualityPartyTemplateEntity = new QualityPartyTemplateEntity();
 			qualityPartyTemplateEntity.getTemplateEntity().setTemplateId(qualityPartyMappingRequest.getTemplateId());
 			qualityPartyTemplateEntity.getParty().setnPartyId(partyId);
-			qualityPartyTemplateEntity.setThicknessList(qualityPartyMappingRequest.getThicknessList().toString() );
-			qualityPartyTemplateEntity.setEndUserTagIdList(qualityPartyMappingRequest.getEndUserTagIdList().toString()  );
-			qualityPartyTemplateEntity.setMatGradeIdList( qualityPartyMappingRequest.getMatGradeIdList().toString()  );
+			qualityPartyTemplateEntity.setThicknessList(qualityPartyMappingRequest.getThicknessList().toString());
+			qualityPartyTemplateEntity.setEndUserTagIdList(qualityPartyMappingRequest.getEndUserTagIdList().toString());
+			qualityPartyTemplateEntity.setMatGradeIdList(qualityPartyMappingRequest.getMatGradeIdList().toString());
 			qualityPartyTemplateEntity.setCreatedBy(qualityPartyMappingRequest.getUserId());
 			qualityPartyTemplateEntity.setUpdatedBy(qualityPartyMappingRequest.getUserId());
 			qualityPartyTemplateEntity.setCreatedOn(new Date());
@@ -287,7 +330,9 @@ public class QualityServiceImpl implements QualityService {
 			list.add(qualityPartyTemplateEntity);
 		}
 		qualityPartyTemplateRepository.saveAll(list);
-		response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Party-Template mapping details saved successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
+		response = new ResponseEntity<>(
+				"{\"status\": \"success\", \"message\": \"Party-Template mapping details saved successfully..! \"}",
+				new HttpHeaders(), HttpStatus.OK);
 		return response;
 	}
 
@@ -296,38 +341,44 @@ public class QualityServiceImpl implements QualityService {
 		ResponseEntity<Object> response = null;
 		try {
 			List<QualityPartyTemplateEntity> list1 = qualityPartyTemplateRepository.findByTemplateId(templateId);
-			if(list1!=null && list1.size()>0) {
+			if (list1 != null && list1.size() > 0) {
 				for (QualityPartyTemplateEntity qqualityPartyTemplateEntity : list1) {
 					qualityPartyTemplateRepository.deleteById(qqualityPartyTemplateEntity.getId());
 				}
-				response = new ResponseEntity<>( "{\"status\": \"success\", \"message\": \"Party Template mapping deleted successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
+				response = new ResponseEntity<>(
+						"{\"status\": \"success\", \"message\": \"Party Template mapping deleted successfully..! \"}",
+						new HttpHeaders(), HttpStatus.OK);
 			} else {
-				response = new ResponseEntity<>( "{\"status\": \"failure\", \"message\": \"Please enter valid data..! \"}", new HttpHeaders(), HttpStatus.BAD_REQUEST);
+				response = new ResponseEntity<>(
+						"{\"status\": \"failure\", \"message\": \"Please enter valid data..! \"}", new HttpHeaders(),
+						HttpStatus.BAD_REQUEST);
 			}
 		} catch (Exception e) {
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"" + e.getMessage() + "\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"" + e.getMessage() + "\"}",
+					new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		return response;
 	}
 
 	@Override
 	public List<QualityPartyMappingResponse> getByPartyId(int partyId) {
-		List<QualityPartyMappingResponse> instructionList = qualityPartyTemplateRepository.findByPartyId(partyId).stream()
-				.map(i -> QualityPartyTemplateEntity.valueOf(i)).collect(Collectors.toList());
+		List<QualityPartyMappingResponse> instructionList = qualityPartyTemplateRepository.findByPartyId(partyId)
+				.stream().map(i -> QualityPartyTemplateEntity.valueOf(i)).collect(Collectors.toList());
 		return instructionList;
 	}
-	
+
 	@Override
 	public List<QualityPartyMappingResponse> getByPartyIdAndStageName(int partyId, String stageName) {
-		List<QualityPartyMappingResponse> instructionList = qualityPartyTemplateRepository.getByPartyIdAndStageName(partyId, stageName).stream()
-				.map(i -> QualityPartyTemplateEntity.valueOf(i)).collect(Collectors.toList());
+		List<QualityPartyMappingResponse> instructionList = qualityPartyTemplateRepository
+				.getByPartyIdAndStageName(partyId, stageName).stream().map(i -> QualityPartyTemplateEntity.valueOf(i))
+				.collect(Collectors.toList());
 		return instructionList;
 	}
-	
+
 	@Override
 	public List<QualityPartyMappingResponse> getByTemplateId(int templateId) {
-		List<QualityPartyMappingResponse> instructionList = qualityPartyTemplateRepository.findByTemplateId(templateId).stream()
-				.map(i -> QualityPartyTemplateEntity.valueOf(i)).collect(Collectors.toList());
+		List<QualityPartyMappingResponse> instructionList = qualityPartyTemplateRepository.findByTemplateId(templateId)
+				.stream().map(i -> QualityPartyTemplateEntity.valueOf(i)).collect(Collectors.toList());
 		return instructionList;
 	}
 
@@ -340,25 +391,26 @@ public class QualityServiceImpl implements QualityService {
 
 	@Override
 	public QualityCheckResponse qualityCheck(QualityCheckRequest qualityCheckRequest) {
-		
-		System.out.println("getInwardId == "+qualityCheckRequest.getInwardId());
-		System.out.println("getPartyId == "+qualityCheckRequest.getPartyId());
-		System.out.println("getInstructionId == "+qualityCheckRequest.getInstructionId());
-		System.out.println("getTemplateId == "+qualityCheckRequest.getTemplateId());
-		
+
+		System.out.println("getInwardId == " + qualityCheckRequest.getInwardId());
+		System.out.println("getPartyId == " + qualityCheckRequest.getPartyId());
+		System.out.println("getInstructionId == " + qualityCheckRequest.getInstructionId());
+		System.out.println("getTemplateId == " + qualityCheckRequest.getTemplateId());
+
 		return null;
 	}
 
 	@Override
-	public ResponseEntity<Object> templateMapSaveNew(List<QualityPartyMappingRequestNew> listReq, int partyId, int userId) {
-		
+	public ResponseEntity<Object> templateMapSaveNew(List<QualityPartyMappingRequestNew> listReq, int partyId,
+			int userId) {
+
 		List<QualityPartyTemplateEntity> list1 = qualityPartyTemplateRepository.findByPartyId(partyId);
 		for (QualityPartyTemplateEntity qqualityPartyTemplateEntity : list1) {
 			qualityPartyTemplateRepository.deleteById(qqualityPartyTemplateEntity.getId());
 		}
-		
+
 		ResponseEntity<Object> response = null;
-		List<QualityPartyTemplateEntity> list=new ArrayList<QualityPartyTemplateEntity>();
+		List<QualityPartyTemplateEntity> list = new ArrayList<QualityPartyTemplateEntity>();
 		for (QualityPartyMappingRequestNew qualityObjNew : listReq) {
 			QualityPartyTemplateEntity qualityPartyTemplateEntity = new QualityPartyTemplateEntity();
 			qualityPartyTemplateEntity.getTemplateEntity().setTemplateId(qualityObjNew.getTemplateId());
@@ -371,7 +423,7 @@ public class QualityServiceImpl implements QualityService {
 		}
 		qualityPartyTemplateRepository.saveAll(list);
 		return response;
-	} 
+	}
 
 	@Override
 	public List<Float> getAllThickness() {
@@ -408,198 +460,186 @@ public class QualityServiceImpl implements QualityService {
 		}
 		return lengthList;
 	}
-	
 
-	@Override
-	public ResponseEntity<Object> reportsSave(String inspectionId, String coilNumber, String inwardId, String templateId, String stageName,
-			String templateDetails, String userId, MultipartFile rustObserved, MultipartFile safetyIssues,
-			MultipartFile waterExposure, MultipartFile wireRopeDamages, MultipartFile packingIntact,
-			MultipartFile improperStorage, MultipartFile strapping, MultipartFile weighmentSlip,
-			MultipartFile weighment, MultipartFile acknowledgementReceipt, MultipartFile unloadingImproper) {
-		
-		ResponseEntity<Object> response = null;
-		String message="Quality Inspection Report details updated successfully..! ";
-		HttpHeaders header = new HttpHeaders();
-		header.set("Content-Type", "application/json");
-		try {
-			QualityReportEntity qualityReportEntity = new QualityReportEntity();
-			
-			QualityReportEntity checkDuplicate = qualityReportRepository.findFirstByCoilNumber( coilNumber);
-			if (checkDuplicate != null && checkDuplicate.getCoilNumber().length() > 0) {
-				return new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"This coil already entered..!  }", header, HttpStatus.BAD_REQUEST);
-			}			
-			
-			if (inspectionId != null && Integer.parseInt(inspectionId) > 0) {
-				qualityReportEntity = qualityReportRepository.findByInspectionId(Integer.parseInt(inspectionId));
-			}
-			
-			if (inspectionId != null && Integer.parseInt(inspectionId) > 0) {
-				qualityReportEntity = qualityReportRepository.findByInspectionId(Integer.parseInt(inspectionId));
-			}
-			qualityReportEntity.setUpdatedBy(Integer.parseInt(userId) );
-			qualityReportEntity.setUpdatedOn(new Date());
-			qualityReportEntity.setTemplateDetails( templateDetails);
-			qualityReportEntity.setInwardId(Integer.parseInt(inwardId)  );
-			qualityReportEntity.setCoilNumber(coilNumber); 
-			qualityReportEntity.setTemplateId(Integer.parseInt(templateId)); 
-			qualityReportEntity.setStageName( stageName ); 
-
-			if (rustObserved != null) {
-				String fileUrl = awsS3Service.persistQualityReportFiles(templateFilesPath, stageName, coilNumber, rustObserved);
-				qualityReportEntity.setRustObserved( fileUrl);
-			}
-			if (safetyIssues != null) {
-				String fileUrl = awsS3Service.persistQualityReportFiles(templateFilesPath, stageName, coilNumber, safetyIssues);
-				qualityReportEntity.setSafetyIssues( fileUrl);
-			}
-			if (waterExposure != null) {
-				String fileUrl = awsS3Service.persistQualityReportFiles(templateFilesPath, stageName, coilNumber, waterExposure);
-				qualityReportEntity.setWaterExposure( fileUrl);
-			}
-			if (wireRopeDamages != null) {
-				String fileUrl = awsS3Service.persistQualityReportFiles(templateFilesPath, stageName, coilNumber, wireRopeDamages);
-				qualityReportEntity.setWireRopeDamages( fileUrl);
-			}
-			if (packingIntact != null) {
-				String fileUrl = awsS3Service.persistQualityReportFiles(templateFilesPath, stageName, coilNumber, packingIntact);
-				qualityReportEntity.setPackingIntact(fileUrl);
-			}
-			if (improperStorage != null) {
-				String fileUrl = awsS3Service.persistQualityReportFiles(templateFilesPath, stageName, coilNumber, improperStorage);
-				qualityReportEntity.setImproperStorage(  fileUrl);
-			}
-			if (strapping != null) {
-				String fileUrl = awsS3Service.persistQualityReportFiles(templateFilesPath, stageName, coilNumber, strapping);
-				qualityReportEntity.setStrapping(fileUrl);
-			}
-			if (weighmentSlip != null) {
-				String fileUrl = awsS3Service.persistQualityReportFiles(templateFilesPath, stageName, coilNumber, weighmentSlip);
-				qualityReportEntity.setWeighmentSlip(fileUrl);
-			}
-			if (weighment != null) {
-				String fileUrl = awsS3Service.persistQualityReportFiles(templateFilesPath, stageName, coilNumber, weighment);
-				qualityReportEntity.setWeighment( fileUrl);
-			}
-			if (acknowledgementReceipt != null) {
-				String fileUrl = awsS3Service.persistQualityReportFiles(templateFilesPath, stageName, coilNumber, acknowledgementReceipt);
-				qualityReportEntity.setAckReceipt( fileUrl);
-			}
-			if (unloadingImproper != null) {
-				String fileUrl = awsS3Service.persistQualityReportFiles(templateFilesPath, stageName, coilNumber, unloadingImproper);
-				qualityReportEntity.setUnloadingImproper( fileUrl);
-			}
-			
-			qualityReportRepository.save(qualityReportEntity);
-			
-			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"" + message + "}", header, HttpStatus.OK);
-		} catch (Exception e) {
-			e.printStackTrace();
-			log.info("error is ==" + e.getMessage());
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.BAD_REQUEST);
-		}
-		
-		return response;
-	}
-
-	@Override
-	public QualityReportResponse inspectionreportGetById(int id) {
-
-		QualityReportResponse resp = QualityReportEntity.valueOf(qualityReportRepository.findByInspectionId(id));;
-		
-		if(resp.getRustObserved()!=null && resp.getRustObserved().length() >0 ) {
-			resp.setRustObservedPreSingedURL(awsS3Service.generatePresignedUrl(resp.getRustObserved()) );
-		}
-		if(resp.getSafetyIssues()!=null && resp.getSafetyIssues().length() >0 ) {
-			resp.setSafetyIssuesPreSingedURL(awsS3Service.generatePresignedUrl(resp.getSafetyIssues()) );		
-		}
-		if(resp.getWaterExposure()!=null && resp.getWaterExposure().length() >0 ) {
-			resp.setWaterExposurePreSingedURL(awsS3Service.generatePresignedUrl(resp.getWaterExposure()) );		
-		}
-		if(resp.getWireRopeDamages()!=null && resp.getWireRopeDamages().length() >0 ) {
-			resp.setWireRopeDamagesPreSingedURL(awsS3Service.generatePresignedUrl(resp.getWireRopeDamages()) );		
-		}
-		if(resp.getPackingIntact()!=null && resp.getPackingIntact().length() >0 ) {
-			resp.setPackingIntactPreSingedURL(awsS3Service.generatePresignedUrl(resp.getPackingIntact()) );		
-		}
-		if(resp.getImproperStorage()!=null && resp.getImproperStorage().length() >0 ) {
-			resp.setImproperStoragePreSingedURL(awsS3Service.generatePresignedUrl(resp.getImproperStorage()) );		
-		}
-		if(resp.getStrapping()!=null && resp.getStrapping().length() >0 ) {
-			resp.setStrappingPreSingedURL(awsS3Service.generatePresignedUrl(resp.getStrapping()) );		
-		}
-		if(resp.getWeighmentSlip()!=null && resp.getWeighmentSlip().length() >0 ) {
-			resp.setWeighmentSlipPreSingedURL(awsS3Service.generatePresignedUrl(resp.getWeighmentSlip()) );		
-		}
-		if(resp.getWeighment()!=null && resp.getWeighment().length() >0 ) {
-			resp.setWeighmentPreSingedURL(awsS3Service.generatePresignedUrl(resp.getWeighment()) );		
-		}
-		if(resp.getAckReceipt()!=null && resp.getAckReceipt().length() >0 ) {
-			resp.setAckReceiptPreSingedURL(awsS3Service.generatePresignedUrl(resp.getAckReceipt()) );
-		}
-		if(resp.getUnloadingImproper()!=null && resp.getUnloadingImproper().length() >0 ) {
-			resp.setUnloadingImproperPreSingedURL(awsS3Service.generatePresignedUrl(resp.getUnloadingImproper()) );
-		}
-		return resp;
-	}
-	
-	@Override
-	public List<QualityReportResponse> inspectionreportGetAll() {
-		List<QualityReportResponse> instructionList = qualityReportRepository.findAll().stream()
-				.map(i -> QualityReportEntity.valueOf(i)).collect(Collectors.toList());
-		return instructionList;
-	}
-	 
-	@Override
-	public ResponseEntity<Object> deleteInspectionReport(int id) {
-
-		ResponseEntity<Object> response = null;
-		HttpHeaders header = new HttpHeaders();
-		header.set("Content-Type", "application/json");
-		try {
-
-			qualityReportRepository.deleteById(id);
-			response = new ResponseEntity<>( "{\"status\": \"success\", \"message\": \"Quality Inspection Report deleted successfully..! \"}", header, HttpStatus.OK);
-		} catch (Exception e) {
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"" + e.getMessage() + "\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-		return response;
-	}
+	/*
+	 * @Override public ResponseEntity<Object> reportsSave(String inspectionId,
+	 * String coilNumber, String inwardId, String templateId, String stageName,
+	 * String templateDetails, String userId, MultipartFile rustObserved,
+	 * MultipartFile safetyIssues, MultipartFile waterExposure, MultipartFile
+	 * wireRopeDamages, MultipartFile packingIntact, MultipartFile improperStorage,
+	 * MultipartFile strapping, MultipartFile weighmentSlip, MultipartFile
+	 * weighment, MultipartFile acknowledgementReceipt, MultipartFile
+	 * unloadingImproper) {
+	 * 
+	 * ResponseEntity<Object> response = null; String
+	 * message="Quality Inspection Report details updated successfully..! ";
+	 * HttpHeaders header = new HttpHeaders(); header.set("Content-Type",
+	 * "application/json"); try { QualityReportEntity qualityReportEntity = new
+	 * QualityReportEntity();
+	 * 
+	 * QualityReportEntity checkDuplicate =
+	 * qualityReportRepository.findFirstByCoilNumber( coilNumber); if
+	 * (checkDuplicate != null && checkDuplicate.getCoilNumber().length() > 0) {
+	 * return new ResponseEntity<>
+	 * ("{\"status\": \"failure\", \"message\": \"This coil already entered..!  }",
+	 * header, HttpStatus.BAD_REQUEST); }
+	 * 
+	 * if (inspectionId != null && Integer.parseInt(inspectionId) > 0) {
+	 * qualityReportEntity =
+	 * qualityReportRepository.findByInspectionId(Integer.parseInt(inspectionId)); }
+	 * 
+	 * if (inspectionId != null && Integer.parseInt(inspectionId) > 0) {
+	 * qualityReportEntity =
+	 * qualityReportRepository.findByInspectionId(Integer.parseInt(inspectionId)); }
+	 * qualityReportEntity.setUpdatedBy(Integer.parseInt(userId) );
+	 * qualityReportEntity.setUpdatedOn(new Date());
+	 * qualityReportEntity.setTemplateDetails( templateDetails);
+	 * qualityReportEntity.setInwardId(Integer.parseInt(inwardId) );
+	 * qualityReportEntity.setCoilNumber(coilNumber);
+	 * qualityReportEntity.setTemplateId(Integer.parseInt(templateId));
+	 * qualityReportEntity.setStageName( stageName );
+	 * 
+	 * if (rustObserved != null) { String fileUrl =
+	 * awsS3Service.persistQualityReportFiles(templateFilesPath, stageName,
+	 * coilNumber, rustObserved); qualityReportEntity.setRustObserved( fileUrl); }
+	 * if (safetyIssues != null) { String fileUrl =
+	 * awsS3Service.persistQualityReportFiles(templateFilesPath, stageName,
+	 * coilNumber, safetyIssues); qualityReportEntity.setSafetyIssues( fileUrl); }
+	 * if (waterExposure != null) { String fileUrl =
+	 * awsS3Service.persistQualityReportFiles(templateFilesPath, stageName,
+	 * coilNumber, waterExposure); qualityReportEntity.setWaterExposure( fileUrl); }
+	 * if (wireRopeDamages != null) { String fileUrl =
+	 * awsS3Service.persistQualityReportFiles(templateFilesPath, stageName,
+	 * coilNumber, wireRopeDamages); qualityReportEntity.setWireRopeDamages(
+	 * fileUrl); } if (packingIntact != null) { String fileUrl =
+	 * awsS3Service.persistQualityReportFiles(templateFilesPath, stageName,
+	 * coilNumber, packingIntact); qualityReportEntity.setPackingIntact(fileUrl); }
+	 * if (improperStorage != null) { String fileUrl =
+	 * awsS3Service.persistQualityReportFiles(templateFilesPath, stageName,
+	 * coilNumber, improperStorage); qualityReportEntity.setImproperStorage(
+	 * fileUrl); } if (strapping != null) { String fileUrl =
+	 * awsS3Service.persistQualityReportFiles(templateFilesPath, stageName,
+	 * coilNumber, strapping); qualityReportEntity.setStrapping(fileUrl); } if
+	 * (weighmentSlip != null) { String fileUrl =
+	 * awsS3Service.persistQualityReportFiles(templateFilesPath, stageName,
+	 * coilNumber, weighmentSlip); qualityReportEntity.setWeighmentSlip(fileUrl); }
+	 * if (weighment != null) { String fileUrl =
+	 * awsS3Service.persistQualityReportFiles(templateFilesPath, stageName,
+	 * coilNumber, weighment); qualityReportEntity.setWeighment( fileUrl); } if
+	 * (acknowledgementReceipt != null) { String fileUrl =
+	 * awsS3Service.persistQualityReportFiles(templateFilesPath, stageName,
+	 * coilNumber, acknowledgementReceipt); qualityReportEntity.setAckReceipt(
+	 * fileUrl); } if (unloadingImproper != null) { String fileUrl =
+	 * awsS3Service.persistQualityReportFiles(templateFilesPath, stageName,
+	 * coilNumber, unloadingImproper); qualityReportEntity.setUnloadingImproper(
+	 * fileUrl); }
+	 * 
+	 * qualityReportRepository.save(qualityReportEntity);
+	 * 
+	 * response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"" +
+	 * message + "}", header, HttpStatus.OK); } catch (Exception e) {
+	 * e.printStackTrace(); log.info("error is ==" + e.getMessage()); response = new
+	 * ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}",
+	 * header, HttpStatus.BAD_REQUEST); }
+	 * 
+	 * return response; }
+	 * 
+	 * @Override public QualityReportResponse inspectionreportGetById(int id) {
+	 * 
+	 * QualityReportResponse resp =
+	 * QualityReportEntity.valueOf(qualityReportRepository.findByInspectionId(id));;
+	 * 
+	 * if(resp.getRustObserved()!=null && resp.getRustObserved().length() >0 ) {
+	 * resp.setRustObservedPreSingedURL(awsS3Service.generatePresignedUrl(resp.
+	 * getRustObserved()) ); } if(resp.getSafetyIssues()!=null &&
+	 * resp.getSafetyIssues().length() >0 ) {
+	 * resp.setSafetyIssuesPreSingedURL(awsS3Service.generatePresignedUrl(resp.
+	 * getSafetyIssues()) ); } if(resp.getWaterExposure()!=null &&
+	 * resp.getWaterExposure().length() >0 ) {
+	 * resp.setWaterExposurePreSingedURL(awsS3Service.generatePresignedUrl(resp.
+	 * getWaterExposure()) ); } if(resp.getWireRopeDamages()!=null &&
+	 * resp.getWireRopeDamages().length() >0 ) {
+	 * resp.setWireRopeDamagesPreSingedURL(awsS3Service.generatePresignedUrl(resp.
+	 * getWireRopeDamages()) ); } if(resp.getPackingIntact()!=null &&
+	 * resp.getPackingIntact().length() >0 ) {
+	 * resp.setPackingIntactPreSingedURL(awsS3Service.generatePresignedUrl(resp.
+	 * getPackingIntact()) ); } if(resp.getImproperStorage()!=null &&
+	 * resp.getImproperStorage().length() >0 ) {
+	 * resp.setImproperStoragePreSingedURL(awsS3Service.generatePresignedUrl(resp.
+	 * getImproperStorage()) ); } if(resp.getStrapping()!=null &&
+	 * resp.getStrapping().length() >0 ) {
+	 * resp.setStrappingPreSingedURL(awsS3Service.generatePresignedUrl(resp.
+	 * getStrapping()) ); } if(resp.getWeighmentSlip()!=null &&
+	 * resp.getWeighmentSlip().length() >0 ) {
+	 * resp.setWeighmentSlipPreSingedURL(awsS3Service.generatePresignedUrl(resp.
+	 * getWeighmentSlip()) ); } if(resp.getWeighment()!=null &&
+	 * resp.getWeighment().length() >0 ) {
+	 * resp.setWeighmentPreSingedURL(awsS3Service.generatePresignedUrl(resp.
+	 * getWeighment()) ); } if(resp.getAckReceipt()!=null &&
+	 * resp.getAckReceipt().length() >0 ) {
+	 * resp.setAckReceiptPreSingedURL(awsS3Service.generatePresignedUrl(resp.
+	 * getAckReceipt()) ); } if(resp.getUnloadingImproper()!=null &&
+	 * resp.getUnloadingImproper().length() >0 ) {
+	 * resp.setUnloadingImproperPreSingedURL(awsS3Service.generatePresignedUrl(resp.
+	 * getUnloadingImproper()) ); } return resp; }
+	 * 
+	 * @Override public List<QualityReportResponse> inspectionreportGetAll() {
+	 * List<QualityReportResponse> instructionList =
+	 * qualityReportRepository.findAll().stream() .map(i ->
+	 * QualityReportEntity.valueOf(i)).collect(Collectors.toList()); return
+	 * instructionList; }
+	 * 
+	 * @Override public ResponseEntity<Object> deleteInspectionReport(int id) {
+	 * 
+	 * ResponseEntity<Object> response = null; HttpHeaders header = new
+	 * HttpHeaders(); header.set("Content-Type", "application/json"); try {
+	 * 
+	 * qualityReportRepository.deleteById(id); response = new ResponseEntity<>(
+	 * "{\"status\": \"success\", \"message\": \"Quality Inspection Report deleted successfully..! \"}"
+	 * , header, HttpStatus.OK); } catch (Exception e) { response = new
+	 * ResponseEntity<>("{\"status\": \"fail\", \"message\": \"" + e.getMessage() +
+	 * "\"}", header, HttpStatus.INTERNAL_SERVER_ERROR); } return response; }
+	 */
 
 	@Override
 	public ResponseEntity<Object> save(KQPRequest kcpRequest, int userId) {
 
 		ResponseEntity<Object> response = null;
 
-		KQPEntity checkpackingItemEntity = kqpRepository.findFirstByKqpName( kcpRequest.getKqpName());
-		
+		KQPEntity checkpackingItemEntity = kqpRepository.findFirstByKqpName(kcpRequest.getKqpName());
+
 		KQPEntity kqpEntity = new KQPEntity();
 		if (checkpackingItemEntity != null && checkpackingItemEntity.getKqpId() > 0) {
 			kqpEntity.setKqpId(kcpRequest.getKqpId());
-			
+
 			if (checkpackingItemEntity != null && kcpRequest.getKqpId() != checkpackingItemEntity.getKqpId()) {
-				return new ResponseEntity<>( 	"{\"status\": \"fail\", \"message\": \"KQP Name already exists..! \"}",
+				return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"KQP Name already exists..! \"}",
 						new HttpHeaders(), HttpStatus.BAD_REQUEST);
 
 			}
-		}  
-		kqpEntity.setKqpName( kcpRequest.getKqpName() );
-		kqpEntity.setKqpDesc( kcpRequest.getKqpDesc()  );
-		kqpEntity.setKqpSummary( kcpRequest.getKqpSummary() );
-		kqpEntity.setStageName( kcpRequest.getStageName());
+		}
+		kqpEntity.setKqpName(kcpRequest.getKqpName());
+		kqpEntity.setKqpDesc(kcpRequest.getKqpDesc());
+		kqpEntity.setKqpSummary(kcpRequest.getKqpSummary());
+		kqpEntity.setStageName(kcpRequest.getStageName());
 		kqpEntity.setCreatedBy(userId);
 		kqpEntity.setUpdatedBy(userId);
 		kqpEntity.setCreatedOn(new Date());
 		kqpEntity.setUpdatedOn(new Date());
-		kqpRepository.save (kqpEntity);
+		kqpRepository.save(kqpEntity);
 		if (kcpRequest.getKqpId() != null && kcpRequest.getKqpId() > 0) {
 			log.info("KQP details updated successfully");
-			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"KQP details updated successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
+			response = new ResponseEntity<>(
+					"{\"status\": \"success\", \"message\": \"KQP details updated successfully..! \"}",
+					new HttpHeaders(), HttpStatus.OK);
 		} else {
-			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"KQP details saved successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
+			response = new ResponseEntity<>(
+					"{\"status\": \"success\", \"message\": \"KQP details saved successfully..! \"}", new HttpHeaders(),
+					HttpStatus.OK);
 		}
 		return response;
 	}
-	
+
 	@Override
 	public KQPResponse kqpGetById(int kqpId) {
 
@@ -624,9 +664,12 @@ public class QualityServiceImpl implements QualityService {
 		try {
 
 			kqpRepository.deleteById(id);
-			response = new ResponseEntity<>( "{\"status\": \"success\", \"message\": \"KQP details deleted successfully..! \"}", header, HttpStatus.OK);
+			response = new ResponseEntity<>(
+					"{\"status\": \"success\", \"message\": \"KQP details deleted successfully..! \"}", header,
+					HttpStatus.OK);
 		} catch (Exception e) {
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"" + e.getMessage() + "\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"" + e.getMessage() + "\"}", header,
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		return response;
 	}
@@ -643,22 +686,24 @@ public class QualityServiceImpl implements QualityService {
 		List<KQPPartyTemplateEntity> list = new ArrayList<>();
 		KQPPartyTemplateEntity kqpPartyTemplateEntity = new KQPPartyTemplateEntity();
 		kqpPartyTemplateEntity.getKqpEntity().setKqpId(kqpPartyMappingRequest.getKqpId());
-		if(kqpPartyMappingRequest.getPartyIdList()!=null && kqpPartyMappingRequest.getPartyIdList().size()>0) {
+		if (kqpPartyMappingRequest.getPartyIdList() != null && kqpPartyMappingRequest.getPartyIdList().size() > 0) {
 			kqpPartyTemplateEntity.setPartyIdList(kqpPartyMappingRequest.getPartyIdList().toString());
 		}
-		if(kqpPartyMappingRequest.getThicknessList()!=null && kqpPartyMappingRequest.getThicknessList().size()>0) {
+		if (kqpPartyMappingRequest.getThicknessList() != null && kqpPartyMappingRequest.getThicknessList().size() > 0) {
 			kqpPartyTemplateEntity.setThicknessList(kqpPartyMappingRequest.getThicknessList().toString());
 		}
-		if(kqpPartyMappingRequest.getLengthList()!=null && kqpPartyMappingRequest.getLengthList().size()>0) {
+		if (kqpPartyMappingRequest.getLengthList() != null && kqpPartyMappingRequest.getLengthList().size() > 0) {
 			kqpPartyTemplateEntity.setLengthList(kqpPartyMappingRequest.getLengthList().toString());
 		}
-		if(kqpPartyMappingRequest.getWidthList()!=null && kqpPartyMappingRequest.getWidthList().size()>0) {
+		if (kqpPartyMappingRequest.getWidthList() != null && kqpPartyMappingRequest.getWidthList().size() > 0) {
 			kqpPartyTemplateEntity.setWidthList(kqpPartyMappingRequest.getWidthList().toString());
 		}
-		if(kqpPartyMappingRequest.getEndUserTagIdList()!=null && kqpPartyMappingRequest.getEndUserTagIdList().size()>0) {
+		if (kqpPartyMappingRequest.getEndUserTagIdList() != null
+				&& kqpPartyMappingRequest.getEndUserTagIdList().size() > 0) {
 			kqpPartyTemplateEntity.setEndUserTagIdList(kqpPartyMappingRequest.getEndUserTagIdList().toString());
 		}
-		if(kqpPartyMappingRequest.getMatGradeIdList()!=null && kqpPartyMappingRequest.getMatGradeIdList().size()>0) {
+		if (kqpPartyMappingRequest.getMatGradeIdList() != null
+				&& kqpPartyMappingRequest.getMatGradeIdList().size() > 0) {
 			kqpPartyTemplateEntity.setMatGradeIdList(kqpPartyMappingRequest.getMatGradeIdList().toString());
 		}
 		if (kqpPartyMappingRequest.getAnyPartyFlag() != null && "Y".equals(kqpPartyMappingRequest.getAnyPartyFlag())) {
@@ -666,12 +711,14 @@ public class QualityServiceImpl implements QualityService {
 		} else {
 			kqpPartyTemplateEntity.setAnyPartyFlag("N");
 		}
-		if (kqpPartyMappingRequest.getAnyMatgradeFlag() != null && "Y".equals(kqpPartyMappingRequest.getAnyMatgradeFlag())) {
+		if (kqpPartyMappingRequest.getAnyMatgradeFlag() != null
+				&& "Y".equals(kqpPartyMappingRequest.getAnyMatgradeFlag())) {
 			kqpPartyTemplateEntity.setAnyMatgradeFlag("Y");
 		} else {
 			kqpPartyTemplateEntity.setAnyMatgradeFlag("N");
 		}
-		if (kqpPartyMappingRequest.getAnyEndusertagFlag() != null && "Y".equals(kqpPartyMappingRequest.getAnyEndusertagFlag())) {
+		if (kqpPartyMappingRequest.getAnyEndusertagFlag() != null
+				&& "Y".equals(kqpPartyMappingRequest.getAnyEndusertagFlag())) {
 			kqpPartyTemplateEntity.setAnyEndusertagFlag("Y");
 		} else {
 			kqpPartyTemplateEntity.setAnyEndusertagFlag("N");
@@ -681,12 +728,14 @@ public class QualityServiceImpl implements QualityService {
 		} else {
 			kqpPartyTemplateEntity.setAnyWidthFlag("N");
 		}
-		if (kqpPartyMappingRequest.getAnyLengthFlag() != null && "Y".equals(kqpPartyMappingRequest.getAnyLengthFlag())) {
+		if (kqpPartyMappingRequest.getAnyLengthFlag() != null
+				&& "Y".equals(kqpPartyMappingRequest.getAnyLengthFlag())) {
 			kqpPartyTemplateEntity.setAnyLengthFlag("Y");
 		} else {
 			kqpPartyTemplateEntity.setAnyLengthFlag("N");
 		}
-		if (kqpPartyMappingRequest.getAnyThicknessFlag() != null && "Y".equals(kqpPartyMappingRequest.getAnyThicknessFlag())) {
+		if (kqpPartyMappingRequest.getAnyThicknessFlag() != null
+				&& "Y".equals(kqpPartyMappingRequest.getAnyThicknessFlag())) {
 			kqpPartyTemplateEntity.setAnyThicknessFlag("Y");
 		} else {
 			kqpPartyTemplateEntity.setAnyThicknessFlag("N");
@@ -697,7 +746,8 @@ public class QualityServiceImpl implements QualityService {
 		kqpPartyTemplateEntity.setUpdatedOn(new Date());
 		list.add(kqpPartyTemplateEntity);
 		kqpPartyTemplateRepository.saveAll(list);
-		response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"KQP-Party mapping details saved successfully..! \"}",
+		response = new ResponseEntity<>(
+				"{\"status\": \"success\", \"message\": \"KQP-Party mapping details saved successfully..! \"}",
 				new HttpHeaders(), HttpStatus.OK);
 		return response;
 	}
@@ -711,19 +761,24 @@ public class QualityServiceImpl implements QualityService {
 				for (KQPPartyTemplateEntity kqpPartyTemplateEntity : list1) {
 					kqpPartyTemplateRepository.deleteById(kqpPartyTemplateEntity.getId());
 				}
-				response = new ResponseEntity<>( "{\"status\": \"success\", \"message\": \"KQP-Party mapping deleted successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
+				response = new ResponseEntity<>(
+						"{\"status\": \"success\", \"message\": \"KQP-Party mapping deleted successfully..! \"}",
+						new HttpHeaders(), HttpStatus.OK);
 			} else {
-				response = new ResponseEntity<>( "{\"status\": \"failure\", \"message\": \"Please enter valid data..! \"}", new HttpHeaders(), HttpStatus.BAD_REQUEST);
+				response = new ResponseEntity<>(
+						"{\"status\": \"failure\", \"message\": \"Please enter valid data..! \"}", new HttpHeaders(),
+						HttpStatus.BAD_REQUEST);
 			}
 		} catch (Exception e) {
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"" + e.getMessage() + "\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"" + e.getMessage() + "\"}",
+					new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		return response;
 	}
-	
+
 	@Override
 	public List<KQPPartyMappingResponse> getByKQPId(int kqpId) {
-		List<KQPPartyMappingResponse> instructionList = kqpPartyTemplateRepository.findByKqpId( kqpId).stream()
+		List<KQPPartyMappingResponse> instructionList = kqpPartyTemplateRepository.findByKqpId(kqpId).stream()
 				.map(i -> KQPPartyTemplateEntity.valueOf(i)).collect(Collectors.toList());
 		return instructionList;
 	}
@@ -751,7 +806,7 @@ public class QualityServiceImpl implements QualityService {
 			resp.setTargetWeight(result[6] != null ? (Float) result[6] : null);
 			resp.setNPartyId(result[7] != null ? Integer.parseInt(result[7].toString()) : null);
 			resp.setPartyName(result[9] != null ? (String) result[9] : null);
-			if(result[8] != null && result[8].toString().length() >0 ) {
+			if (result[8] != null && result[8].toString().length() > 0) {
 				resp.setQirId(Integer.parseInt(result[8].toString()));
 			} else {
 				resp.setQirId(null);
@@ -760,7 +815,6 @@ public class QualityServiceImpl implements QualityService {
 		}
 		return qirList;
 	}
-
 
 	@Override
 	public List<QualityInspReportListPageResponse> qirListPage() {
@@ -777,7 +831,7 @@ public class QualityServiceImpl implements QualityService {
 			resp.setFthickness(result[5] != null ? (Float) result[5] : null);
 			resp.setTargetWeight(result[6] != null ? (Float) result[6] : null);
 			resp.setNPartyId(result[7] != null ? Integer.parseInt(result[7].toString()) : null);
-			if(result[8] != null && result[8].toString().length() >0 ) {
+			if (result[8] != null && result[8].toString().length() > 0) {
 				resp.setQirId(Integer.parseInt(result[8].toString()));
 			} else {
 				resp.setQirId(null);
@@ -814,8 +868,8 @@ public class QualityServiceImpl implements QualityService {
 			resp.setCustomerInvoiceDate(result[7] != null ? (String) result[7] : null);
 			resp.setEndUserTags(result[8] != null ? (String) result[8] : null);
 			resp.setNPartyId(result[9] != null ? Integer.parseInt(result[9].toString()) : null);
-			if(result[10] != null && result[10].toString().length() >0 ) {
-				resp.setQirId( Integer.parseInt(result[10].toString()));
+			if (result[10] != null && result[10].toString().length() > 0) {
+				resp.setQirId(Integer.parseInt(result[10].toString()));
 			} else {
 				resp.setQirId(null);
 			}
@@ -829,8 +883,9 @@ public class QualityServiceImpl implements QualityService {
 	public List<InstructionResponseDto> getDispatchDetails(QIRSaveDataRequest qirSaveDataRequest) {
 
 		List<InstructionResponseDto> instructionList = kqpPartyTemplateRepository
-				.getDispatchDetails(qirSaveDataRequest.getCoilNo(), Integer.parseInt(qirSaveDataRequest.getPartDetailsId())).stream()
-				.map(i -> Instruction.valueOf(i)).collect(Collectors.toList());
+				.getDispatchDetails(qirSaveDataRequest.getCoilNo(),
+						Integer.parseInt(qirSaveDataRequest.getPartDetailsId()))
+				.stream().map(i -> Instruction.valueOf(i)).collect(Collectors.toList());
 
 		return instructionList;
 	}
@@ -841,84 +896,88 @@ public class QualityServiceImpl implements QualityService {
 			MultipartFile waterExposure, MultipartFile wireRopeDamages, MultipartFile packingIntact,
 			MultipartFile improperStorage, MultipartFile strapping, MultipartFile weighmentSlip,
 			MultipartFile weighment, MultipartFile ackReceipt, MultipartFile unloadingImproper, String coilNo,
-			String customerBatchNo, String planId, String deliveryChalanNo, String qirId) {
-		
+			String customerBatchNo, String planId, String deliveryChalanNo, String qirId, MultipartFile coilBend) {
+
 		ResponseEntity<Object> response = null;
-		String message="Quality Inspection Report details saved successfully..! ";
+		String message = "Quality Inspection Report details saved successfully..! ";
 		HttpHeaders header = new HttpHeaders();
 		header.set("Content-Type", "application/json");
 		try {
-			
+
 			log.info(" templateDetails == " + templateDetails);
 			QualityInspectionReportEntity qualityTemplateEntity = new QualityInspectionReportEntity();
 
-			if (qirId !=null && Integer.parseInt(qirId) > 0) {
+			if (qirId != null && Integer.parseInt(qirId) > 0) {
 				qualityTemplateEntity = qualityInspectionReportRepository.findByQirId(Integer.parseInt(qirId));
 			} else {
 				qualityTemplateEntity = new QualityInspectionReportEntity();
-				qualityTemplateEntity.setCreatedBy(Integer.parseInt(userId) );
+				qualityTemplateEntity.setCreatedBy(Integer.parseInt(userId));
 				qualityTemplateEntity.setCreatedOn(new Date());
 			}
 			log.info(" templateDetails == " + templateDetails);
-			
+
 			qualityTemplateEntity.setCreatedBy(Integer.parseInt(userId));
 			qualityTemplateEntity.setCreatedOn(new Date());
 			qualityTemplateEntity.setStageName(stageName);
-			if(processId!=null && processId.length()>0) {
-				qualityTemplateEntity.setProcessId( Integer.parseInt(processId) );
+			if (processId != null && processId.length() > 0) {
+				qualityTemplateEntity.setProcessId(Integer.parseInt(processId));
 			}
 			qualityTemplateEntity.setTemplateId(Integer.parseInt(templateId));
 			qualityTemplateEntity.setCoilNo(coilNo);
-			qualityTemplateEntity.setCustomerBatchNo( customerBatchNo);
-			qualityTemplateEntity.setPlanId( planId);
-			qualityTemplateEntity.setDeliveryChalanNo( deliveryChalanNo);
-			qualityTemplateEntity.setTemplateDetails( templateDetails);
-			qualityTemplateEntity.setUpdatedBy(Integer.parseInt(userId) );
+			qualityTemplateEntity.setCustomerBatchNo(customerBatchNo);
+			qualityTemplateEntity.setPlanId(planId);
+			qualityTemplateEntity.setDeliveryChalanNo(deliveryChalanNo);
+			qualityTemplateEntity.setTemplateDetails(templateDetails);
+			qualityTemplateEntity.setUpdatedBy(Integer.parseInt(userId));
 			qualityTemplateEntity.setUpdatedOn(new Date());
 
 			if (rustObserved != null) {
-				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo+"_"+stageName, templateId, rustObserved);
-				qualityTemplateEntity.setRustObserved( fileUrl);
+				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo + "_" + stageName, templateId, rustObserved);
+				qualityTemplateEntity.setRustObserved(fileUrl);
+			}
+			if (coilBend != null) {
+				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo + "_" + stageName, templateId, coilBend);
+				qualityTemplateEntity.setCoilBend(fileUrl);
 			}
 			if (safetyIssues != null) {
-				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo+"_"+stageName, templateId, safetyIssues);
-				qualityTemplateEntity.setSafetyIssues( fileUrl);
+				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo + "_" + stageName, templateId, safetyIssues);
+				qualityTemplateEntity.setSafetyIssues(fileUrl);
 			}
 			if (waterExposure != null) {
-				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo+"_"+stageName, templateId, waterExposure);
-				qualityTemplateEntity.setWaterExposure( fileUrl);
+				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo + "_" + stageName, templateId, waterExposure);
+				qualityTemplateEntity.setWaterExposure(fileUrl);
 			}
 			if (wireRopeDamages != null) {
-				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo+"_"+stageName, templateId, wireRopeDamages);
-				qualityTemplateEntity.setWireRopeDamages( fileUrl);
+				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo + "_" + stageName, templateId, wireRopeDamages);
+				qualityTemplateEntity.setWireRopeDamages(fileUrl);
 			}
 			if (packingIntact != null) {
-				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo+"_"+stageName, templateId, packingIntact);
+				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo + "_" + stageName, templateId, packingIntact);
 				qualityTemplateEntity.setPackingIntact(fileUrl);
 			}
 			if (improperStorage != null) {
-				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo+"_"+stageName, templateId, improperStorage);
-				qualityTemplateEntity.setImproperStorage(  fileUrl);
+				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo + "_" + stageName, templateId, improperStorage);
+				qualityTemplateEntity.setImproperStorage(fileUrl);
 			}
 			if (strapping != null) {
-				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo+"_"+stageName, templateId, strapping);
+				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo + "_" + stageName, templateId, strapping);
 				qualityTemplateEntity.setStrapping(fileUrl);
 			}
 			if (weighmentSlip != null) {
-				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo+"_"+stageName, templateId, weighmentSlip);
+				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo + "_" + stageName, templateId, weighmentSlip);
 				qualityTemplateEntity.setWeighmentSlip(fileUrl);
 			}
 			if (weighment != null) {
-				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo+"_"+stageName, templateId, weighment);
-				qualityTemplateEntity.setWeighment( fileUrl);
+				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo + "_" + stageName, templateId, weighment);
+				qualityTemplateEntity.setWeighment(fileUrl);
 			}
 			if (ackReceipt != null) {
-				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo+"_"+stageName, templateId, ackReceipt);
-				qualityTemplateEntity.setAckReceipt( fileUrl);
+				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo + "_" + stageName, templateId, ackReceipt);
+				qualityTemplateEntity.setAckReceipt(fileUrl);
 			}
 			if (unloadingImproper != null) {
-				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo+"_"+stageName, templateId, unloadingImproper);
-				qualityTemplateEntity.setUnloadingImproper( fileUrl);
+				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo + "_" + stageName, templateId, unloadingImproper);
+				qualityTemplateEntity.setUnloadingImproper(fileUrl);
 			}
 			qualityInspectionReportRepository.save(qualityTemplateEntity);
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"" + message + "}", header, HttpStatus.OK);
@@ -927,7 +986,7 @@ public class QualityServiceImpl implements QualityService {
 			log.info("error is ==" + e.getMessage());
 			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.BAD_REQUEST);
 		}
-		
+
 		return response;
 	}
 
@@ -939,6 +998,9 @@ public class QualityServiceImpl implements QualityService {
 
 		if (resp.getRustObserved() != null && resp.getRustObserved().length() > 0) {
 			resp.setRustObservedPreSingedURL(awsS3Service.generatePresignedUrl(resp.getRustObserved()));
+		}
+		if (resp.getCoilBend() != null && resp.getCoilBend().length() > 0) {
+			resp.setCoilBendPreSingedURL( awsS3Service.generatePresignedUrl(resp.getCoilBend()));
 		}
 		if (resp.getSafetyIssues() != null && resp.getSafetyIssues().length() > 0) {
 			resp.setSafetyIssuesPreSingedURL(awsS3Service.generatePresignedUrl(resp.getSafetyIssues()));
@@ -980,7 +1042,8 @@ public class QualityServiceImpl implements QualityService {
 		header.set("Content-Type", "application/json");
 		try {
 			qualityInspectionReportRepository.deleteById(id);
-			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"QIR Report deleted successfully..! \"}", header, HttpStatus.OK);
+			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"QIR Report deleted successfully..! \"}", header,
+					HttpStatus.OK);
 		} catch (Exception e) {
 			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"" + e.getMessage() + "\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -989,11 +1052,11 @@ public class QualityServiceImpl implements QualityService {
 
 	@Override
 	public QualityInspectionReportResponse getQIRReport(String stageName, String coilNo, String planId) {
-		
+
 		QualityInspectionReportResponse resp = new QualityInspectionReportResponse();
 		try {
-			QualityInspectionReportEntity entity = null;//qualityInspectionReportRepository.findTop1ByCoilNoDesc(coilNo);
-			
+			QualityInspectionReportEntity entity = null;// qualityInspectionReportRepository.findTop1ByCoilNoDesc(coilNo);
+
 			if ("inward".equalsIgnoreCase(stageName)) {
 				entity = qualityInspectionReportRepository.findTop1ByCoilNoOrderByQirIdDesc(coilNo);
 			} else if ("processing".equalsIgnoreCase(stageName) || "postprocessing".equalsIgnoreCase(stageName)) {
@@ -1001,41 +1064,44 @@ public class QualityServiceImpl implements QualityService {
 			} else if ("predispatch".equalsIgnoreCase(stageName) || "postdispatch".equalsIgnoreCase(stageName)) {
 				entity = qualityInspectionReportRepository.findTop1ByCoilNoAndDeliveryChalanNo(coilNo, planId);
 			}
-			
+
 			resp = QualityInspectionReportEntity.valueOf(entity);
-			
-			if(resp.getRustObserved()!=null && resp.getRustObserved().length() >0 ) {
-				resp.setRustObservedPreSingedURL(awsS3Service.generatePresignedUrl(resp.getRustObserved()) );
+
+			if (resp.getRustObserved() != null && resp.getRustObserved().length() > 0) {
+				resp.setRustObservedPreSingedURL(awsS3Service.generatePresignedUrl(resp.getRustObserved()));
 			}
-			if(resp.getSafetyIssues()!=null && resp.getSafetyIssues().length() >0 ) {
-				resp.setSafetyIssuesPreSingedURL(awsS3Service.generatePresignedUrl(resp.getSafetyIssues()) );		
+			if (resp.getCoilBend() != null && resp.getCoilBend().length() > 0) {
+				resp.setCoilBendPreSingedURL(awsS3Service.generatePresignedUrl(resp.getCoilBend()));
 			}
-			if(resp.getWaterExposure()!=null && resp.getWaterExposure().length() >0 ) {
-				resp.setWaterExposurePreSingedURL(awsS3Service.generatePresignedUrl(resp.getWaterExposure()) );		
+			if (resp.getSafetyIssues() != null && resp.getSafetyIssues().length() > 0) {
+				resp.setSafetyIssuesPreSingedURL(awsS3Service.generatePresignedUrl(resp.getSafetyIssues()));
 			}
-			if(resp.getWireRopeDamages()!=null && resp.getWireRopeDamages().length() >0 ) {
-				resp.setWireRopeDamagesPreSingedURL(awsS3Service.generatePresignedUrl(resp.getWireRopeDamages()) );		
+			if (resp.getWaterExposure() != null && resp.getWaterExposure().length() > 0) {
+				resp.setWaterExposurePreSingedURL(awsS3Service.generatePresignedUrl(resp.getWaterExposure()));
 			}
-			if(resp.getPackingIntact()!=null && resp.getPackingIntact().length() >0 ) {
-				resp.setPackingIntactPreSingedURL(awsS3Service.generatePresignedUrl(resp.getPackingIntact()) );		
+			if (resp.getWireRopeDamages() != null && resp.getWireRopeDamages().length() > 0) {
+				resp.setWireRopeDamagesPreSingedURL(awsS3Service.generatePresignedUrl(resp.getWireRopeDamages()));
 			}
-			if(resp.getImproperStorage()!=null && resp.getImproperStorage().length() >0 ) {
-				resp.setImproperStoragePreSingedURL(awsS3Service.generatePresignedUrl(resp.getImproperStorage()) );		
+			if (resp.getPackingIntact() != null && resp.getPackingIntact().length() > 0) {
+				resp.setPackingIntactPreSingedURL(awsS3Service.generatePresignedUrl(resp.getPackingIntact()));
 			}
-			if(resp.getStrapping()!=null && resp.getStrapping().length() >0 ) {
-				resp.setStrappingPreSingedURL(awsS3Service.generatePresignedUrl(resp.getStrapping()) );		
+			if (resp.getImproperStorage() != null && resp.getImproperStorage().length() > 0) {
+				resp.setImproperStoragePreSingedURL(awsS3Service.generatePresignedUrl(resp.getImproperStorage()));
 			}
-			if(resp.getWeighmentSlip()!=null && resp.getWeighmentSlip().length() >0 ) {
-				resp.setWeighmentSlipPreSingedURL(awsS3Service.generatePresignedUrl(resp.getWeighmentSlip()) );		
+			if (resp.getStrapping() != null && resp.getStrapping().length() > 0) {
+				resp.setStrappingPreSingedURL(awsS3Service.generatePresignedUrl(resp.getStrapping()));
 			}
-			if(resp.getWeighment()!=null && resp.getWeighment().length() >0 ) {
-				resp.setWeighmentPreSingedURL(awsS3Service.generatePresignedUrl(resp.getWeighment()) );		
+			if (resp.getWeighmentSlip() != null && resp.getWeighmentSlip().length() > 0) {
+				resp.setWeighmentSlipPreSingedURL(awsS3Service.generatePresignedUrl(resp.getWeighmentSlip()));
 			}
-			if(resp.getAckReceipt()!=null && resp.getAckReceipt().length() >0 ) {
-				resp.setAckReceiptPreSingedURL(awsS3Service.generatePresignedUrl(resp.getAckReceipt()) );
+			if (resp.getWeighment() != null && resp.getWeighment().length() > 0) {
+				resp.setWeighmentPreSingedURL(awsS3Service.generatePresignedUrl(resp.getWeighment()));
 			}
-			if(resp.getUnloadingImproper()!=null && resp.getUnloadingImproper().length() >0 ) {
-				resp.setUnloadingImproperPreSingedURL(awsS3Service.generatePresignedUrl(resp.getUnloadingImproper()) );
+			if (resp.getAckReceipt() != null && resp.getAckReceipt().length() > 0) {
+				resp.setAckReceiptPreSingedURL(awsS3Service.generatePresignedUrl(resp.getAckReceipt()));
+			}
+			if (resp.getUnloadingImproper() != null && resp.getUnloadingImproper().length() > 0) {
+				resp.setUnloadingImproperPreSingedURL(awsS3Service.generatePresignedUrl(resp.getUnloadingImproper()));
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -1045,7 +1111,7 @@ public class QualityServiceImpl implements QualityService {
 
 	@Override
 	public QualityInspectionReportResponse getQIRReportById(int id) {
-		
+
 		QualityInspectionReportResponse resp = new QualityInspectionReportResponse();
 		try {
 			QualityInspectionReportEntity entity = qualityInspectionReportRepository.findByQirId(id);
@@ -1055,6 +1121,9 @@ public class QualityServiceImpl implements QualityService {
 
 				if (resp.getRustObserved() != null && resp.getRustObserved().length() > 0) {
 					resp.setRustObservedPreSingedURL(awsS3Service.generatePresignedUrl(resp.getRustObserved()));
+				}
+				if (resp.getCoilBend() != null && resp.getCoilBend().length() > 0) {
+					resp.setCoilBendPreSingedURL(awsS3Service.generatePresignedUrl(resp.getCoilBend()));
 				}
 				if (resp.getSafetyIssues() != null && resp.getSafetyIssues().length() > 0) {
 					resp.setSafetyIssuesPreSingedURL(awsS3Service.generatePresignedUrl(resp.getSafetyIssues()));
@@ -1093,4 +1162,357 @@ public class QualityServiceImpl implements QualityService {
 		return resp;
 	}
 
+	@Override
+	public File qirPDF(Integer qirId) {
+
+		File file = null;
+		try {
+			QualityInspectionReportEntity entity = qualityInspectionReportRepository.findByQirId(qirId);
+
+			System.out.println("qirId == " + qirId);
+
+			file = renderQIRpdf(entity);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return file;
+	}
+
+	private File renderQIRpdf(QualityInspectionReportEntity entity) throws IOException, DocumentException {
+		File file = File.createTempFile("qirpdf_" +entity.getStageName()+"_"+ entity.getQirId(), ".pdf");
+		//File file = new File("E:/QIR_Inwardstage_Report.pdf");
+		Document document = new Document();
+
+		int fixedHeight=22;
+		int fixedHeight2=32;
+		try {
+			
+			InwardEntry inwardEntry = inwdEntrySvc.getByCoilNumber( entity.getCoilNo());
+			
+	        CompanyDetails companyDetails = companyDetailsService.findById(1);
+	        
+			ObjectMapper objectMapper = new ObjectMapper();
+			TypeFactory typeFactory = objectMapper.getTypeFactory();
+			List<QIRTemplateDtlsJsonArrayDTO> templateDetailsList = objectMapper.readValue(entity.getTemplateDetails(), typeFactory.constructCollectionType(List.class, QIRTemplateDtlsJsonArrayDTO.class));
+			
+			FileOutputStream fos = new FileOutputStream(file);
+			document = new Document(PageSize.A4);
+
+			PdfWriter pdfWriter = PdfWriter.getInstance(document, fos);
+			pdfWriter.setBoxSize("art", new Rectangle(PageSize.A4));
+			document.open();
+
+			Font font10 = FontFactory.getFont(BaseFont.WINANSI, 10f);
+			Font font11 = FontFactory.getFont(BaseFont.WINANSI, 11f);
+			Font font11b = FontFactory.getFont(BaseFont.WINANSI, 11f, Font.BOLD);
+			Font font12b = FontFactory.getFont(BaseFont.WINANSI, 12f, Font.BOLD);
+			
+			Paragraph p = new Paragraph();
+            p.add(new Chunk( "Quality Inspection Report", font12b));
+            p.setSpacingAfter(20f);
+            p.setAlignment(Element.ALIGN_CENTER);
+			
+			/* Bill Ship Address starts */
+			PdfPTable coilDetailsTab = new PdfPTable(4);
+			coilDetailsTab.setWidthPercentage(90);
+			coilDetailsTab.setWidths(new int[] { 50, 50 , 50, 50 });
+
+			PdfPCell companyNameCell = new PdfPCell(new Phrase(companyDetails.getCompanyName(), font11b));
+			companyNameCell.setHorizontalAlignment( Element.ALIGN_LEFT);
+			companyNameCell.setFixedHeight(fixedHeight);
+			companyNameCell.setBorder(Rectangle.NO_BORDER);
+			companyNameCell.setColspan(4);
+			coilDetailsTab.addCell(companyNameCell);	
+
+			PdfPCell officeAddressCell = new PdfPCell(new Phrase("Head Office At : "+companyDetails.getAddressOffice(), font11));
+			officeAddressCell.setHorizontalAlignment( Element.ALIGN_LEFT);
+			officeAddressCell.setFixedHeight(fixedHeight2);
+			officeAddressCell.setBorder(Rectangle.NO_BORDER);
+			officeAddressCell.setColspan(2);
+			coilDetailsTab.addCell(officeAddressCell);
+			PdfPCell branchAddressCell = new PdfPCell(new Phrase("Branch At : "+companyDetails.getAddressBranch(), font11));
+			branchAddressCell.setHorizontalAlignment( Element.ALIGN_LEFT);
+			branchAddressCell.setFixedHeight(fixedHeight2);
+			branchAddressCell.setBorder(Rectangle.NO_BORDER);
+			branchAddressCell.setColspan(2);
+			coilDetailsTab.addCell(branchAddressCell);
+			
+			document.add( Chunk.NEWLINE );
+			
+			PdfPCell coilNoCell = new PdfPCell(new Phrase("Coil No :", font11));
+			coilNoCell.setHorizontalAlignment( Element.ALIGN_LEFT);
+			coilNoCell.setFixedHeight(fixedHeight);
+			coilNoCell.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(coilNoCell);			
+			PdfPCell coilNoCellValue = new PdfPCell(new Phrase(entity.getCoilNo(), font11));
+			coilNoCellValue.setHorizontalAlignment( Element.ALIGN_LEFT);
+			coilNoCellValue.setFixedHeight(fixedHeight);
+			coilNoCellValue.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(coilNoCellValue);
+			
+			PdfPCell custBatchNoCell = new PdfPCell(new Phrase("Customer Batch No :", font11));
+			custBatchNoCell.setHorizontalAlignment( Element.ALIGN_LEFT);
+			custBatchNoCell.setFixedHeight(fixedHeight);
+			custBatchNoCell.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(custBatchNoCell);			
+			
+			PdfPCell custBatchNoCellValue = new PdfPCell(new Phrase(inwardEntry.getCustomerBatchId() , font11));
+			custBatchNoCellValue.setHorizontalAlignment( Element.ALIGN_LEFT);
+			custBatchNoCellValue.setFixedHeight(fixedHeight);
+			custBatchNoCellValue.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(custBatchNoCellValue);
+
+			PdfPCell stageCell = new PdfPCell(new Phrase("Stage : ", font11));
+			stageCell.setHorizontalAlignment( Element.ALIGN_LEFT);
+			stageCell.setFixedHeight(fixedHeight);
+			stageCell.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(stageCell);			
+			PdfPCell stageCellValue = new PdfPCell(new Phrase(entity.getStageName(), font11));
+			stageCellValue.setHorizontalAlignment( Element.ALIGN_LEFT);
+			stageCellValue.setFixedHeight(fixedHeight);
+			stageCellValue.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(stageCellValue);
+			
+			PdfPCell templateNameCell = new PdfPCell(new Phrase("Template Name :", font11));
+			templateNameCell.setHorizontalAlignment( Element.ALIGN_LEFT);
+			templateNameCell.setFixedHeight(fixedHeight);
+			templateNameCell.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(templateNameCell);			
+			PdfPCell templateNameCellValue = new PdfPCell(new Phrase("test ", font11));
+			templateNameCellValue.setHorizontalAlignment( Element.ALIGN_LEFT);
+			templateNameCellValue.setFixedHeight(fixedHeight);
+			templateNameCellValue.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(templateNameCellValue);
+
+			PdfPCell thicknessCell = new PdfPCell(new Phrase("Thickness : ", font11));
+			thicknessCell.setHorizontalAlignment( Element.ALIGN_LEFT);
+			thicknessCell.setFixedHeight(fixedHeight);
+			thicknessCell.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(thicknessCell);			
+			PdfPCell thicknessCellValue = new PdfPCell(new Phrase(""+inwardEntry.getfThickness(), font11));
+			thicknessCellValue.setHorizontalAlignment( Element.ALIGN_LEFT);
+			thicknessCellValue.setFixedHeight(fixedHeight);
+			thicknessCellValue.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(thicknessCellValue);
+			
+			PdfPCell widthCell = new PdfPCell(new Phrase("Width : ", font11));
+			widthCell.setHorizontalAlignment( Element.ALIGN_LEFT);
+			widthCell.setFixedHeight(fixedHeight);
+			widthCell.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(widthCell);			
+			PdfPCell widthCellValue = new PdfPCell(new Phrase(""+inwardEntry.getfWidth(), font11));
+			widthCellValue.setHorizontalAlignment( Element.ALIGN_LEFT);
+			widthCellValue.setFixedHeight(fixedHeight);
+			widthCellValue.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(widthCellValue);
+			
+			PdfPCell matDescCell = new PdfPCell(new Phrase("Material Desc : ", font11));
+			matDescCell.setHorizontalAlignment( Element.ALIGN_LEFT);
+			matDescCell.setFixedHeight(fixedHeight);
+			matDescCell.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(matDescCell);			
+			PdfPCell matDescCellValue = new PdfPCell(new Phrase(inwardEntry.getMaterial().getDescription(), font11));
+			matDescCellValue.setHorizontalAlignment( Element.ALIGN_LEFT);
+			matDescCellValue.setFixedHeight(fixedHeight);
+			matDescCellValue.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(matDescCellValue);
+
+			PdfPCell matGradeCell = new PdfPCell(new Phrase("Material Grade : ", font11));
+			matGradeCell.setHorizontalAlignment( Element.ALIGN_LEFT);
+			matGradeCell.setFixedHeight(fixedHeight);
+			matGradeCell.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(matGradeCell);			
+			PdfPCell matGradeCellValue = new PdfPCell(new Phrase(inwardEntry.getMaterialGrade().getGradeName(), font11));
+			matGradeCellValue.setHorizontalAlignment( Element.ALIGN_LEFT);
+			matGradeCellValue.setFixedHeight(fixedHeight);
+			matGradeCellValue.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(matGradeCellValue);
+			
+			PdfPCell customerNameCell = new PdfPCell(new Phrase("Customer Name : ", font11));
+			customerNameCell.setHorizontalAlignment( Element.ALIGN_LEFT);
+			customerNameCell.setFixedHeight(fixedHeight);
+			customerNameCell.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(customerNameCell);			
+			PdfPCell customerNameCellValue = new PdfPCell(new Phrase(inwardEntry.getParty().getPartyName(), font11));
+			customerNameCellValue.setHorizontalAlignment( Element.ALIGN_LEFT);
+			customerNameCellValue.setFixedHeight(fixedHeight);
+			customerNameCellValue.setColspan(3);
+			customerNameCellValue.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(customerNameCellValue);
+			
+			PdfPCell packingIntactCell = new PdfPCell(new Phrase("Packing Intact : "+findFieldValue(templateDetailsList, "packingIntact"), font11));
+			packingIntactCell.setHorizontalAlignment( Element.ALIGN_LEFT);
+			//packingIntactCell.setFixedHeight(fixedHeight);
+			packingIntactCell.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(packingIntactCell);
+			if (entity.getPackingIntact() != null && entity.getPackingIntact().length() > 0) {
+				String imageUrl = awsS3Service.generatePresignedUrl(entity.getPackingIntact());
+				Image image = Image.getInstance(new URL(imageUrl));
+				PdfPCell imageCell = new PdfPCell(image, true);
+				imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setFixedHeight(77);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			} else {
+				PdfPCell imageCell = new PdfPCell(new Phrase("", font11));
+				imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			}
+		
+			PdfPCell coilBendCell = new PdfPCell(new Phrase("Coil Bend : "+findFieldValue(templateDetailsList, "coilBend"), font11));
+			coilBendCell.setHorizontalAlignment( Element.ALIGN_LEFT);
+			//coilBendCell.setFixedHeight(fixedHeight);
+			coilBendCell.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(coilBendCell);
+			if (entity.getCoilBend() != null && entity.getCoilBend().length() > 0) {
+				String imageUrl = awsS3Service.generatePresignedUrl(entity.getCoilBend());
+				Image image = Image.getInstance(new URL(imageUrl));
+				PdfPCell imageCell = new PdfPCell(image, true);
+				imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setFixedHeight(77);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			} else {
+				PdfPCell imageCell = new PdfPCell(new Phrase("", font11));
+				imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			}
+
+			PdfPCell rustObservedCell = new PdfPCell(new Phrase("Rust Observed : "+findFieldValue(templateDetailsList, "rustObserved"), font11));
+			rustObservedCell.setHorizontalAlignment( Element.ALIGN_LEFT);
+			//rustObservedCell.setFixedHeight(fixedHeight);
+			rustObservedCell.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(rustObservedCell);
+			if (entity.getRustObserved() != null && entity.getRustObserved().length() > 0) {
+				String imageUrl = awsS3Service.generatePresignedUrl(entity.getRustObserved());
+				Image image = Image.getInstance(new URL(imageUrl));
+				PdfPCell imageCell = new PdfPCell(image, true);
+				imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setFixedHeight(77);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			} else {
+				PdfPCell imageCell = new PdfPCell(new Phrase("", font11));
+				imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			}
+
+			PdfPCell safetyIssuesCell = new PdfPCell(new Phrase("Safety Issues : "+findFieldValue(templateDetailsList, "safetyIssues"), font11));
+			safetyIssuesCell.setHorizontalAlignment( Element.ALIGN_LEFT);
+			//safetyIssuesCell.setFixedHeight(fixedHeight);
+			safetyIssuesCell.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(safetyIssuesCell);
+			if (entity.getSafetyIssues() != null && entity.getSafetyIssues().length() > 0) {
+				String imageUrl = awsS3Service.generatePresignedUrl(entity.getSafetyIssues());
+				Image image = Image.getInstance(new URL(imageUrl));
+				PdfPCell imageCell = new PdfPCell(image, true);
+				imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setFixedHeight(77);
+				imageCell.setPaddingBottom(1f);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			} else {
+				PdfPCell imageCell = new PdfPCell(new Phrase("", font11));
+				imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			}
+
+			PdfPCell waterExposureCell = new PdfPCell(new Phrase("Water Exposure : "+findFieldValue(templateDetailsList, "waterExposure"), font11));
+			waterExposureCell.setHorizontalAlignment( Element.ALIGN_LEFT);
+			//waterExposureCell.setFixedHeight(fixedHeight);
+			waterExposureCell.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(waterExposureCell);
+			if (entity.getWaterExposure() != null && entity.getWaterExposure().length() > 0) {
+				String imageUrl = awsS3Service.generatePresignedUrl(entity.getWaterExposure());
+				Image image = Image.getInstance(new URL(imageUrl));
+				PdfPCell imageCell = new PdfPCell(image, true);
+				imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setFixedHeight(77);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			} else {
+				PdfPCell imageCell = new PdfPCell(new Phrase("", font11));
+				imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			}
+
+			PdfPCell wireRopeDamagesCell = new PdfPCell(new Phrase("Wire Rope Damages : "+findFieldValue(templateDetailsList, "wireRopeDamages"), font11));
+			wireRopeDamagesCell.setHorizontalAlignment( Element.ALIGN_LEFT);
+			//wireRopeDamagesCell.setFixedHeight(fixedHeight);
+			wireRopeDamagesCell.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(wireRopeDamagesCell);
+			if (entity.getWireRopeDamages() != null && entity.getWireRopeDamages().length() > 0) {
+				String imageUrl = awsS3Service.generatePresignedUrl(entity.getWireRopeDamages());
+				Image image = Image.getInstance(new URL(imageUrl));
+				PdfPCell imageCell = new PdfPCell(image, true);
+				imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setFixedHeight(77);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			} else {
+				PdfPCell imageCell = new PdfPCell(new Phrase("", font11));
+				imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			}
+			document.add( Chunk.NEWLINE );
+			document.add( Chunk.NEWLINE );
+			document.add( Chunk.NEWLINE );
+			document.add( Chunk.NEWLINE );
+			
+			PdfPCell inspectedByCell  = new PdfPCell(new Phrase("Quality Inspected By ", font11));
+			inspectedByCell.setHorizontalAlignment( Element.ALIGN_LEFT);
+			inspectedByCell.setVerticalAlignment( Element.ALIGN_BOTTOM);
+			inspectedByCell.setFixedHeight(66);
+			inspectedByCell.setColspan(2);
+			inspectedByCell.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(inspectedByCell);
+			
+			PdfPCell approvedByCell  = new PdfPCell(new Phrase("Quality Approved By ", font11));
+			approvedByCell.setHorizontalAlignment( Element.ALIGN_LEFT);
+			approvedByCell.setVerticalAlignment( Element.ALIGN_BOTTOM);
+			approvedByCell.setFixedHeight(66);
+			approvedByCell.setColspan(2);
+			approvedByCell.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(approvedByCell);
+			
+			document.add(p);
+			document.add(coilDetailsTab);
+			document.close();
+			System.out.println("Inward QIR Report generated successfully..!");
+		} catch (Exception ex) {
+			System.out.println(ex);
+		}
+		file.deleteOnExit();
+		return file;
+	}
+
+	public static String findFieldValue (List<QIRTemplateDtlsJsonArrayDTO> templateDetailsList, String fieldName) {
+
+		String resp = "No";
+		for (QIRTemplateDtlsJsonArrayDTO dto : templateDetailsList) {
+			if (fieldName.equals(dto.getType())) {
+				resp = dto.getValue();
+			}
+		}
+		return resp;
+	}
+	
 }
