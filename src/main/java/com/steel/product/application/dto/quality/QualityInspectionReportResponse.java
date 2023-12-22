@@ -18,6 +18,8 @@ public class QualityInspectionReportResponse {
 
 	private String stageName;
 
+	private String templateName;
+
 	private Integer processId;
 
 	private String templateDetails;
@@ -45,6 +47,8 @@ public class QualityInspectionReportResponse {
 	private String ackReceipt;
 
 	private String unloadingImproper;
+
+	private String packingDamageTransit;
 	
 	private String rustObservedPreSingedURL;
 	
@@ -69,6 +73,8 @@ public class QualityInspectionReportResponse {
 	private String ackReceiptPreSingedURL;
 	
 	private String unloadingImproperPreSingedURL;
+	
+	private String packingDamageTransitURL;
 
 	private Integer createdBy;
 

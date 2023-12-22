@@ -23,8 +23,9 @@ public class QualityInspectionReportEntity {
 	@Column(name = "qir_id")
 	private Integer qirId;
 	
-	@Column(name = "template_id")
-	private Integer templateId;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "template_id")
+	private QualityTemplateEntity templateEntity=new QualityTemplateEntity();
 	
 	@Column(name = "coil_no")
 	private String coilNo;
@@ -82,7 +83,10 @@ public class QualityInspectionReportEntity {
 	
 	@Column(name = "unloading_improper" )
 	private String unloadingImproper;
-	
+
+	@Column(name = "packing_damage_transit" )
+	private String packingDamageTransit;
+
 	@Column(name = "created_by")
 	private Integer createdBy;
 
@@ -100,7 +104,8 @@ public class QualityInspectionReportEntity {
 	public static QualityInspectionReportResponse valueOf(QualityInspectionReportEntity entity){
 		QualityInspectionReportResponse dtoResponse = new QualityInspectionReportResponse();
 		dtoResponse.setQirId( entity.getQirId());
-		dtoResponse.setTemplateId(entity.getTemplateId());
+		dtoResponse.setTemplateId(entity.getTemplateEntity().getTemplateId());
+		dtoResponse.setTemplateName(entity.getTemplateEntity().getTemplateName());
 		dtoResponse.setCoilNo(entity.getCoilNo());
 		dtoResponse.setPlanId( entity.getPlanId());
 		dtoResponse.setDeliveryChalanNo (entity.getDeliveryChalanNo());

@@ -21,7 +21,11 @@ public class QualityInspReportListPageResponse {
 
 	private String materialGrade;
 
+	private String materialDesc;
+
 	private Float fthickness;
+
+	private Float fwidth;
 
 	private Float targetWeight;
 

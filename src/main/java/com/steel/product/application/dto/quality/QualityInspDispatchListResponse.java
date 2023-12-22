@@ -33,6 +33,15 @@ public class QualityInspDispatchListResponse {
 
 	private Integer qirId;
 	
+	private String materialGrade;
+
+	private String materialDesc;
+
+	private Float fthickness;
+
+	private Float fwidth;
+	
+	
 	
 	
 }

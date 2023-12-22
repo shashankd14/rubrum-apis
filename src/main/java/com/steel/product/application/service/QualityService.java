@@ -53,18 +53,21 @@ public interface QualityService {
 			MultipartFile improperStorage, MultipartFile strapping, MultipartFile weighmentSlip,
 			MultipartFile weighment, MultipartFile acknowledgementReceipt, MultipartFile unloadingImproper);
 
-	/*ResponseEntity<Object> reportsSave(String inspectionId, String coilNumber, String inwardId, String templateId,
-			String stageName, String templateDetails, String userId, MultipartFile rustObserved,
-			MultipartFile safetyIssues, MultipartFile waterExposure, MultipartFile wireRopeDamages,
-			MultipartFile packingIntact, MultipartFile improperStorage, MultipartFile strapping,
-			MultipartFile weighmentSlip, MultipartFile weighment, MultipartFile acknowledgementReceipt,
-			MultipartFile unloadingImproper);
-
-	QualityReportResponse inspectionreportGetById(int id);
-
-	ResponseEntity<Object> deleteInspectionReport(int id);
-
-	List<QualityReportResponse> inspectionreportGetAll();*/
+	/*
+	 * ResponseEntity<Object> reportsSave(String inspectionId, String coilNumber,
+	 * String inwardId, String templateId, String stageName, String templateDetails,
+	 * String userId, MultipartFile rustObserved, MultipartFile safetyIssues,
+	 * MultipartFile waterExposure, MultipartFile wireRopeDamages, MultipartFile
+	 * packingIntact, MultipartFile improperStorage, MultipartFile strapping,
+	 * MultipartFile weighmentSlip, MultipartFile weighment, MultipartFile
+	 * acknowledgementReceipt, MultipartFile unloadingImproper);
+	 * 
+	 * QualityReportResponse inspectionreportGetById(int id);
+	 * 
+	 * ResponseEntity<Object> deleteInspectionReport(int id);
+	 * 
+	 * List<QualityReportResponse> inspectionreportGetAll();
+	 */
 
 	List<QualityPartyMappingResponse> getByPartyIdAndStageName(int partyId, String stageName);
 
@@ -103,9 +106,10 @@ public interface QualityService {
 			MultipartFile wireRopeDamages, MultipartFile packingIntact, MultipartFile improperStorage,
 			MultipartFile strapping, MultipartFile weighmentSlip, MultipartFile weighment,
 			MultipartFile acknowledgementReceipt, MultipartFile unloadingImproper, String inwardId,
-			String customerBatchNo, String planId, String deliveryChalanNo, String qirId, MultipartFile coilBend);
+			String customerBatchNo, String planId, String deliveryChalanNo, String qirId, MultipartFile coilBend,
+			MultipartFile packingDamageTransit);
 
-	QualityInspectionReportResponse getqirById(String coilNo, String planId );
+	QualityInspectionReportResponse getqirById(String coilNo, String planId);
 
 	ResponseEntity<Object> deleteQIR(int id);
 

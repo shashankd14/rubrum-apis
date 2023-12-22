@@ -435,12 +435,13 @@ public class QualityMasterController {
 			@RequestParam(value = "planId", required = false) String planId,
 			@RequestParam(value = "deliveryChalanNo", required = false) String deliveryChalanNo,
 			@RequestParam(value = "qirId", required = false) String qirId,
-			@RequestParam(value = "coilBend", required = false) MultipartFile coilBend) {
+			@RequestParam(value = "coilBend", required = false) MultipartFile coilBend,
+			@RequestParam(value = "packingDamageTransit", required = false) MultipartFile packingDamageTransit) {
 
 		return qualityService.qirReportSave(templateId, stageName, templateDetails, userId, processId, rustObserved,
 				safetyIssues, waterExposure, wireRopeDamages, packingIntact, improperStorage, strapping, weighmentSlip,
-				weighment, acknowledgementReceipt, unloadingImproper, coilNo, customerBatchNo, planId,
-				deliveryChalanNo, qirId, coilBend);
+				weighment, acknowledgementReceipt, unloadingImproper, coilNo, customerBatchNo, planId, deliveryChalanNo,
+				qirId, coilBend, packingDamageTransit);
 	}
 
 	@GetMapping(value = "/qir/{stageName}/{coilNo}/{planId}", produces = "application/json")
