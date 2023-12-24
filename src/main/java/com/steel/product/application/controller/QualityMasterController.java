@@ -430,18 +430,24 @@ public class QualityMasterController {
 			@RequestParam(value = "stageName", required = true) String stageName,
 			@RequestParam(value = "userId", required = true) String userId,
 			@RequestParam(value = "templateDetails", required = true) String templateDetails,
+			@RequestParam(value = "planDetails", required = true) String planDetails,
 			@RequestParam(value = "coilNo", required = true) String coilNo,
 			@RequestParam(value = "customerBatchNo", required = true) String customerBatchNo,
 			@RequestParam(value = "planId", required = false) String planId,
 			@RequestParam(value = "deliveryChalanNo", required = false) String deliveryChalanNo,
 			@RequestParam(value = "qirId", required = false) String qirId,
 			@RequestParam(value = "coilBend", required = false) MultipartFile coilBend,
-			@RequestParam(value = "packingDamageTransit", required = false) MultipartFile packingDamageTransit) {
+			@RequestParam(value = "packingDamageTransit", required = false) MultipartFile packingDamageTransit,
+			@RequestParam(value = "processingReport1", required = false) MultipartFile processingReport1,
+			@RequestParam(value = "processingReport2", required = false) MultipartFile processingReport2,
+			@RequestParam(value = "processingReport3", required = false) MultipartFile processingReport3,
+			@RequestParam(value = "processingReport4", required = false) MultipartFile processingReport4) {
 
-		return qualityService.qirReportSave(templateId, stageName, templateDetails, userId, processId, rustObserved,
-				safetyIssues, waterExposure, wireRopeDamages, packingIntact, improperStorage, strapping, weighmentSlip,
-				weighment, acknowledgementReceipt, unloadingImproper, coilNo, customerBatchNo, planId, deliveryChalanNo,
-				qirId, coilBend, packingDamageTransit);
+		return qualityService.qirReportSave(templateId, stageName, templateDetails, planDetails, userId, processId,
+				rustObserved, safetyIssues, waterExposure, wireRopeDamages, packingIntact, improperStorage, strapping,
+				weighmentSlip, weighment, acknowledgementReceipt, unloadingImproper, coilNo, customerBatchNo, planId,
+				deliveryChalanNo, qirId, coilBend, packingDamageTransit, processingReport1, processingReport2,
+				processingReport3, processingReport4);
 	}
 
 	@GetMapping(value = "/qir/{stageName}/{coilNo}/{planId}", produces = "application/json")

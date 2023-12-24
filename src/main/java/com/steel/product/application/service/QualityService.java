@@ -101,13 +101,14 @@ public interface QualityService {
 
 	List<InstructionResponseDto> getDispatchDetails(QIRSaveDataRequest qirSaveDataRequest);
 
-	ResponseEntity<Object> qirReportSave(String templateId, String stageName, String templateDetails, String userId,
-			String processId, MultipartFile rustObserved, MultipartFile safetyIssues, MultipartFile waterExposure,
-			MultipartFile wireRopeDamages, MultipartFile packingIntact, MultipartFile improperStorage,
-			MultipartFile strapping, MultipartFile weighmentSlip, MultipartFile weighment,
-			MultipartFile acknowledgementReceipt, MultipartFile unloadingImproper, String inwardId,
-			String customerBatchNo, String planId, String deliveryChalanNo, String qirId, MultipartFile coilBend,
-			MultipartFile packingDamageTransit);
+	ResponseEntity<Object> qirReportSave(String templateId, String stageName, String templateDetails,
+			String planDetails, String userId, String processId, MultipartFile rustObserved, MultipartFile safetyIssues,
+			MultipartFile waterExposure, MultipartFile wireRopeDamages, MultipartFile packingIntact,
+			MultipartFile improperStorage, MultipartFile strapping, MultipartFile weighmentSlip,
+			MultipartFile weighment, MultipartFile acknowledgementReceipt, MultipartFile unloadingImproper,
+			String inwardId, String customerBatchNo, String planId, String deliveryChalanNo, String qirId,
+			MultipartFile coilBend, MultipartFile packingDamageTransit, MultipartFile processingReport1,
+			MultipartFile processingReport2, MultipartFile processingReport3, MultipartFile processingReport4);
 
 	QualityInspectionReportResponse getqirById(String coilNo, String planId);
 

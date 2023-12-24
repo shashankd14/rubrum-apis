@@ -24,6 +24,8 @@ public class QualityInspectionReportResponse {
 
 	private String templateDetails;
 
+	private String planDetails;
+
 	private String rustObserved;
 
 	private String coilBend;
@@ -49,32 +51,48 @@ public class QualityInspectionReportResponse {
 	private String unloadingImproper;
 
 	private String packingDamageTransit;
-	
+
+	private String processingReport1;
+
+	private String processingReport2;
+
+	private String processingReport3;
+
+	private String processingReport4;
+
 	private String rustObservedPreSingedURL;
-	
+
 	private String coilBendPreSingedURL;
-	
+
 	private String safetyIssuesPreSingedURL;
-	
+
 	private String waterExposurePreSingedURL;
-	
+
 	private String wireRopeDamagesPreSingedURL;
-	
+
 	private String packingIntactPreSingedURL;
-	
+
 	private String improperStoragePreSingedURL;
-	
+
 	private String strappingPreSingedURL;
-	
+
 	private String weighmentSlipPreSingedURL;
-	
+
 	private String weighmentPreSingedURL;
-	
+
 	private String ackReceiptPreSingedURL;
-	
+
 	private String unloadingImproperPreSingedURL;
-	
+
 	private String packingDamageTransitURL;
+
+	private String processingReport1URL;
+
+	private String processingReport2URL;
+
+	private String processingReport3URL;
+
+	private String processingReport4URL;
 
 	private Integer createdBy;
 

@@ -901,12 +901,13 @@ public class QualityServiceImpl implements QualityService {
 
 	@Override
 	public ResponseEntity<Object> qirReportSave(String templateId, String stageName, String templateDetails,
-			String userId, String processId, MultipartFile rustObserved, MultipartFile safetyIssues,
+			String planDetails, String userId, String processId, MultipartFile rustObserved, MultipartFile safetyIssues,
 			MultipartFile waterExposure, MultipartFile wireRopeDamages, MultipartFile packingIntact,
 			MultipartFile improperStorage, MultipartFile strapping, MultipartFile weighmentSlip,
 			MultipartFile weighment, MultipartFile ackReceipt, MultipartFile unloadingImproper, String coilNo,
 			String customerBatchNo, String planId, String deliveryChalanNo, String qirId, MultipartFile coilBend,
-			MultipartFile packingDamageTransit) {
+			MultipartFile packingDamageTransit, MultipartFile processingReport1, MultipartFile processingReport2,
+			MultipartFile processingReport3, MultipartFile processingReport4) {
 
 		ResponseEntity<Object> response = null;
 		String message = "Quality Inspection Report details saved successfully..! ";
@@ -938,6 +939,7 @@ public class QualityServiceImpl implements QualityService {
 			qualityTemplateEntity.setPlanId(planId);
 			qualityTemplateEntity.setDeliveryChalanNo(deliveryChalanNo);
 			qualityTemplateEntity.setTemplateDetails(templateDetails);
+			qualityTemplateEntity.setPlanDetails(planDetails);
 			qualityTemplateEntity.setUpdatedBy(Integer.parseInt(userId));
 			qualityTemplateEntity.setUpdatedOn(new Date());
 
@@ -993,6 +995,22 @@ public class QualityServiceImpl implements QualityService {
 				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo + "_" + stageName, templateId, packingDamageTransit);
 				qualityTemplateEntity.setUnloadingImproper(fileUrl);
 			}
+			if (processingReport1 != null) {
+				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo + "_" + stageName, templateId, processingReport1);
+				qualityTemplateEntity.setProcessingReport1( fileUrl);
+			}
+			if (processingReport2 != null) {
+				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo + "_" + stageName, templateId, processingReport2);
+				qualityTemplateEntity.setProcessingReport2(fileUrl);
+			}
+			if (processingReport3 != null) {
+				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo + "_" + stageName, templateId, processingReport3);
+				qualityTemplateEntity.setProcessingReport3(fileUrl);
+			}
+			if (processingReport4 != null) {
+				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo + "_" + stageName, templateId, processingReport4);
+				qualityTemplateEntity.setProcessingReport4(fileUrl);
+			}
 			qualityInspectionReportRepository.save(qualityTemplateEntity);
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"" + message + "}", header, HttpStatus.OK);
 		} catch (Exception e) {
@@ -1000,7 +1018,6 @@ public class QualityServiceImpl implements QualityService {
 			log.info("error is ==" + e.getMessage());
 			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.BAD_REQUEST);
 		}
-
 		return response;
 	}
 
@@ -1123,6 +1140,18 @@ public class QualityServiceImpl implements QualityService {
 			if (resp.getPackingDamageTransit() != null && resp.getPackingDamageTransit().length() > 0) {
 				resp.setPackingDamageTransitURL(awsS3Service.generatePresignedUrl(resp.getPackingDamageTransit()));
 			}
+			if (resp.getProcessingReport1() != null && resp.getProcessingReport1().length() > 0) {
+				resp.setProcessingReport1URL(awsS3Service.generatePresignedUrl(resp.getProcessingReport1()));
+			}
+			if (resp.getProcessingReport2() != null && resp.getProcessingReport2().length() > 0) {
+				resp.setProcessingReport2URL(awsS3Service.generatePresignedUrl(resp.getProcessingReport2()));
+			}
+			if (resp.getProcessingReport3() != null && resp.getProcessingReport3().length() > 0) {
+				resp.setProcessingReport3URL(awsS3Service.generatePresignedUrl(resp.getProcessingReport3()));
+			}
+			if (resp.getProcessingReport4() != null && resp.getProcessingReport4().length() > 0) {
+				resp.setProcessingReport4URL(awsS3Service.generatePresignedUrl(resp.getProcessingReport4()));
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -1177,6 +1206,18 @@ public class QualityServiceImpl implements QualityService {
 				}
 				if (resp.getPackingDamageTransit() != null && resp.getPackingDamageTransit().length() > 0) {
 					resp.setPackingDamageTransitURL(awsS3Service.generatePresignedUrl(resp.getPackingDamageTransit()));
+				}
+				if (resp.getProcessingReport1() != null && resp.getProcessingReport1().length() > 0) {
+					resp.setProcessingReport1URL(awsS3Service.generatePresignedUrl(resp.getProcessingReport1()));
+				}
+				if (resp.getProcessingReport2() != null && resp.getProcessingReport2().length() > 0) {
+					resp.setProcessingReport2URL(awsS3Service.generatePresignedUrl(resp.getProcessingReport2()));
+				}
+				if (resp.getProcessingReport3() != null && resp.getProcessingReport3().length() > 0) {
+					resp.setProcessingReport3URL(awsS3Service.generatePresignedUrl(resp.getProcessingReport3()));
+				}
+				if (resp.getProcessingReport4() != null && resp.getProcessingReport4().length() > 0) {
+					resp.setProcessingReport4URL(awsS3Service.generatePresignedUrl(resp.getProcessingReport4()));
 				}
 			}
 		} catch (Exception e) {
@@ -1359,275 +1400,20 @@ public class QualityServiceImpl implements QualityService {
 			customerNameCellValue.setColspan(3);
 			customerNameCellValue.setBorder(Rectangle.NO_BORDER);
 			coilDetailsTab.addCell(customerNameCellValue);
-			
-			if ("PRE_PROCESSING".equals(entity.getStageName())) {
-				PdfPCell exactWidthCell = new PdfPCell(new Phrase("Enter Exact Width : ", font11));
-				exactWidthCell.setHorizontalAlignment( Element.ALIGN_LEFT);
-				exactWidthCell.setFixedHeight(fixedHeight);
-				exactWidthCell.setBorder(Rectangle.NO_BORDER);
-				coilDetailsTab.addCell(exactWidthCell);
-				PdfPCell imageCell = new PdfPCell(new Phrase(findFieldValue(templateDetailsList, "exactWidth"), font11));
-				imageCell.setHorizontalAlignment( Element.ALIGN_LEFT);
-				imageCell.setBorder(Rectangle.NO_BORDER);
-				imageCell.setColspan(3);
-				coilDetailsTab.addCell(imageCell);
-			}
-			
-			if("INWARD".equals(entity.getStageName())) {
-				PdfPCell packingIntactCell = new PdfPCell(new Phrase("Packing Intact : "+findFieldValue(templateDetailsList, "packingIntact"), font11));
-				packingIntactCell.setHorizontalAlignment( Element.ALIGN_LEFT);
-				//packingIntactCell.setFixedHeight(fixedHeight);
-				packingIntactCell.setBorder(Rectangle.NO_BORDER);
-				coilDetailsTab.addCell(packingIntactCell);
-				if (entity.getPackingIntact() != null && entity.getPackingIntact().length() > 0) {
-					String imageUrl = awsS3Service.generatePresignedUrl(entity.getPackingIntact());
-					Image image = Image.getInstance(new URL(imageUrl));
-					PdfPCell imageCell = new PdfPCell(image, true);
-					imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
-					imageCell.setBorder(Rectangle.NO_BORDER);
-					imageCell.setFixedHeight(77);
-					imageCell.setColspan(3);
-					coilDetailsTab.addCell(imageCell);
-				} else {
-					PdfPCell imageCell = new PdfPCell(new Phrase("", font11));
-					imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
-					imageCell.setBorder(Rectangle.NO_BORDER);
-					imageCell.setColspan(3);
-					coilDetailsTab.addCell(imageCell);
-				}
-			}
-			if ("INWARD".equals(entity.getStageName()) || "PRE_PROCESSING".equals(entity.getStageName())) {
-				PdfPCell coilBendCell = new PdfPCell(new Phrase("Coil Bend : "+findFieldValue(templateDetailsList, "coilBend"), font11));
-				coilBendCell.setHorizontalAlignment( Element.ALIGN_LEFT);
-				//coilBendCell.setFixedHeight(fixedHeight);
-				coilBendCell.setBorder(Rectangle.NO_BORDER);
-				coilDetailsTab.addCell(coilBendCell);
-				if (entity.getCoilBend() != null && entity.getCoilBend().length() > 0) {
-					String imageUrl = awsS3Service.generatePresignedUrl(entity.getCoilBend());
-					Image image = Image.getInstance(new URL(imageUrl));
-					PdfPCell imageCell = new PdfPCell(image, true);
-					imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
-					imageCell.setBorder(Rectangle.NO_BORDER);
-					imageCell.setFixedHeight(77);
-					imageCell.setColspan(3);
-					coilDetailsTab.addCell(imageCell);
-				} else {
-					PdfPCell imageCell = new PdfPCell(new Phrase("", font11));
-					imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
-					imageCell.setBorder(Rectangle.NO_BORDER);
-					imageCell.setColspan(3);
-					coilDetailsTab.addCell(imageCell);
-				}
-			}
-			
-			if ("INWARD".equals(entity.getStageName()) || "PRE_PROCESSING".equals(entity.getStageName()) ) {
-				PdfPCell rustObservedCell = new PdfPCell(new Phrase("Rust Observed : "+findFieldValue(templateDetailsList, "rustObserved"), font11));
-				rustObservedCell.setHorizontalAlignment( Element.ALIGN_LEFT);
-				//rustObservedCell.setFixedHeight(fixedHeight);
-				rustObservedCell.setBorder(Rectangle.NO_BORDER);
-				coilDetailsTab.addCell(rustObservedCell);
-				if (entity.getRustObserved() != null && entity.getRustObserved().length() > 0) {
-					String imageUrl = awsS3Service.generatePresignedUrl(entity.getRustObserved());
-					Image image = Image.getInstance(new URL(imageUrl));
-					PdfPCell imageCell = new PdfPCell(image, true);
-					imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
-					imageCell.setBorder(Rectangle.NO_BORDER);
-					imageCell.setFixedHeight(77);
-					imageCell.setColspan(3);
-					coilDetailsTab.addCell(imageCell);
-				} else {
-					PdfPCell imageCell = new PdfPCell(new Phrase("", font11));
-					imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
-					imageCell.setBorder(Rectangle.NO_BORDER);
-					imageCell.setColspan(3);
-					coilDetailsTab.addCell(imageCell);
-				}
-			}
-			
-			if ("INWARD".equals(entity.getStageName()) || "PRE_PROCESSING".equals(entity.getStageName()) ) {
-				PdfPCell safetyIssuesCell = new PdfPCell(new Phrase("Safety Issues : "+findFieldValue(templateDetailsList, "safetyIssues"), font11));
-				safetyIssuesCell.setHorizontalAlignment( Element.ALIGN_LEFT);
-				//safetyIssuesCell.setFixedHeight(fixedHeight);
-				safetyIssuesCell.setBorder(Rectangle.NO_BORDER);
-				coilDetailsTab.addCell(safetyIssuesCell);
-				if (entity.getSafetyIssues() != null && entity.getSafetyIssues().length() > 0) {
-					String imageUrl = awsS3Service.generatePresignedUrl(entity.getSafetyIssues());
-					Image image = Image.getInstance(new URL(imageUrl));
-					PdfPCell imageCell = new PdfPCell(image, true);
-					imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
-					imageCell.setBorder(Rectangle.NO_BORDER);
-					imageCell.setFixedHeight(77);
-					imageCell.setPaddingBottom(1f);
-					imageCell.setColspan(3);
-					coilDetailsTab.addCell(imageCell);
-				} else {
-					PdfPCell imageCell = new PdfPCell(new Phrase("", font11));
-					imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
-					imageCell.setBorder(Rectangle.NO_BORDER);
-					imageCell.setColspan(3);
-					coilDetailsTab.addCell(imageCell);
-				}
-			}
-			
-			if ("INWARD".equals(entity.getStageName()) || "PRE_PROCESSING".equals(entity.getStageName()) ) {
-				PdfPCell waterExposureCell = new PdfPCell(new Phrase("Water Exposure : "+findFieldValue(templateDetailsList, "waterExposure"), font11));
-				waterExposureCell.setHorizontalAlignment( Element.ALIGN_LEFT);
-				//waterExposureCell.setFixedHeight(fixedHeight);
-				waterExposureCell.setBorder(Rectangle.NO_BORDER);
-				coilDetailsTab.addCell(waterExposureCell);
-				if (entity.getWaterExposure() != null && entity.getWaterExposure().length() > 0) {
-					String imageUrl = awsS3Service.generatePresignedUrl(entity.getWaterExposure());
-					Image image = Image.getInstance(new URL(imageUrl));
-					PdfPCell imageCell = new PdfPCell(image, true);
-					imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
-					imageCell.setBorder(Rectangle.NO_BORDER);
-					imageCell.setFixedHeight(77);
-					imageCell.setColspan(3);
-					coilDetailsTab.addCell(imageCell);
-				} else {
-					PdfPCell imageCell = new PdfPCell(new Phrase("", font11));
-					imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
-					imageCell.setBorder(Rectangle.NO_BORDER);
-					imageCell.setColspan(3);
-					coilDetailsTab.addCell(imageCell);
-				}
-			}
 
 			if ("INWARD".equals(entity.getStageName()) || "PRE_PROCESSING".equals(entity.getStageName())) {
-				PdfPCell wireRopeDamagesCell = new PdfPCell(new Phrase("Wire Rope Damages : "+findFieldValue(templateDetailsList, "wireRopeDamages"), font11));
-				wireRopeDamagesCell.setHorizontalAlignment( Element.ALIGN_LEFT);
-				//wireRopeDamagesCell.setFixedHeight(fixedHeight);
-				wireRopeDamagesCell.setBorder(Rectangle.NO_BORDER);
-				coilDetailsTab.addCell(wireRopeDamagesCell);
-				if (entity.getWireRopeDamages() != null && entity.getWireRopeDamages().length() > 0) {
-					String imageUrl = awsS3Service.generatePresignedUrl(entity.getWireRopeDamages());
-					Image image = Image.getInstance(new URL(imageUrl));
-					PdfPCell imageCell = new PdfPCell(image, true);
-					imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
-					imageCell.setBorder(Rectangle.NO_BORDER);
-					imageCell.setFixedHeight(77);
-					imageCell.setColspan(3);
-					coilDetailsTab.addCell(imageCell);
-				} else {
-					PdfPCell imageCell = new PdfPCell(new Phrase("", font11));
-					imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
-					imageCell.setBorder(Rectangle.NO_BORDER);
-					imageCell.setColspan(3);
-					coilDetailsTab.addCell(imageCell);
-				}
+				fillInwardPreProcessingStageTable(entity, coilDetailsTab, templateDetailsList);
 			}
-
-			if ("PRE_PROCESSING".equals(entity.getStageName()) ) {
-				PdfPCell improperStorageCell = new PdfPCell(new Phrase("Improper Storage : "+findFieldValue(templateDetailsList, "improperStorage"), font11));
-				improperStorageCell.setHorizontalAlignment( Element.ALIGN_LEFT);
-				//wireRopeDamagesCell.setFixedHeight(fixedHeight);
-				improperStorageCell.setBorder(Rectangle.NO_BORDER);
-				coilDetailsTab.addCell(improperStorageCell);
-				if (entity.getImproperStorage() != null && entity.getImproperStorage().length() > 0) {
-					String imageUrl = awsS3Service.generatePresignedUrl(entity.getImproperStorage());
-					Image image = Image.getInstance(new URL(imageUrl));
-					PdfPCell imageCell = new PdfPCell(image, true);
-					imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
-					imageCell.setBorder(Rectangle.NO_BORDER);
-					imageCell.setFixedHeight(77);
-					imageCell.setColspan(3);
-					coilDetailsTab.addCell(imageCell);
-				} else {
-					PdfPCell imageCell = new PdfPCell(new Phrase("", font11));
-					imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
-					imageCell.setBorder(Rectangle.NO_BORDER);
-					imageCell.setColspan(3);
-					coilDetailsTab.addCell(imageCell);
-				}
+			if ("PROCESSING".equals(entity.getStageName())) {
+				fillProcessingStageTable(entity, coilDetailsTab, templateDetailsList);
 			}
-
-			if ("POST_DISPATCH".equals(entity.getStageName())) {				
-				PdfPCell improperStorageCell = new PdfPCell(new Phrase("Unloading Improper : "+findFieldValue(templateDetailsList, "unloadingImproper"), font11));
-				improperStorageCell.setHorizontalAlignment( Element.ALIGN_LEFT);
-				//wireRopeDamagesCell.setFixedHeight(fixedHeight);
-				improperStorageCell.setBorder(Rectangle.NO_BORDER);
-				coilDetailsTab.addCell(improperStorageCell);
-				if (entity.getUnloadingImproper() != null && entity.getUnloadingImproper().length() > 0) {
-					String imageUrl = awsS3Service.generatePresignedUrl(entity.getUnloadingImproper());
-					Image image = Image.getInstance(new URL(imageUrl));
-					PdfPCell imageCell = new PdfPCell(image, true);
-					imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
-					imageCell.setBorder(Rectangle.NO_BORDER);
-					imageCell.setFixedHeight(77);
-					imageCell.setColspan(3);
-					coilDetailsTab.addCell(imageCell);
-				} else {
-					PdfPCell imageCell = new PdfPCell(new Phrase("", font11));
-					imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
-					imageCell.setBorder(Rectangle.NO_BORDER);
-					imageCell.setColspan(3);
-					coilDetailsTab.addCell(imageCell);
-				}
-				
-				PdfPCell packingDamageTransitCell = new PdfPCell(new Phrase("Packing Damage Transit : "+findFieldValue(templateDetailsList, "packingDamageTransit"), font11));
-				packingDamageTransitCell.setHorizontalAlignment( Element.ALIGN_LEFT);
-				packingDamageTransitCell.setBorder(Rectangle.NO_BORDER);
-				coilDetailsTab.addCell(packingDamageTransitCell);
-				if (entity.getPackingDamageTransit() != null && entity.getPackingDamageTransit().length() > 0) {
-					String imageUrl = awsS3Service.generatePresignedUrl(entity.getPackingDamageTransit());
-					Image image = Image.getInstance(new URL(imageUrl));
-					PdfPCell imageCell = new PdfPCell(image, true);
-					imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
-					imageCell.setBorder(Rectangle.NO_BORDER);
-					imageCell.setFixedHeight(77);
-					imageCell.setColspan(3);
-					coilDetailsTab.addCell(imageCell);
-				} else {
-					PdfPCell imageCell = new PdfPCell(new Phrase("", font11));
-					imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
-					imageCell.setBorder(Rectangle.NO_BORDER);
-					imageCell.setColspan(3);
-					coilDetailsTab.addCell(imageCell);
-				}
-				
-				PdfPCell ackReceiptCell = new PdfPCell(new Phrase("Acknowledgement Receipt : "+findFieldValue(templateDetailsList, "ackReceipt"), font11));
-				ackReceiptCell.setHorizontalAlignment( Element.ALIGN_LEFT);
-				ackReceiptCell.setBorder(Rectangle.NO_BORDER);
-				coilDetailsTab.addCell(ackReceiptCell);
-				if (entity.getAckReceipt() != null && entity.getAckReceipt().length() > 0) {
-					String imageUrl = awsS3Service.generatePresignedUrl(entity.getAckReceipt());
-					Image image = Image.getInstance(new URL(imageUrl));
-					PdfPCell imageCell = new PdfPCell(image, true);
-					imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
-					imageCell.setBorder(Rectangle.NO_BORDER);
-					imageCell.setFixedHeight(77);
-					imageCell.setColspan(3);
-					coilDetailsTab.addCell(imageCell);
-				} else {
-					PdfPCell imageCell = new PdfPCell(new Phrase("", font11));
-					imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
-					imageCell.setBorder(Rectangle.NO_BORDER);
-					imageCell.setColspan(3);
-					coilDetailsTab.addCell(imageCell);
-				}
-				
-				PdfPCell weighmentCell = new PdfPCell(new Phrase("Weighment : "+findFieldValue(templateDetailsList, "weighment"), font11));
-				weighmentCell.setHorizontalAlignment( Element.ALIGN_LEFT);
-				weighmentCell.setBorder(Rectangle.NO_BORDER);
-				coilDetailsTab.addCell(weighmentCell);
-				if (entity.getWeighment() != null && entity.getWeighment().length() > 0) {
-					String imageUrl = awsS3Service.generatePresignedUrl(entity.getWeighment());
-					Image image = Image.getInstance(new URL(imageUrl));
-					PdfPCell imageCell = new PdfPCell(image, true);
-					imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
-					imageCell.setBorder(Rectangle.NO_BORDER);
-					imageCell.setFixedHeight(77);
-					imageCell.setColspan(3);
-					coilDetailsTab.addCell(imageCell);
-				} else {
-					PdfPCell imageCell = new PdfPCell(new Phrase("", font11));
-					imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
-					imageCell.setBorder(Rectangle.NO_BORDER);
-					imageCell.setColspan(3);
-					coilDetailsTab.addCell(imageCell);
-				}
-				
+			if ("POST_DISPATCH".equals(entity.getStageName())) {
+				fillPostDispatchStageTable(entity, coilDetailsTab, templateDetailsList);
+			}			
+			if ("PRE_DISPATCH".equals(entity.getStageName())) {				
+				fillPreDispatchStageTable(entity, coilDetailsTab, templateDetailsList);
 			}
+			
 			document.add( Chunk.NEWLINE );
 			document.add( Chunk.NEWLINE );
 			document.add( Chunk.NEWLINE );
@@ -1654,7 +1440,7 @@ public class QualityServiceImpl implements QualityService {
 			document.add(p);
 			document.add(coilDetailsTab);
 			document.close();
-			System.out.println("Inward QIR Report generated successfully..!");
+			System.out.println("QIR PDF Report generated successfully..!");
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			System.out.println(ex);
@@ -1672,6 +1458,520 @@ public class QualityServiceImpl implements QualityService {
 			}
 		}
 		return resp;
+	}
+	
+	private void fillInwardPreProcessingStageTable(QualityInspectionReportEntity entity, PdfPTable coilDetailsTab,
+			List<QIRTemplateDtlsJsonArrayDTO> templateDetailsList) {
+		int fixedHeight=22;
+		try {
+			
+			Font font11 = FontFactory.getFont(BaseFont.WINANSI, 11f);
+
+			if ("PRE_PROCESSING".equals(entity.getStageName())) {
+				PdfPCell exactWidthCell = new PdfPCell(new Phrase("Enter Exact Width : ", font11));
+				exactWidthCell.setHorizontalAlignment( Element.ALIGN_LEFT);
+				exactWidthCell.setFixedHeight(fixedHeight);
+				exactWidthCell.setBorder(Rectangle.NO_BORDER);
+				coilDetailsTab.addCell(exactWidthCell);
+				PdfPCell imageCell = new PdfPCell(new Phrase(findFieldValue(templateDetailsList, "exactWidth"), font11));
+				imageCell.setHorizontalAlignment( Element.ALIGN_LEFT);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			}
+			if("INWARD".equals(entity.getStageName())) {
+				PdfPCell packingIntactCell = new PdfPCell(new Phrase("Packing Intact : "+findFieldValue(templateDetailsList, "packingIntact"), font11));
+				packingIntactCell.setHorizontalAlignment( Element.ALIGN_LEFT);
+				//packingIntactCell.setFixedHeight(fixedHeight);
+				packingIntactCell.setBorder(Rectangle.NO_BORDER);
+				coilDetailsTab.addCell(packingIntactCell);
+				if (entity.getPackingIntact() != null && entity.getPackingIntact().length() > 0) {
+					String imageUrl = awsS3Service.generatePresignedUrl(entity.getPackingIntact());
+					Image image = Image.getInstance(new URL(imageUrl));
+					PdfPCell imageCell = new PdfPCell(image, true);
+					imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+					imageCell.setBorder(Rectangle.NO_BORDER);
+					imageCell.setFixedHeight(77);
+					imageCell.setColspan(3);
+					coilDetailsTab.addCell(imageCell);
+				} else {
+					PdfPCell imageCell = new PdfPCell(new Phrase("", font11));
+					imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+					imageCell.setBorder(Rectangle.NO_BORDER);
+					imageCell.setColspan(3);
+					coilDetailsTab.addCell(imageCell);
+				}
+			}
+			PdfPCell coilBendCell = new PdfPCell(new Phrase("Coil Bend : "+findFieldValue(templateDetailsList, "coilBend"), font11));
+			coilBendCell.setHorizontalAlignment( Element.ALIGN_LEFT);
+			//coilBendCell.setFixedHeight(fixedHeight);
+			coilBendCell.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(coilBendCell);
+			if (entity.getCoilBend() != null && entity.getCoilBend().length() > 0) {
+				String imageUrl = awsS3Service.generatePresignedUrl(entity.getCoilBend());
+				Image image = Image.getInstance(new URL(imageUrl));
+				PdfPCell imageCell = new PdfPCell(image, true);
+				imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setFixedHeight(77);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			} else {
+				PdfPCell imageCell = new PdfPCell(new Phrase("", font11));
+				imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			}
+			
+			PdfPCell rustObservedCell = new PdfPCell(new Phrase("Rust Observed : "+findFieldValue(templateDetailsList, "rustObserved"), font11));
+			rustObservedCell.setHorizontalAlignment( Element.ALIGN_LEFT);
+			//rustObservedCell.setFixedHeight(fixedHeight);
+			rustObservedCell.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(rustObservedCell);
+			if (entity.getRustObserved() != null && entity.getRustObserved().length() > 0) {
+				String imageUrl = awsS3Service.generatePresignedUrl(entity.getRustObserved());
+				Image image = Image.getInstance(new URL(imageUrl));
+				PdfPCell imageCell = new PdfPCell(image, true);
+				imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setFixedHeight(77);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			} else {
+				PdfPCell imageCell = new PdfPCell(new Phrase("", font11));
+				imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			}
+			
+			PdfPCell safetyIssuesCell = new PdfPCell(new Phrase("Safety Issues : "+findFieldValue(templateDetailsList, "safetyIssues"), font11));
+			safetyIssuesCell.setHorizontalAlignment( Element.ALIGN_LEFT);
+			//safetyIssuesCell.setFixedHeight(fixedHeight);
+			safetyIssuesCell.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(safetyIssuesCell);
+			if (entity.getSafetyIssues() != null && entity.getSafetyIssues().length() > 0) {
+				String imageUrl = awsS3Service.generatePresignedUrl(entity.getSafetyIssues());
+				Image image = Image.getInstance(new URL(imageUrl));
+				PdfPCell imageCell = new PdfPCell(image, true);
+				imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setFixedHeight(77);
+				imageCell.setPaddingBottom(1f);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			} else {
+				PdfPCell imageCell = new PdfPCell(new Phrase("", font11));
+				imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			}
+			
+			PdfPCell waterExposureCell = new PdfPCell(new Phrase("Water Exposure : "+findFieldValue(templateDetailsList, "waterExposure"), font11));
+			waterExposureCell.setHorizontalAlignment( Element.ALIGN_LEFT);
+			//waterExposureCell.setFixedHeight(fixedHeight);
+			waterExposureCell.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(waterExposureCell);
+			if (entity.getWaterExposure() != null && entity.getWaterExposure().length() > 0) {
+				String imageUrl = awsS3Service.generatePresignedUrl(entity.getWaterExposure());
+				Image image = Image.getInstance(new URL(imageUrl));
+				PdfPCell imageCell = new PdfPCell(image, true);
+				imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setFixedHeight(77);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			} else {
+				PdfPCell imageCell = new PdfPCell(new Phrase("", font11));
+				imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			}
+
+			PdfPCell wireRopeDamagesCell = new PdfPCell(new Phrase("Wire Rope Damages : "+findFieldValue(templateDetailsList, "wireRopeDamages"), font11));
+			wireRopeDamagesCell.setHorizontalAlignment( Element.ALIGN_LEFT);
+			//wireRopeDamagesCell.setFixedHeight(fixedHeight);
+			wireRopeDamagesCell.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(wireRopeDamagesCell);
+			if (entity.getWireRopeDamages() != null && entity.getWireRopeDamages().length() > 0) {
+				String imageUrl = awsS3Service.generatePresignedUrl(entity.getWireRopeDamages());
+				Image image = Image.getInstance(new URL(imageUrl));
+				PdfPCell imageCell = new PdfPCell(image, true);
+				imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setFixedHeight(77);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			} else {
+				PdfPCell imageCell = new PdfPCell(new Phrase("", font11));
+				imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			}
+
+			PdfPCell improperStorageCell = new PdfPCell(new Phrase("Improper Storage : "+findFieldValue(templateDetailsList, "improperStorage"), font11));
+			improperStorageCell.setHorizontalAlignment( Element.ALIGN_LEFT);
+			//wireRopeDamagesCell.setFixedHeight(fixedHeight);
+			improperStorageCell.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(improperStorageCell);
+			if (entity.getImproperStorage() != null && entity.getImproperStorage().length() > 0) {
+				String imageUrl = awsS3Service.generatePresignedUrl(entity.getImproperStorage());
+				Image image = Image.getInstance(new URL(imageUrl));
+				PdfPCell imageCell = new PdfPCell(image, true);
+				imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setFixedHeight(77);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			} else {
+				PdfPCell imageCell = new PdfPCell(new Phrase("", font11));
+				imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+	
+	private void fillProcessingStageTable(QualityInspectionReportEntity entity, PdfPTable coilDetailsTab,
+			List<QIRTemplateDtlsJsonArrayDTO> templateDetailsList) {
+		int fixedHeight=22;
+		try {
+			
+			Font font11 = FontFactory.getFont(BaseFont.WINANSI, 11f);
+
+			PdfPCell wastageWeightCell = new PdfPCell(new Phrase("Enter Wastage Weight : ", font11));
+			wastageWeightCell.setHorizontalAlignment( Element.ALIGN_LEFT);
+			wastageWeightCell.setFixedHeight(fixedHeight);
+			wastageWeightCell.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(wastageWeightCell);
+			PdfPCell wastageWeightCellValue = new PdfPCell(new Phrase(findFieldValue(templateDetailsList, "wastageWeight"), font11));
+			wastageWeightCellValue.setHorizontalAlignment( Element.ALIGN_LEFT);
+			wastageWeightCellValue.setBorder(Rectangle.NO_BORDER);
+			wastageWeightCellValue.setColspan(3);
+			coilDetailsTab.addCell(wastageWeightCellValue);
+			
+			PdfPCell packingRequirementsCell = new PdfPCell(new Phrase("Packing Requirements : ", font11));
+			packingRequirementsCell.setHorizontalAlignment( Element.ALIGN_LEFT);
+			packingRequirementsCell.setFixedHeight(fixedHeight);
+			packingRequirementsCell.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(packingRequirementsCell);
+			PdfPCell packingRequirementsValue = new PdfPCell(new Phrase(findFieldValue(templateDetailsList, "packingRequirements"), font11));
+			packingRequirementsValue.setHorizontalAlignment( Element.ALIGN_LEFT);
+			packingRequirementsValue.setBorder(Rectangle.NO_BORDER);
+			packingRequirementsValue.setColspan(3);
+			coilDetailsTab.addCell(packingRequirementsValue);
+			
+			PdfPCell stickersCell = new PdfPCell(new Phrase("Stickers : ", font11));
+			stickersCell.setHorizontalAlignment( Element.ALIGN_LEFT);
+			stickersCell.setFixedHeight(fixedHeight);
+			stickersCell.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(stickersCell);
+			PdfPCell stickersValue = new PdfPCell(new Phrase(findFieldValue(templateDetailsList, "stickers"), font11));
+			stickersValue.setHorizontalAlignment( Element.ALIGN_LEFT);
+			stickersValue.setBorder(Rectangle.NO_BORDER);
+			stickersValue.setColspan(3);
+			coilDetailsTab.addCell(stickersValue);
+			
+			PdfPCell customerApprovalCell = new PdfPCell(new Phrase("Customer Approval : ", font11));
+			customerApprovalCell.setHorizontalAlignment( Element.ALIGN_LEFT);
+			customerApprovalCell.setFixedHeight(fixedHeight);
+			customerApprovalCell.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(customerApprovalCell);
+			PdfPCell customerApprovalValue = new PdfPCell(new Phrase(findFieldValue(templateDetailsList, "customerApproval"), font11));
+			customerApprovalValue.setHorizontalAlignment( Element.ALIGN_LEFT);
+			customerApprovalValue.setBorder(Rectangle.NO_BORDER);
+			customerApprovalValue.setColspan(3);
+			coilDetailsTab.addCell(customerApprovalValue);
+			
+			PdfPCell processingReport1Cell = new PdfPCell(new Phrase("Processing Report1 : ", font11));
+			processingReport1Cell.setHorizontalAlignment( Element.ALIGN_LEFT);
+			//packingIntactCell.setFixedHeight(fixedHeight);
+			processingReport1Cell.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(processingReport1Cell);
+			if (entity.getProcessingReport1() != null && entity.getProcessingReport1().length() > 0) {
+				String imageUrl = awsS3Service.generatePresignedUrl(entity.getProcessingReport1());
+				Image image = Image.getInstance(new URL(imageUrl));
+				PdfPCell imageCell = new PdfPCell(image, true);
+				imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setFixedHeight(77);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			} else {
+				PdfPCell imageCell = new PdfPCell(new Phrase("", font11));
+				imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			}
+			
+			PdfPCell processingReport2Cell = new PdfPCell(new Phrase("Processing Report2 : ", font11));
+			processingReport2Cell.setHorizontalAlignment( Element.ALIGN_LEFT);
+			//packingIntactCell.setFixedHeight(fixedHeight);
+			processingReport2Cell.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(processingReport2Cell);
+			if (entity.getProcessingReport2() != null && entity.getProcessingReport2().length() > 0) {
+				String imageUrl = awsS3Service.generatePresignedUrl(entity.getProcessingReport2());
+				Image image = Image.getInstance(new URL(imageUrl));
+				PdfPCell imageCell = new PdfPCell(image, true);
+				imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setFixedHeight(77);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			} else {
+				PdfPCell imageCell = new PdfPCell(new Phrase("", font11));
+				imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			}
+			
+			PdfPCell processingReport3Cell = new PdfPCell(new Phrase("Processing Report3 : ", font11));
+			processingReport3Cell.setHorizontalAlignment( Element.ALIGN_LEFT);
+			//packingIntactCell.setFixedHeight(fixedHeight);
+			processingReport3Cell.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(processingReport3Cell);
+			if (entity.getProcessingReport3() != null && entity.getProcessingReport3().length() > 0) {
+				String imageUrl = awsS3Service.generatePresignedUrl(entity.getProcessingReport3());
+				Image image = Image.getInstance(new URL(imageUrl));
+				PdfPCell imageCell = new PdfPCell(image, true);
+				imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setFixedHeight(77);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			} else {
+				PdfPCell imageCell = new PdfPCell(new Phrase("", font11));
+				imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			}
+			
+			PdfPCell processingReport4Cell = new PdfPCell(new Phrase("Processing Report4 : ", font11));
+			processingReport4Cell.setHorizontalAlignment( Element.ALIGN_LEFT);
+			//packingIntactCell.setFixedHeight(fixedHeight);
+			processingReport4Cell.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(processingReport4Cell);
+			if (entity.getProcessingReport4() != null && entity.getProcessingReport4().length() > 0) {
+				String imageUrl = awsS3Service.generatePresignedUrl(entity.getProcessingReport4());
+				Image image = Image.getInstance(new URL(imageUrl));
+				PdfPCell imageCell = new PdfPCell(image, true);
+				imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setFixedHeight(77);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			} else {
+				PdfPCell imageCell = new PdfPCell(new Phrase("", font11));
+				imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+	
+	private void fillPostDispatchStageTable(QualityInspectionReportEntity entity, PdfPTable coilDetailsTab,
+			List<QIRTemplateDtlsJsonArrayDTO> templateDetailsList) {
+		int fixedHeight=22;
+		try {
+
+			Font font11 = FontFactory.getFont(BaseFont.WINANSI, 11f);
+			PdfPCell improperStorageCell = new PdfPCell(new Phrase("Unloading Improper : "+findFieldValue(templateDetailsList, "unloadingImproper"), font11));
+			improperStorageCell.setHorizontalAlignment( Element.ALIGN_LEFT);
+			//wireRopeDamagesCell.setFixedHeight(fixedHeight);
+			improperStorageCell.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(improperStorageCell);
+			if (entity.getUnloadingImproper() != null && entity.getUnloadingImproper().length() > 0) {
+				String imageUrl = awsS3Service.generatePresignedUrl(entity.getUnloadingImproper());
+				Image image = Image.getInstance(new URL(imageUrl));
+				PdfPCell imageCell = new PdfPCell(image, true);
+				imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setFixedHeight(77);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			} else {
+				PdfPCell imageCell = new PdfPCell(new Phrase("", font11));
+				imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			}
+			
+			PdfPCell packingDamageTransitCell = new PdfPCell(new Phrase("Packing Damage Transit : "+findFieldValue(templateDetailsList, "packingDamageTransit"), font11));
+			packingDamageTransitCell.setHorizontalAlignment( Element.ALIGN_LEFT);
+			packingDamageTransitCell.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(packingDamageTransitCell);
+			if (entity.getPackingDamageTransit() != null && entity.getPackingDamageTransit().length() > 0) {
+				String imageUrl = awsS3Service.generatePresignedUrl(entity.getPackingDamageTransit());
+				Image image = Image.getInstance(new URL(imageUrl));
+				PdfPCell imageCell = new PdfPCell(image, true);
+				imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setFixedHeight(77);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			} else {
+				PdfPCell imageCell = new PdfPCell(new Phrase("", font11));
+				imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			}
+			
+			PdfPCell ackReceiptCell = new PdfPCell(new Phrase("Acknowledgement Receipt : "+findFieldValue(templateDetailsList, "ackReceipt"), font11));
+			ackReceiptCell.setHorizontalAlignment( Element.ALIGN_LEFT);
+			ackReceiptCell.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(ackReceiptCell);
+			if (entity.getAckReceipt() != null && entity.getAckReceipt().length() > 0) {
+				String imageUrl = awsS3Service.generatePresignedUrl(entity.getAckReceipt());
+				Image image = Image.getInstance(new URL(imageUrl));
+				PdfPCell imageCell = new PdfPCell(image, true);
+				imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setFixedHeight(77);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			} else {
+				PdfPCell imageCell = new PdfPCell(new Phrase("", font11));
+				imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			}
+			
+			PdfPCell weighmentCell = new PdfPCell(new Phrase("Weighment : "+findFieldValue(templateDetailsList, "weighment"), font11));
+			weighmentCell.setHorizontalAlignment( Element.ALIGN_LEFT);
+			weighmentCell.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(weighmentCell);
+			if (entity.getWeighment() != null && entity.getWeighment().length() > 0) {
+				String imageUrl = awsS3Service.generatePresignedUrl(entity.getWeighment());
+				Image image = Image.getInstance(new URL(imageUrl));
+				PdfPCell imageCell = new PdfPCell(image, true);
+				imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setFixedHeight(77);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			} else {
+				PdfPCell imageCell = new PdfPCell(new Phrase("", font11));
+				imageCell.setHorizontalAlignment( Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+	
+	private void fillPreDispatchStageTable(QualityInspectionReportEntity entity, PdfPTable coilDetailsTab,
+			List<QIRTemplateDtlsJsonArrayDTO> templateDetailsList) {
+		int fixedHeight=22;
+		try {
+
+			Font font11 = FontFactory.getFont(BaseFont.WINANSI, 11f);
+
+			PdfPCell packingConditionCell = new PdfPCell(new Phrase("Packing Condition : "+findFieldValue(templateDetailsList, "packingCondition"), font11));
+			packingConditionCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+			packingConditionCell.setFixedHeight(fixedHeight);
+			packingConditionCell.setBorder(Rectangle.NO_BORDER);
+			packingConditionCell.setColspan(4);
+			coilDetailsTab.addCell(packingConditionCell);
+
+			PdfPCell strappingCell = new PdfPCell(new Phrase("Strapping : "+findFieldValue(templateDetailsList, "strapping"), font11));
+			strappingCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+			strappingCell.setFixedHeight(fixedHeight);
+			strappingCell.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(strappingCell);
+			if (entity.getStrapping() != null && entity.getStrapping().length() > 0) {
+				String imageUrl = awsS3Service.generatePresignedUrl(entity.getStrapping());
+				Image image = Image.getInstance(new URL(imageUrl));
+				PdfPCell imageCell = new PdfPCell(image, true);
+				imageCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setFixedHeight(77);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			} else {
+				PdfPCell imageCell = new PdfPCell(new Phrase("", font11));
+				imageCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			}
+
+			PdfPCell weighmentSlipCell = new PdfPCell(new Phrase("Weighment Slip : ", font11));
+			weighmentSlipCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+			weighmentSlipCell.setFixedHeight(fixedHeight);
+			weighmentSlipCell.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(weighmentSlipCell);
+			if (entity.getWeighmentSlip() != null && entity.getWeighmentSlip().length() > 0) {
+				String imageUrl = awsS3Service.generatePresignedUrl(entity.getWeighmentSlip());
+				Image image = Image.getInstance(new URL(imageUrl));
+				PdfPCell imageCell = new PdfPCell(image, true);
+				imageCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setFixedHeight(77);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			} else {
+				PdfPCell imageCell = new PdfPCell(new Phrase("", font11));
+				imageCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+				imageCell.setBorder(Rectangle.NO_BORDER);
+				imageCell.setColspan(3);
+				coilDetailsTab.addCell(imageCell);
+			}
+			
+			PdfPCell properLoadingCell = new PdfPCell(new Phrase("Proper Loading : "+findFieldValue(templateDetailsList, "properLoading"), font11));
+			properLoadingCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+			properLoadingCell.setFixedHeight(fixedHeight);
+			properLoadingCell.setBorder(Rectangle.NO_BORDER);
+			properLoadingCell.setColspan(4);
+			coilDetailsTab.addCell(properLoadingCell);
+			
+			PdfPCell byndingTyingCell = new PdfPCell(new Phrase("Binding & Tying in vehicle : "+findFieldValue(templateDetailsList, "byndingTying"), font11));
+			byndingTyingCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+			byndingTyingCell.setFixedHeight(fixedHeight);
+			byndingTyingCell.setBorder(Rectangle.NO_BORDER);
+			byndingTyingCell.setColspan(4);
+			coilDetailsTab.addCell(byndingTyingCell);
+			
+			PdfPCell weighmentQtyMatchCell = new PdfPCell(new Phrase("Weighment Qty Matches with Invoice : "+findFieldValue(templateDetailsList, "weighmentQtyMatch"), font11));
+			weighmentQtyMatchCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+			weighmentQtyMatchCell.setFixedHeight(fixedHeight);
+			weighmentQtyMatchCell.setBorder(Rectangle.NO_BORDER);
+			weighmentQtyMatchCell.setColspan(4);
+			coilDetailsTab.addCell(weighmentQtyMatchCell); 
+
+			PdfPCell ewayBillMatchCell = new PdfPCell(new Phrase("Weighment Qty Matches with Invoice : "+findFieldValue(templateDetailsList, "ewayBillMatch"), font11));
+			ewayBillMatchCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+			ewayBillMatchCell.setFixedHeight(fixedHeight);
+			ewayBillMatchCell.setBorder(Rectangle.NO_BORDER);
+			ewayBillMatchCell.setColspan(4);
+			coilDetailsTab.addCell(ewayBillMatchCell); 
+			
+			PdfPCell labelsMatchCell = new PdfPCell(new Phrase("Labels & Stickers Matche with Invoice : "+findFieldValue(templateDetailsList, "labelsMatch"), font11));
+			labelsMatchCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+			labelsMatchCell.setFixedHeight(fixedHeight);
+			labelsMatchCell.setBorder(Rectangle.NO_BORDER);
+			labelsMatchCell.setColspan(4);
+			coilDetailsTab.addCell(labelsMatchCell); 
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
 	}
 	
 }

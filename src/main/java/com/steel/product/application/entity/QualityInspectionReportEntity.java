@@ -47,6 +47,9 @@ public class QualityInspectionReportEntity {
 
 	@Column(name = "template_details", length = 2000)
 	private String templateDetails;
+
+	@Column(name = "plan_details", length = 2000)
+	private String planDetails;
 	
 	@Column(name = "rust_observed" )
 	private String rustObserved;
@@ -87,6 +90,18 @@ public class QualityInspectionReportEntity {
 	@Column(name = "packing_damage_transit" )
 	private String packingDamageTransit;
 
+	@Column(name = "processing_report1" )
+	private String processingReport1;
+
+	@Column(name = "processing_report2" )
+	private String processingReport2;
+
+	@Column(name = "processing_report3" )
+	private String processingReport3;
+
+	@Column(name = "processing_report4" )
+	private String processingReport4;
+
 	@Column(name = "created_by")
 	private Integer createdBy;
 
@@ -112,7 +127,9 @@ public class QualityInspectionReportEntity {
 		dtoResponse.setStageName(entity.getStageName());
 		dtoResponse.setProcessId( entity.getProcessId() );
 		dtoResponse.setTemplateDetails(entity.getTemplateDetails());
+		dtoResponse.setPlanDetails( entity.getPlanDetails());
 		dtoResponse.setRustObserved(entity.getRustObserved());
+		dtoResponse.setCoilBend( entity.getCoilBend());
 		dtoResponse.setSafetyIssues(entity.getSafetyIssues());		
 		dtoResponse.setWaterExposure(entity.getWaterExposure());		
 		dtoResponse.setWireRopeDamages(entity.getWireRopeDamages());		
@@ -122,7 +139,12 @@ public class QualityInspectionReportEntity {
 		dtoResponse.setWeighmentSlip(entity.getWeighmentSlip());		
 		dtoResponse.setWeighment(entity.getWeighment());		
 		dtoResponse.setAckReceipt(entity.getAckReceipt());
-		dtoResponse.setUnloadingImproper(entity.getUnloadingImproper());		
+		dtoResponse.setUnloadingImproper(entity.getUnloadingImproper());	
+		dtoResponse.setPackingDamageTransit(entity.getPackingDamageTransit());	
+		dtoResponse.setProcessingReport1(entity.getProcessingReport1());	
+		dtoResponse.setProcessingReport2(entity.getProcessingReport2());	
+		dtoResponse.setProcessingReport3(entity.getProcessingReport3());	
+		dtoResponse.setProcessingReport4(entity.getProcessingReport4());	
 		dtoResponse.setCreatedBy(entity.getCreatedBy());
 		dtoResponse.setUpdatedBy(entity.getUpdatedBy());
 		dtoResponse.setCreatedOn(entity.getCreatedOn());
