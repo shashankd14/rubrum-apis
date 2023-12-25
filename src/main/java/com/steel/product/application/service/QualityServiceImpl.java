@@ -202,8 +202,7 @@ public class QualityServiceImpl implements QualityService {
 				qualityTemplateEntity.setAckReceipt(fileUrl);
 			}
 			if (unloadingImproper != null) {
-				String fileUrl = awsS3Service.persistFiles(templateFilesPath, stageName, templateName,
-						unloadingImproper);
+				String fileUrl = awsS3Service.persistFiles(templateFilesPath, stageName, templateName,unloadingImproper);
 				qualityTemplateEntity.setUnloadingImproper(fileUrl);
 			}
 
@@ -820,8 +819,8 @@ public class QualityServiceImpl implements QualityService {
 	}
 
 	@Override
-	public List<QualityInspReportListPageResponse> qirListPage() {
-		List<Object[]> packetsList = kqpPartyTemplateRepository.qirListPage();
+	public List<QualityInspReportListPageResponse> qirPreProcessingListPage() {
+		List<Object[]> packetsList = kqpPartyTemplateRepository.qirPreProcessingListPage();
 		List<QualityInspReportListPageResponse> qirList = new ArrayList<>();
 
 		for (Object[] result : packetsList) {
@@ -848,6 +847,33 @@ public class QualityServiceImpl implements QualityService {
 	}
 
 	@Override
+	public List<QualityInspReportListPageResponse> qirProcessingListPage() {
+		List<Object[]> packetsList = kqpPartyTemplateRepository.qirProcessingListPage();
+		List<QualityInspReportListPageResponse> qirList = new ArrayList<>();
+
+		for (Object[] result : packetsList) {
+			QualityInspReportListPageResponse resp = new QualityInspReportListPageResponse();
+			resp.setPlanId(result[0] != null ? (String) result[0] : null);
+			resp.setCoilNo(result[1] != null ? (String) result[1] : null);
+			resp.setCustomerBatchNo(result[2] != null ? (String) result[2] : null);
+			resp.setPlanDate(result[3] != null ? (String) result[3] : null);
+			resp.setMaterialGrade(result[4] != null ? (String) result[4] : null);
+			resp.setFthickness(result[5] != null ? (Float) result[5] : null);
+			resp.setTargetWeight(result[6] != null ? (Float) result[6] : null);
+			resp.setNPartyId(result[7] != null ? Integer.parseInt(result[7].toString()) : null);
+			if (result[8] != null && result[8].toString().length() > 0) {
+				resp.setQirId(Integer.parseInt(result[8].toString()));
+			} else {
+				resp.setQirId(null);
+			}
+			resp.setPartyName(result[9] != null ? (String) result[9] : null);
+			resp.setFwidth(result[10] != null ? (Float) result[10] : null);
+			resp.setMaterialDesc(result[11] != null ? (String) result[11] : null);
+			qirList.add(resp);
+		}
+		return qirList;
+	}
+	@Override
 	public List<InstructionResponseDto> fetchpacketdtls(QIRSaveDataRequest qirSaveDataRequest) {
 
 		List<InstructionResponseDto> instructionList = kqpPartyTemplateRepository
@@ -858,8 +884,39 @@ public class QualityServiceImpl implements QualityService {
 	}
 
 	@Override
-	public List<QualityInspDispatchListResponse> qirDispatchList() {
-		List<Object[]> packetsList = kqpPartyTemplateRepository.qirDispatchList();
+	public List<QualityInspDispatchListResponse> qirPreDispatchList() {
+		List<Object[]> packetsList = kqpPartyTemplateRepository.qirPreDispatchList();
+		List<QualityInspDispatchListResponse> qirList = new ArrayList<>();
+
+		for (Object[] result : packetsList) {
+			QualityInspDispatchListResponse resp = new QualityInspDispatchListResponse();
+			resp.setCoilNo(result[0] != null ? (String) result[0] : null);
+			resp.setDeliveryDate(result[1] != null ? (String) result[1] : null);
+			resp.setDeliveryChalanNo(result[2] != null ? (Integer) result[2] : null);
+			resp.setCustomerBatchNo(result[3] != null ? (String) result[3] : null);
+			resp.setQtyDelivered(result[4] != null ? (new BigDecimal(result[4].toString())) : null);
+			resp.setVehicleNo(result[5] != null ? (String) result[5] : null);
+			resp.setCustomerInvoiceNo(result[6] != null ? (String) result[6] : null);
+			resp.setCustomerInvoiceDate(result[7] != null ? (String) result[7] : null);
+			resp.setEndUserTags(result[8] != null ? (String) result[8] : null);
+			resp.setNPartyId(result[9] != null ? Integer.parseInt(result[9].toString()) : null);
+			if (result[10] != null && result[10].toString().length() > 0) {
+				resp.setQirId(Integer.parseInt(result[10].toString()));
+			} else {
+				resp.setQirId(null);
+			}
+			resp.setPartyName(result[11] != null ? (String) result[11] : null);
+			resp.setFwidth(result[12] != null ? (Float) result[12] : null);
+			resp.setMaterialDesc(result[13] != null ? (String) result[13] : null);
+			resp.setMaterialGrade( result[14] != null ? (String) result[14] : null);
+			qirList.add(resp);
+		}
+		return qirList;
+	}
+
+	@Override
+	public List<QualityInspDispatchListResponse> qirPostDispatchList() {
+		List<Object[]> packetsList = kqpPartyTemplateRepository.qirPostDispatchList();
 		List<QualityInspDispatchListResponse> qirList = new ArrayList<>();
 
 		for (Object[] result : packetsList) {
@@ -907,7 +964,7 @@ public class QualityServiceImpl implements QualityService {
 			MultipartFile weighment, MultipartFile ackReceipt, MultipartFile unloadingImproper, String coilNo,
 			String customerBatchNo, String planId, String deliveryChalanNo, String qirId, MultipartFile coilBend,
 			MultipartFile packingDamageTransit, MultipartFile processingReport1, MultipartFile processingReport2,
-			MultipartFile processingReport3, MultipartFile processingReport4) {
+			MultipartFile processingReport3, MultipartFile processingReport4, String comments) {
 
 		ResponseEntity<Object> response = null;
 		String message = "Quality Inspection Report details saved successfully..! ";
@@ -930,6 +987,7 @@ public class QualityServiceImpl implements QualityService {
 			qualityTemplateEntity.setCreatedBy(Integer.parseInt(userId));
 			qualityTemplateEntity.setCreatedOn(new Date());
 			qualityTemplateEntity.setStageName(stageName);
+			qualityTemplateEntity.setComments(comments); 
 			if (processId != null && processId.length() > 0) {
 				qualityTemplateEntity.setProcessId(Integer.parseInt(processId));
 			}
@@ -993,7 +1051,7 @@ public class QualityServiceImpl implements QualityService {
 			}
 			if (packingDamageTransit != null) {
 				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo + "_" + stageName, templateId, packingDamageTransit);
-				qualityTemplateEntity.setUnloadingImproper(fileUrl);
+				qualityTemplateEntity.setPackingDamageTransit( fileUrl);
 			}
 			if (processingReport1 != null) {
 				String fileUrl = awsS3Service.persistFiles(templateFilesPath, customerBatchNo + "_" + stageName, templateId, processingReport1);
@@ -1413,6 +1471,18 @@ public class QualityServiceImpl implements QualityService {
 			if ("PRE_DISPATCH".equals(entity.getStageName())) {				
 				fillPreDispatchStageTable(entity, coilDetailsTab, templateDetailsList);
 			}
+			
+			PdfPCell commentsCell = new PdfPCell(new Phrase("Comments : ", font11));
+			commentsCell.setHorizontalAlignment( Element.ALIGN_LEFT);
+			commentsCell.setFixedHeight(fixedHeight);
+			commentsCell.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(commentsCell);			
+			PdfPCell commentsValue = new PdfPCell(new Phrase(entity.getComments(), font11));
+			commentsValue.setHorizontalAlignment( Element.ALIGN_LEFT);
+			commentsValue.setFixedHeight(55);
+			commentsValue.setColspan(3);
+			commentsValue.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(commentsValue);
 			
 			document.add( Chunk.NEWLINE );
 			document.add( Chunk.NEWLINE );

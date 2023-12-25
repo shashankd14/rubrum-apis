@@ -93,11 +93,7 @@ public interface QualityService {
 
 	List<KQPPartyMappingResponse> getAllKQPMappings();
 
-	List<QualityInspReportListPageResponse> qirListPage();
-
 	List<InstructionResponseDto> fetchpacketdtls(QIRSaveDataRequest qirSaveDataRequest);
-
-	List<QualityInspDispatchListResponse> qirDispatchList();
 
 	List<InstructionResponseDto> getDispatchDetails(QIRSaveDataRequest qirSaveDataRequest);
 
@@ -108,7 +104,8 @@ public interface QualityService {
 			MultipartFile weighment, MultipartFile acknowledgementReceipt, MultipartFile unloadingImproper,
 			String inwardId, String customerBatchNo, String planId, String deliveryChalanNo, String qirId,
 			MultipartFile coilBend, MultipartFile packingDamageTransit, MultipartFile processingReport1,
-			MultipartFile processingReport2, MultipartFile processingReport3, MultipartFile processingReport4);
+			MultipartFile processingReport2, MultipartFile processingReport3, MultipartFile processingReport4,
+			String comments);
 
 	QualityInspectionReportResponse getqirById(String coilNo, String planId);
 
@@ -121,5 +118,13 @@ public interface QualityService {
 	QualityInspectionReportResponse getQIRReportById(int id);
 
 	File qirPDF(Integer id);
+
+	List<QualityInspReportListPageResponse> qirPreProcessingListPage();
+
+	List<QualityInspReportListPageResponse> qirProcessingListPage();
+
+	List<QualityInspDispatchListResponse> qirPreDispatchList();
+
+	List<QualityInspDispatchListResponse> qirPostDispatchList();
 
 }

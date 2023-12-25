@@ -42,6 +42,9 @@ public class QualityInspectionReportEntity {
 	@Column(name = "stage_name")
 	private String stageName;
 
+	@Column(name = "comments")
+	private String comments;
+
 	@Column(name = "process_id")
 	private Integer processId;
 
@@ -125,6 +128,7 @@ public class QualityInspectionReportEntity {
 		dtoResponse.setPlanId( entity.getPlanId());
 		dtoResponse.setDeliveryChalanNo (entity.getDeliveryChalanNo());
 		dtoResponse.setStageName(entity.getStageName());
+		dtoResponse.setComments( entity.getComments());
 		dtoResponse.setProcessId( entity.getProcessId() );
 		dtoResponse.setTemplateDetails(entity.getTemplateDetails());
 		dtoResponse.setPlanDetails( entity.getPlanDetails());

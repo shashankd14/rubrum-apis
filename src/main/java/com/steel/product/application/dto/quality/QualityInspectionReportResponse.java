@@ -18,6 +18,8 @@ public class QualityInspectionReportResponse {
 
 	private String stageName;
 
+	private String comments;
+	
 	private String templateName;
 
 	private Integer processId;

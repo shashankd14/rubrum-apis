@@ -368,13 +368,13 @@ public class QualityMasterController {
 
 	@GetMapping(value = "/qir/preprocessing/listpage", produces = "application/json")
 	public List<QualityInspReportListPageResponse> qirPreListPage() {
-		List<QualityInspReportListPageResponse> list = qualityService.qirListPage();
+		List<QualityInspReportListPageResponse> list = qualityService.qirPreProcessingListPage();
 		return list;
 	}
 
 	@GetMapping(value = "/qir/processing/listpage", produces = "application/json")
 	public List<QualityInspReportListPageResponse> qirPostListPage() {
-		List<QualityInspReportListPageResponse> list = qualityService.qirListPage();
+		List<QualityInspReportListPageResponse> list = qualityService.qirProcessingListPage();
 		return list;
 	}
 
@@ -391,13 +391,13 @@ public class QualityMasterController {
 
 	@GetMapping(value = "/qir/postdispatch/dispatchlist", produces = "application/json")
 	public List<QualityInspDispatchListResponse> qirPostDispatchList() {
-		List<QualityInspDispatchListResponse> list = qualityService.qirDispatchList();
+		List<QualityInspDispatchListResponse> list = qualityService.qirPreDispatchList();
 		return list;
 	}
 			
 	@GetMapping(value = "/qir/predispatch/dispatchlist", produces = "application/json")
 	public List<QualityInspDispatchListResponse> qirPreDispatchList() {
-		List<QualityInspDispatchListResponse> list = qualityService.qirDispatchList();
+		List<QualityInspDispatchListResponse> list = qualityService.qirPostDispatchList();
 		return list;
 	}
 
@@ -441,13 +441,14 @@ public class QualityMasterController {
 			@RequestParam(value = "processingReport1", required = false) MultipartFile processingReport1,
 			@RequestParam(value = "processingReport2", required = false) MultipartFile processingReport2,
 			@RequestParam(value = "processingReport3", required = false) MultipartFile processingReport3,
-			@RequestParam(value = "processingReport4", required = false) MultipartFile processingReport4) {
+			@RequestParam(value = "processingReport4", required = false) MultipartFile processingReport4,
+			@RequestParam(value = "comments", required = false) String comments) {
 
 		return qualityService.qirReportSave(templateId, stageName, templateDetails, planDetails, userId, processId,
 				rustObserved, safetyIssues, waterExposure, wireRopeDamages, packingIntact, improperStorage, strapping,
 				weighmentSlip, weighment, acknowledgementReceipt, unloadingImproper, coilNo, customerBatchNo, planId,
 				deliveryChalanNo, qirId, coilBend, packingDamageTransit, processingReport1, processingReport2,
-				processingReport3, processingReport4);
+				processingReport3, processingReport4, comments);
 	}
 
 	@GetMapping(value = "/qir/{stageName}/{coilNo}/{planId}", produces = "application/json")
