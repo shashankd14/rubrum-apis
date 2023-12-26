@@ -58,7 +58,9 @@ import java.math.BigDecimal;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -821,8 +823,7 @@ public class QualityServiceImpl implements QualityService {
 	@Override
 	public List<QualityInspReportListPageResponse> qirPreProcessingListPage() {
 		List<Object[]> packetsList = kqpPartyTemplateRepository.qirPreProcessingListPage();
-		List<QualityInspReportListPageResponse> qirList = new ArrayList<>();
-
+		Map<String, QualityInspReportListPageResponse> kk = new LinkedHashMap<>();
 		for (Object[] result : packetsList) {
 			QualityInspReportListPageResponse resp = new QualityInspReportListPageResponse();
 			resp.setPlanId(result[0] != null ? (String) result[0] : null);
@@ -841,16 +842,17 @@ public class QualityServiceImpl implements QualityService {
 			resp.setPartyName(result[9] != null ? (String) result[9] : null);
 			resp.setFwidth(result[10] != null ? (Float) result[10] : null);
 			resp.setMaterialDesc(result[11] != null ? (String) result[11] : null);
-			qirList.add(resp);
+			kk.put(resp.getPlanId(), resp);
+			//qirList.add(resp);
 		}
+		List<QualityInspReportListPageResponse> qirList = new ArrayList<QualityInspReportListPageResponse>(kk.values());
 		return qirList;
 	}
 
 	@Override
 	public List<QualityInspReportListPageResponse> qirProcessingListPage() {
 		List<Object[]> packetsList = kqpPartyTemplateRepository.qirProcessingListPage();
-		List<QualityInspReportListPageResponse> qirList = new ArrayList<>();
-
+		Map<String, QualityInspReportListPageResponse> kk = new LinkedHashMap<>();
 		for (Object[] result : packetsList) {
 			QualityInspReportListPageResponse resp = new QualityInspReportListPageResponse();
 			resp.setPlanId(result[0] != null ? (String) result[0] : null);
@@ -869,8 +871,12 @@ public class QualityServiceImpl implements QualityService {
 			resp.setPartyName(result[9] != null ? (String) result[9] : null);
 			resp.setFwidth(result[10] != null ? (Float) result[10] : null);
 			resp.setMaterialDesc(result[11] != null ? (String) result[11] : null);
-			qirList.add(resp);
+			kk.put(resp.getPlanId(), resp);
+			//qirList.add(resp);
 		}
+		
+		List<QualityInspReportListPageResponse> qirList = new ArrayList<QualityInspReportListPageResponse>(kk.values());
+
 		return qirList;
 	}
 	@Override
