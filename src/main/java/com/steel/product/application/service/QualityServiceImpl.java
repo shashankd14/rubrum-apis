@@ -29,6 +29,9 @@ import com.steel.product.application.dto.quality.KQPPartyMappingRequest;
 import com.steel.product.application.dto.quality.KQPPartyMappingResponse;
 import com.steel.product.application.dto.quality.KQPRequest;
 import com.steel.product.application.dto.quality.KQPResponse;
+import com.steel.product.application.dto.quality.QIRPanDetailsJsonArrayChildDTO;
+import com.steel.product.application.dto.quality.QIRPanDetailsJsonArrayDTO;
+import com.steel.product.application.dto.quality.QIRPanToleranceChildDTO;
 import com.steel.product.application.dto.quality.QIRSaveDataRequest;
 import com.steel.product.application.dto.quality.QIRTemplateDtlsJsonArrayDTO;
 import com.steel.product.application.dto.quality.QualityCheckRequest;
@@ -1309,6 +1312,7 @@ public class QualityServiceImpl implements QualityService {
 		Document document = new Document();
 
 		int fixedHeight=22;
+		int tableRowHeight=16;
 		int fixedHeight2=32;
 		try {
 			
@@ -1328,18 +1332,22 @@ public class QualityServiceImpl implements QualityService {
 			pdfWriter.setBoxSize("art", new Rectangle(PageSize.A4));
 			document.open();
 
+			Font font9b = FontFactory.getFont(BaseFont.WINANSI, 9f, Font.BOLD);
+			Font font10b = FontFactory.getFont(BaseFont.WINANSI, 10f, Font.BOLD);
+			Font font9 = FontFactory.getFont(BaseFont.WINANSI, 9f);
 			Font font11 = FontFactory.getFont(BaseFont.WINANSI, 11f);
 			Font font11b = FontFactory.getFont(BaseFont.WINANSI, 11f, Font.BOLD);
 			Font font12b = FontFactory.getFont(BaseFont.WINANSI, 12f, Font.BOLD);
 			
 			Paragraph p = new Paragraph();
             p.add(new Chunk( "Quality Inspection Report", font12b));
-            p.setSpacingAfter(20f);
+            //p.setSpacingAfter(20f);
             p.setAlignment(Element.ALIGN_CENTER);
-			
+			document.add(p);
+
 			/* Bill Ship Address starts */
 			PdfPTable coilDetailsTab = new PdfPTable(4);
-			coilDetailsTab.setWidthPercentage(90);
+			coilDetailsTab.setWidthPercentage(95);
 			coilDetailsTab.setWidths(new int[] { 50, 50 , 50, 50 });
 
 			PdfPCell companyNameCell = new PdfPCell(new Phrase(companyDetails.getCompanyName(), font11b));
@@ -1361,8 +1369,6 @@ public class QualityServiceImpl implements QualityService {
 			branchAddressCell.setBorder(Rectangle.NO_BORDER);
 			branchAddressCell.setColspan(2);
 			coilDetailsTab.addCell(branchAddressCell);
-			
-			document.add( Chunk.NEWLINE );
 			
 			PdfPCell coilNoCell = new PdfPCell(new Phrase("Coil No :", font11));
 			coilNoCell.setHorizontalAlignment( Element.ALIGN_LEFT);
@@ -1464,38 +1470,517 @@ public class QualityServiceImpl implements QualityService {
 			customerNameCellValue.setColspan(3);
 			customerNameCellValue.setBorder(Rectangle.NO_BORDER);
 			coilDetailsTab.addCell(customerNameCellValue);
-
-			if ("INWARD".equals(entity.getStageName()) || "PRE_PROCESSING".equals(entity.getStageName())) {
-				fillInwardPreProcessingStageTable(entity, coilDetailsTab, templateDetailsList);
-			}
+			document.add( Chunk.NEWLINE );
+			document.add(coilDetailsTab);
+			
 			if ("PROCESSING".equals(entity.getStageName())) {
-				fillProcessingStageTable(entity, coilDetailsTab, templateDetailsList);
-			}
-			if ("POST_DISPATCH".equals(entity.getStageName())) {
-				fillPostDispatchStageTable(entity, coilDetailsTab, templateDetailsList);
-			}			
-			if ("PRE_DISPATCH".equals(entity.getStageName())) {				
-				fillPreDispatchStageTable(entity, coilDetailsTab, templateDetailsList);
+
+				List<QIRPanDetailsJsonArrayDTO> planDetails = objectMapper.readValue(entity.getPlanDetails(), typeFactory.constructCollectionType(List.class, QIRPanDetailsJsonArrayDTO.class));
+				if (planDetails != null && planDetails.get(0) != null 
+						&& planDetails.get(0).getSlitInspectionData() != null
+						&& planDetails.get(0).getSlitInspectionData().size() > 0) {
+					
+					PdfPTable processDetailsTab = new PdfPTable(6);
+					processDetailsTab.setWidthPercentage(98);
+					processDetailsTab.setWidths(new int[] { 30, 30, 50, 50, 40, 120 });
+					
+					PdfPCell headingCell = new PdfPCell(new Phrase("Sliting Inspection Details", font10b));
+					headingCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+					headingCell.setFixedHeight(22);
+					headingCell.setBorder(Rectangle.NO_BORDER);
+					headingCell.setColspan(6);
+					processDetailsTab.addCell(headingCell);
+					
+					PdfPCell headerColumn1Cell = new PdfPCell(new Phrase("Instruction Id", font9b));
+					headerColumn1Cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+					headerColumn1Cell.setFixedHeight(fixedHeight);
+					processDetailsTab.addCell(headerColumn1Cell);
+
+					PdfPCell headerColumn2Cell = new PdfPCell(new Phrase("Slit Size", font9b));
+					headerColumn2Cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+					headerColumn2Cell.setFixedHeight(fixedHeight);
+					processDetailsTab.addCell(headerColumn2Cell);
+
+					PdfPCell headerColumn3Cell = new PdfPCell(new Phrase("Actual Slit Size", font9b));
+					headerColumn3Cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+					headerColumn3Cell.setFixedHeight(fixedHeight);
+					processDetailsTab.addCell(headerColumn3Cell);
+
+					PdfPCell headerColumn4Cell = new PdfPCell(new Phrase("Actual Thickness", font9b));
+					headerColumn4Cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+					headerColumn4Cell.setFixedHeight(fixedHeight);
+					processDetailsTab.addCell(headerColumn4Cell);
+
+					PdfPCell headerColumn5Cell = new PdfPCell(new Phrase("Burr Height", font9b));
+					headerColumn5Cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+					headerColumn5Cell.setFixedHeight(fixedHeight);
+					processDetailsTab.addCell(headerColumn5Cell);
+
+					PdfPCell headerColumn6Cell = new PdfPCell(new Phrase("Remarks", font9b));
+					headerColumn6Cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+					headerColumn6Cell.setFixedHeight(fixedHeight);
+					processDetailsTab.addCell(headerColumn6Cell);
+
+					for (QIRPanDetailsJsonArrayChildDTO obj : planDetails.get(0).getSlitInspectionData()) {
+						PdfPCell headerColumn1CellValue = new PdfPCell(new Phrase("" + obj.getInstructionId(), font9));
+						headerColumn1CellValue.setHorizontalAlignment(Element.ALIGN_CENTER);
+						headerColumn1CellValue.setFixedHeight(tableRowHeight);
+						processDetailsTab.addCell(headerColumn1CellValue);
+
+						PdfPCell headerColumn2CellValue = new PdfPCell(new Phrase(obj.getPlannedWidth(), font9));
+						headerColumn2CellValue.setHorizontalAlignment(Element.ALIGN_CENTER);
+						headerColumn2CellValue.setFixedHeight(tableRowHeight);
+						processDetailsTab.addCell(headerColumn2CellValue);
+
+						PdfPCell headerColumn3CellValue = new PdfPCell(new Phrase(obj.getActualWidth(), font9));
+						headerColumn3CellValue.setHorizontalAlignment(Element.ALIGN_CENTER);
+						headerColumn3CellValue.setFixedHeight(tableRowHeight);
+						processDetailsTab.addCell(headerColumn3CellValue);
+
+						PdfPCell headerColumn4CellValue = new PdfPCell(new Phrase(obj.getActualThickness(), font9));
+						headerColumn4CellValue.setHorizontalAlignment(Element.ALIGN_CENTER);
+						headerColumn4CellValue.setFixedHeight(tableRowHeight);
+						processDetailsTab.addCell(headerColumn4CellValue);
+
+						PdfPCell headerColumn5CellValue = new PdfPCell(new Phrase(obj.getBurrHeight(), font9));
+						headerColumn5CellValue.setHorizontalAlignment(Element.ALIGN_CENTER);
+						headerColumn5CellValue.setFixedHeight(tableRowHeight);
+						processDetailsTab.addCell(headerColumn5CellValue);
+
+						PdfPCell headerColumn6CellValue = new PdfPCell(new Phrase(obj.getRemarks(), font9));
+						headerColumn6CellValue.setHorizontalAlignment(Element.ALIGN_CENTER);
+						headerColumn6CellValue.setFixedHeight(tableRowHeight);
+						processDetailsTab.addCell(headerColumn6CellValue);
+					}
+					document.add(processDetailsTab);
+				}
+				
+				if (planDetails != null && planDetails.get(0) != null 
+						&& planDetails.get(0).getCutInspectionData() != null
+						&& planDetails.get(0).getCutInspectionData().size() > 0) {
+					PdfPTable processDetailsTab = new PdfPTable(9);
+					processDetailsTab.setWidthPercentage(98);
+					processDetailsTab.setWidths(new int[] { 30, 30, 50, 50, 40,  40,  40,  40, 80 });
+					
+					PdfPCell headingCell = new PdfPCell(new Phrase("Cutting Inspection Details", font10b));
+					headingCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+					headingCell.setFixedHeight(fixedHeight);
+					headingCell.setBorder(Rectangle.NO_BORDER);
+					headingCell.setColspan(9);
+					processDetailsTab.addCell(headingCell);
+					
+					PdfPCell headerColumn1Cell = new PdfPCell(new Phrase("Thickness", font9b));
+					headerColumn1Cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+					headerColumn1Cell.setFixedHeight(fixedHeight);
+					processDetailsTab.addCell(headerColumn1Cell);
+
+					PdfPCell headerColumn2Cell = new PdfPCell(new Phrase("Width", font9b));
+					headerColumn2Cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+					headerColumn2Cell.setFixedHeight(fixedHeight);
+					processDetailsTab.addCell(headerColumn2Cell);
+
+					PdfPCell headerColumn3Cell = new PdfPCell(new Phrase("Length", font9b));
+					headerColumn3Cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+					headerColumn3Cell.setFixedHeight(fixedHeight);
+					processDetailsTab.addCell(headerColumn3Cell);
+
+					PdfPCell headerColumn4Cell = new PdfPCell(new Phrase("Actual Thickness", font9b));
+					headerColumn4Cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+					headerColumn4Cell.setFixedHeight(fixedHeight);
+					processDetailsTab.addCell(headerColumn4Cell);
+
+					PdfPCell headerColumn4Cell1 = new PdfPCell(new Phrase("Actual Width", font9b));
+					headerColumn4Cell1.setHorizontalAlignment(Element.ALIGN_CENTER);
+					headerColumn4Cell1.setFixedHeight(fixedHeight);
+					processDetailsTab.addCell(headerColumn4Cell1);
+
+					PdfPCell headerColumn4Cell2 = new PdfPCell(new Phrase("Actual Length", font9b));
+					headerColumn4Cell2.setHorizontalAlignment(Element.ALIGN_CENTER);
+					headerColumn4Cell2.setFixedHeight(fixedHeight);
+					processDetailsTab.addCell(headerColumn4Cell2);
+
+					PdfPCell headerColumn5Cell = new PdfPCell(new Phrase("Burr Height", font9b));
+					headerColumn5Cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+					headerColumn5Cell.setFixedHeight(fixedHeight);
+					processDetailsTab.addCell(headerColumn5Cell);
+
+					PdfPCell headerColumn5Cell1 = new PdfPCell(new Phrase("Diagonal Difference", font9b));
+					headerColumn5Cell1.setHorizontalAlignment(Element.ALIGN_CENTER);
+					headerColumn5Cell1.setFixedHeight(fixedHeight);
+					processDetailsTab.addCell(headerColumn5Cell1);
+
+					PdfPCell headerColumn6Cell = new PdfPCell(new Phrase("Remarks", font9b));
+					headerColumn6Cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+					headerColumn6Cell.setFixedHeight(fixedHeight);
+					processDetailsTab.addCell(headerColumn6Cell);
+
+					for (QIRPanDetailsJsonArrayChildDTO obj : planDetails.get(0).getCutInspectionData()) {
+						PdfPCell headerColumn1CellValue = new PdfPCell(new Phrase("" + obj.getThickness(), font9));
+						headerColumn1CellValue.setHorizontalAlignment(Element.ALIGN_CENTER);
+						headerColumn1CellValue.setFixedHeight(tableRowHeight);
+						processDetailsTab.addCell(headerColumn1CellValue);
+
+						PdfPCell headerColumn2CellValue = new PdfPCell(new Phrase(obj.getPlannedWidth(), font9));
+						headerColumn2CellValue.setHorizontalAlignment(Element.ALIGN_CENTER);
+						headerColumn2CellValue.setFixedHeight(tableRowHeight);
+						processDetailsTab.addCell(headerColumn2CellValue);
+
+						PdfPCell headerColumn3CellValue = new PdfPCell(new Phrase(obj.getActualLength(), font9));
+						headerColumn3CellValue.setHorizontalAlignment(Element.ALIGN_CENTER);
+						headerColumn3CellValue.setFixedHeight(tableRowHeight);
+						processDetailsTab.addCell(headerColumn3CellValue);
+
+						PdfPCell headerColumn3CellValue2 = new PdfPCell(new Phrase(obj.getActualThickness(), font9));
+						headerColumn3CellValue2.setHorizontalAlignment(Element.ALIGN_CENTER);
+						headerColumn3CellValue2.setFixedHeight(tableRowHeight);
+						processDetailsTab.addCell(headerColumn3CellValue2);
+
+						PdfPCell headerColumn3CellValue3 = new PdfPCell(new Phrase(obj.getActualWidth(), font9));
+						headerColumn3CellValue3.setHorizontalAlignment(Element.ALIGN_CENTER);
+						headerColumn3CellValue3.setFixedHeight(tableRowHeight);
+						processDetailsTab.addCell(headerColumn3CellValue3);
+
+						PdfPCell headerColumn3CellValue4 = new PdfPCell(new Phrase(obj.getActualLength(), font9));
+						headerColumn3CellValue4.setHorizontalAlignment(Element.ALIGN_CENTER);
+						headerColumn3CellValue4.setFixedHeight(tableRowHeight);
+						processDetailsTab.addCell(headerColumn3CellValue4);
+
+						PdfPCell headerColumn4CellValue = new PdfPCell(new Phrase(obj.getBurrHeight(), font9));
+						headerColumn4CellValue.setHorizontalAlignment(Element.ALIGN_CENTER);
+						headerColumn4CellValue.setFixedHeight(tableRowHeight);
+						processDetailsTab.addCell(headerColumn4CellValue);
+
+						PdfPCell headerColumn5CellValue = new PdfPCell(new Phrase(obj.getDiagonalDifference(), font9));
+						headerColumn5CellValue.setHorizontalAlignment(Element.ALIGN_CENTER);
+						headerColumn5CellValue.setFixedHeight(tableRowHeight);
+						processDetailsTab.addCell(headerColumn5CellValue);
+
+						PdfPCell headerColumn6CellValue = new PdfPCell(new Phrase(obj.getRemarks(), font9));
+						headerColumn6CellValue.setHorizontalAlignment(Element.ALIGN_CENTER);
+						headerColumn6CellValue.setFixedHeight(tableRowHeight);
+						processDetailsTab.addCell(headerColumn6CellValue);
+					}
+					document.add(processDetailsTab);
+				}
+								
+				if (planDetails != null && planDetails.get(0) != null 
+						&& planDetails.get(0).getFinalInspectionData() != null
+						&& planDetails.get(0).getFinalInspectionData().size() > 0) {
+					PdfPTable processDetailsTab = new PdfPTable(6);
+					processDetailsTab.setWidthPercentage(98);
+					processDetailsTab.setWidths(new int[] { 30, 30, 50, 50, 40, 120 });
+					
+					PdfPCell headingCell = new PdfPCell(new Phrase("Final Inspection Details", font10b));
+					headingCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+					headingCell.setFixedHeight(22);
+					headingCell.setBorder(Rectangle.NO_BORDER);
+					headingCell.setColspan(6);
+					processDetailsTab.addCell(headingCell);
+					
+					PdfPCell headerColumn1Cell = new PdfPCell(new Phrase("Instruction Id", font9b));
+					headerColumn1Cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+					headerColumn1Cell.setFixedHeight(fixedHeight);
+					processDetailsTab.addCell(headerColumn1Cell);
+
+					PdfPCell headerColumn2Cell = new PdfPCell(new Phrase("Slit Size", font9b));
+					headerColumn2Cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+					headerColumn2Cell.setFixedHeight(fixedHeight);
+					processDetailsTab.addCell(headerColumn2Cell);
+
+					PdfPCell headerColumn3Cell = new PdfPCell(new Phrase("Actual Slit Size", font9b));
+					headerColumn3Cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+					headerColumn3Cell.setFixedHeight(fixedHeight);
+					processDetailsTab.addCell(headerColumn3Cell);
+
+					PdfPCell headerColumn4Cell = new PdfPCell(new Phrase("Actual Thickness", font9b));
+					headerColumn4Cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+					headerColumn4Cell.setFixedHeight(fixedHeight);
+					processDetailsTab.addCell(headerColumn4Cell);
+
+					PdfPCell headerColumn5Cell = new PdfPCell(new Phrase("Burr Height", font9b));
+					headerColumn5Cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+					headerColumn5Cell.setFixedHeight(fixedHeight);
+					processDetailsTab.addCell(headerColumn5Cell);
+
+					PdfPCell headerColumn6Cell = new PdfPCell(new Phrase("Remarks", font9b));
+					headerColumn6Cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+					headerColumn6Cell.setFixedHeight(fixedHeight);
+					processDetailsTab.addCell(headerColumn6Cell);
+
+					for (QIRPanDetailsJsonArrayChildDTO obj : planDetails.get(0).getSlitInspectionData()) {
+						PdfPCell headerColumn1CellValue = new PdfPCell(new Phrase("" + obj.getInstructionId(), font9));
+						headerColumn1CellValue.setHorizontalAlignment(Element.ALIGN_CENTER);
+						headerColumn1CellValue.setFixedHeight(tableRowHeight);
+						processDetailsTab.addCell(headerColumn1CellValue);
+
+						PdfPCell headerColumn2CellValue = new PdfPCell(new Phrase(obj.getPlannedWidth(), font9));
+						headerColumn2CellValue.setHorizontalAlignment(Element.ALIGN_CENTER);
+						headerColumn2CellValue.setFixedHeight(tableRowHeight);
+						processDetailsTab.addCell(headerColumn2CellValue);
+
+						PdfPCell headerColumn3CellValue = new PdfPCell(new Phrase(obj.getActualWidth(), font9));
+						headerColumn3CellValue.setHorizontalAlignment(Element.ALIGN_CENTER);
+						headerColumn3CellValue.setFixedHeight(tableRowHeight);
+						processDetailsTab.addCell(headerColumn3CellValue);
+
+						PdfPCell headerColumn4CellValue = new PdfPCell(new Phrase(obj.getActualThickness(), font9));
+						headerColumn4CellValue.setHorizontalAlignment(Element.ALIGN_CENTER);
+						headerColumn4CellValue.setFixedHeight(tableRowHeight);
+						processDetailsTab.addCell(headerColumn4CellValue);
+
+						PdfPCell headerColumn5CellValue = new PdfPCell(new Phrase(obj.getBurrHeight(), font9));
+						headerColumn5CellValue.setHorizontalAlignment(Element.ALIGN_CENTER);
+						headerColumn5CellValue.setFixedHeight(tableRowHeight);
+						processDetailsTab.addCell(headerColumn5CellValue);
+
+						PdfPCell headerColumn6CellValue = new PdfPCell(new Phrase(obj.getRemarks(), font9));
+						headerColumn6CellValue.setHorizontalAlignment(Element.ALIGN_CENTER);
+						headerColumn6CellValue.setFixedHeight(tableRowHeight);
+						processDetailsTab.addCell(headerColumn6CellValue);
+					}
+					document.add(processDetailsTab);
+				}
+				
+				
+
+				
+				if (planDetails != null && planDetails.get(0) != null 
+						&& planDetails.get(0).getToleranceInspectionDataSlit() != null
+						&& planDetails.get(0).getToleranceInspectionDataSlit().size() > 0) {
+					
+					PdfPTable processDetailsTab = new PdfPTable(6);
+					processDetailsTab.setWidthPercentage(98);
+					processDetailsTab.setWidths(new int[] { 40, 40, 40, 40, 40, 40 });
+					
+					PdfPCell headingCell = new PdfPCell(new Phrase("Slitting Tolerance Data", font10b));
+					headingCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+					headingCell.setFixedHeight(22);
+					headingCell.setBorder(Rectangle.NO_BORDER);
+					headingCell.setColspan(6);
+					processDetailsTab.addCell(headingCell);
+					
+					PdfPCell headerColumn1Cell = new PdfPCell(new Phrase("Thickness From", font9b));
+					headerColumn1Cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+					headerColumn1Cell.setFixedHeight(fixedHeight);
+					processDetailsTab.addCell(headerColumn1Cell);
+
+					PdfPCell headerColumn2Cell = new PdfPCell(new Phrase("Thickness To", font9b));
+					headerColumn2Cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+					headerColumn2Cell.setFixedHeight(fixedHeight);
+					processDetailsTab.addCell(headerColumn2Cell);
+
+					PdfPCell headerColumn3Cell = new PdfPCell(new Phrase("Slit Size From", font9b));
+					headerColumn3Cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+					headerColumn3Cell.setFixedHeight(fixedHeight);
+					processDetailsTab.addCell(headerColumn3Cell);
+
+					PdfPCell headerColumn4Cell = new PdfPCell(new Phrase("Slit Size To", font9b));
+					headerColumn4Cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+					headerColumn4Cell.setFixedHeight(fixedHeight);
+					processDetailsTab.addCell(headerColumn4Cell);
+
+					PdfPCell headerColumn5Cell = new PdfPCell(new Phrase("Burr Height From", font9b));
+					headerColumn5Cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+					headerColumn5Cell.setFixedHeight(fixedHeight);
+					processDetailsTab.addCell(headerColumn5Cell);
+
+					PdfPCell headerColumn6Cell = new PdfPCell(new Phrase("Burr Height To", font9b));
+					headerColumn6Cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+					headerColumn6Cell.setFixedHeight(fixedHeight);
+					processDetailsTab.addCell(headerColumn6Cell);
+
+					for (QIRPanToleranceChildDTO obj : planDetails.get(0).getToleranceInspectionDataSlit()) {
+						PdfPCell headerColumn1CellValue = new PdfPCell(new Phrase("" + obj.getToleranceThicknessFrom(), font9));
+						headerColumn1CellValue.setHorizontalAlignment(Element.ALIGN_CENTER);
+						headerColumn1CellValue.setFixedHeight(tableRowHeight);
+						processDetailsTab.addCell(headerColumn1CellValue);
+
+						PdfPCell headerColumn2CellValue = new PdfPCell(new Phrase(obj.getToleranceThicknessFrom(), font9));
+						headerColumn2CellValue.setHorizontalAlignment(Element.ALIGN_CENTER);
+						headerColumn2CellValue.setFixedHeight(tableRowHeight);
+						processDetailsTab.addCell(headerColumn2CellValue);
+
+						PdfPCell headerColumn3CellValue = new PdfPCell(new Phrase(obj.getToleranceSlitSizeFrom(), font9));
+						headerColumn3CellValue.setHorizontalAlignment(Element.ALIGN_CENTER);
+						headerColumn3CellValue.setFixedHeight(tableRowHeight);
+						processDetailsTab.addCell(headerColumn3CellValue);
+
+						PdfPCell headerColumn4CellValue = new PdfPCell(new Phrase(obj.getToleranceSlitSizeTo(), font9));
+						headerColumn4CellValue.setHorizontalAlignment(Element.ALIGN_CENTER);
+						headerColumn4CellValue.setFixedHeight(tableRowHeight);
+						processDetailsTab.addCell(headerColumn4CellValue);
+
+						PdfPCell headerColumn5CellValue = new PdfPCell(new Phrase(obj.getToleranceBurrHeightFrom(), font9));
+						headerColumn5CellValue.setHorizontalAlignment(Element.ALIGN_CENTER);
+						headerColumn5CellValue.setFixedHeight(tableRowHeight);
+						processDetailsTab.addCell(headerColumn5CellValue);
+
+						PdfPCell headerColumn6CellValue = new PdfPCell(new Phrase(obj.getToleranceBurrHeightTo(), font9));
+						headerColumn6CellValue.setHorizontalAlignment(Element.ALIGN_CENTER);
+						headerColumn6CellValue.setFixedHeight(tableRowHeight);
+						processDetailsTab.addCell(headerColumn6CellValue);
+					}
+					document.add(processDetailsTab);
+				}
+				
+				
+				
+				if (planDetails != null && planDetails.get(0) != null 
+						&& planDetails.get(0).getToleranceInspectionData() != null
+						&& planDetails.get(0).getToleranceInspectionData().size() > 0) {
+					
+					PdfPTable processDetailsTab = new PdfPTable(10);
+					processDetailsTab.setWidthPercentage(98);
+					processDetailsTab.setWidths(new int[] { 40, 40, 40, 40, 40, 40 , 40, 40, 40, 40 });
+					
+					PdfPCell headingCell = new PdfPCell(new Phrase("Cutting Tolerance Data", font10b));
+					headingCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+					headingCell.setFixedHeight(22);
+					headingCell.setBorder(Rectangle.NO_BORDER);
+					headingCell.setColspan(10);
+					processDetailsTab.addCell(headingCell);
+					
+					PdfPCell headerColumn1Cell = new PdfPCell(new Phrase("Thickness From", font9b));
+					headerColumn1Cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+					headerColumn1Cell.setFixedHeight(fixedHeight);
+					processDetailsTab.addCell(headerColumn1Cell);
+
+					PdfPCell headerColumn2Cell = new PdfPCell(new Phrase("Thickness To", font9b));
+					headerColumn2Cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+					headerColumn2Cell.setFixedHeight(fixedHeight);
+					processDetailsTab.addCell(headerColumn2Cell);
+
+					PdfPCell headerColumn3Cell = new PdfPCell(new Phrase("Width From", font9b));
+					headerColumn3Cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+					headerColumn3Cell.setFixedHeight(fixedHeight);
+					processDetailsTab.addCell(headerColumn3Cell);
+
+					PdfPCell headerColumn4Cell = new PdfPCell(new Phrase("Width To", font9b));
+					headerColumn4Cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+					headerColumn4Cell.setFixedHeight(fixedHeight);
+					processDetailsTab.addCell(headerColumn4Cell);
+
+					PdfPCell headerColumn5Cell = new PdfPCell(new Phrase("Length From", font9b));
+					headerColumn5Cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+					headerColumn5Cell.setFixedHeight(fixedHeight);
+					processDetailsTab.addCell(headerColumn5Cell);
+
+					PdfPCell headerColumn6Cell = new PdfPCell(new Phrase("Length To", font9b));
+					headerColumn6Cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+					headerColumn6Cell.setFixedHeight(fixedHeight);
+					processDetailsTab.addCell(headerColumn6Cell);
+
+					PdfPCell headerColumn5Cell11 = new PdfPCell(new Phrase("Burr Height From", font9b));
+					headerColumn5Cell11.setHorizontalAlignment(Element.ALIGN_CENTER);
+					headerColumn5Cell11.setFixedHeight(fixedHeight);
+					processDetailsTab.addCell(headerColumn5Cell11);
+
+					PdfPCell headerColumn6Cell22 = new PdfPCell(new Phrase("Burr Height To", font9b));
+					headerColumn6Cell22.setHorizontalAlignment(Element.ALIGN_CENTER);
+					headerColumn6Cell22.setFixedHeight(fixedHeight);
+					processDetailsTab.addCell(headerColumn6Cell22);
+
+					PdfPCell headerColumn5Cell12 = new PdfPCell(new Phrase("Diagonal Difference From", font9b));
+					headerColumn5Cell12.setHorizontalAlignment(Element.ALIGN_CENTER);
+					headerColumn5Cell12.setFixedHeight(fixedHeight);
+					processDetailsTab.addCell(headerColumn5Cell12);
+
+					PdfPCell headerColumn6Cell23 = new PdfPCell(new Phrase("Diagonal Difference To", font9b));
+					headerColumn6Cell23.setHorizontalAlignment(Element.ALIGN_CENTER);
+					headerColumn6Cell23.setFixedHeight(fixedHeight);
+					processDetailsTab.addCell(headerColumn6Cell23);
+
+					for (QIRPanToleranceChildDTO obj : planDetails.get(0).getToleranceInspectionData()) {
+						
+						PdfPCell headerColumn1CellValue = new PdfPCell(new Phrase("" + obj.getToleranceThicknessFrom(), font9));
+						headerColumn1CellValue.setHorizontalAlignment(Element.ALIGN_CENTER);
+						headerColumn1CellValue.setFixedHeight(tableRowHeight);
+						processDetailsTab.addCell(headerColumn1CellValue);
+
+						PdfPCell headerColumn2CellValue = new PdfPCell(new Phrase(obj.getToleranceThicknessFrom(), font9));
+						headerColumn2CellValue.setHorizontalAlignment(Element.ALIGN_CENTER);
+						headerColumn2CellValue.setFixedHeight(tableRowHeight);
+						processDetailsTab.addCell(headerColumn2CellValue);
+
+						PdfPCell headerColumn3CellValue = new PdfPCell(new Phrase(obj.getToleranceWidthFrom(), font9));
+						headerColumn3CellValue.setHorizontalAlignment(Element.ALIGN_CENTER);
+						headerColumn3CellValue.setFixedHeight(tableRowHeight);
+						processDetailsTab.addCell(headerColumn3CellValue);
+
+						PdfPCell headerColumn4CellValue = new PdfPCell(new Phrase(obj.getToleranceWidthTo(), font9));
+						headerColumn4CellValue.setHorizontalAlignment(Element.ALIGN_CENTER);
+						headerColumn4CellValue.setFixedHeight(tableRowHeight);
+						processDetailsTab.addCell(headerColumn4CellValue);
+
+						PdfPCell headerColumn5CellValue = new PdfPCell(new Phrase(obj.getToleranceLengthFrom(), font9));
+						headerColumn5CellValue.setHorizontalAlignment(Element.ALIGN_CENTER);
+						headerColumn5CellValue.setFixedHeight(tableRowHeight);
+						processDetailsTab.addCell(headerColumn5CellValue);
+
+						PdfPCell headerColumn6CellValue = new PdfPCell(new Phrase(obj.getToleranceLengthTo(), font9));
+						headerColumn6CellValue.setHorizontalAlignment(Element.ALIGN_CENTER);
+						headerColumn6CellValue.setFixedHeight(tableRowHeight);
+						processDetailsTab.addCell(headerColumn6CellValue);
+						
+						PdfPCell headerColumn3CellValue1 = new PdfPCell(new Phrase(obj.getToleranceBurrHeightFrom(), font9));
+						headerColumn3CellValue1.setHorizontalAlignment(Element.ALIGN_CENTER);
+						headerColumn3CellValue1.setFixedHeight(tableRowHeight);
+						processDetailsTab.addCell(headerColumn3CellValue1);
+
+						PdfPCell headerColumn4CellValue1 = new PdfPCell(new Phrase(obj.getToleranceBurrHeightTo(), font9));
+						headerColumn4CellValue1.setHorizontalAlignment(Element.ALIGN_CENTER);
+						headerColumn4CellValue1.setFixedHeight(tableRowHeight);
+						processDetailsTab.addCell(headerColumn4CellValue1);
+
+						PdfPCell headerColumn5CellValue1 = new PdfPCell(new Phrase(obj.getToleranceDiagonalDifferenceFrom(), font9));
+						headerColumn5CellValue1.setHorizontalAlignment(Element.ALIGN_CENTER);
+						headerColumn5CellValue1.setFixedHeight(tableRowHeight);
+						processDetailsTab.addCell(headerColumn5CellValue1);
+
+						PdfPCell headerColumn6CellValue1 = new PdfPCell(new Phrase(obj.getToleranceDiagonalDifferenceTo(), font9));
+						headerColumn6CellValue1.setHorizontalAlignment(Element.ALIGN_CENTER);
+						headerColumn6CellValue1.setFixedHeight(tableRowHeight);
+						processDetailsTab.addCell(headerColumn6CellValue1);
+					}
+					document.add(processDetailsTab);
+				}
 			}
 			
+			/* Bill Ship Address starts */
+			PdfPTable processDetailsTab = new PdfPTable(4);
+			processDetailsTab.setWidthPercentage(95);
+			processDetailsTab.setWidths(new int[] { 50, 50 , 50, 50 });
+			
+			if ("INWARD".equals(entity.getStageName()) || "PRE_PROCESSING".equals(entity.getStageName())) {
+				fillInwardPreProcessingStageTable(entity, processDetailsTab, templateDetailsList);
+			}
+			if ("PROCESSING".equals(entity.getStageName())) {
+				fillProcessingStageTable(entity, processDetailsTab, templateDetailsList);
+			}
+			if ("POST_DISPATCH".equals(entity.getStageName())) {
+				fillPostDispatchStageTable(entity, processDetailsTab, templateDetailsList);
+			}			
+			if ("PRE_DISPATCH".equals(entity.getStageName())) {				
+				fillPreDispatchStageTable(entity, processDetailsTab, templateDetailsList);
+			}
 			PdfPCell commentsCell = new PdfPCell(new Phrase("Comments : ", font11));
 			commentsCell.setHorizontalAlignment( Element.ALIGN_LEFT);
 			commentsCell.setFixedHeight(fixedHeight);
 			commentsCell.setBorder(Rectangle.NO_BORDER);
-			coilDetailsTab.addCell(commentsCell);			
+			processDetailsTab.addCell(commentsCell);			
 			PdfPCell commentsValue = new PdfPCell(new Phrase(entity.getComments(), font11));
 			commentsValue.setHorizontalAlignment( Element.ALIGN_LEFT);
 			commentsValue.setFixedHeight(55);
 			commentsValue.setColspan(3);
 			commentsValue.setBorder(Rectangle.NO_BORDER);
-			coilDetailsTab.addCell(commentsValue);
+			processDetailsTab.addCell(commentsValue);
+			document.add( Chunk.NEWLINE );
+			document.add(processDetailsTab);
 			
-			document.add( Chunk.NEWLINE );
-			document.add( Chunk.NEWLINE );
-			document.add( Chunk.NEWLINE );
-			document.add( Chunk.NEWLINE );
-			document.add( Chunk.NEWLINE );
-			document.add( Chunk.NEWLINE );
+			/* footerDetailsTab starts */
+			PdfPTable footerDetailsTab = new PdfPTable(4);
+			footerDetailsTab.setWidthPercentage(95);
+			footerDetailsTab.setWidths(new int[] { 50, 50 , 50, 50 });
 			
 			PdfPCell inspectedByCell  = new PdfPCell(new Phrase("Quality Inspected By ", font11));
 			inspectedByCell.setHorizontalAlignment( Element.ALIGN_LEFT);
@@ -1503,7 +1988,7 @@ public class QualityServiceImpl implements QualityService {
 			inspectedByCell.setFixedHeight(66);
 			inspectedByCell.setColspan(2);
 			inspectedByCell.setBorder(Rectangle.NO_BORDER);
-			coilDetailsTab.addCell(inspectedByCell);
+			footerDetailsTab.addCell(inspectedByCell);
 			
 			PdfPCell approvedByCell  = new PdfPCell(new Phrase("Quality Approved By ", font11));
 			approvedByCell.setHorizontalAlignment( Element.ALIGN_LEFT);
@@ -1511,10 +1996,13 @@ public class QualityServiceImpl implements QualityService {
 			approvedByCell.setFixedHeight(66);
 			approvedByCell.setColspan(2);
 			approvedByCell.setBorder(Rectangle.NO_BORDER);
-			coilDetailsTab.addCell(approvedByCell);
+			footerDetailsTab.addCell(approvedByCell);
 			
-			document.add(p);
-			document.add(coilDetailsTab);
+			document.add( Chunk.NEWLINE );
+			document.add( Chunk.NEWLINE );
+			document.add( Chunk.NEWLINE );
+			document.add( Chunk.NEWLINE );
+			document.add( footerDetailsTab );
 			document.close();
 			System.out.println("QIR PDF Report generated successfully..!");
 		} catch (Exception ex) {

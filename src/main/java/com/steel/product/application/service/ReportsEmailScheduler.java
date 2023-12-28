@@ -39,11 +39,26 @@ public class ReportsEmailScheduler {
 
 	@Scheduled(cron = "${email.reportScheduleTime}")
 	public void sendNotificationAlert() throws InterruptedException {
-}
+
+		if (apiAlertRequired) {
+			logger.info("sendDailyNotificationAlert apiAlertRequired == " + apiAlertRequired);
+			Calendar cal = Calendar.getInstance();
+			Date date = cal.getTime();
+			DateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy");
+			String strDate = dateFormat.format(date);
+
+			List<Party> partyList = partyRepo.findAll();
+			for (Party party : partyList) {
+				if (party.getEmail1() != null && party.getEmail1().length() > 0 && party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0) {
+					mailSender.sendMail(party, strDate);
+					Thread.sleep(200);
+				}
+			}
+		}
+	}
 
 	@Scheduled(cron = "${email.reportsMonthlyScheduleTime}")
 	public void sendMonthlyNotifications() throws InterruptedException {
-
 		if (apiAlertRequired) {
 			logger.info("sendMonthlyNotifications apiAlertRequired == " + apiAlertRequired);
 			LocalDate currentDate = LocalDate.now();
@@ -53,12 +68,11 @@ public class ReportsEmailScheduler {
 			logger.info("month  == " + month);
 			List<Party> partyList = partyRepo.findAll();
 			for (Party party : partyList) {
-				if (party.getEmail1() != null && party.getEmail1().length() > 0) {
+				if (party.getEmail1() != null && party.getEmail1().length() > 0 && party.getMonthlyReportsList() != null && party.getMonthlyReportsList().length() > 0) {
 					mailSender.sendMonthlyReportsMail(party, month);
 					Thread.sleep(200);
 				}
 			}
-
 		}
 	}
 
