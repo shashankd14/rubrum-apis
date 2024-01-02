@@ -32,7 +32,7 @@ public interface QualityTemplateRepository extends JpaRepository<QualityTemplate
 	@Query(nativeQuery = true, value = "select distinct fwidth from product_tblinwardentry where 1=1")
 	List<Object[]> getAllWidth();
 
-	@Query(nativeQuery = true, value = "select distinct flength from product_tblinwardentry where 1=1")
+	@Query(nativeQuery = true, value = "select distinct flength from product_instruction where 1=1")
 	List<Object[]> getAllLength();
 	    
 }

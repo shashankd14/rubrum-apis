@@ -97,7 +97,7 @@ public class KQPPartyTemplateEntity {
 		dtoResponse.setWidthList( entity.getWidthList());
 		dtoResponse.setLengthList( entity.getLengthList());
 		dtoResponse.setAnyPartyFlag( entity.getAnyPartyFlag());
-		dtoResponse.setAnyMatgradeFlag( entity.getAnyMatgradeFlag());
+		dtoResponse.setAnyMatGradeFlag( entity.getAnyMatgradeFlag());
 		dtoResponse.setAnyEndusertagFlag( entity.getAnyEndusertagFlag());
 		dtoResponse.setAnyLengthFlag( entity.getAnyLengthFlag());
 		dtoResponse.setAnyThicknessFlag( entity.getAnyThicknessFlag());

@@ -30,7 +30,7 @@ public class KQPPartyMappingRequest {
 
 	private String anyPartyFlag;
 	
-	private String anyMatgradeFlag;
+	private String anyMatGradeFlag;
 	
 	private String anyEndusertagFlag;
 

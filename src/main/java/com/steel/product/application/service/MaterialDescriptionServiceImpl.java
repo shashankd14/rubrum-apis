@@ -59,7 +59,11 @@ public class MaterialDescriptionServiceImpl implements MaterialDescriptionServic
 		}
 		
 		for (String grade : materialRequestDto.getGrade()) {
-			MaterialGrade materialGrade = materialGradeRepository.getGradesByMaterialIdName( materialRequestDto.getMatId(), grade);
+			List<MaterialGrade> materialGradeList1 = materialGradeRepository.getGradesByMaterialIdName( materialRequestDto.getMatId(), grade);
+			MaterialGrade materialGrade = null;
+			if(materialGradeList1!=null && materialGradeList1.size()>0) {
+				materialGrade = materialGradeList1.get(0);
+			}
 			if(materialGrade!=null && materialGrade.getGradeId()>0) {
 				materialGrade.setParentMaterial(savedMaterial);
 				materialGrade.setGradeName(grade);
@@ -70,7 +74,6 @@ public class MaterialDescriptionServiceImpl implements MaterialDescriptionServic
 			}
 			materialGradeRepository.save(materialGrade);
 		}
-
 		return material;
 
 	}

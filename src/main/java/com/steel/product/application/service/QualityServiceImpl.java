@@ -13,7 +13,9 @@ import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Phrase;
 import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.Barcode128;
 import com.itextpdf.text.pdf.BaseFont;
+import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
@@ -716,8 +718,8 @@ public class QualityServiceImpl implements QualityService {
 		} else {
 			kqpPartyTemplateEntity.setAnyPartyFlag("N");
 		}
-		if (kqpPartyMappingRequest.getAnyMatgradeFlag() != null
-				&& "Y".equals(kqpPartyMappingRequest.getAnyMatgradeFlag())) {
+		if (kqpPartyMappingRequest.getAnyMatGradeFlag() != null
+				&& "Y".equals(kqpPartyMappingRequest.getAnyMatGradeFlag())) {
 			kqpPartyTemplateEntity.setAnyMatgradeFlag("Y");
 		} else {
 			kqpPartyTemplateEntity.setAnyMatgradeFlag("N");
@@ -1298,8 +1300,8 @@ public class QualityServiceImpl implements QualityService {
 
 		File file = null;
 		try {
-			QualityInspectionReportEntity entity = qualityInspectionReportRepository.findByQirId(qirId);
-			file = renderQIRpdf(entity);
+			 QualityInspectionReportEntity entity = qualityInspectionReportRepository.findByQirId(qirId);
+			file = renderQIRpdf(entity );
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -2538,4 +2540,151 @@ public class QualityServiceImpl implements QualityService {
 		}
 	}
 	
+	@Override
+	public File labelPrint(Integer qirId) {
+
+		File file = null;
+		try {
+			file = renderQIRpdf1();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return file;
+	}
+	
+	private File renderQIRpdf1( ) throws IOException, DocumentException {
+		//File file = File.createTempFile("qirpdf_" +entity.getStageName()+"_"+ entity.getQirId(), ".pdf");
+		File file = new File("E:/LabelPrint.pdf");
+		Document document = new Document();
+
+		int fixedHeight=22;
+		int tableRowHeight=15;
+		int fixedHeight2=32;
+		try {
+			
+			FileOutputStream fos = new FileOutputStream(file);
+			document = new Document(PageSize.A7.rotate(), 1, 0, 4, 1);
+
+			PdfWriter pdfWriter = PdfWriter.getInstance(document, fos);
+			pdfWriter.setBoxSize("art", new Rectangle(PageSize.A7.rotate()) );
+			document.open();
+
+			Font font8b = FontFactory.getFont(BaseFont.WINANSI, 8f, Font.BOLD);
+			Font font4 = FontFactory.getFont(BaseFont.WINANSI, 4f);
+			Font font5 = FontFactory.getFont(BaseFont.WINANSI, 5f);
+			Font font6 = FontFactory.getFont(BaseFont.WINANSI, 6f);
+			Font font6b = FontFactory.getFont(BaseFont.WINANSI, 6f, Font.BOLD);
+			Font font9 = FontFactory.getFont(BaseFont.WINANSI, 9f);
+			Font font11 = FontFactory.getFont(BaseFont.WINANSI, 11f);
+			Font font11b = FontFactory.getFont(BaseFont.WINANSI, 11f, Font.BOLD);
+			Font font12b = FontFactory.getFont(BaseFont.WINANSI, 12f, Font.BOLD);
+			
+			PdfPTable coilDetailsTab = new PdfPTable(2);
+			coilDetailsTab.setWidthPercentage(95);
+			coilDetailsTab.setWidths(new int[] { 90, 90 });
+
+			PdfPCell companyNameCell = new PdfPCell(new Phrase("ASPEN STEEL PVT LTD", font12b));
+			companyNameCell.setHorizontalAlignment( Element.ALIGN_CENTER );
+			//companyNameCell.setFixedHeight(17);
+			companyNameCell.setBorder(Rectangle.LEFT | Rectangle.RIGHT | Rectangle.TOP);
+			companyNameCell.setColspan(2);
+			coilDetailsTab.addCell(companyNameCell);	
+
+			PdfPCell address1Cell = new PdfPCell(new Phrase("Plot No. 16E Phase 2, Sector 1, Bidadi. Ramnagar 562109", font6));
+			address1Cell.setHorizontalAlignment( Element.ALIGN_CENTER);
+			address1Cell.setVerticalAlignment( Element.ALIGN_TOP);
+			//address1Cell.setFixedHeight(8);
+			address1Cell.setBorder(Rectangle.LEFT | Rectangle.RIGHT);
+			address1Cell.setColspan(2);
+			coilDetailsTab.addCell(address1Cell);	
+
+			PdfPCell addressCell2 = new PdfPCell(new Phrase("Email : aspen.bidadi@gmail.com", font6));
+			addressCell2.setHorizontalAlignment( Element.ALIGN_CENTER);
+			addressCell2.setVerticalAlignment( Element.ALIGN_TOP);
+			//addressCell2.setFixedHeight(8);
+			addressCell2.setBorder(Rectangle.LEFT | Rectangle.RIGHT| Rectangle.BOTTOM);
+			addressCell2.setColspan(2);
+			coilDetailsTab.addCell(addressCell2);	
+
+			PdfPCell companyNameCell1 = new PdfPCell(new Phrase("Tag No: ", font6b));
+			companyNameCell1.setHorizontalAlignment( Element.ALIGN_LEFT);
+			companyNameCell1.setFixedHeight(19);
+			coilDetailsTab.addCell(companyNameCell1);	
+
+			PdfPCell companyNameCell2 = new PdfPCell(new Phrase("MARUICHI KUMA", font6b));
+			companyNameCell2.setHorizontalAlignment( Element.ALIGN_LEFT);
+			companyNameCell2.setFixedHeight(tableRowHeight);
+			coilDetailsTab.addCell(companyNameCell2);	
+
+			PdfPCell companyNameCell3 = new PdfPCell(new Phrase("A Coil No: 19766", font6b));
+			companyNameCell3.setHorizontalAlignment( Element.ALIGN_LEFT);
+			companyNameCell3.setFixedHeight(tableRowHeight);
+			coilDetailsTab.addCell(companyNameCell3);	
+
+			PdfPCell companyNameCell4 = new PdfPCell(new Phrase("SPEC : POSCO ACME COIL ", font6b));
+			companyNameCell4.setHorizontalAlignment( Element.ALIGN_LEFT);
+			companyNameCell4.setFixedHeight(tableRowHeight);
+			coilDetailsTab.addCell(companyNameCell4);		
+
+			PdfPCell companyNameCell5 = new PdfPCell(new Phrase("M Coil No: 9013", font6b));
+			companyNameCell5.setHorizontalAlignment( Element.ALIGN_LEFT);
+			companyNameCell5.setFixedHeight(tableRowHeight);
+			coilDetailsTab.addCell(companyNameCell5);	
+
+			PdfPCell companyNameCell6 = new PdfPCell(new Phrase("GRADE : POSCO ACME COIL ", font6b));
+			companyNameCell6.setHorizontalAlignment( Element.ALIGN_LEFT);
+			companyNameCell6.setFixedHeight(tableRowHeight);
+			coilDetailsTab.addCell(companyNameCell6);		
+
+			PdfPCell companyNameCell7 = new PdfPCell(new Phrase("T : 12 W: 2  L: COIL", font6b));
+			companyNameCell7.setHorizontalAlignment( Element.ALIGN_LEFT);
+			companyNameCell7.setFixedHeight(tableRowHeight);
+			coilDetailsTab.addCell(companyNameCell7);			
+
+			PdfPCell companyNameCell8 = new PdfPCell(new Phrase("DATE : 22-09-2023", font6b));
+			companyNameCell8.setHorizontalAlignment( Element.ALIGN_LEFT);
+			companyNameCell8.setFixedHeight(tableRowHeight);
+			coilDetailsTab.addCell(companyNameCell8);			
+
+			PdfPCell companyNameCell9 = new PdfPCell(new Phrase("GROSS ", font6b));
+			companyNameCell9.setHorizontalAlignment( Element.ALIGN_LEFT);
+			companyNameCell9.setFixedHeight(tableRowHeight);
+			coilDetailsTab.addCell(companyNameCell9);						
+
+			PdfPCell companyNameCell13 = new PdfPCell(new Phrase("No'of Pieces", font6b));
+			companyNameCell13.setHorizontalAlignment( Element.ALIGN_LEFT);
+			companyNameCell13.setFixedHeight(tableRowHeight);
+			companyNameCell13.setRowspan(4);
+			coilDetailsTab.addCell(companyNameCell13);		
+
+			PdfPCell companyNameCell10 = new PdfPCell(new Phrase("Net Wt", font6b));
+			companyNameCell10.setHorizontalAlignment( Element.ALIGN_LEFT);
+			companyNameCell10.setFixedHeight(tableRowHeight);
+			coilDetailsTab.addCell(companyNameCell10);			
+
+			PdfPCell companyNameCell11 = new PdfPCell(new Phrase("M/C No", font6b));
+			companyNameCell11.setHorizontalAlignment( Element.ALIGN_LEFT);
+			companyNameCell11.setFixedHeight(tableRowHeight);
+			coilDetailsTab.addCell(companyNameCell11);			
+
+			PdfPCell companyNameCell12 = new PdfPCell(new Phrase("No;of Pieces", font6b));
+			companyNameCell12.setHorizontalAlignment( Element.ALIGN_LEFT);
+			companyNameCell12.setFixedHeight(tableRowHeight);
+			coilDetailsTab.addCell(companyNameCell12);
+
+			document.add( Chunk.NEWLINE );
+			document.add( Chunk.NEWLINE );
+			document.add( Chunk.NEWLINE );
+			document.add( Chunk.NEWLINE );
+			document.add( coilDetailsTab );
+			document.close();
+			System.out.println("QIR PDF Report generated successfully..!");
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			System.out.println(ex);
+		}
+		file.deleteOnExit();
+		return file;
+	}
+ 
 }

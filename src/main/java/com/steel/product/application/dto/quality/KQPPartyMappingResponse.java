@@ -41,7 +41,7 @@ public class KQPPartyMappingResponse {
 
 	private String anyPartyFlag;
 	
-	private String anyMatgradeFlag;
+	private String anyMatGradeFlag;
 	
 	private String anyEndusertagFlag;
 	

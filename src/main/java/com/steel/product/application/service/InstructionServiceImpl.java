@@ -766,11 +766,15 @@ public class InstructionServiceImpl implements InstructionService {
 		Map<Integer, String> kqpParamsList =new HashMap<>();
 		List<InstructionResponsePdfDto> instructions = new ArrayList<>();
 
-		for (Map.Entry<PartDetailsPdfResponse, List<InstructionResponsePdfDto>> entry : partDetailsSlitMap.entrySet()) {
-			instructions.addAll(entry.getValue());
+		if (partDetailsSlitMap != null && partDetailsSlitMap.size() > 0) {
+			for (Map.Entry<PartDetailsPdfResponse, List<InstructionResponsePdfDto>> entry : partDetailsSlitMap.entrySet()) {
+				instructions.addAll(entry.getValue());
+			}
 		}
-		for (Map.Entry<PartDetailsPdfResponse, List<InstructionResponsePdfDto>> entry : partDetailsCutMap.entrySet()) {
-			instructions.addAll(entry.getValue());
+		if (partDetailsCutMap != null && partDetailsCutMap.size() > 0) {
+			for (Map.Entry<PartDetailsPdfResponse, List<InstructionResponsePdfDto>> entry : partDetailsCutMap.entrySet()) {
+				instructions.addAll(entry.getValue());
+			}
 		}
 		
 		Map<Integer, String> kk =new HashMap<>();
@@ -804,7 +808,7 @@ public class InstructionServiceImpl implements InstructionService {
 							partyFlag = true;
 						}
 					}
-					if("Y".equals(entity.getAnyMatgradeFlag() )) {
+					if("Y".equals(entity.getAnyMatGradeFlag() )) {
 						matgradeFlag=true;
 					} else {
 						List<Integer> materialGradeList =new ArrayList<>();

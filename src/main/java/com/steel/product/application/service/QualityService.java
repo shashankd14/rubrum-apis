@@ -127,4 +127,6 @@ public interface QualityService {
 
 	List<QualityInspDispatchListResponse> qirPostDispatchList();
 
+	File labelPrint(Integer qirId);
+
 }
