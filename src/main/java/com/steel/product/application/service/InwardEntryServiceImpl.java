@@ -285,15 +285,20 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 			resp.setMaterialDesc(result[2] != null ? (String) result[2] : null);
 			resp.setMaterialGrade( result[3] != null ? (String) result[3] : null);
 			
-			Double fThickness = result[4] != null ? (Double) result[4]: null;
-			Double fWidth =  result[5] != null ? (Double) result[5] : null;
-			Double netWeight  =  result[6] != null ? (Double) result[6] : null;
-			Double grossWeight  =  result[7] != null ? (Double) result[7] : null;
-			
+			Double fThickness = result[4] != null ? (Double) result[4]: 0.00;
+			Double netWeight  =  result[5] != null ? (Double) result[5] : 0.00;
+			Double grossWeight  =  result[6] != null ? (Double) result[6] : 0.00;
+			Double fWidth =  result[7] != null ? (Double) result[7] : 0.00;
+			Double fLength  =  result[8] != null ? (Double) result[8] : 0.00;
+			resp.setReceivedDate( result[9] != null ? (String) result[9] : (String) result[10]);
+			resp.setMotherCoilNo( result[11] != null ? (String) result[11] : "");
+			resp.setPartyName( result[12] != null ? (String) result[12] : "");
+
 			resp.setFthickness(decfor.format(fThickness));
 			resp.setFwidth(decfor.format(fWidth));
 			resp.setNetWeight(decfor.format(netWeight));
 			resp.setGrossWeight(decfor.format(grossWeight));
+			resp.setFlength( decfor.format(fLength));
 		}
 		return resp;
 	}

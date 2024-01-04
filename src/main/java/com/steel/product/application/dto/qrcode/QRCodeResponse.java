@@ -30,5 +30,9 @@ public class QRCodeResponse {
 	private String flength;
 
 	private String grossWeight;
+
+	private String receivedDate;
+	
+	private String motherCoilNo;
 	
 }

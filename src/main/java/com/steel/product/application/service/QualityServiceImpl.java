@@ -3,6 +3,11 @@ package com.steel.product.application.service;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.client.j2se.MatrixToImageConfig;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
 import com.itextpdf.text.Chunk;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Element;
@@ -13,9 +18,9 @@ import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Phrase;
 import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.Barcode;
 import com.itextpdf.text.pdf.Barcode128;
 import com.itextpdf.text.pdf.BaseFont;
-import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
@@ -27,6 +32,8 @@ import com.steel.product.application.dao.QualityPartyTemplateRepository;
 import com.steel.product.application.dao.QualityReportRepository;
 import com.steel.product.application.dao.QualityTemplateRepository;
 import com.steel.product.application.dto.instruction.InstructionResponseDto;
+import com.steel.product.application.dto.pdf.LabelPrintDTO;
+import com.steel.product.application.dto.qrcode.QRCodeResponse;
 import com.steel.product.application.dto.quality.KQPPartyMappingRequest;
 import com.steel.product.application.dto.quality.KQPPartyMappingResponse;
 import com.steel.product.application.dto.quality.KQPRequest;
@@ -56,6 +63,7 @@ import com.steel.product.application.entity.QualityTemplateEntity;
 
 import lombok.extern.log4j.Log4j2;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -67,6 +75,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -87,7 +96,7 @@ public class QualityServiceImpl implements QualityService {
 
 	@Autowired
 	KQPRepository kqpRepository;
-
+	
 	@Autowired
 	QualityReportRepository qualityReportRepository;
 
@@ -2541,47 +2550,44 @@ public class QualityServiceImpl implements QualityService {
 	}
 	
 	@Override
-	public File labelPrint(Integer qirId) {
+	public File labelPrint(LabelPrintDTO labelPrintDTO) {
 
 		File file = null;
 		try {
-			file = renderQIRpdf1();
+			file = renderLabelPrintPDF(labelPrintDTO);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return file;
 	}
 	
-	private File renderQIRpdf1( ) throws IOException, DocumentException {
+	private File renderLabelPrintPDF(LabelPrintDTO labelPrintDTO) throws IOException, DocumentException {
 		//File file = File.createTempFile("qirpdf_" +entity.getStageName()+"_"+ entity.getQirId(), ".pdf");
 		File file = new File("E:/LabelPrint.pdf");
 		Document document = new Document();
 
-		int fixedHeight=22;
-		int tableRowHeight=15;
-		int fixedHeight2=32;
+		int tableRowHeight = 20;
+		int tableqrcodeRowHeight = 23;
 		try {
 			
+			QRCodeResponse resp = inwdEntrySvc.getQRCodeDetails(Integer.parseInt(labelPrintDTO.getId()));
+			
+			Rectangle myPagesize = new Rectangle (284, 213);
 			FileOutputStream fos = new FileOutputStream(file);
-			document = new Document(PageSize.A7.rotate(), 1, 0, 4, 1);
+			document = new Document(myPagesize, 2f, 2f, 3f, 2f);
 
 			PdfWriter pdfWriter = PdfWriter.getInstance(document, fos);
-			pdfWriter.setBoxSize("art", new Rectangle(PageSize.A7.rotate()) );
+			pdfWriter.setBoxSize("art", myPagesize);
 			document.open();
 
-			Font font8b = FontFactory.getFont(BaseFont.WINANSI, 8f, Font.BOLD);
-			Font font4 = FontFactory.getFont(BaseFont.WINANSI, 4f);
-			Font font5 = FontFactory.getFont(BaseFont.WINANSI, 5f);
 			Font font6 = FontFactory.getFont(BaseFont.WINANSI, 6f);
-			Font font6b = FontFactory.getFont(BaseFont.WINANSI, 6f, Font.BOLD);
-			Font font9 = FontFactory.getFont(BaseFont.WINANSI, 9f);
-			Font font11 = FontFactory.getFont(BaseFont.WINANSI, 11f);
+			Font font7b = FontFactory.getFont(BaseFont.WINANSI, 7f, Font.BOLD);
 			Font font11b = FontFactory.getFont(BaseFont.WINANSI, 11f, Font.BOLD);
 			Font font12b = FontFactory.getFont(BaseFont.WINANSI, 12f, Font.BOLD);
 			
 			PdfPTable coilDetailsTab = new PdfPTable(2);
-			coilDetailsTab.setWidthPercentage(95);
-			coilDetailsTab.setWidths(new int[] { 90, 90 });
+			coilDetailsTab.setWidthPercentage(100);
+			coilDetailsTab.setWidths(new int[] { 99, 99});
 
 			PdfPCell companyNameCell = new PdfPCell(new Phrase("ASPEN STEEL PVT LTD", font12b));
 			companyNameCell.setHorizontalAlignment( Element.ALIGN_CENTER );
@@ -2602,83 +2608,141 @@ public class QualityServiceImpl implements QualityService {
 			addressCell2.setHorizontalAlignment( Element.ALIGN_CENTER);
 			addressCell2.setVerticalAlignment( Element.ALIGN_TOP);
 			//addressCell2.setFixedHeight(8);
-			addressCell2.setBorder(Rectangle.LEFT | Rectangle.RIGHT| Rectangle.BOTTOM);
+			addressCell2.setBorder(Rectangle.LEFT | Rectangle.RIGHT | Rectangle.BOTTOM);
 			addressCell2.setColspan(2);
 			coilDetailsTab.addCell(addressCell2);	
-
-			PdfPCell companyNameCell1 = new PdfPCell(new Phrase("Tag No: ", font6b));
+			
+			 // Generate barcode using ZXing
+            BarcodeFormat barcodeFormat = BarcodeFormat.CODE_128;
+            int barcodeHeight = 17;
+            Barcode barcode = new Barcode128();
+            barcode.setCode(labelPrintDTO.getId());
+			barcode.setCodeType(Barcode.CODE128);
+			barcode.setBarHeight(barcodeHeight);
+			barcode.setX(1.0f); // Adjust the width of the barcode bars
+ 			Image barcodeImage = barcode.createImageWithBarcode(pdfWriter.getDirectContent(), null, null);
+ 			
+            Paragraph tagNoParagraph = new Paragraph();
+            tagNoParagraph.add(new Phrase(new Chunk("Tag No (Inward No):", font7b)));
+			tagNoParagraph.add(new Phrase(new Chunk(labelPrintDTO.getId(), font11b)));
+			PdfPCell companyNameCell1 = new PdfPCell(tagNoParagraph);	
+			//PdfPCell companyNameCell1 = new PdfPCell(barcodeImage);			
 			companyNameCell1.setHorizontalAlignment( Element.ALIGN_LEFT);
-			companyNameCell1.setFixedHeight(19);
+			companyNameCell1.setVerticalAlignment( Element.ALIGN_MIDDLE);
+			companyNameCell1.setFixedHeight(tableRowHeight);
 			coilDetailsTab.addCell(companyNameCell1);	
 
-			PdfPCell companyNameCell2 = new PdfPCell(new Phrase("MARUICHI KUMA", font6b));
+			PdfPCell companyNameCell2 = new PdfPCell(new Phrase(resp.getPartyName(), font7b));
 			companyNameCell2.setHorizontalAlignment( Element.ALIGN_LEFT);
+			companyNameCell2.setVerticalAlignment( Element.ALIGN_MIDDLE);
 			companyNameCell2.setFixedHeight(tableRowHeight);
 			coilDetailsTab.addCell(companyNameCell2);	
 
-			PdfPCell companyNameCell3 = new PdfPCell(new Phrase("A Coil No: 19766", font6b));
+			Paragraph coilParagraph = new Paragraph();
+			coilParagraph.add(new Phrase(new Chunk("A Coil No: ", font7b)));
+			coilParagraph.add(new Phrase(new Chunk(resp.getCoilNo(), font11b)));
+			PdfPCell companyNameCell3 = new PdfPCell(coilParagraph);
 			companyNameCell3.setHorizontalAlignment( Element.ALIGN_LEFT);
+			companyNameCell3.setVerticalAlignment( Element.ALIGN_MIDDLE);
 			companyNameCell3.setFixedHeight(tableRowHeight);
 			coilDetailsTab.addCell(companyNameCell3);	
 
-			PdfPCell companyNameCell4 = new PdfPCell(new Phrase("SPEC : POSCO ACME COIL ", font6b));
+			Paragraph specParagraph = new Paragraph();
+			specParagraph.add(new Phrase(new Chunk("SPEC:  ", font7b)));
+			specParagraph.add(new Phrase(new Chunk(resp.getMaterialDesc(), font11b)));
+			PdfPCell companyNameCell4 = new PdfPCell(specParagraph);
 			companyNameCell4.setHorizontalAlignment( Element.ALIGN_LEFT);
+			companyNameCell4.setVerticalAlignment( Element.ALIGN_MIDDLE);
 			companyNameCell4.setFixedHeight(tableRowHeight);
 			coilDetailsTab.addCell(companyNameCell4);		
 
-			PdfPCell companyNameCell5 = new PdfPCell(new Phrase("M Coil No: 9013", font6b));
+			Paragraph mcoilParagraph = new Paragraph();
+			mcoilParagraph.add(new Phrase(new Chunk("M Coil No:  ", font7b)));
+			mcoilParagraph.add(new Phrase(new Chunk(resp.getCoilNo(), font11b)));			
+			PdfPCell companyNameCell5 = new PdfPCell(mcoilParagraph);
 			companyNameCell5.setHorizontalAlignment( Element.ALIGN_LEFT);
+			companyNameCell5.setVerticalAlignment( Element.ALIGN_MIDDLE);
 			companyNameCell5.setFixedHeight(tableRowHeight);
 			coilDetailsTab.addCell(companyNameCell5);	
 
-			PdfPCell companyNameCell6 = new PdfPCell(new Phrase("GRADE : POSCO ACME COIL ", font6b));
+			Paragraph gradeParagraph = new Paragraph();
+			gradeParagraph.add(new Phrase(new Chunk("GRADE:  ", font7b)));
+			gradeParagraph.add(new Phrase(new Chunk(resp.getMaterialGrade(), font11b)));	
+			PdfPCell companyNameCell6 = new PdfPCell(gradeParagraph);
 			companyNameCell6.setHorizontalAlignment( Element.ALIGN_LEFT);
+			companyNameCell6.setVerticalAlignment( Element.ALIGN_MIDDLE);
 			companyNameCell6.setFixedHeight(tableRowHeight);
 			coilDetailsTab.addCell(companyNameCell6);		
-
-			PdfPCell companyNameCell7 = new PdfPCell(new Phrase("T : 12 W: 2  L: COIL", font6b));
+			
+			Paragraph measurementParagraph = new Paragraph();
+			measurementParagraph.add(new Phrase(new Chunk("T:  ", font7b)));
+			measurementParagraph.add(new Phrase(new Chunk(resp.getFthickness()+", ", font7b)));
+			measurementParagraph.add(new Phrase(new Chunk("W:  ", font7b)));
+			measurementParagraph.add(new Phrase(new Chunk(resp.getFwidth()+", ", font7b)));
+			measurementParagraph.add(new Phrase(new Chunk("L:  ", font7b)));
+			measurementParagraph.add(new Phrase(new Chunk(resp.getFlength(), font7b)));			
+			PdfPCell companyNameCell7 = new PdfPCell(measurementParagraph);
 			companyNameCell7.setHorizontalAlignment( Element.ALIGN_LEFT);
+			companyNameCell7.setVerticalAlignment( Element.ALIGN_MIDDLE);
 			companyNameCell7.setFixedHeight(tableRowHeight);
 			coilDetailsTab.addCell(companyNameCell7);			
 
-			PdfPCell companyNameCell8 = new PdfPCell(new Phrase("DATE : 22-09-2023", font6b));
+			Paragraph dateParagraph = new Paragraph();
+			dateParagraph.add(new Phrase(new Chunk("DATE:  ", font7b)));
+			dateParagraph.add(new Phrase(new Chunk(resp.getReceivedDate(), font11b)));	
+			PdfPCell companyNameCell8 = new PdfPCell(dateParagraph);
 			companyNameCell8.setHorizontalAlignment( Element.ALIGN_LEFT);
+			companyNameCell8.setVerticalAlignment( Element.ALIGN_MIDDLE);
 			companyNameCell8.setFixedHeight(tableRowHeight);
-			coilDetailsTab.addCell(companyNameCell8);			
-
-			PdfPCell companyNameCell9 = new PdfPCell(new Phrase("GROSS ", font6b));
+			coilDetailsTab.addCell(companyNameCell8);		
+			
+			Paragraph grosswtParagraph = new Paragraph();
+			grosswtParagraph.add(new Phrase(new Chunk("Gross WT (kgs):  ", font7b)));
+			grosswtParagraph.add(new Phrase(new Chunk(resp.getGrossWeight(), font11b)));
+			PdfPCell companyNameCell9 = new PdfPCell(grosswtParagraph);
 			companyNameCell9.setHorizontalAlignment( Element.ALIGN_LEFT);
-			companyNameCell9.setFixedHeight(tableRowHeight);
-			coilDetailsTab.addCell(companyNameCell9);						
-
-			PdfPCell companyNameCell13 = new PdfPCell(new Phrase("No'of Pieces", font6b));
-			companyNameCell13.setHorizontalAlignment( Element.ALIGN_LEFT);
-			companyNameCell13.setFixedHeight(tableRowHeight);
+			companyNameCell9.setVerticalAlignment( Element.ALIGN_MIDDLE);
+			companyNameCell9.setFixedHeight(tableqrcodeRowHeight);
+			coilDetailsTab.addCell(companyNameCell9);	
+			
+			byte[] imageBytes = qrcode(resp);
+			Image qrCodeImage = Image.getInstance(imageBytes);
+			PdfPCell companyNameCell13 = new PdfPCell(qrCodeImage);
+			companyNameCell13.setHorizontalAlignment( Element.ALIGN_CENTER);
+			companyNameCell13.setVerticalAlignment( Element.ALIGN_MIDDLE);
 			companyNameCell13.setRowspan(4);
+			companyNameCell9.setFixedHeight(90);
 			coilDetailsTab.addCell(companyNameCell13);		
 
-			PdfPCell companyNameCell10 = new PdfPCell(new Phrase("Net Wt", font6b));
+			Paragraph netwtParagraph = new Paragraph();
+			netwtParagraph.add(new Phrase(new Chunk("Net WT (kgs):  ", font7b)));
+			netwtParagraph.add(new Phrase(new Chunk(resp.getNetWeight(), font11b)));
+			PdfPCell companyNameCell10 = new PdfPCell(netwtParagraph);
 			companyNameCell10.setHorizontalAlignment( Element.ALIGN_LEFT);
-			companyNameCell10.setFixedHeight(tableRowHeight);
+			companyNameCell10.setVerticalAlignment( Element.ALIGN_MIDDLE);
+			companyNameCell10.setFixedHeight(tableqrcodeRowHeight);
 			coilDetailsTab.addCell(companyNameCell10);			
 
-			PdfPCell companyNameCell11 = new PdfPCell(new Phrase("M/C No", font6b));
+			Paragraph coilbatchParagraph = new Paragraph();
+			coilbatchParagraph.add(new Phrase(new Chunk("COIL BATCH ID:  ", font7b)));
+			coilbatchParagraph.add(new Phrase(new Chunk(resp.getCustomerBatchNo(), font11b)));
+			PdfPCell companyNameCell11 = new PdfPCell(coilbatchParagraph);
 			companyNameCell11.setHorizontalAlignment( Element.ALIGN_LEFT);
-			companyNameCell11.setFixedHeight(tableRowHeight);
+			companyNameCell11.setVerticalAlignment( Element.ALIGN_MIDDLE);
+			companyNameCell11.setFixedHeight(tableqrcodeRowHeight);
 			coilDetailsTab.addCell(companyNameCell11);			
 
-			PdfPCell companyNameCell12 = new PdfPCell(new Phrase("No;of Pieces", font6b));
+			Paragraph noofpcsParagraph = new Paragraph();
+			noofpcsParagraph.add(new Phrase(new Chunk("NO OF PCS:  ", font7b)));
+			noofpcsParagraph.add(new Phrase(new Chunk("1 COIL", font11b)));
+			PdfPCell companyNameCell12 = new PdfPCell(noofpcsParagraph);
 			companyNameCell12.setHorizontalAlignment( Element.ALIGN_LEFT);
-			companyNameCell12.setFixedHeight(tableRowHeight);
+			companyNameCell1.setVerticalAlignment( Element.ALIGN_MIDDLE);
+			companyNameCell12.setFixedHeight(tableqrcodeRowHeight);
 			coilDetailsTab.addCell(companyNameCell12);
-
-			document.add( Chunk.NEWLINE );
-			document.add( Chunk.NEWLINE );
-			document.add( Chunk.NEWLINE );
-			document.add( Chunk.NEWLINE );
 			document.add( coilDetailsTab );
 			document.close();
-			System.out.println("QIR PDF Report generated successfully..!");
+			System.out.println("LAbel Print generated successfully..!");
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			System.out.println(ex);
@@ -2687,4 +2751,33 @@ public class QualityServiceImpl implements QualityService {
 		return file;
 	}
  
+	
+	private byte[] qrcode(QRCodeResponse resp) {
+		byte[] pngData = null;
+
+		try {
+			StringBuilder text = new StringBuilder();
+			text.append("Coil NO : " + resp.getCoilNo());
+			text.append("\nCustomer BatchNo : " + resp.getCustomerBatchNo());
+			text.append("\nMaterial Type : " + resp.getMaterialDesc());
+			text.append("\nMaterial Grade : " + resp.getMaterialGrade());
+			text.append("\nThickness : " + resp.getFthickness());
+			text.append("\nWidth : " + resp.getFwidth());
+			text.append("\nNet Weight : " + resp.getNetWeight());
+			text.append("\nGross Weight : " + resp.getGrossWeight());
+			// pngData = pdfGenerator.getQRCode(text.toString(), 0, 0);
+
+			QRCodeWriter qrCodeWriter = new QRCodeWriter();
+			BitMatrix bitMatrix = qrCodeWriter.encode(text.toString(), BarcodeFormat.QR_CODE, 50, 80);
+
+			ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
+			MatrixToImageConfig con = new MatrixToImageConfig();
+			MatrixToImageWriter.writeToStream(bitMatrix, "PNG", pngOutputStream, con);
+			pngData = pngOutputStream.toByteArray();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return pngData;
+	}
 }

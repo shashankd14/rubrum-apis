@@ -2,6 +2,7 @@ package com.steel.product.application.controller;
 
 import com.lowagie.text.DocumentException;
 import com.steel.product.application.dto.pdf.DeliveryPdfDto;
+import com.steel.product.application.dto.pdf.LabelPrintDTO;
 import com.steel.product.application.dto.pdf.PartDto;
 import com.steel.product.application.dto.pdf.PdfDto;
 import com.steel.product.application.dto.pdf.PdfResponseDto;
@@ -114,12 +115,12 @@ public class PdfController {
 	}
 
 	@PostMapping("/label/print")
-	public ResponseEntity<PdfResponseDto> labelPrint(@PathVariable("qirId") Integer qirId) {
+	public ResponseEntity<PdfResponseDto> labelPrint(@RequestBody LabelPrintDTO labelPrintDTO) {
         Path file;
         byte[] bytes;
         StringBuilder builder = new StringBuilder();
         try {
-            file = Paths.get(qualityService.labelPrint(qirId).getAbsolutePath());
+            file = Paths.get(qualityService.labelPrint(labelPrintDTO).getAbsolutePath());
             bytes = Files.readAllBytes(file);
             builder.append(Base64.getEncoder().encodeToString(bytes));
         } catch (IOException ex) {

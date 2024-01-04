@@ -391,13 +391,13 @@ public class QualityMasterController {
 
 	@GetMapping(value = "/qir/postdispatch/dispatchlist", produces = "application/json")
 	public List<QualityInspDispatchListResponse> qirPostDispatchList() {
-		List<QualityInspDispatchListResponse> list = qualityService.qirPreDispatchList();
+		List<QualityInspDispatchListResponse> list = qualityService.qirPostDispatchList();
 		return list;
 	}
 			
 	@GetMapping(value = "/qir/predispatch/dispatchlist", produces = "application/json")
 	public List<QualityInspDispatchListResponse> qirPreDispatchList() {
-		List<QualityInspDispatchListResponse> list = qualityService.qirPostDispatchList();
+		List<QualityInspDispatchListResponse> list = qualityService.qirPreDispatchList();
 		return list;
 	}
 
