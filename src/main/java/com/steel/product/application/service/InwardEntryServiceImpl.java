@@ -293,10 +293,12 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 			resp.setReceivedDate( result[9] != null ? (String) result[9] : (String) result[10]);
 			resp.setMotherCoilNo( result[11] != null ? (String) result[11] : "");
 			resp.setPartyName( result[12] != null ? (String) result[12] : "");
+			resp.setCoilBatchNo(result[13] != null ? (String) result[13] : "");
+			resp.setCustomerInvoiceNo(result[14] != null ? (String) result[14] : "");
 
 			resp.setFthickness(decfor.format(fThickness));
 			resp.setFwidth(decfor.format(fWidth));
-			resp.setNetWeight(decfor.format(netWeight));
+			resp.setFweight(decfor.format(netWeight));
 			resp.setGrossWeight(decfor.format(grossWeight));
 			resp.setFlength( decfor.format(fLength));
 		}

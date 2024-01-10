@@ -201,6 +201,13 @@ public class Instruction {
 		instructionResponsePdfDto.setActualNoOfPieces(instruction.getActualNoOfPieces());
 		instructionResponsePdfDto.setActualWeight(instruction.getActualWeight());
 		instructionResponsePdfDto.setActualWidth(instruction.getActualWidth());
+		instructionResponsePdfDto.setInstructionDate( instruction.getInstructionDate());
+		instructionResponsePdfDto.setInstructionId( instruction.getInstructionId());
+		if( instruction.getEndUserTagsEntity() !=null && instruction.getEndUserTagsEntity().getTagName()!=null ) {
+			instructionResponsePdfDto.setEndUserTagName( instruction.getEndUserTagsEntity().getTagName());
+		} else {
+			instructionResponsePdfDto.setEndUserTagName( "");
+		}
 		
 		String packingPrice = "0.00";
 		String laminationCharges = "0.00";

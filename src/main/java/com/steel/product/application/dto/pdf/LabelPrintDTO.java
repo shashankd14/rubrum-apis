@@ -8,6 +8,9 @@ import lombok.Setter;
 public class LabelPrintDTO {
 
 	private String process;
-	private String id;
+
+	private Integer inwardEntryId;
+
+	private String partDetailsId;
 
 }

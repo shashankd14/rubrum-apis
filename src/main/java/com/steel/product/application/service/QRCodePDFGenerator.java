@@ -103,8 +103,8 @@ public class QRCodePDFGenerator {
 			text.append("\nMaterial Description : " + entry.getMaterialDesc());
 			text.append("\nMaterial Grade : " + entry.getMaterialGrade());
 			text.append("\nT * W * L : " + entry.getFthickness() +" * "+entry.getFwidth() +" * "+entry.getFlength() );
-			text.append("\nNet Weight : " + entry.getNetWeight());
-			text.append("\nEnd User Tag : " + entry.getGrossWeight());
+			text.append("\nNet Weight : " + entry.getFweight());
+			text.append("\nEnd User Tag : " + entry.getEndUserTag());
 			pngData = getQRCode(text.toString(), 0, 0);
 
 			Font font = FontFactory.getFont(FontFactory.COURIER, 14, BaseColor.BLACK);
@@ -152,8 +152,8 @@ public class QRCodePDFGenerator {
 			text.append("\nMaterial Description : " + entry.getMaterialDesc());
 			text.append("\nMaterial Grade : " + entry.getMaterialGrade());
 			text.append("\nT * W * L : " + entry.getFthickness() +" * "+entry.getFwidth() +" * "+entry.getFlength() );
-			text.append("\nNet Weight : " + entry.getNetWeight());
-			text.append("\nEnd User Tag : " + entry.getGrossWeight());
+			text.append("\nNet Weight : " + entry.getFweight());
+			text.append("\nEnd User Tag : " + entry.getFweight());
 			pngData = getQRCode(text.toString(), 0, 0);
 
 			Font font = FontFactory.getFont(FontFactory.COURIER, 14, BaseColor.BLACK);

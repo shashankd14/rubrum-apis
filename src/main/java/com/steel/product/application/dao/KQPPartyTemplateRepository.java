@@ -62,6 +62,9 @@ public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTempla
 	
 	@Query(value = "SELECT ins FROM Instruction ins where ins.inwardId.coilNumber = :coilNo and ins.partDetails.partDetailsId = :partDetailsId ")
 	List<Instruction> fetchpacketdtls(@Param("coilNo") String coilNo, @Param("partDetailsId") String partDetailsId);
+	
+	@Query(value = "SELECT ins FROM Instruction ins where ins.inwardId.inwardEntryId = :inwardEntryId and ins.partDetails.partDetailsId = :partDetailsId ")
+	List<Instruction> labelFetchPacketDetails(@Param("inwardEntryId") Integer inwardEntryId, @Param("partDetailsId") String partDetailsId);
 
 	@Query(value = "SELECT DISTINCT coilnumber, DATE_FORMAT(deli.createdon, '%d/%m/%Y'), "
 			+ " deli.deliveryid, customerbatchid, totalweight, vehicleno, inward.customerinvoiceno, "

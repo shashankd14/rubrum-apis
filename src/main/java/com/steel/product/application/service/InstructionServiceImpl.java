@@ -1334,10 +1334,10 @@ public class InstructionServiceImpl implements InstructionService {
 			resp.setFlength( (decfor.format( plannedLength.doubleValue())));
 			if(pdfInstruction.getProcess().getProcessId() == 1 || pdfInstruction.getProcess().getProcessId() == 3){
 				Float totalWeightCut  = inwardEntryPdfDto.getTotalWeightCut();
-				resp.setNetWeight(decfor.format( totalWeightCut.doubleValue()));
+				resp.setFweight(decfor.format( totalWeightCut.doubleValue()));
 			} else {
 				Float totalWeightSlit = inwardEntryPdfDto.getTotalWeightSlit();
-				resp.setNetWeight(decfor.format( totalWeightSlit.doubleValue()));
+				resp.setFweight(decfor.format( totalWeightSlit.doubleValue()));
 			}
 			if(pdfInstruction.getEndUserTagsEntity()!=null && pdfInstruction.getEndUserTagsEntity().getTagName()!=null) {
 				resp.setEndUserTag(pdfInstruction.getEndUserTagsEntity().getTagName());
@@ -1372,7 +1372,7 @@ public class InstructionServiceImpl implements InstructionService {
 				obj.setFthickness(decfor.format(instruction.getInwardId().getfThickness()));
 				obj.setFwidth("" + instruction.getActualWidth());
 				obj.setFlength("" + instruction.getActualLength());
-				obj.setNetWeight(decfor.format(instruction.getInwardId().getfQuantity()));
+				obj.setFweight(decfor.format(instruction.getInwardId().getfQuantity()));
 				obj.setGrossWeight(decfor.format(instruction.getInwardId().getGrossWeight()));
 				resp.add(obj);
 			}

@@ -403,8 +403,8 @@ public class InwardEntryController {
 			text.append("\nMaterial Grade : " + resp.getMaterialGrade());
 			text.append("\nThickness : " + resp.getFthickness());
 			text.append("\nWidth : " + resp.getFwidth());
-			text.append("\nNet Weight : " + resp.getNetWeight());
-			text.append("\nGross Weight : " + resp.getGrossWeight());
+			text.append("\nNet Weight : " + resp.getFweight());
+			text.append("\nGross Weight : " + resp.getFweight());
 			pngData = pdfGenerator.getQRCode(text.toString(), 0, 0);
 			inputStreamResource = pdfGenerator.inputStreamResource(pngData, pdfDto.getInwardId());
 			byte[] sourceBytes = IOUtils.toByteArray(inputStreamResource.getInputStream());

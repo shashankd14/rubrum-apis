@@ -6,12 +6,18 @@ import lombok.Setter;
 @Getter
 @Setter
 public class QRCodeResponse {
-	
+
 	private String coilNo;
-	
+
 	private Integer instructionId;
 
+	private String instructionDate;
+
+	private String coilBatchNo;
+
 	private String customerBatchNo;
+
+	private String customerInvoiceNo;
 
 	private String partyName;
 
@@ -23,7 +29,7 @@ public class QRCodeResponse {
 
 	private String fthickness;
 
-	private String netWeight;
+	private String fweight;
 
 	private String fwidth;
 
@@ -31,8 +37,15 @@ public class QRCodeResponse {
 
 	private String grossWeight;
 
+	private String actuallength;
+
+	private String actualweight;
+
+	private String actualwidth;
+
 	private String receivedDate;
-	
+
 	private String motherCoilNo;
-	
+
+	private Integer plannedNoOfPieces;
 }

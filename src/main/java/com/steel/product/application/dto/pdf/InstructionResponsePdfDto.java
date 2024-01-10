@@ -1,5 +1,7 @@
 package com.steel.product.application.dto.pdf;
 
+import java.util.Date;
+
 import com.steel.product.application.dto.delivery.DeliveryResponseDto;
 import com.steel.product.application.dto.process.ProcessDto;
 import com.steel.product.application.entity.EndUserTagsEntity;
@@ -10,6 +12,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class InstructionResponsePdfDto {
+	
     private Integer instructionId ;
 
     private Integer inwardEntryId;
@@ -53,5 +56,9 @@ public class InstructionResponsePdfDto {
     private String packingRate;
     
     private String totalPrice;
+    
+    private String endUserTagName;
+    
+	private Date  instructionDate;
 
 }
