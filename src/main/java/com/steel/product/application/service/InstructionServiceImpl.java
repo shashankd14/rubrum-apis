@@ -26,7 +26,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -781,8 +780,8 @@ public class InstructionServiceImpl implements InstructionService {
     	try {
 			List<KQPPartyMappingResponse> kqpIdList = qualityService.getAllKQPMappings();
 			for (KQPPartyMappingResponse entity : kqpIdList) {
-				System.out.println("getKqpId ================================= " + entity.getKqpId());
-				System.out.println("inwardEntry.getMaterialGrade().getGradeId() = " + inwardEntry.getMaterialGrade().getGradeId());
+				//System.out.println("getKqpId ================================= " + entity.getKqpId());
+				//System.out.println("inwardEntry.getMaterialGrade().getGradeId() = " + inwardEntry.getMaterialGrade().getGradeId());
 				for (InstructionResponsePdfDto instruction : instructions) {
 					boolean widthFlag=false;
 					boolean lengthFlag=false;
@@ -1277,6 +1276,10 @@ public class InstructionServiceImpl implements InstructionService {
 	@Override
 	public void updateS3PlanPDF(String partDetailsId, String url) {
 		instructionRepository.updateS3PlanPDF(partDetailsId, url);
+	}
+	@Override
+	public void updateS3PlanLabelPDF(String partDetailsId, String url) {
+		instructionRepository.updateS3PlanLabelPDF(partDetailsId, url);
 	}
 
 	@Override

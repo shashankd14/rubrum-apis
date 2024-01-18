@@ -92,5 +92,7 @@ public interface InstructionService {
 	InwardEntryPdfDto findQRCodeInwardJoinFetchInstructionsAndPartDetails(String partDetailsId, List<Integer> groupIds);
 
 	public List<QRCodeResponse> getQRCodeDetails_Finish(Integer inwardId);
+
+	public void updateS3PlanLabelPDF(String string, String fileUrl);
 }
 

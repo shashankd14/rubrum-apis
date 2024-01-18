@@ -2527,7 +2527,7 @@ public class QualityServiceImpl implements QualityService {
 			ewayBillMatchCell.setColspan(4);
 			coilDetailsTab.addCell(ewayBillMatchCell); 
 			
-			PdfPCell labelsMatchCell = new PdfPCell(new Phrase("Labels & Stickers Matche with Invoice : "+findFieldValue(templateDetailsList, "labelsMatch"), font11));
+			PdfPCell labelsMatchCell = new PdfPCell(new Phrase("Labels & Stickers Matches with Invoice : "+findFieldValue(templateDetailsList, "labelsMatch"), font11));
 			labelsMatchCell.setHorizontalAlignment(Element.ALIGN_LEFT);
 			labelsMatchCell.setFixedHeight(fixedHeight);
 			labelsMatchCell.setBorder(Rectangle.NO_BORDER);

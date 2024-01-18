@@ -73,7 +73,7 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
     })
     List<InwardEntry> findInwardByPartyId(Integer partyId);
 
-    @Query(value="SELECT DISTINCT part.part_details_id, part.pdf_s3_url, part.qrcode_s3_url FROM product_part_details part INNER JOIN product_instruction ins ON part.id = ins.part_details_id INNER JOIN product_tblinwardentry inward ON ins.inwardid = inward.inwardentryid WHERE ins.inwardid = :inwardId", nativeQuery = true)
+    @Query(value="SELECT DISTINCT part.part_details_id, part.pdf_s3_url FROM product_part_details part INNER JOIN product_instruction ins ON part.id = ins.part_details_id INNER JOIN product_tblinwardentry inward ON ins.inwardid = inward.inwardentryid WHERE ins.inwardid = :inwardId", nativeQuery = true)
     List<Object[]> getPlanPDFs(@Param("inwardId") Integer inwardId);
 
 	@Modifying
@@ -83,9 +83,12 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 
     @Query(nativeQuery = true, value = "SELECT pdf_s3_url FROM product_tblinwardentry WHERE inwardentryid = :inwardId")
     public String getS3URL(@Param("inwardId") Integer inwardId);
+
+    @Query(nativeQuery = true, value = "SELECT labelpdf_s3_url FROM product_tblinwardentry WHERE inwardentryid = :inwardId")
+    public String getLabelS3URL(@Param("inwardId") Integer inwardId);
     
-    @Query(nativeQuery = true, value = "SELECT qrcode_s3_url FROM product_tblinwardentry WHERE inwardentryid = :inwardId")
-    public String getQRCodeS3URL(@Param("inwardId") Integer inwardId);
+   // @Query(nativeQuery = true, value = "SELECT qrcode_s3_url FROM product_tblinwardentry WHERE inwardentryid = :inwardId")
+   // public String getQRCodeS3URL(@Param("inwardId") Integer inwardId);
     
     @Query(nativeQuery = true, value = "SELECT qrcode_editfinish_s3_url FROM product_tblinwardentry WHERE inwardentryid = :inwardId")
     public String getQRCodeEditFinishS3URL(@Param("inwardId") Integer inwardId);
@@ -143,5 +146,12 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 	@Query("update InwardEntry set qrcodeEditfinishS3Url=:url where inwardEntryId= :inwardId ")
 	public void updateQRCodeEditFinish(@Param("inwardId") Integer inwardId, @Param("url") String url);
 
+	@Modifying
+	@Transactional
+	@Query("update InwardEntry set labelpdfS3Url=:url where inwardEntryId= :inwardId ")
+	public void updateS3InwardLabelPDF(@Param("inwardId") Integer inwardId, @Param("url") String url);
+
+	@Query(value = "SELECT DISTINCT part.part_details_id, part.labelpdf_s3_url FROM product_part_details part INNER JOIN product_instruction ins ON part.id = ins.part_details_id INNER JOIN product_tblinwardentry inward ON ins.inwardid = inward.inwardentryid WHERE ins.inwardid = :inwardId", nativeQuery = true)
+	public List<Object[]> getLabels(@Param("inwardId") Integer inwardId);
 
 }

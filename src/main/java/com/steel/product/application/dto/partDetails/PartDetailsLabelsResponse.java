@@ -5,10 +5,9 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class PartDetailsPDFResponse {
+public class PartDetailsLabelsResponse {
 
 	private String id;
 	private String fileName;
-	private String pdfS3Url;
-	//private String qrcodeS3Url;
+	private String labelUrl;
 }

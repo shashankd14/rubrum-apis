@@ -1,13 +1,8 @@
 package com.steel.product.application.controller;
 
-import com.google.zxing.WriterException;
-import com.itextpdf.text.DocumentException;
 import com.steel.product.application.dto.delivery.DeliveryPDFRequestDTO;
 import com.steel.product.application.dto.inward.InwardDto;
 import com.steel.product.application.dto.inward.InwardEntryResponseDto;
-import com.steel.product.application.dto.pdf.PdfDto;
-import com.steel.product.application.dto.pdf.PdfResponseDto;
-import com.steel.product.application.dto.qrcode.QRCodeResponse;
 import com.steel.product.application.entity.InwardDoc;
 import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.service.*;
@@ -16,18 +11,14 @@ import com.steel.product.application.util.CommonUtil;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import net.minidev.json.JSONObject;
 
-import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,15 +47,13 @@ public class InwardEntryController {
 
 	private InwardDocService inwardDocService;
 
-	private QRCodePDFGenerator pdfGenerator;
-
 	private Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 
 	@Autowired
 	public InwardEntryController(InwardEntryService inwdEntrySvc, PartyDetailsService partyDetailsService,
 			StatusService statusService, MaterialDescriptionService matDescService,
 			MaterialGradeService matGradeService, UserService userSerive, AWSS3Service awsS3Service,
-			InwardDocService inwardDocService, CommonUtil commonUtil, QRCodePDFGenerator pdfGenerator) {
+			InwardDocService inwardDocService, CommonUtil commonUtil ) {
 		this.inwdEntrySvc = inwdEntrySvc;
 		this.partyDetailsService = partyDetailsService;
 		this.statusService = statusService;
@@ -73,7 +62,6 @@ public class InwardEntryController {
 		this.awsS3Service = awsS3Service;
 		this.inwardDocService = inwardDocService;
 		this.commonUtil = commonUtil;
-		this.pdfGenerator = pdfGenerator;
 	}
 
 	@PostMapping("/addNew")
@@ -376,6 +364,18 @@ public class InwardEntryController {
 		}
 	}
 
+	@PostMapping({ "/getLabels/{inwardEntryId}" })
+	public ResponseEntity<Object> getLabels(@PathVariable int inwardEntryId) {
+		try {
+			JSONObject entry = this.inwdEntrySvc.getLabels(inwardEntryId);
+			if (entry == null)
+				throw new RuntimeException("Entry id not found - " + inwardEntryId);
+			return new ResponseEntity<Object>(entry, HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
 	@PostMapping({ "/getdcpdfs" })
 	public ResponseEntity<Object> getdcpdf(@RequestBody DeliveryPDFRequestDTO req) {
 		try {
@@ -388,6 +388,7 @@ public class InwardEntryController {
 		}
 	}
 
+	/*
 	@PostMapping({ "/qrcode/inward" })
 	public ResponseEntity<PdfResponseDto> qrcode(@RequestBody PdfDto pdfDto ) {
 		InputStreamResource inputStreamResource = null;
@@ -418,5 +419,5 @@ public class InwardEntryController {
 			e.printStackTrace();
 		}
 		return kk;
-	}
+	}*/
 }

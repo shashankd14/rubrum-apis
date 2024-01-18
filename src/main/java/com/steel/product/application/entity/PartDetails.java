@@ -52,8 +52,11 @@ public class PartDetails {
     @Column(name = "pdf_s3_url")
     private String pdfS3Url;
 
-    @Column(name = "qrcode_s3_url")
-    private String qrcodeS3Url;
+    //@Column(name = "qrcode_s3_url")
+    //private String qrcodeS3Url;
+
+    @Column(name = "labelpdf_s3_url")
+    private String labelpdfS3Url;
 
     public void addInstruction(Instruction instruction) {
         if (this.instructions == null) {

@@ -144,11 +144,14 @@ public class InwardEntry {
     @Column(name = "pdf_s3_url")
     private String pdfS3Url;
 
-    @Column(name = "qrcode_s3_url")
-    private String qrcodeS3Url;
+    //@Column(name = "qrcode_s3_url")
+    //private String qrcodeS3Url;
 
-    @Column(name = "qrcode_editfinish_s3_url")
-    private String qrcodeEditfinishS3Url;
+    //@Column(name = "qrcode_editfinish_s3_url")
+    //private String qrcodeEditfinishS3Url;
+
+    @Column(name = "labelpdf_s3_url")
+    private String labelpdfS3Url;
 
 	public void addInstruction(Instruction instruction){
 		if(this.instructions == null){
@@ -503,23 +506,14 @@ public class InwardEntry {
 		this.pdfS3Url = pdfS3Url;
 	}
 
-
-	public String getQrcodeS3Url() {
-		return qrcodeS3Url;
+	public String getLabelpdfS3Url() {
+		return labelpdfS3Url;
 	}
 
-	public void setQrcodeS3Url(String qrcodeS3Url) {
-		this.qrcodeS3Url = qrcodeS3Url;
+	public void setLabelpdfS3Url(String labelpdfS3Url) {
+		this.labelpdfS3Url = labelpdfS3Url;
 	}
 
-	public String getQrcodeEditfinishS3Url() {
-		return qrcodeEditfinishS3Url;
-	}
-
-	public void setQrcodeEditfinishS3Url(String qrcodeEditfinishS3Url) {
-		this.qrcodeEditfinishS3Url = qrcodeEditfinishS3Url;
-	}
-	
 	public static InwardEntryPdfDto valueOf(InwardEntry inwardEntry, List<InstructionResponsePdfDto> instructionResponsePdfDtos){
         InwardEntryPdfDto inwardEntryPdfDto = new InwardEntryPdfDto();
         inwardEntryPdfDto.setInwardEntryId(inwardEntry.getInwardEntryId());

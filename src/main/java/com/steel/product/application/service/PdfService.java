@@ -25,24 +25,26 @@ public class PdfService {
 
     private InwardEntryService inwardEntryService;
     private CompanyDetailsService companyDetailsService;
-    private SpringTemplateEngine templateEngine;
-    private InstructionService instructionService;
-	private AWSS3Service awsS3Service; 
+	private SpringTemplateEngine templateEngine;
+	private InstructionService instructionService;
+	private AWSS3Service awsS3Service;
 	private PartDetailsService partDetailsService;
+	private LabelPrintPDFGenerator labelPrintPDFGenerator;
 
-    @Value("${aws.s3.bucketPDFs}")
-    private String bucketName;
+	@Value("${aws.s3.bucketPDFs}")
+	private String bucketName;
 
 	@Autowired
 	public PdfService(InwardEntryService inwardEntryService, CompanyDetailsService companyDetailsService,
 			SpringTemplateEngine templateEngine, InstructionService instructionService, AWSS3Service awsS3Service,
-			PartDetailsService partDetailsService) {
+			PartDetailsService partDetailsService, LabelPrintPDFGenerator labelPrintPDFGenerator) {
 		this.inwardEntryService = inwardEntryService;
 		this.companyDetailsService = companyDetailsService;
 		this.templateEngine = templateEngine;
 		this.instructionService = instructionService;
 		this.awsS3Service = awsS3Service;
 		this.partDetailsService = partDetailsService;
+		this.labelPrintPDFGenerator = labelPrintPDFGenerator;
 	}
 
     public File generatePdf(PdfDto pdfDto) throws IOException, org.dom4j.DocumentException, DocumentException {
@@ -130,6 +132,28 @@ public class PdfService {
 			System.out.println("Error while uploading pdf - " + e.getMessage());
 		}
        
+		// below code is for label print file save in S3
+		try {
+			File labelFile = null;
+			String fileUrl = "";
+			LabelPrintDTO labelPrintDTO=new LabelPrintDTO();
+			if("INWARD_PDF".equals(processType)) {
+				labelPrintDTO.setInwardEntryId(Integer.parseInt(id));
+				labelPrintDTO.setProcess("inward");
+				labelFile = labelPrintPDFGenerator.renderInwardLabelPrintPDF(labelPrintDTO, inwardEntryService);
+				fileUrl = awsS3Service.uploadPDFFileToS3Bucket(bucketName, labelFile, "InwardLabel_"+id);
+				inwardEntryService.updateS3InwardLabelPDF(Integer.parseInt(id), "InwardLabel_"+id);
+			} else if ("PLAN_PDF".equalsIgnoreCase(processType)) {
+				labelPrintDTO.setPartDetailsId(id);
+				labelPrintDTO.setProcess("wip");
+				labelFile = labelPrintPDFGenerator.renderWIPLabelPrintPDF(labelPrintDTO, inwardEntryService);
+				fileUrl = awsS3Service.uploadPDFFileToS3Bucket(bucketName, labelFile, "PlanLabel_"+id);
+				instructionService.updateS3PlanLabelPDF(id, "PlanLabel_"+id);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
         outputStream.close();
         file.deleteOnExit();
         return file;

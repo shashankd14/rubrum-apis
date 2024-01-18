@@ -3,6 +3,7 @@ package com.steel.product.application.service;
 import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.dto.delivery.DeliveryPDFRequestDTO;
 import com.steel.product.application.dto.inward.InwardEntryResponseDto;
+import com.steel.product.application.dto.partDetails.PartDetailsLabelsResponse;
 import com.steel.product.application.dto.partDetails.PartDetailsPDFResponse;
 import com.steel.product.application.dto.qrcode.QRCodeResponse;
 import com.steel.product.application.entity.AdminUserEntity;
@@ -212,31 +213,27 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 			if(kk.getPdfS3Url()!=null && kk.getPdfS3Url().length()>0) {
 				kk.setPdfS3Url(awsS3Service.generatePresignedUrl(kk.getFileName()));
 			}
-
-			String qrcodeS3Url =  (result[2] != null ? (String) result[2] : null);
-			if(qrcodeS3Url !=null && qrcodeS3Url.length()>0) {
-				kk.setQrcodeS3Url(awsS3Service.generatePresignedUrl(qrcodeS3Url));			
-			}
-			
+			//String qrcodeS3Url =  (result[2] != null ? (String) result[2] : null);
+			//if(qrcodeS3Url !=null && qrcodeS3Url.length()>0) {
+				//kk.setQrcodeS3Url(awsS3Service.generatePresignedUrl(qrcodeS3Url));			
+			//}
 			response.add(kk);
 		}
 		finalResp.put("plan_pdfs", response);
 		finalResp.put("inward_pdf", "");
-		finalResp.put("qrcode_inward_pdf", "");
-		finalResp.put("qrcode_editfinish_pdf", "");
 		
 		String s3URL = this.inwdEntryRepo.getS3URL(inwardId);
 		if(s3URL !=null && s3URL.length()>0) {
 			finalResp.put("inward_pdf", awsS3Service.generatePresignedUrl(s3URL) );
 		}
-		String qrcodeInwardPdf = this.inwdEntryRepo.getQRCodeS3URL(inwardId);
-		if(qrcodeInwardPdf !=null && qrcodeInwardPdf.length()>0) {
-			finalResp.put("qrcode_inward_pdf", awsS3Service.generatePresignedUrl(qrcodeInwardPdf));
-		}
-		String qrCodeEditFinishS3URL = this.inwdEntryRepo.getQRCodeEditFinishS3URL(inwardId);
-		if(qrCodeEditFinishS3URL !=null && qrCodeEditFinishS3URL.length()>0) {
-			finalResp.put("qrcode_editfinish_pdf", awsS3Service.generatePresignedUrl(qrCodeEditFinishS3URL));
-		}
+		//String qrcodeInwardPdf = this.inwdEntryRepo.getQRCodeS3URL(inwardId);
+		//if(qrcodeInwardPdf !=null && qrcodeInwardPdf.length()>0) {
+			//finalResp.put("qrcode_inward_pdf", awsS3Service.generatePresignedUrl(qrcodeInwardPdf));
+		//}
+		//String qrCodeEditFinishS3URL = this.inwdEntryRepo.getQRCodeEditFinishS3URL(inwardId);
+		//if(qrCodeEditFinishS3URL !=null && qrCodeEditFinishS3URL.length()>0) {
+			//finalResp.put("qrcode_editfinish_pdf", awsS3Service.generatePresignedUrl(qrCodeEditFinishS3URL));
+		//}
 		
 		List<PartDetailsPDFResponse> response2 = new ArrayList<PartDetailsPDFResponse>();
 		List<Object[]> result2 = this.inwdEntryRepo.getDCPDFs(inwardId);
@@ -255,6 +252,48 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 		return finalResp;
 	} 
 
+	public JSONObject getLabels(int inwardId) {
+		JSONObject finalResp =new JSONObject();
+		List<PartDetailsLabelsResponse> response = new ArrayList<PartDetailsLabelsResponse>();
+		List<Object[]> results = this.inwdEntryRepo.getLabels(inwardId);
+		Iterator itr = results.iterator();
+		while (itr.hasNext()) {
+			PartDetailsLabelsResponse kk = new PartDetailsLabelsResponse();
+			Object result[] = (Object[]) itr.next();
+			kk.setId(result[0] != null ? (String) result[0] : null);
+			kk.setFileName(result[0] != null ? (String) result[0] : null);
+			String labelUrl = result[1] != null ? (String) result[1] : null;
+			System.out.println("getLabelUrl " +labelUrl);
+			kk.setLabelUrl(labelUrl);
+			if(labelUrl!=null && labelUrl.length()>0) {
+				kk.setLabelUrl(awsS3Service.generatePresignedUrl(labelUrl));
+			}
+			response.add(kk);
+		}
+		finalResp.put("wip_labels", response);
+		finalResp.put("inward_label", "");
+		finalResp.put("fg_labels", "");
+		
+		String s3URL = this.inwdEntryRepo.getLabelS3URL(inwardId);
+		if(s3URL !=null && s3URL.length()>0) {
+			finalResp.put("inward_label", awsS3Service.generatePresignedUrl(s3URL) );
+		}
+		
+		List<PartDetailsLabelsResponse> response2 = new ArrayList<PartDetailsLabelsResponse>();
+		List<Object[]> result2 = this.inwdEntryRepo.getDCPDFs(inwardId);
+
+		for (Object[] obj2 : result2) {
+			PartDetailsLabelsResponse kk = new PartDetailsLabelsResponse();
+			DeliveryDetails partDetails = (DeliveryDetails) obj2[0];
+			kk.setId(partDetails.getDeliveryId().toString());
+			kk.setFileName(partDetails.getPdfS3Url());
+			kk.setLabelUrl(awsS3Service.generatePresignedUrl(partDetails.getPdfS3Url()));
+			response2.add(kk);
+		}
+		finalResp.put("fg_labels", response2);
+		
+		return finalResp;
+	} 
 	public JSONObject getdcpdf(DeliveryPDFRequestDTO req) {
 		JSONObject finalResp =new JSONObject();
 		List<PartDetailsPDFResponse> response2 = new ArrayList<PartDetailsPDFResponse>();
@@ -313,4 +352,10 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 	public void updateQRCodeEditFinish(String inwardId, String url) {
 		inwdEntryRepo.updateQRCodeEditFinish( Integer.parseInt(inwardId), url);
 	}
+	
+	@Override
+	public void updateS3InwardLabelPDF(Integer inwardId, String url) {
+		inwdEntryRepo.updateS3InwardLabelPDF(inwardId, url);
+	}
+	
 }

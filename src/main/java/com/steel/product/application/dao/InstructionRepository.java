@@ -135,8 +135,7 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
 	@Query("select ins from Instruction ins left join fetch ins.inwardId where ins.inwardId.inwardEntryId = :inwardId and ins.status.statusId = :statusId ")
 	public List<Instruction> getQRCodeDetails(@Param("inwardId") Integer inwardId, @Param("statusId") Integer statusId);
 	
-	@Query(value = "SELECT \r\n" + 
-			"    coilnumber, customercoilid, instructionid,\r\n" + 
+	@Query(value = "SELECT coilnumber, customercoilid, instructionid,\r\n" + 
 			"    (select partyname from product_tblpartydetails partt where partt.npartyid = inw.npartyid) custname,\r\n" + 
 			"    (select desc2.vdescription from product_tblmatdescription desc2 where desc2.nmatid=inw.nmatid) as material_desc,\r\n" + 
 			"    (select tagg.tag_name from product_enduser_tags tagg where tagg.tag_id=instruction.enduser_tag_id) as enduser_tag_name,\r\n" + 
@@ -147,6 +146,10 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
 			" WHERE instruction.inwardid = inw.inwardentryid\r\n" + 
 			" AND instruction.inwardid = :inwardId AND instruction.status = 3 ", nativeQuery = true)
 	public List<Object[]> getQRCodeDetails_Finish(@Param("inwardId") Integer inwardId);
-	
+
+	@Modifying
+	@Transactional
+	@Query("update PartDetails set labelpdfS3Url=:url where partDetailsId= :partDetailsId ")
+	public void updateS3PlanLabelPDF(@Param("partDetailsId") String partDetailsId, @Param("url") String url);
 	
 }

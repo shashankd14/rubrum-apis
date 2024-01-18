@@ -1,13 +1,6 @@
 package com.steel.product.application.controller;
 
-import com.google.zxing.WriterException;
-import com.itextpdf.text.DocumentException;
 import com.steel.product.application.dto.instruction.*;
-import com.steel.product.application.dto.pdf.InwardEntryPdfDto;
-import com.steel.product.application.dto.pdf.PartDto;
-import com.steel.product.application.dto.pdf.PdfDto;
-import com.steel.product.application.dto.pdf.PdfResponseDto;
-import com.steel.product.application.dto.qrcode.QRCodeResponse;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.exception.MockException;
 import com.steel.product.application.service.*;
@@ -15,15 +8,11 @@ import com.steel.product.application.util.CommonUtil;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
-import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,14 +27,11 @@ public class InstructionController {
 	private InstructionService instructionService;
 
 	private CommonUtil commonUtil;
-	
-	private QRCodePDFGenerator pdfGenerator;
 
 	@Autowired
-	public InstructionController(InstructionService instructionService,  CommonUtil commonUtil, QRCodePDFGenerator pdfGenerator) {
+	public InstructionController(InstructionService instructionService, CommonUtil commonUtil) {
 		this.instructionService = instructionService;
 		this.commonUtil = commonUtil;
-		this.pdfGenerator = pdfGenerator;
 	}
 
 	@GetMapping("/list")
@@ -136,7 +122,7 @@ public class InstructionController {
 	public ResponseEntity<Object> deleteSlit(@RequestBody SlitInstructionDeleteRequest slitInstructionDeleteRequest) {
 		return instructionService.deleteSlit(slitInstructionDeleteRequest);
 	}
-
+	/*
 	@PostMapping({ "/qrcode/plan" })
 	public ResponseEntity<PdfResponseDto> qrcode(@RequestBody PartDto partDto) {
 		InputStreamResource inputStreamResource = null;
@@ -176,6 +162,6 @@ public class InstructionController {
 			e.printStackTrace();
 		}
 		return kk;
-	}
+	}*/
 
 }

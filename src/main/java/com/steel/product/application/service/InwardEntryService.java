@@ -57,4 +57,9 @@ public interface InwardEntryService {
 	void updateQRCodeEditFinish(String inwardId, String url);
 
 	JSONObject getdcpdf(DeliveryPDFRequestDTO req);
+
+	public void updateS3InwardLabelPDF(Integer inwardId, String url);
+
+	JSONObject getLabels(int inwardEntryId);
+
 }
