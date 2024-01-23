@@ -6,7 +6,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +37,7 @@ import com.itextpdf.text.pdf.PdfWriter;
 import com.steel.product.application.dao.InstructionRepository;
 import com.steel.product.application.dao.PartDetailsRepository;
 import com.steel.product.application.dto.instruction.InstructionFinishDto;
+import com.steel.product.application.dto.instruction.InstructionRequestDto;
 import com.steel.product.application.dto.pdf.LabelPrintDTO;
 import com.steel.product.application.dto.qrcode.QRCodeResponse;
 import com.steel.product.application.mapper.InstructionMapper;
@@ -615,7 +619,18 @@ public class LabelPrintPDFGenerator {
 		int tableRowHeight = 20;
 		try {
 			
-			List<QRCodeResponse> respList = fetchLabelData(3, labelPrintDTO);
+			Map<Integer, QRCodeResponse> respListMap = new HashMap<>();
+			List<QRCodeResponse> respListOld = fetchLabelData(3, labelPrintDTO);
+			List<QRCodeResponse> respList = new ArrayList<>();
+
+			for (QRCodeResponse response : respListOld) {
+				respListMap.put(response.getInstructionId(), response);
+			}
+			for (InstructionRequestDto responsea : instructionFinishDto.getInstructionDtos()) {
+				if(respListMap!=null && respListMap.get(responsea.getInstructionId())!=null ) {
+					respList.add(respListMap.get(responsea.getInstructionId()));
+				}
+			}
 
 			if(respList!=null && respList.size()>0) {
 				document = new Document();
@@ -829,7 +844,7 @@ public class LabelPrintPDFGenerator {
 				}
 				document.close();
 			}
-			System.out.println("inward Label Print generated successfully..!");
+			System.out.println("FG Label Print generated successfully..!");
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			System.out.println(ex);

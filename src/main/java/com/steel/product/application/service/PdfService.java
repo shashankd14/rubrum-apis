@@ -1,10 +1,12 @@
 package com.steel.product.application.service;
 
 import com.lowagie.text.DocumentException;
+import com.steel.product.application.dao.FGLabelRepository;
 import com.steel.product.application.dto.instruction.InstructionFinishDto;
 import com.steel.product.application.dto.pdf.*;
 import com.steel.product.application.dto.qrcode.QRCodeResponse;
 import com.steel.product.application.entity.CompanyDetails;
+import com.steel.product.application.entity.FGLabelEntity;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +34,7 @@ public class PdfService {
 	private AWSS3Service awsS3Service;
 	private PartDetailsService partDetailsService;
 	private LabelPrintPDFGenerator labelPrintPDFGenerator;
+	private FGLabelRepository fgLabelRepository;
 
 	@Value("${aws.s3.bucketPDFs}")
 	private String bucketName;
@@ -39,7 +42,8 @@ public class PdfService {
 	@Autowired
 	public PdfService(InwardEntryService inwardEntryService, CompanyDetailsService companyDetailsService,
 			SpringTemplateEngine templateEngine, InstructionService instructionService, AWSS3Service awsS3Service,
-			PartDetailsService partDetailsService, LabelPrintPDFGenerator labelPrintPDFGenerator) {
+			PartDetailsService partDetailsService, LabelPrintPDFGenerator labelPrintPDFGenerator,
+			FGLabelRepository fgLabelRepository) {
 		this.inwardEntryService = inwardEntryService;
 		this.companyDetailsService = companyDetailsService;
 		this.templateEngine = templateEngine;
@@ -47,6 +51,7 @@ public class PdfService {
 		this.awsS3Service = awsS3Service;
 		this.partDetailsService = partDetailsService;
 		this.labelPrintPDFGenerator = labelPrintPDFGenerator;
+		this.fgLabelRepository = fgLabelRepository;
 	}
 
     public File generatePdf(PdfDto pdfDto) throws IOException, org.dom4j.DocumentException, DocumentException {
@@ -266,4 +271,51 @@ public class PdfService {
 		return labelFile;
 	}
 
+	public File labelPrint(InstructionFinishDto instructionFinishDto) throws Exception {
+
+		File labelFile = File.createTempFile("labelprintfg_" + System.currentTimeMillis(), ".pdf");
+		boolean generateLabel = false;
+
+		try {
+			Instruction instructions = instructionService.getById(instructionFinishDto.getInstructionDtos().get(0).getInstructionId());
+
+			LabelPrintDTO labelPrintDTO = new LabelPrintDTO();
+			labelPrintDTO.setInwardEntryId(instructions.getInwardId().getInwardEntryId());
+			labelPrintDTO.setProcess("fg");
+
+			if ("WIPtoFG".equalsIgnoreCase(instructionFinishDto.getTaskType())) { // WIPtoFG
+				generateLabel = true;
+			} else { // FGtoFG .... edit finish
+				generateLabel = true;
+			}
+			if (generateLabel) {
+				Integer lastReqId = null;
+				try {
+					lastReqId = fgLabelRepository.getLastReqId(labelPrintDTO.getInwardEntryId());
+				} catch (Exception ex) {
+				}
+
+				if (lastReqId == null) {
+					lastReqId = 1;
+				} else {
+					lastReqId = lastReqId + 1;
+				}
+
+				labelFile = labelPrintPDFGenerator.renderFGLabelPrintPDF(labelPrintDTO, instructionFinishDto, labelFile);
+				awsS3Service.uploadPDFFileToS3Bucket(bucketName, labelFile, "FGLabel_" + labelPrintDTO.getInwardEntryId() + "_" + lastReqId);
+				FGLabelEntity fgLabelEntity = new FGLabelEntity();
+				fgLabelEntity.setInwardentryid(labelPrintDTO.getInwardEntryId());
+				fgLabelEntity.setLabelName("FGLabel_" + labelPrintDTO.getInwardEntryId() + "_" + lastReqId);
+				fgLabelEntity.setLabelS3Url("FGLabel_" + labelPrintDTO.getInwardEntryId() + "_" + lastReqId);
+				fgLabelEntity.setLabelSeq(lastReqId);
+				fgLabelRepository.save(fgLabelEntity);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		labelFile.deleteOnExit();
+		return labelFile;
+	}
+	
+	 
 }

@@ -2547,25 +2547,5 @@ public class QualityServiceImpl implements QualityService {
 		}
 	}
 
-	@Override
-	public File labelPrint(LabelPrintDTO labelPrintDTO, InstructionFinishDto instructionFinishDto) throws Exception {
-
-		File labelFile = File.createTempFile("labelprintfg_" +System.currentTimeMillis(), ".pdf");
-		boolean generateLabel = false;
-
-		try {
-			if ("WIPtoFG".equalsIgnoreCase(instructionFinishDto.getTaskType())) {	// WIPtoFG
-				generateLabel = true;
-			} else {		// FGtoFG .... edit finish
-				generateLabel = true;
-			}
-			if (generateLabel && "fg".equalsIgnoreCase(labelPrintDTO.getProcess())) {
-				labelFile = labelPrintPDFGenerator.renderFGLabelPrintPDF(labelPrintDTO, instructionFinishDto, labelFile);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return labelFile;
-	}
 	 
 }

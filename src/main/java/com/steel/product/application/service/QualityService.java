@@ -129,7 +129,4 @@ public interface QualityService {
 	List<QualityInspDispatchListResponse> qirPreDispatchList();
 
 	List<QualityInspDispatchListResponse> qirPostDispatchList();
-
-	File labelPrint(LabelPrintDTO labelPrintDTO, InstructionFinishDto instructionFinishDto) throws Exception;
-
 }

@@ -1,5 +1,6 @@
 package com.steel.product.application.service;
 
+import com.steel.product.application.dao.FGLabelRepository;
 import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.dto.delivery.DeliveryPDFRequestDTO;
 import com.steel.product.application.dto.inward.InwardEntryResponseDto;
@@ -8,6 +9,7 @@ import com.steel.product.application.dto.partDetails.PartDetailsPDFResponse;
 import com.steel.product.application.dto.qrcode.QRCodeResponse;
 import com.steel.product.application.entity.AdminUserEntity;
 import com.steel.product.application.entity.DeliveryDetails;
+import com.steel.product.application.entity.FGLabelEntity;
 import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.entity.UserPartyMap;
 import com.steel.product.application.util.CommonUtil;
@@ -32,16 +34,19 @@ import java.util.stream.Collectors;
 public class InwardEntryServiceImpl implements InwardEntryService {
 
 	private final static Logger LOGGER = LoggerFactory.getLogger("InwardEntryServiceImpl");
+	private final FGLabelRepository fgLabelRepository;
 	private final InwardEntryRepository inwdEntryRepo;
 	private AWSS3Service awsS3Service;
 	private CommonUtil commonUtil;
     private static final DecimalFormat decfor = new DecimalFormat("0.00");  
-
-    @Autowired
-	public InwardEntryServiceImpl(InwardEntryRepository theInwdEntryRepo, AWSS3Service awsS3Service, CommonUtil commonUtil) {
+    
+	@Autowired
+	public InwardEntryServiceImpl(InwardEntryRepository theInwdEntryRepo, AWSS3Service awsS3Service,
+			CommonUtil commonUtil, FGLabelRepository fgLabelRepository) {
 		this.inwdEntryRepo = theInwdEntryRepo;
 		this.awsS3Service = awsS3Service;
 		this.commonUtil = commonUtil;
+		this.fgLabelRepository = fgLabelRepository;
 	}
 
 	public InwardEntry saveEntry(InwardEntry entry) {
@@ -286,13 +291,13 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 			
 		if ("fg".equalsIgnoreCase(processType)) {
 			List<PartDetailsLabelsResponse> response2 = new ArrayList<PartDetailsLabelsResponse>();
-			List<Object[]> result2 = this.inwdEntryRepo.getDCPDFs(inwardId);
+			List<Object[]> result2 = this.fgLabelRepository.getFGLabels(inwardId);
 			for (Object[] obj2 : result2) {
 				PartDetailsLabelsResponse kk = new PartDetailsLabelsResponse();
-				DeliveryDetails partDetails = (DeliveryDetails) obj2[0];
-				kk.setId(partDetails.getDeliveryId().toString());
-				kk.setFileName(partDetails.getPdfS3Url());
-				kk.setLabelUrl(awsS3Service.generatePresignedUrl(partDetails.getPdfS3Url()));
+				FGLabelEntity fgLabelEntity = (FGLabelEntity) obj2[0];
+				kk.setId(fgLabelEntity.getLabelName());
+				kk.setFileName(fgLabelEntity.getLabelS3Url());
+				kk.setLabelUrl(awsS3Service.generatePresignedUrl(fgLabelEntity.getLabelS3Url()));
 				response2.add(kk);
 			}
 			finalResp.put("fg_labels", response2);
