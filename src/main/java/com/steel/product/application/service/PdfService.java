@@ -1,7 +1,9 @@
 package com.steel.product.application.service;
 
 import com.lowagie.text.DocumentException;
+import com.steel.product.application.dto.instruction.InstructionFinishDto;
 import com.steel.product.application.dto.pdf.*;
+import com.steel.product.application.dto.qrcode.QRCodeResponse;
 import com.steel.product.application.entity.CompanyDetails;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
@@ -109,6 +111,7 @@ public class PdfService {
 
     private File renderPdfInstruction(String html, String filename, String id, String processType) throws IOException, DocumentException {
         File file = File.createTempFile("aspen-steel-"+filename, ".pdf");
+		File labelFile = File.createTempFile("labelprintInward_" +System.currentTimeMillis(), ".pdf");
         OutputStream outputStream = new FileOutputStream(file);
         ITextRenderer renderer = new ITextRenderer(20f * 4f / 3f, 20);
         renderer.setDocumentFromString(html, new ClassPathResource("/").getURL().toExternalForm());
@@ -134,28 +137,29 @@ public class PdfService {
        
 		// below code is for label print file save in S3
 		try {
-			File labelFile = null;
-			String fileUrl = "";
 			LabelPrintDTO labelPrintDTO=new LabelPrintDTO();
+			 
 			if("INWARD_PDF".equals(processType)) {
 				labelPrintDTO.setInwardEntryId(Integer.parseInt(id));
 				labelPrintDTO.setProcess("inward");
-				labelFile = labelPrintPDFGenerator.renderInwardLabelPrintPDF(labelPrintDTO, inwardEntryService);
-				fileUrl = awsS3Service.uploadPDFFileToS3Bucket(bucketName, labelFile, "InwardLabel_"+id);
+				QRCodeResponse resp = inwardEntryService.getQRCodeDetails(labelPrintDTO.getInwardEntryId());
+				labelFile = labelPrintPDFGenerator.renderInwardLabelPrintPDF(labelPrintDTO, resp, labelFile);
+				file=labelFile;
+				awsS3Service.uploadPDFFileToS3Bucket(bucketName, labelFile, "InwardLabel_"+id);
 				inwardEntryService.updateS3InwardLabelPDF(Integer.parseInt(id), "InwardLabel_"+id);
 			} else if ("PLAN_PDF".equalsIgnoreCase(processType)) {
 				labelPrintDTO.setPartDetailsId(id);
 				labelPrintDTO.setProcess("wip");
-				labelFile = labelPrintPDFGenerator.renderWIPLabelPrintPDF(labelPrintDTO, inwardEntryService);
-				fileUrl = awsS3Service.uploadPDFFileToS3Bucket(bucketName, labelFile, "PlanLabel_"+id);
+				labelFile = labelPrintPDFGenerator.renderWIPLabelPrintPDF(labelPrintDTO, labelFile);
+				awsS3Service.uploadPDFFileToS3Bucket(bucketName, labelFile, "PlanLabel_"+id);
 				instructionService.updateS3PlanLabelPDF(id, "PlanLabel_"+id);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-		}
-		
+		}		
         outputStream.close();
         file.deleteOnExit();
+        labelFile.deleteOnExit();
         return file;
     }
 
@@ -247,5 +251,19 @@ public class PdfService {
             return templateEngine.process("Inward",context);
         }
     }
+
+	public File renderFGLabelPrintPDF(Integer inwardId, InstructionFinishDto instructionFinishDto) throws IOException {
+		File labelFile = File.createTempFile("labelprintFG_" + System.currentTimeMillis(), ".pdf");
+		try {
+			LabelPrintDTO labelPrintDTO = new LabelPrintDTO();
+			labelPrintDTO.setInwardEntryId(inwardId);
+			labelFile = labelPrintPDFGenerator.renderFGLabelPrintPDF(labelPrintDTO, instructionFinishDto, labelFile);
+			awsS3Service.uploadPDFFileToS3Bucket(bucketName, labelFile, "FGLabel_" + inwardId);
+			inwardEntryService.updateS3InwardLabelPDF(inwardId, "FGLabel_" + inwardId);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return labelFile;
+	}
 
 }

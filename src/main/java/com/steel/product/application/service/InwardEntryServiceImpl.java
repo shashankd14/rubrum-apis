@@ -252,46 +252,51 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 		return finalResp;
 	} 
 
-	public JSONObject getLabels(int inwardId) {
+	public JSONObject getLabels(int inwardId, String processType) {
 		JSONObject finalResp =new JSONObject();
-		List<PartDetailsLabelsResponse> response = new ArrayList<PartDetailsLabelsResponse>();
-		List<Object[]> results = this.inwdEntryRepo.getLabels(inwardId);
-		Iterator itr = results.iterator();
-		while (itr.hasNext()) {
-			PartDetailsLabelsResponse kk = new PartDetailsLabelsResponse();
-			Object result[] = (Object[]) itr.next();
-			kk.setId(result[0] != null ? (String) result[0] : null);
-			kk.setFileName(result[0] != null ? (String) result[0] : null);
-			String labelUrl = result[1] != null ? (String) result[1] : null;
-			System.out.println("getLabelUrl " +labelUrl);
-			kk.setLabelUrl(labelUrl);
-			if(labelUrl!=null && labelUrl.length()>0) {
-				kk.setLabelUrl(awsS3Service.generatePresignedUrl(labelUrl));
-			}
-			response.add(kk);
-		}
-		finalResp.put("wip_labels", response);
+		finalResp.put("wip_labels", "");
 		finalResp.put("inward_label", "");
 		finalResp.put("fg_labels", "");
 		
-		String s3URL = this.inwdEntryRepo.getLabelS3URL(inwardId);
-		if(s3URL !=null && s3URL.length()>0) {
-			finalResp.put("inward_label", awsS3Service.generatePresignedUrl(s3URL) );
+		if ("wip".equalsIgnoreCase(processType)) {
+			List<PartDetailsLabelsResponse> response = new ArrayList<PartDetailsLabelsResponse>();
+			List<Object[]> results = this.inwdEntryRepo.getLabels(inwardId);
+			Iterator itr = results.iterator();
+			while (itr.hasNext()) {
+				PartDetailsLabelsResponse kk = new PartDetailsLabelsResponse();
+				Object result[] = (Object[]) itr.next();
+				kk.setId(result[0] != null ? (String) result[0] : null);
+				kk.setFileName(result[0] != null ? (String) result[0] : null);
+				String labelUrl = result[1] != null ? (String) result[1] : null;
+				kk.setLabelUrl(labelUrl);
+				if (labelUrl != null && labelUrl.length() > 0) {
+					kk.setLabelUrl(awsS3Service.generatePresignedUrl(labelUrl));
+				}
+				response.add(kk);
+			}
+			finalResp.put("wip_labels", response);
 		}
 		
-		List<PartDetailsLabelsResponse> response2 = new ArrayList<PartDetailsLabelsResponse>();
-		List<Object[]> result2 = this.inwdEntryRepo.getDCPDFs(inwardId);
-
-		for (Object[] obj2 : result2) {
-			PartDetailsLabelsResponse kk = new PartDetailsLabelsResponse();
-			DeliveryDetails partDetails = (DeliveryDetails) obj2[0];
-			kk.setId(partDetails.getDeliveryId().toString());
-			kk.setFileName(partDetails.getPdfS3Url());
-			kk.setLabelUrl(awsS3Service.generatePresignedUrl(partDetails.getPdfS3Url()));
-			response2.add(kk);
+		if ("inward".equalsIgnoreCase(processType)) {
+			String s3URL = this.inwdEntryRepo.getLabelS3URL(inwardId);
+			if (s3URL != null && s3URL.length() > 0) {
+				finalResp.put("inward_label", awsS3Service.generatePresignedUrl(s3URL));
+			}
 		}
-		finalResp.put("fg_labels", response2);
-		
+			
+		if ("fg".equalsIgnoreCase(processType)) {
+			List<PartDetailsLabelsResponse> response2 = new ArrayList<PartDetailsLabelsResponse>();
+			List<Object[]> result2 = this.inwdEntryRepo.getDCPDFs(inwardId);
+			for (Object[] obj2 : result2) {
+				PartDetailsLabelsResponse kk = new PartDetailsLabelsResponse();
+				DeliveryDetails partDetails = (DeliveryDetails) obj2[0];
+				kk.setId(partDetails.getDeliveryId().toString());
+				kk.setFileName(partDetails.getPdfS3Url());
+				kk.setLabelUrl(awsS3Service.generatePresignedUrl(partDetails.getPdfS3Url()));
+				response2.add(kk);
+			}
+			finalResp.put("fg_labels", response2);
+		}
 		return finalResp;
 	} 
 	public JSONObject getdcpdf(DeliveryPDFRequestDTO req) {

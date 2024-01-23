@@ -60,6 +60,6 @@ public interface InwardEntryService {
 
 	public void updateS3InwardLabelPDF(Integer inwardId, String url);
 
-	JSONObject getLabels(int inwardEntryId);
+	JSONObject getLabels(int inwardEntryId, String processType);
 
 }

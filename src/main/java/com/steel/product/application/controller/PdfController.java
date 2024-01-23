@@ -1,6 +1,7 @@
 package com.steel.product.application.controller;
 
 import com.lowagie.text.DocumentException;
+import com.steel.product.application.dto.instruction.InstructionFinishDto;
 import com.steel.product.application.dto.pdf.DeliveryPdfDto;
 import com.steel.product.application.dto.pdf.LabelPrintDTO;
 import com.steel.product.application.dto.pdf.PartDto;
@@ -15,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -114,16 +117,20 @@ public class PdfController {
         return new ResponseEntity<PdfResponseDto>(new PdfResponseDto(encodedFile), HttpStatus.OK);
 	}
 
-	@PostMapping("/label/print")
-	public ResponseEntity<PdfResponseDto> labelPrint(@RequestBody LabelPrintDTO labelPrintDTO) {
+	
+	@PostMapping("/labelprint/fg")
+	public ResponseEntity<PdfResponseDto> labelPrint(@RequestBody InstructionFinishDto instructionFinishDto) {
         Path file;
         byte[] bytes;
         StringBuilder builder = new StringBuilder();
         try {
-            file = Paths.get(qualityService.labelPrint(labelPrintDTO).getAbsolutePath());
+        	LabelPrintDTO labelPrintDTO = new LabelPrintDTO();
+        	labelPrintDTO.setInwardEntryId(instructionFinishDto.getInstructionDtos().get(0).getInwardId());
+        	labelPrintDTO.setProcess("fg");
+            file = Paths.get(qualityService.labelPrint(labelPrintDTO, instructionFinishDto).getAbsolutePath());
             bytes = Files.readAllBytes(file);
             builder.append(Base64.getEncoder().encodeToString(bytes));
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
         String encodedFile = builder.toString();

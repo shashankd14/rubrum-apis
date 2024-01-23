@@ -24,6 +24,7 @@ import com.steel.product.application.dao.QualityInspectionReportRepository;
 import com.steel.product.application.dao.QualityPartyTemplateRepository;
 import com.steel.product.application.dao.QualityReportRepository;
 import com.steel.product.application.dao.QualityTemplateRepository;
+import com.steel.product.application.dto.instruction.InstructionFinishDto;
 import com.steel.product.application.dto.instruction.InstructionResponseDto;
 import com.steel.product.application.dto.pdf.LabelPrintDTO;
 import com.steel.product.application.dto.quality.KQPPartyMappingRequest;
@@ -1833,7 +1834,15 @@ public class QualityServiceImpl implements QualityService {
 					processDetailsTab.setWidthPercentage(98);
 					processDetailsTab.setWidths(new int[] { 40, 40, 40, 40, 40, 40 , 40, 40, 40, 40 });
 					
-					PdfPCell headingCell = new PdfPCell(new Phrase("Cutting Tolerance Data", font10b));
+					String fieldLabel="Cutting Tolerance Data";
+					String process = findFieldValue(templateDetailsList, "process");
+					if("CUTTING".equals(process)) {
+						fieldLabel="Cutting Tolerance Data";
+					} else if("SLITTING".equals(process)) {
+						fieldLabel="Slitting Tolerance Data";
+					}
+					
+					PdfPCell headingCell = new PdfPCell(new Phrase(fieldLabel, font10b));
 					headingCell.setHorizontalAlignment(Element.ALIGN_LEFT);
 					headingCell.setFixedHeight(22);
 					headingCell.setBorder(Rectangle.NO_BORDER);
@@ -2537,23 +2546,26 @@ public class QualityServiceImpl implements QualityService {
 			ex.printStackTrace();
 		}
 	}
-	
-	@Override
-	public File labelPrint(LabelPrintDTO labelPrintDTO) {
 
-		File file = null;
+	@Override
+	public File labelPrint(LabelPrintDTO labelPrintDTO, InstructionFinishDto instructionFinishDto) throws Exception {
+
+		File labelFile = File.createTempFile("labelprintfg_" +System.currentTimeMillis(), ".pdf");
+		boolean generateLabel = false;
+
 		try {
-			if ("inward".equalsIgnoreCase(labelPrintDTO.getProcess())) {
-				file = labelPrintPDFGenerator.renderInwardLabelPrintPDF(labelPrintDTO, inwdEntrySvc);
-			} else if ("wip".equalsIgnoreCase(labelPrintDTO.getProcess())) {
-				file = labelPrintPDFGenerator.renderWIPLabelPrintPDF(labelPrintDTO, inwdEntrySvc);
-			} else if ("fg".equalsIgnoreCase(labelPrintDTO.getProcess())) {
-				file = labelPrintPDFGenerator.renderFGLabelPrintPDF(labelPrintDTO, inwdEntrySvc);
+			if ("WIPtoFG".equalsIgnoreCase(instructionFinishDto.getTaskType())) {	// WIPtoFG
+				generateLabel = true;
+			} else {		// FGtoFG .... edit finish
+				generateLabel = true;
+			}
+			if (generateLabel && "fg".equalsIgnoreCase(labelPrintDTO.getProcess())) {
+				labelFile = labelPrintPDFGenerator.renderFGLabelPrintPDF(labelPrintDTO, instructionFinishDto, labelFile);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return file;
+		return labelFile;
 	}
 	 
 }

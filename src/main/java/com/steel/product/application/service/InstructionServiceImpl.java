@@ -841,14 +841,16 @@ public class InstructionServiceImpl implements InstructionService {
 						lengthFlag = true;
 					} else {
 						List<Float> lengthList =new ArrayList<>();
-						String[] lengthListStr =  entity.getLengthList().replace("[","").replace("]","").split(",");
-						for(String kkk : lengthListStr) {
-							if(kkk!=null && kkk.trim().length()>0 ) {
-								lengthList.add(new Float(kkk.trim()));
+						if( entity.getLengthList()!=null &&  entity.getLengthList().length()>0) {
+							String[] lengthListStr =  entity.getLengthList().replace("[","").replace("]","").split(",");
+							for(String kkk : lengthListStr) {
+								if(kkk!=null && kkk.trim().length()>0 ) {
+									lengthList.add(new Float(kkk.trim()));
+								}
 							}
-						}
-						if (lengthList.contains(instruction.getPlannedLength())) {
-							lengthFlag = true;
+							if (lengthList.contains(instruction.getPlannedLength())) {
+								lengthFlag = true;
+							}
 						}
 					}
 					if ("Y".equals(entity.getAnyWidthFlag())) {

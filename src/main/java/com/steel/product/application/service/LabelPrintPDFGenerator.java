@@ -33,6 +33,7 @@ import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.steel.product.application.dao.InstructionRepository;
 import com.steel.product.application.dao.PartDetailsRepository;
+import com.steel.product.application.dto.instruction.InstructionFinishDto;
 import com.steel.product.application.dto.pdf.LabelPrintDTO;
 import com.steel.product.application.dto.qrcode.QRCodeResponse;
 import com.steel.product.application.mapper.InstructionMapper;
@@ -53,19 +54,15 @@ public class LabelPrintPDFGenerator {
 
 	@Autowired InstructionMapper instructionMapper;
 
-	public File renderInwardLabelPrintPDF(LabelPrintDTO labelPrintDTO, InwardEntryService inwdEntrySvc) throws IOException, DocumentException {
+	public File renderInwardLabelPrintPDF(LabelPrintDTO labelPrintDTO, QRCodeResponse resp, File labelFile) throws IOException, DocumentException {
 		logger.info("renderLabelPrintPDF ");
-		File file = File.createTempFile("labelprint_" +labelPrintDTO.getProcess()+"_"+labelPrintDTO.getInwardEntryId()+"_"+System.currentTimeMillis(), ".pdf");
-		//File file = new File("E:/LabelPrint_"+labelPrintDTO.getProcess()+"_Plan.pdf");
 		Document document = new Document();
 
 		int tableRowHeight = 20;
 		try {
 			
-			QRCodeResponse resp = inwdEntrySvc.getQRCodeDetails(labelPrintDTO.getInwardEntryId());
-			
 			Rectangle myPagesize = new Rectangle (284, 213);
-			FileOutputStream fos = new FileOutputStream(file);
+			FileOutputStream fos = new FileOutputStream(labelFile);
 			document = new Document(myPagesize, 2f, 2f, 3f, 2f);
 
 			PdfWriter pdfWriter = PdfWriter.getInstance(document, fos);
@@ -285,14 +282,11 @@ public class LabelPrintPDFGenerator {
 			ex.printStackTrace();
 			System.out.println(ex);
 		}
-		file.deleteOnExit();
-		return file;
+		return labelFile;
 	}
 	
-	public File renderWIPLabelPrintPDF(LabelPrintDTO labelPrintDTO, InwardEntryService inwdEntrySvc) throws IOException, DocumentException {
+	public File renderWIPLabelPrintPDF(LabelPrintDTO labelPrintDTO, File file) throws IOException, DocumentException {
 		logger.info("renderLabelPrintPDF ");
-		File file = File.createTempFile("labelprint_" +labelPrintDTO.getProcess()+"_"+labelPrintDTO.getPartDetailsId()+"_"+System.currentTimeMillis(), ".pdf");
-		//File file = new File("E:/LabelPrint_"+labelPrintDTO.getProcess()+"_Plan.pdf");
 		Document document = null;
 		int tableRowHeight = 20;
 		try {
@@ -515,7 +509,6 @@ public class LabelPrintPDFGenerator {
 			ex.printStackTrace();
 			System.out.println(ex);
 		}
-		file.deleteOnExit();
 		return file;
 	}
 
@@ -581,8 +574,6 @@ public class LabelPrintPDFGenerator {
 			packetsList = partDetailsRepository.wipLabelData(stts, labelPrintDTO.getPartDetailsId());
 		} else if (labelPrintDTO.getInwardEntryId() != null && labelPrintDTO.getInwardEntryId() > 0) {
 			packetsList = partDetailsRepository.wipLabelDataFG(stts, labelPrintDTO.getInwardEntryId());
-		} else {
-			packetsList = partDetailsRepository.statusWiseLabelData(stts);
 		}
 		
 		List<QRCodeResponse> qirList = new ArrayList<QRCodeResponse>();
@@ -617,13 +608,13 @@ public class LabelPrintPDFGenerator {
 		return qirList;
 	}
 
-	public File renderFGLabelPrintPDF(LabelPrintDTO labelPrintDTO, InwardEntryService inwdEntrySvc) throws IOException, DocumentException {
-		logger.info("renderLabelPrintPDF ");
-		File file = File.createTempFile("labelprint_" +labelPrintDTO.getProcess()+"_"+labelPrintDTO.getInwardEntryId()+"_"+System.currentTimeMillis(), ".pdf");
-		//File file = new File("E:/LabelPrint_"+labelPrintDTO.getProcess()+"_Plan.pdf");
+	public File renderFGLabelPrintPDF(LabelPrintDTO labelPrintDTO, InstructionFinishDto instructionFinishDto, File file)
+			throws IOException, DocumentException {
+		logger.info("renderFGLabelPrintPDF ");
 		Document document = null;
 		int tableRowHeight = 20;
 		try {
+			
 			List<QRCodeResponse> respList = fetchLabelData(3, labelPrintDTO);
 
 			if(respList!=null && respList.size()>0) {

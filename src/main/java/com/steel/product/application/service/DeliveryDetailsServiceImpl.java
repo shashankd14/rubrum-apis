@@ -424,7 +424,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 			Integer noofPlans = objs[34] != null ? ((BigInteger) objs[34]).intValue() : 0;
 			Integer partDetailsId = objs[35] != null ? (Integer) objs[35] : 0;
 			Integer laminationId = objs[36] != null ? (Integer) objs[36] : 0;
-			//String partyGSTIN = objs[37] != null ? (String) objs[37] : "29";
+			invoiceListDTO.setGstno(objs[37] != null ? (String) objs[37] : "");
 
 			PriceCalculateDTO priceCalculateDTO = priceMasterService.calculateInstructionWisePrice(partyId,
 					BigDecimal.valueOf(fThickness), processId, materialGradeId, packingRateId,

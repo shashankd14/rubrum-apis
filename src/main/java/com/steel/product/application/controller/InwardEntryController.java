@@ -364,10 +364,10 @@ public class InwardEntryController {
 		}
 	}
 
-	@PostMapping({ "/getLabels/{inwardEntryId}" })
-	public ResponseEntity<Object> getLabels(@PathVariable int inwardEntryId) {
+	@PostMapping({ "/getLabels/{processType}/{inwardEntryId}" })
+	public ResponseEntity<Object> getLabels(@PathVariable int inwardEntryId, @PathVariable String processType) {
 		try {
-			JSONObject entry = this.inwdEntrySvc.getLabels(inwardEntryId);
+			JSONObject entry = this.inwdEntrySvc.getLabels(inwardEntryId, processType);
 			if (entry == null)
 				throw new RuntimeException("Entry id not found - " + inwardEntryId);
 			return new ResponseEntity<Object>(entry, HttpStatus.OK);

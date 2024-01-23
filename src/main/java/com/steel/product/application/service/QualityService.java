@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.steel.product.application.dto.instruction.InstructionFinishDto;
 import com.steel.product.application.dto.instruction.InstructionResponseDto;
 import com.steel.product.application.dto.pdf.LabelPrintDTO;
 import com.steel.product.application.dto.quality.KQPPartyMappingRequest;
@@ -129,6 +130,6 @@ public interface QualityService {
 
 	List<QualityInspDispatchListResponse> qirPostDispatchList();
 
-	File labelPrint(LabelPrintDTO labelPrintDTO);
+	File labelPrint(LabelPrintDTO labelPrintDTO, InstructionFinishDto instructionFinishDto) throws Exception;
 
 }
