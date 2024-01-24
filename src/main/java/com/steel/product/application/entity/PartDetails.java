@@ -52,11 +52,14 @@ public class PartDetails {
     @Column(name = "pdf_s3_url")
     private String pdfS3Url;
 
-    //@Column(name = "qrcode_s3_url")
-    //private String qrcodeS3Url;
+    @Column(name = "labelpdf_wip_s3_url")
+    private String labelpdfWipS3Url;
 
-    @Column(name = "labelpdf_s3_url")
-    private String labelpdfS3Url;
+    @Column(name = "labelpdf_fg_s3_url")
+    private String labelpdfFgS3Url;
+
+    @Column(name = "label_updated_time")
+    private Date labelUpdatedTime;
 
     public void addInstruction(Instruction instruction) {
         if (this.instructions == null) {
@@ -70,4 +73,5 @@ public class PartDetails {
         this.instructions.remove(instruction);
         instruction.setPartDetails(null);
     }
+    
 }

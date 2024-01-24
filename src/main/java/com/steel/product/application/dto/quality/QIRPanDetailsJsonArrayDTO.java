@@ -19,6 +19,6 @@ public class QIRPanDetailsJsonArrayDTO {
 	private List<QIRPanDetailsJsonArrayChildDTO> cutInspectionData = new ArrayList<>();
 	private List<QIRPanDetailsJsonArrayChildDTO> finalInspectionData = new ArrayList<>();
 
-	private List<QIRPanToleranceChildDTO> toleranceInspectionData = new ArrayList<>();
+	private List<QIRPanToleranceChildDTO> toleranceInspectionDataCut = new ArrayList<>();
 	private List<QIRPanToleranceChildDTO> toleranceInspectionDataSlit = new ArrayList<>();
 }

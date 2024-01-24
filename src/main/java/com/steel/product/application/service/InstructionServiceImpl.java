@@ -1285,6 +1285,10 @@ public class InstructionServiceImpl implements InstructionService {
 	}
 
 	@Override
+	public void updateS3FGLabelPDF(String partDetailsId, String url) {
+		instructionRepository.updateS3FGLabelPDF(partDetailsId, url);
+	}
+	@Override
 	public void updateS3InwardPDF(Integer inwardId, String url) {
 		inwardEntryRepository.updateS3InwardPDF(inwardId, url);
 	}

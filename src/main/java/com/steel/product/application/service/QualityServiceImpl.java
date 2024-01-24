@@ -24,9 +24,7 @@ import com.steel.product.application.dao.QualityInspectionReportRepository;
 import com.steel.product.application.dao.QualityPartyTemplateRepository;
 import com.steel.product.application.dao.QualityReportRepository;
 import com.steel.product.application.dao.QualityTemplateRepository;
-import com.steel.product.application.dto.instruction.InstructionFinishDto;
 import com.steel.product.application.dto.instruction.InstructionResponseDto;
-import com.steel.product.application.dto.pdf.LabelPrintDTO;
 import com.steel.product.application.dto.quality.KQPPartyMappingRequest;
 import com.steel.product.application.dto.quality.KQPPartyMappingResponse;
 import com.steel.product.application.dto.quality.KQPRequest;
@@ -851,6 +849,7 @@ public class QualityServiceImpl implements QualityService {
 			resp.setPartyName(result[9] != null ? (String) result[9] : null);
 			resp.setFwidth(result[10] != null ? (Float) result[10] : null);
 			resp.setMaterialDesc(result[11] != null ? (String) result[11] : null);
+			resp.setInwardEntryId(result[12] != null ? (Integer) result[12] : null);
 			kk.put(resp.getPlanId(), resp);
 			//qirList.add(resp);
 		}
@@ -880,6 +879,7 @@ public class QualityServiceImpl implements QualityService {
 			resp.setPartyName(result[9] != null ? (String) result[9] : null);
 			resp.setFwidth(result[10] != null ? (Float) result[10] : null);
 			resp.setMaterialDesc(result[11] != null ? (String) result[11] : null);
+			resp.setInwardEntryId(result[12] != null ? (Integer) result[12] : null);
 			kk.put(resp.getPlanId(), resp);
 			//qirList.add(resp);
 		}
@@ -1827,22 +1827,14 @@ public class QualityServiceImpl implements QualityService {
 				}
 				
 				if (planDetails != null && planDetails.get(0) != null 
-						&& planDetails.get(0).getToleranceInspectionData() != null
-						&& planDetails.get(0).getToleranceInspectionData().size() > 0) {
+						&& planDetails.get(0).getToleranceInspectionDataCut() != null
+						&& planDetails.get(0).getToleranceInspectionDataCut().size() > 0) {
 					
 					PdfPTable processDetailsTab = new PdfPTable(10);
 					processDetailsTab.setWidthPercentage(98);
 					processDetailsTab.setWidths(new int[] { 40, 40, 40, 40, 40, 40 , 40, 40, 40, 40 });
 					
-					String fieldLabel="Cutting Tolerance Data";
-					String process = findFieldValue(templateDetailsList, "process");
-					if("CUTTING".equals(process)) {
-						fieldLabel="Cutting Tolerance Data";
-					} else if("SLITTING".equals(process)) {
-						fieldLabel="Slitting Tolerance Data";
-					}
-					
-					PdfPCell headingCell = new PdfPCell(new Phrase(fieldLabel, font10b));
+					PdfPCell headingCell = new PdfPCell(new Phrase("Cutting Tolerance Data", font10b));
 					headingCell.setHorizontalAlignment(Element.ALIGN_LEFT);
 					headingCell.setFixedHeight(22);
 					headingCell.setBorder(Rectangle.NO_BORDER);
@@ -1899,7 +1891,7 @@ public class QualityServiceImpl implements QualityService {
 					headerColumn6Cell23.setFixedHeight(fixedHeight);
 					processDetailsTab.addCell(headerColumn6Cell23);
 
-					for (QIRPanToleranceChildDTO obj : planDetails.get(0).getToleranceInspectionData()) {
+					for (QIRPanToleranceChildDTO obj : planDetails.get(0).getToleranceInspectionDataCut()) {
 						
 						PdfPCell headerColumn1CellValue = new PdfPCell(new Phrase("" + obj.getToleranceThicknessFrom(), font9));
 						headerColumn1CellValue.setHorizontalAlignment(Element.ALIGN_CENTER);

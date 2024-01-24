@@ -51,6 +51,9 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
     @Query("select ins from Instruction ins join fetch ins.deliveryDetails dd where ins.instructionId in :instructionIds")
     List<Instruction> findInstructionsWithDeliveryDetails(@Param("instructionIds") List<Integer> instructionIds);
 
+    @Query("select ins from Instruction ins join fetch ins.partDetails dd where ins.instructionId in :instructionIds")
+    List<Instruction> findInstructionsWithPartDetails(@Param("instructionIds") List<Integer> instructionIds);
+
     @Query("select ins from Instruction ins join fetch ins.inwardId inw join fetch inw.party join fetch inw.material join fetch inw.materialGrade" +
             " where inw.inwardEntryId = :inwardId and (ins.groupId is not null or ins.parentGroupId is not null)")
     List<Instruction> findSlitAndCutInstructionByInwardId(@Param("inwardId") Integer inwardId);
@@ -149,7 +152,12 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
 
 	@Modifying
 	@Transactional
-	@Query("update PartDetails set labelpdfS3Url=:url where partDetailsId= :partDetailsId ")
+	@Query("update PartDetails set labelpdfWipS3Url=:url where partDetailsId= :partDetailsId ")
 	public void updateS3PlanLabelPDF(@Param("partDetailsId") String partDetailsId, @Param("url") String url);
-	
+
+	@Modifying
+	@Transactional
+	@Query("update PartDetails set labelpdfFgS3Url=:url, labelUpdatedTime=CURRENT_TIMESTAMP where partDetailsId= :partDetailsId ")
+	public void updateS3FGLabelPDF(@Param("partDetailsId") String partDetailsId, @Param("url") String url);
+
 }

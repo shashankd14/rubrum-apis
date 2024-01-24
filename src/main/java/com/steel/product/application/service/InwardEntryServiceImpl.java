@@ -1,6 +1,5 @@
 package com.steel.product.application.service;
 
-import com.steel.product.application.dao.FGLabelRepository;
 import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.dto.delivery.DeliveryPDFRequestDTO;
 import com.steel.product.application.dto.inward.InwardEntryResponseDto;
@@ -9,7 +8,6 @@ import com.steel.product.application.dto.partDetails.PartDetailsPDFResponse;
 import com.steel.product.application.dto.qrcode.QRCodeResponse;
 import com.steel.product.application.entity.AdminUserEntity;
 import com.steel.product.application.entity.DeliveryDetails;
-import com.steel.product.application.entity.FGLabelEntity;
 import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.entity.UserPartyMap;
 import com.steel.product.application.util.CommonUtil;
@@ -34,7 +32,6 @@ import java.util.stream.Collectors;
 public class InwardEntryServiceImpl implements InwardEntryService {
 
 	private final static Logger LOGGER = LoggerFactory.getLogger("InwardEntryServiceImpl");
-	private final FGLabelRepository fgLabelRepository;
 	private final InwardEntryRepository inwdEntryRepo;
 	private AWSS3Service awsS3Service;
 	private CommonUtil commonUtil;
@@ -42,11 +39,10 @@ public class InwardEntryServiceImpl implements InwardEntryService {
     
 	@Autowired
 	public InwardEntryServiceImpl(InwardEntryRepository theInwdEntryRepo, AWSS3Service awsS3Service,
-			CommonUtil commonUtil, FGLabelRepository fgLabelRepository) {
+			CommonUtil commonUtil) {
 		this.inwdEntryRepo = theInwdEntryRepo;
 		this.awsS3Service = awsS3Service;
 		this.commonUtil = commonUtil;
-		this.fgLabelRepository = fgLabelRepository;
 	}
 
 	public InwardEntry saveEntry(InwardEntry entry) {
@@ -290,17 +286,23 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 		}
 			
 		if ("fg".equalsIgnoreCase(processType)) {
-			List<PartDetailsLabelsResponse> response2 = new ArrayList<PartDetailsLabelsResponse>();
-			List<Object[]> result2 = this.fgLabelRepository.getFGLabels(inwardId);
-			for (Object[] obj2 : result2) {
+			List<PartDetailsLabelsResponse> response = new ArrayList<PartDetailsLabelsResponse>();
+			List<Object[]> results = this.inwdEntryRepo.getLabels(inwardId);
+			Iterator itr = results.iterator();
+			while (itr.hasNext()) {
 				PartDetailsLabelsResponse kk = new PartDetailsLabelsResponse();
-				FGLabelEntity fgLabelEntity = (FGLabelEntity) obj2[0];
-				kk.setId(fgLabelEntity.getLabelName());
-				kk.setFileName(fgLabelEntity.getLabelS3Url());
-				kk.setLabelUrl(awsS3Service.generatePresignedUrl(fgLabelEntity.getLabelS3Url()));
-				response2.add(kk);
+				Object result[] = (Object[]) itr.next();
+				kk.setId(result[0] != null ? (String) result[0] : null);
+				kk.setFileName(result[2] != null ? (String) result[2] : null);
+				kk.setModifiedTime(result[3] != null ? (Date) result[3] : null);
+				String labelUrl = result[1] != null ? (String) result[1] : null;
+				kk.setLabelUrl(labelUrl);
+				if (labelUrl != null && labelUrl.length() > 0) {
+					kk.setLabelUrl(awsS3Service.generatePresignedUrl(labelUrl));
+				}
+				response.add(kk);
 			}
-			finalResp.put("fg_labels", response2);
+			finalResp.put("fg_labels", response);
 		}
 		return finalResp;
 	} 

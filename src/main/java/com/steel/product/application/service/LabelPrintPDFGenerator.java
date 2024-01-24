@@ -574,11 +574,11 @@ public class LabelPrintPDFGenerator {
 	public List<QRCodeResponse> fetchLabelData(Integer stts, LabelPrintDTO labelPrintDTO) {
 		List<Object[]> packetsList = null;
 
-		if (labelPrintDTO.getPartDetailsId() != null && labelPrintDTO.getPartDetailsId().length() > 0) {
+		//if (labelPrintDTO.getPartDetailsId() != null && labelPrintDTO.getPartDetailsId().length() > 0) {
 			packetsList = partDetailsRepository.wipLabelData(stts, labelPrintDTO.getPartDetailsId());
-		} else if (labelPrintDTO.getInwardEntryId() != null && labelPrintDTO.getInwardEntryId() > 0) {
-			packetsList = partDetailsRepository.wipLabelDataFG(stts, labelPrintDTO.getInwardEntryId());
-		}
+		//} else if (labelPrintDTO.getInwardEntryId() != null && labelPrintDTO.getInwardEntryId() > 0) {
+			//packetsList = partDetailsRepository.wipLabelDataFG(stts, labelPrintDTO.getInwardEntryId());
+		//}
 		
 		List<QRCodeResponse> qirList = new ArrayList<QRCodeResponse>();
 		for (Object[] result : packetsList) {

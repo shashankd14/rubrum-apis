@@ -151,7 +151,7 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 	@Query("update InwardEntry set labelpdfS3Url=:url where inwardEntryId= :inwardId ")
 	public void updateS3InwardLabelPDF(@Param("inwardId") Integer inwardId, @Param("url") String url);
 
-	@Query(value = "SELECT DISTINCT part.part_details_id, part.labelpdf_s3_url FROM product_part_details part INNER JOIN product_instruction ins ON part.id = ins.part_details_id INNER JOIN product_tblinwardentry inward ON ins.inwardid = inward.inwardentryid WHERE ins.inwardid = :inwardId", nativeQuery = true)
+	@Query(value = "SELECT DISTINCT part.part_details_id, part.labelpdf_wip_s3_url, part.labelpdf_fg_s3_url, label_updated_time FROM product_part_details part INNER JOIN product_instruction ins ON part.id = ins.part_details_id INNER JOIN product_tblinwardentry inward ON ins.inwardid = inward.inwardentryid WHERE ins.inwardid = :inwardId", nativeQuery = true)
 	public List<Object[]> getLabels(@Param("inwardId") Integer inwardId);
 
 }
