@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -267,7 +268,7 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 				PartDetailsLabelsResponse kk = new PartDetailsLabelsResponse();
 				Object result[] = (Object[]) itr.next();
 				kk.setId(result[0] != null ? (String) result[0] : null);
-				kk.setFileName(result[0] != null ? (String) result[0] : null);
+				kk.setFileName(result[1] != null ? (String) result[1] : null);
 				String labelUrl = result[1] != null ? (String) result[1] : null;
 				kk.setLabelUrl(labelUrl);
 				if (labelUrl != null && labelUrl.length() > 0) {
@@ -295,7 +296,7 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 				kk.setId(result[0] != null ? (String) result[0] : null);
 				kk.setFileName(result[2] != null ? (String) result[2] : null);
 				kk.setModifiedTime(result[3] != null ? (Date) result[3] : null);
-				String labelUrl = result[1] != null ? (String) result[1] : null;
+				String labelUrl = result[2] != null ? (String) result[2] : null;
 				kk.setLabelUrl(labelUrl);
 				if (labelUrl != null && labelUrl.length() > 0) {
 					kk.setLabelUrl(awsS3Service.generatePresignedUrl(labelUrl));

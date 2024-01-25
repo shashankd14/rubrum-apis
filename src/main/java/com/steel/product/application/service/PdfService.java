@@ -289,11 +289,12 @@ public class PdfService {
 				for (Map.Entry<String, Instruction> entry : instructionsMap.entrySet()) {
 					String partDetailsId = entry.getKey();
 					System.out.println("partDetailsId = " + partDetailsId);
+					File labelFileTemp = File.createTempFile("labelprintfg_" + partDetailsId, ".pdf");
 					LabelPrintDTO labelPrintDTO = new LabelPrintDTO();
 					labelPrintDTO.setPartDetailsId(partDetailsId);
 					labelPrintDTO.setProcess("fg");
-
-					labelFile = labelPrintPDFGenerator.renderFGLabelPrintPDF(labelPrintDTO, instructionFinishDto, labelFile);
+					labelFileTemp = labelPrintPDFGenerator.renderFGLabelPrintPDF(labelPrintDTO, instructionFinishDto, labelFile);
+					labelFile = labelFileTemp;
 					awsS3Service.uploadPDFFileToS3Bucket(bucketName, labelFile, "FGLabel_" + partDetailsId);
 					instructionService.updateS3FGLabelPDF(partDetailsId, "FGLabel_" + partDetailsId);
 				}
