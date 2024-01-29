@@ -479,7 +479,7 @@ public class LabelPrintPDFGenerator {
 					newCoilDetailsTab.setWidthPercentage(100);
 					newCoilDetailsTab.setWidths(new int[] {100, 80, 100});
 	
-					PdfPCell companyNameCell12 = new PdfPCell(new Phrase(new Chunk("M/C NO:  ", font7b)));
+					PdfPCell companyNameCell12 = new PdfPCell(new Phrase(new Chunk("M/C NO:  "+response.getMotherCoilNo(), font7b)));
 					companyNameCell12.setHorizontalAlignment( Element.ALIGN_LEFT);
 					companyNameCell12.setVerticalAlignment( Element.ALIGN_MIDDLE);
 					companyNameCell12.setBorder( Rectangle.RIGHT);
@@ -571,6 +571,36 @@ public class LabelPrintPDFGenerator {
 		return pngData;
 	}
 	
+	private byte[] getQRCodePlanFG(QRCodeResponse resp) {
+		byte[] pngData = null;
+
+		try {
+
+			StringBuilder text = new StringBuilder();
+			text.append("Coil NO : " + resp.getCoilNo());
+			text.append("\nPacket Id : " + resp.getInstructionId());
+			text.append("\nCustomer BatchNo : " + resp.getCustomerBatchNo());
+			text.append("\nCustomer Name : " + resp.getPartyName());
+			text.append("\nMaterial Description : " + resp.getMaterialDesc());
+			text.append("\nMaterial Grade : " + resp.getMaterialGrade());
+			text.append("\nT * W * L : " + resp.getFthickness() + " * " + resp.getActualwidth() + " * " + resp.getActuallength());
+			text.append("\nNet Weight : " + resp.getActualweight());
+			text.append("\nEnd User Tag : " + resp.getEndUserTag());
+
+			QRCodeWriter qrCodeWriter = new QRCodeWriter();
+			BitMatrix bitMatrix = qrCodeWriter.encode(text.toString(), BarcodeFormat.QR_CODE, 60, 67);
+
+			ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
+			MatrixToImageConfig con = new MatrixToImageConfig();
+			MatrixToImageWriter.writeToStream(bitMatrix, "PNG", pngOutputStream, con);
+			pngData = pngOutputStream.toByteArray();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return pngData;
+	}
+	
+	
 	public List<QRCodeResponse> fetchLabelData(Integer stts, LabelPrintDTO labelPrintDTO) {
 		List<Object[]> packetsList = null;
 
@@ -606,7 +636,8 @@ public class LabelPrintPDFGenerator {
 			resp.setActuallength((decfor.format(actualLength.doubleValue())));
 			resp.setActualweight((decfor.format(actualWeight.doubleValue())));
 			resp.setEndUserTag(result[14] != null ? (String) result[14] : "");
-			resp.setPlannedNoOfPieces(result[15] != null ? (Integer) result[15] : null);
+			resp.setPlannedNoOfPieces(result[15] != null ? (Integer) result[15] : 0);
+			resp.setMotherCoilNo(result[16] != null ? (String) result[16] : "");
 			qirList.add(resp);
 		}
 		return qirList;
@@ -614,7 +645,7 @@ public class LabelPrintPDFGenerator {
 
 	public File renderFGLabelPrintPDF(LabelPrintDTO labelPrintDTO, InstructionFinishDto instructionFinishDto, File file)
 			throws IOException, DocumentException {
-		logger.info("renderFGLabelPrintPDF ");
+		logger.info("renderFGLabelPrintPDF Started == ");
 		Document document = null;
 		int tableRowHeight = 20;
 		try {
@@ -766,7 +797,7 @@ public class LabelPrintPDFGenerator {
 					companyNameCell6.setFixedHeight(tableRowHeight);
 					coilDetailsTab.addCell(companyNameCell6);		
 					
-					PdfPCell companyNameCell7 = new PdfPCell(new Phrase("T: "+response.getFthickness()+"        "+"W: "+response.getFwidth()+"       "+"L: "+response.getFlength(), font11b));
+					PdfPCell companyNameCell7 = new PdfPCell(new Phrase("T: "+response.getFthickness()+"        "+"W: "+response.getActualwidth()+"       "+"L: "+response.getActuallength(), font11b));
 					companyNameCell7.setHorizontalAlignment( Element.ALIGN_LEFT);
 					companyNameCell7.setVerticalAlignment( Element.ALIGN_MIDDLE);
 					companyNameCell7.setColspan(4);
@@ -783,7 +814,7 @@ public class LabelPrintPDFGenerator {
 					companyNameCell9.setFixedHeight(23);
 					coilDetailsTab.addCell(companyNameCell9);	
 					
-					Image qrCodeImage = Image.getInstance(getQRCodePlan(response));
+					Image qrCodeImage = Image.getInstance(getQRCodePlanFG(response));
 					PdfPCell companyNameCell13 = new PdfPCell(qrCodeImage);
 					companyNameCell13.setHorizontalAlignment( Element.ALIGN_CENTER);
 					companyNameCell13.setVerticalAlignment( Element.ALIGN_MIDDLE);
@@ -793,7 +824,7 @@ public class LabelPrintPDFGenerator {
 	
 					Paragraph netwtParagraph = new Paragraph();
 					netwtParagraph.add(new Phrase(new Chunk("Net Wt(kgs):  ", font8b)));
-					netwtParagraph.add(new Phrase(new Chunk(response.getFweight(), font11b)));
+					netwtParagraph.add(new Phrase(new Chunk(response.getActualweight(), font11b)));
 					PdfPCell companyNameCell10 = new PdfPCell(netwtParagraph);
 					companyNameCell10.setHorizontalAlignment( Element.ALIGN_LEFT);
 					companyNameCell10.setColspan(2);
@@ -815,7 +846,7 @@ public class LabelPrintPDFGenerator {
 					newCoilDetailsTab.setWidthPercentage(100);
 					newCoilDetailsTab.setWidths(new int[] {100, 80, 100});
 	
-					PdfPCell companyNameCell12 = new PdfPCell(new Phrase(new Chunk("M/C NO:  ", font7b)));
+					PdfPCell companyNameCell12 = new PdfPCell(new Phrase(new Chunk("M/C NO:  "+response.getMotherCoilNo(), font7b)));
 					companyNameCell12.setHorizontalAlignment( Element.ALIGN_LEFT);
 					companyNameCell12.setVerticalAlignment( Element.ALIGN_MIDDLE);
 					companyNameCell12.setBorder( Rectangle.RIGHT);
@@ -841,13 +872,13 @@ public class LabelPrintPDFGenerator {
 					cell11.addElement(newCoilDetailsTab);
 					coilDetailsTab.addCell(cell11);			
 					document.add( coilDetailsTab );
+					logger.info("FG Label Print generated successfully..!");
 				}
 				document.close();
 			}
-			System.out.println("FG Label Print generated successfully..!");
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			System.out.println(ex);
+			logger.info("error == "+ex.getMessage());
 		}
 		file.deleteOnExit();
 		return file;

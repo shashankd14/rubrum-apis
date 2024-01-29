@@ -269,35 +269,26 @@ public class PdfService {
 	public File labelPrint(InstructionFinishDto instructionFinishDto) throws Exception {
 
 		File labelFile = File.createTempFile("labelprintfg_" + System.currentTimeMillis(), ".pdf");
-		boolean generateLabel = false;
-
 		try {
-			if ("WIPtoFG".equalsIgnoreCase(instructionFinishDto.getTaskType())) { // WIPtoFG
-				generateLabel = true;
-			} else { // FGtoFG .... edit finish
-				generateLabel = true;
+			List<Instruction> instructionsq = instructionService.getAllByInstructionIdIn(instructionFinishDto.getInstructionDtos().stream().map(ins -> ins.getInstructionId()).collect(Collectors.toList()));
+
+			Map<String, Instruction> instructionsMap = new HashMap<>();
+			for (Instruction instruction : instructionsq) {
+				instructionsMap.put(instruction.getPartDetails().getPartDetailsId(), instruction);
 			}
 
-			if (generateLabel) {
-				List<Instruction> instructionsq = instructionService.getAllByInstructionIdIn(instructionFinishDto.getInstructionDtos().stream().map(ins -> ins.getInstructionId()).collect(Collectors.toList()));
-
-				Map<String, Instruction> instructionsMap = new HashMap<>();
-				for (Instruction instruction : instructionsq) {
-					instructionsMap.put(instruction.getPartDetails().getPartDetailsId(), instruction);
-				}
-
-				for (Map.Entry<String, Instruction> entry : instructionsMap.entrySet()) {
-					String partDetailsId = entry.getKey();
-					System.out.println("partDetailsId = " + partDetailsId);
-					File labelFileTemp = File.createTempFile("labelprintfg_" + partDetailsId, ".pdf");
-					LabelPrintDTO labelPrintDTO = new LabelPrintDTO();
-					labelPrintDTO.setPartDetailsId(partDetailsId);
-					labelPrintDTO.setProcess("fg");
-					labelFileTemp = labelPrintPDFGenerator.renderFGLabelPrintPDF(labelPrintDTO, instructionFinishDto, labelFile);
-					labelFile = labelFileTemp;
-					awsS3Service.uploadPDFFileToS3Bucket(bucketName, labelFile, "FGLabel_" + partDetailsId);
-					instructionService.updateS3FGLabelPDF(partDetailsId, "FGLabel_" + partDetailsId);
-				}
+			for (Map.Entry<String, Instruction> entry : instructionsMap.entrySet()) {
+				String partDetailsId = entry.getKey();
+				System.out.println("partDetailsId = " + partDetailsId);
+				File labelFileTemp = File.createTempFile("labelprintfg_" + partDetailsId, ".pdf");
+				LabelPrintDTO labelPrintDTO = new LabelPrintDTO();
+				labelPrintDTO.setPartDetailsId(partDetailsId);
+				labelPrintDTO.setProcess("fg");
+				labelFileTemp = labelPrintPDFGenerator.renderFGLabelPrintPDF(labelPrintDTO, instructionFinishDto, labelFile);
+				labelFile = labelFileTemp;
+				awsS3Service.uploadPDFFileToS3Bucket(bucketName, labelFile, "FGLabel_" + partDetailsId);
+				instructionService.updateS3FGLabelPDF(partDetailsId, "FGLabel_" + partDetailsId);
+				labelFileTemp.deleteOnExit();
 			}
 
 		} catch (Exception e) {
