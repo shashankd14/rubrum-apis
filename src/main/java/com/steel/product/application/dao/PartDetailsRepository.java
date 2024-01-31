@@ -25,7 +25,8 @@ public interface PartDetailsRepository extends JpaRepository<PartDetails, Long> 
 
 	@Query(value = "select coilnumber, customerbatchid, partyname, instructiondate, material_desc, "
 			+ "	material_grade, packet_id, fthickness, plannedwidth, plannedlength, plannedweight, actualwidth,"
-			+ "	actuallength, actualweight, enduser_tag_name, plannednoofpieces, parentcoilnumber, process_status "
+			+ "	actuallength, actualweight, enduser_tag_name, plannednoofpieces, parentcoilnumber, is_slit_and_cut, " 
+			+ "	processid " 
 			+ " FROM label_print_vw where stts=:stts and part_details_id=:planId ", nativeQuery = true)
 	List<Object[]> wipLabelData(@Param("stts") Integer stts, @Param("planId") String planId);
 

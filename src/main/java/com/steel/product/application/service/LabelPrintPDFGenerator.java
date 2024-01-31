@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -286,11 +287,28 @@ public class LabelPrintPDFGenerator {
 	}
 	
 	public File renderWIPLabelPrintPDF(LabelPrintDTO labelPrintDTO, File file) throws IOException, DocumentException {
-		logger.info("renderLabelPrintPDF ");
+		logger.info("renderWIPLabelPrintPDF ");
 		Document document = null;
 		int tableRowHeight = 20;
 		try {
-			List<QRCodeResponse> respList = fetchLabelData(2, labelPrintDTO);
+			List<QRCodeResponse> respListOld = fetchLabelData(2, labelPrintDTO);
+			List<QRCodeResponse> respList = new ArrayList<>();
+
+			for (QRCodeResponse qrCodeResponse : respListOld) {
+				if(qrCodeResponse.getProcessId() == 2 && qrCodeResponse.getIsSlitAndCut()!=null && qrCodeResponse.getIsSlitAndCut()) {
+					if(qrCodeResponse.getPlannedNoOfPieces() !=null && qrCodeResponse.getPlannedNoOfPieces()>1) {
+						for (int i=1; i<=qrCodeResponse.getPlannedNoOfPieces(); i++) {
+							BigDecimal newWeight = new BigDecimal(qrCodeResponse.getFweight()).divide(new BigDecimal(qrCodeResponse.getPlannedNoOfPieces()));
+							qrCodeResponse.setFweight(String.valueOf(newWeight));
+							respList.add(qrCodeResponse);
+						}
+					} else {
+						respList.add(qrCodeResponse);
+					}
+				} else {
+					respList.add(qrCodeResponse);
+				}
+			}
 			
 			if(respList!=null && respList.size()>0) {
 				document = new Document();
@@ -426,7 +444,7 @@ public class LabelPrintPDFGenerator {
 					companyNameCell6.setFixedHeight(tableRowHeight);
 					coilDetailsTab.addCell(companyNameCell6);		
 					PdfPCell companyNameCell7 = null;
-					if("CUTTING".equalsIgnoreCase(response.getProcessName()) ||"SLIT AND CUT".equalsIgnoreCase(response.getProcessName())) {
+					if(response.getProcessId() == 1 || response.getProcessId() == 3 ) {
 						companyNameCell7 = new PdfPCell(new Phrase("T: "+response.getFthickness()+"        "+"W: "+response.getFwidth()+"       "+"L: "+response.getFlength()+"    Qty : "+response.getPlannedNoOfPieces(), font11b));
 					} else {
 						companyNameCell7 = new PdfPCell(new Phrase("T: "+response.getFthickness()+"        "+"W: "+response.getFwidth()+"       "+"L: "+response.getFlength(), font11b));
@@ -505,10 +523,10 @@ public class LabelPrintPDFGenerator {
 					cell11.addElement(newCoilDetailsTab);
 					coilDetailsTab.addCell(cell11);			
 					document.add( coilDetailsTab );
-					logger.info("WIP Label Print generated successfully..!");
 				}
 				document.close();
 			}
+			logger.info("WIP Label Print generated successfully..!");
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			System.out.println(ex);
@@ -603,11 +621,7 @@ public class LabelPrintPDFGenerator {
 	public List<QRCodeResponse> fetchLabelData(Integer stts, LabelPrintDTO labelPrintDTO) {
 		List<Object[]> packetsList = null;
 
-		//if (labelPrintDTO.getPartDetailsId() != null && labelPrintDTO.getPartDetailsId().length() > 0) {
-			packetsList = partDetailsRepository.wipLabelData(stts, labelPrintDTO.getPartDetailsId());
-		//} else if (labelPrintDTO.getInwardEntryId() != null && labelPrintDTO.getInwardEntryId() > 0) {
-			//packetsList = partDetailsRepository.wipLabelDataFG(stts, labelPrintDTO.getInwardEntryId());
-		//}
+		packetsList = partDetailsRepository.wipLabelData(stts, labelPrintDTO.getPartDetailsId());
 		
 		List<QRCodeResponse> qirList = new ArrayList<QRCodeResponse>();
 		for (Object[] result : packetsList) {
@@ -637,7 +651,8 @@ public class LabelPrintPDFGenerator {
 			resp.setEndUserTag(result[14] != null ? (String) result[14] : "");
 			resp.setPlannedNoOfPieces(result[15] != null ? (Integer) result[15] : 0);
 			resp.setMotherCoilNo(result[16] != null ? (String) result[16] : "");
-			resp.setProcessName( result[17] != null ? (String) result[17] : "");
+			resp.setIsSlitAndCut(result[17] != null ? (Boolean) result[17] : false);
+			resp.setProcessId( result[18] != null ? (Integer) result[18] : 0);
 			qirList.add(resp);
 		}
 		return qirList;
@@ -649,7 +664,26 @@ public class LabelPrintPDFGenerator {
 		Document document = null;
 		int tableRowHeight = 20;
 		try {
-			List<QRCodeResponse> respList = fetchLabelData(3, labelPrintDTO);
+			
+			List<QRCodeResponse> respListOld = fetchLabelData(3, labelPrintDTO);
+			List<QRCodeResponse> respList = new ArrayList<>();
+
+			for (QRCodeResponse qrCodeResponse : respListOld) {
+				if(qrCodeResponse.getProcessId() == 2 && qrCodeResponse.getIsSlitAndCut()!=null && qrCodeResponse.getIsSlitAndCut()) {
+					if(qrCodeResponse.getPlannedNoOfPieces() !=null && qrCodeResponse.getPlannedNoOfPieces()>1) {
+						for (int i=1; i<=qrCodeResponse.getPlannedNoOfPieces(); i++) {
+							BigDecimal newWeight = new BigDecimal(qrCodeResponse.getActualweight()).divide(new BigDecimal(qrCodeResponse.getPlannedNoOfPieces()));
+							qrCodeResponse.setActualweight(String.valueOf(newWeight));
+							respList.add(qrCodeResponse);
+						}
+					} else {
+						respList.add(qrCodeResponse);
+					}
+				} else {
+					respList.add(qrCodeResponse);
+				}
+			}
+
 			if(respList!=null && respList.size()>0) {
 				document = new Document();
 				Rectangle myPagesize = new Rectangle (284, 213);
@@ -784,7 +818,7 @@ public class LabelPrintPDFGenerator {
 					companyNameCell6.setFixedHeight(tableRowHeight);
 					coilDetailsTab.addCell(companyNameCell6);		
 					PdfPCell companyNameCell7 = null;
-					if("CUTTING".equals(response.getProcessName()) ||"SLIT AND CUT".equals(response.getProcessName())) {
+					if(response.getProcessId() == 1 || response.getProcessId() == 3 ) {
 						companyNameCell7 = new PdfPCell(new Phrase("T: "+response.getFthickness()+"        "+"W: "+response.getActualwidth()+"       "+"L: "+response.getActuallength()+"    Qty : "+response.getPlannedNoOfPieces(), font11b));
 					} else {
 						companyNameCell7 = new PdfPCell(new Phrase("T: "+response.getFthickness()+"        "+"W: "+response.getActualwidth()+"       "+"L: "+response.getActuallength(), font11b));

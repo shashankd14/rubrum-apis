@@ -49,5 +49,9 @@ public class QRCodeResponse {
 
 	private Integer plannedNoOfPieces;
 
-	private String processName;
+	private Integer processId;
+
+	private Boolean isSlitAndCut;
+	
+	
 }
