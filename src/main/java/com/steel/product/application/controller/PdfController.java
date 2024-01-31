@@ -1,5 +1,7 @@
 package com.steel.product.application.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.lowagie.text.DocumentException;
 import com.steel.product.application.dto.instruction.InstructionFinishDto;
 import com.steel.product.application.dto.pdf.DeliveryPdfDto;
@@ -9,6 +11,8 @@ import com.steel.product.application.dto.pdf.PdfResponseDto;
 import com.steel.product.application.service.PdfService;
 import com.steel.product.application.service.QualityService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -117,13 +121,15 @@ public class PdfController {
         return new ResponseEntity<PdfResponseDto>(new PdfResponseDto(encodedFile), HttpStatus.OK);
 	}
 
-	
 	@PostMapping("/labelprint/fg")
 	public ResponseEntity<PdfResponseDto> labelPrint(@RequestBody InstructionFinishDto instructionFinishDto) {
         Path file;
         byte[] bytes;
         StringBuilder builder = new StringBuilder();
         try {
+        	ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+        	String json = ow.writeValueAsString(instructionFinishDto);
+        	//logger.info("FG labelPrint input String is == "+json );
             file = Paths.get(pdfService.labelPrint(instructionFinishDto).getAbsolutePath());
             bytes = Files.readAllBytes(file);
             builder.append(Base64.getEncoder().encodeToString(bytes));
