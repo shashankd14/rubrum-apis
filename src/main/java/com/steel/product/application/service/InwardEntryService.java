@@ -50,7 +50,7 @@ public interface InwardEntryService {
 	
 	Page<InwardEntry> findAllWIPlistWithPagination(int pageNo, int pageSize, String searchText, String partyId);
 
-	QRCodeResponse getQRCodeDetails(int inwardEntryId);
+	QRCodeResponse getInwardQRCodeDetails(int inwardEntryId);
 
 	void updateQRCodeS3InwardPDF(String inwardId, String url);
 

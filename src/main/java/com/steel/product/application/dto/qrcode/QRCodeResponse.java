@@ -48,4 +48,6 @@ public class QRCodeResponse {
 	private String motherCoilNo;
 
 	private Integer plannedNoOfPieces;
+
+	private String processName;
 }

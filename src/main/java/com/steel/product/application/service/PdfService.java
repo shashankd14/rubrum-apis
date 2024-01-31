@@ -7,6 +7,9 @@ import com.steel.product.application.dto.qrcode.QRCodeResponse;
 import com.steel.product.application.entity.CompanyDetails;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
@@ -24,6 +27,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class PdfService {
+
+	private final static Logger logger = LoggerFactory.getLogger("PdfService");
 
     private InwardEntryService inwardEntryService;
     private CompanyDetailsService companyDetailsService;
@@ -142,7 +147,7 @@ public class PdfService {
 			if("INWARD_PDF".equals(processType)) {
 				labelPrintDTO.setInwardEntryId(Integer.parseInt(id));
 				labelPrintDTO.setProcess("inward");
-				QRCodeResponse resp = inwardEntryService.getQRCodeDetails(labelPrintDTO.getInwardEntryId());
+				QRCodeResponse resp = inwardEntryService.getInwardQRCodeDetails(labelPrintDTO.getInwardEntryId());
 				labelFile = labelPrintPDFGenerator.renderInwardLabelPrintPDF(labelPrintDTO, resp, labelFile);
 				file=labelFile;
 				awsS3Service.uploadPDFFileToS3Bucket(bucketName, labelFile, "InwardLabel_"+id);
@@ -276,19 +281,20 @@ public class PdfService {
 			for (Instruction instruction : instructionsq) {
 				instructionsMap.put(instruction.getPartDetails().getPartDetailsId(), instruction);
 			}
-
+			logger.info("instructionsMap = " + instructionsMap);
 			for (Map.Entry<String, Instruction> entry : instructionsMap.entrySet()) {
 				String partDetailsId = entry.getKey();
-				System.out.println("partDetailsId = " + partDetailsId);
-				File labelFileTemp = File.createTempFile("labelprintfg_" + partDetailsId, ".pdf");
+				logger.info("partDetailsId = " + partDetailsId +", is Started ");
+				labelFile = File.createTempFile("labelprintfg_" + partDetailsId, ".pdf");
 				LabelPrintDTO labelPrintDTO = new LabelPrintDTO();
 				labelPrintDTO.setPartDetailsId(partDetailsId);
 				labelPrintDTO.setProcess("fg");
-				labelFileTemp = labelPrintPDFGenerator.renderFGLabelPrintPDF(labelPrintDTO, instructionFinishDto, labelFile);
-				labelFile = labelFileTemp;
+				labelFile = labelPrintPDFGenerator.renderFGLabelPrintPDF(labelPrintDTO, instructionFinishDto, labelFile);
+				logger.info("FG Label File Generated Successfully..!");
 				awsS3Service.uploadPDFFileToS3Bucket(bucketName, labelFile, "FGLabel_" + partDetailsId);
+				logger.info("FG Label File uploaded in S3 ");
 				instructionService.updateS3FGLabelPDF(partDetailsId, "FGLabel_" + partDetailsId);
-				labelFileTemp.deleteOnExit();
+				logger.info("FG Label Print "+labelFile.getAbsolutePath()+" generated successfully..!");
 			}
 
 		} catch (Exception e) {

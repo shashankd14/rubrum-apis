@@ -27,6 +27,8 @@ import java.util.Base64;
 @RequestMapping("/pdf")
 public class PdfController {
 	
+	private final static Logger logger = LoggerFactory.getLogger("PdfController");
+	
     private QualityService qualityService;
 
     private PdfService pdfService;

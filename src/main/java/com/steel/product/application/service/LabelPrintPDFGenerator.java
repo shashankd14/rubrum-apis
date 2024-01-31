@@ -6,10 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +34,6 @@ import com.itextpdf.text.pdf.PdfWriter;
 import com.steel.product.application.dao.InstructionRepository;
 import com.steel.product.application.dao.PartDetailsRepository;
 import com.steel.product.application.dto.instruction.InstructionFinishDto;
-import com.steel.product.application.dto.instruction.InstructionRequestDto;
 import com.steel.product.application.dto.pdf.LabelPrintDTO;
 import com.steel.product.application.dto.qrcode.QRCodeResponse;
 import com.steel.product.application.mapper.InstructionMapper;
@@ -213,7 +209,7 @@ public class LabelPrintPDFGenerator {
 			
 			Paragraph grosswtParagraph = new Paragraph();
 			grosswtParagraph.add(new Phrase(new Chunk("Gross Wt(kgs):  ", font8b)));
-			grosswtParagraph.add(new Phrase(new Chunk(resp.getFweight(), font11b)));
+			grosswtParagraph.add(new Phrase(new Chunk(resp.getGrossWeight(), font11b)));
 			PdfPCell companyNameCell9 = new PdfPCell(grosswtParagraph);
 			companyNameCell9.setHorizontalAlignment( Element.ALIGN_LEFT);
 			companyNameCell9.setColspan(2);
@@ -429,8 +425,12 @@ public class LabelPrintPDFGenerator {
 					companyNameCell6.setVerticalAlignment( Element.ALIGN_MIDDLE);
 					companyNameCell6.setFixedHeight(tableRowHeight);
 					coilDetailsTab.addCell(companyNameCell6);		
-					
-					PdfPCell companyNameCell7 = new PdfPCell(new Phrase("T: "+response.getFthickness()+"        "+"W: "+response.getFwidth()+"       "+"L: "+response.getFlength(), font11b));
+					PdfPCell companyNameCell7 = null;
+					if("CUTTING".equalsIgnoreCase(response.getProcessName()) ||"SLIT AND CUT".equalsIgnoreCase(response.getProcessName())) {
+						companyNameCell7 = new PdfPCell(new Phrase("T: "+response.getFthickness()+"        "+"W: "+response.getFwidth()+"       "+"L: "+response.getFlength()+"    Qty : "+response.getPlannedNoOfPieces(), font11b));
+					} else {
+						companyNameCell7 = new PdfPCell(new Phrase("T: "+response.getFthickness()+"        "+"W: "+response.getFwidth()+"       "+"L: "+response.getFlength(), font11b));
+					}
 					companyNameCell7.setHorizontalAlignment( Element.ALIGN_LEFT);
 					companyNameCell7.setVerticalAlignment( Element.ALIGN_MIDDLE);
 					companyNameCell7.setColspan(4);
@@ -485,7 +485,7 @@ public class LabelPrintPDFGenerator {
 					companyNameCell12.setBorder( Rectangle.RIGHT);
 					newCoilDetailsTab.addCell(companyNameCell12);	
 	
-					PdfPCell companyNameCell14 = new PdfPCell(new Phrase(new Chunk("SLIT NO:  "+response.getPlannedNoOfPieces(), font7b)));
+					PdfPCell companyNameCell14 = new PdfPCell(new Phrase(new Chunk("SLIT NO:  ", font7b)));
 					companyNameCell14.setHorizontalAlignment( Element.ALIGN_LEFT);
 					companyNameCell14.setVerticalAlignment( Element.ALIGN_MIDDLE);
 					companyNameCell14.setBorder( Rectangle.NO_BORDER);
@@ -505,10 +505,10 @@ public class LabelPrintPDFGenerator {
 					cell11.addElement(newCoilDetailsTab);
 					coilDetailsTab.addCell(cell11);			
 					document.add( coilDetailsTab );
+					logger.info("WIP Label Print generated successfully..!");
 				}
 				document.close();
 			}
-			System.out.println("inward Label Print generated successfully..!");
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			System.out.println(ex);
@@ -600,7 +600,6 @@ public class LabelPrintPDFGenerator {
 		return pngData;
 	}
 	
-	
 	public List<QRCodeResponse> fetchLabelData(Integer stts, LabelPrintDTO labelPrintDTO) {
 		List<Object[]> packetsList = null;
 
@@ -638,6 +637,7 @@ public class LabelPrintPDFGenerator {
 			resp.setEndUserTag(result[14] != null ? (String) result[14] : "");
 			resp.setPlannedNoOfPieces(result[15] != null ? (Integer) result[15] : 0);
 			resp.setMotherCoilNo(result[16] != null ? (String) result[16] : "");
+			resp.setProcessName( result[17] != null ? (String) result[17] : "");
 			qirList.add(resp);
 		}
 		return qirList;
@@ -649,20 +649,7 @@ public class LabelPrintPDFGenerator {
 		Document document = null;
 		int tableRowHeight = 20;
 		try {
-			
-			Map<Integer, QRCodeResponse> respListMap = new HashMap<>();
-			List<QRCodeResponse> respListOld = fetchLabelData(3, labelPrintDTO);
-			List<QRCodeResponse> respList = new ArrayList<>();
-
-			for (QRCodeResponse response : respListOld) {
-				respListMap.put(response.getInstructionId(), response);
-			}
-			for (InstructionRequestDto responsea : instructionFinishDto.getInstructionDtos()) {
-				if(respListMap!=null && respListMap.get(responsea.getInstructionId())!=null ) {
-					respList.add(respListMap.get(responsea.getInstructionId()));
-				}
-			}
-
+			List<QRCodeResponse> respList = fetchLabelData(3, labelPrintDTO);
 			if(respList!=null && respList.size()>0) {
 				document = new Document();
 				Rectangle myPagesize = new Rectangle (284, 213);
@@ -796,8 +783,12 @@ public class LabelPrintPDFGenerator {
 					companyNameCell6.setVerticalAlignment( Element.ALIGN_MIDDLE);
 					companyNameCell6.setFixedHeight(tableRowHeight);
 					coilDetailsTab.addCell(companyNameCell6);		
-					
-					PdfPCell companyNameCell7 = new PdfPCell(new Phrase("T: "+response.getFthickness()+"        "+"W: "+response.getActualwidth()+"       "+"L: "+response.getActuallength(), font11b));
+					PdfPCell companyNameCell7 = null;
+					if("CUTTING".equals(response.getProcessName()) ||"SLIT AND CUT".equals(response.getProcessName())) {
+						companyNameCell7 = new PdfPCell(new Phrase("T: "+response.getFthickness()+"        "+"W: "+response.getActualwidth()+"       "+"L: "+response.getActuallength()+"    Qty : "+response.getPlannedNoOfPieces(), font11b));
+					} else {
+						companyNameCell7 = new PdfPCell(new Phrase("T: "+response.getFthickness()+"        "+"W: "+response.getActualwidth()+"       "+"L: "+response.getActuallength(), font11b));
+					}
 					companyNameCell7.setHorizontalAlignment( Element.ALIGN_LEFT);
 					companyNameCell7.setVerticalAlignment( Element.ALIGN_MIDDLE);
 					companyNameCell7.setColspan(4);
@@ -852,7 +843,7 @@ public class LabelPrintPDFGenerator {
 					companyNameCell12.setBorder( Rectangle.RIGHT);
 					newCoilDetailsTab.addCell(companyNameCell12);	
 	
-					PdfPCell companyNameCell14 = new PdfPCell(new Phrase(new Chunk("SLIT NO:  "+response.getPlannedNoOfPieces(), font7b)));
+					PdfPCell companyNameCell14 = new PdfPCell(new Phrase(new Chunk("SLIT NO:  ", font7b)));
 					companyNameCell14.setHorizontalAlignment( Element.ALIGN_LEFT);
 					companyNameCell14.setVerticalAlignment( Element.ALIGN_MIDDLE);
 					companyNameCell14.setBorder( Rectangle.NO_BORDER);
@@ -872,7 +863,6 @@ public class LabelPrintPDFGenerator {
 					cell11.addElement(newCoilDetailsTab);
 					coilDetailsTab.addCell(cell11);			
 					document.add( coilDetailsTab );
-					logger.info("FG Label Print generated successfully..!");
 				}
 				document.close();
 			}

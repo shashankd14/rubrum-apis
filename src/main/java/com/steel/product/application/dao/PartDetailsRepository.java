@@ -25,20 +25,8 @@ public interface PartDetailsRepository extends JpaRepository<PartDetails, Long> 
 
 	@Query(value = "select coilnumber, customerbatchid, partyname, instructiondate, material_desc, "
 			+ "	material_grade, packet_id, fthickness, plannedwidth, plannedlength, plannedweight, actualwidth,"
-			+ "	actuallength, actualweight, enduser_tag_name, plannednoofpieces, parentcoilnumber "
+			+ "	actuallength, actualweight, enduser_tag_name, plannednoofpieces, parentcoilnumber, process_status "
 			+ " FROM label_print_vw where stts=:stts and part_details_id=:planId ", nativeQuery = true)
 	List<Object[]> wipLabelData(@Param("stts") Integer stts, @Param("planId") String planId);
-
-	//@Query(value = "select coilnumber, customerbatchid, partyname, instructiondate, material_desc, "
-	//		+ "	material_grade, packet_id, fthickness, plannedwidth, plannedlength, plannedweight, actualwidth,"
-	//		+ "	actuallength, actualweight, enduser_tag_name, plannednoofpieces"
-		//	+ " FROM label_print_vw where stts=:stts", nativeQuery = true)
-	//List<Object[]> statusWiseLabelData(@Param("stts") Integer stts);
-
-	@Query(value = "select coilnumber, customerbatchid, partyname, instructiondate, material_desc, "
-			+ "	material_grade, packet_id, fthickness, plannedwidth, plannedlength, plannedweight, actualwidth,"
-			+ "	actuallength, actualweight, enduser_tag_name, plannednoofpieces"
-			+ " FROM label_print_vw where stts=:stts and inwardentryid = :inwardentryid", nativeQuery = true)
-	List<Object[]> wipLabelDataFG(@Param("stts") Integer stts, @Param("inwardentryid") Integer inwardentryid);
 
 }

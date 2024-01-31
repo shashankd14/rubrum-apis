@@ -327,7 +327,7 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 	} 
 
 	@Override
-	public QRCodeResponse getQRCodeDetails(int inwardEntryId) {
+	public QRCodeResponse getInwardQRCodeDetails(int inwardEntryId) {
 		List<Object[]> packetsList = inwdEntryRepo.getQRCodeDetails(inwardEntryId);
 		QRCodeResponse resp = new QRCodeResponse();
 
