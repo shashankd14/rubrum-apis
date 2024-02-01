@@ -41,10 +41,6 @@ public class PartyController {
 
 			boolean stts = partySvc.checkPartyName(partyDto);
 			if(stts) {
-				
-				// below code will be removed once daily/monthly reports part added in UI
-				partyDto.setMonthlyReportsList("INWARDREPORT, STOCKREPORT, OUTWARDREPORT");
-				
 				Party party = partySvc.saveParty(partyDto, userId);
 				return new ResponseEntity<>("Party Saved successfully!!!", HttpStatus.OK);
 			} else {
