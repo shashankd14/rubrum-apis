@@ -13,9 +13,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTemplateEntity, Integer> {
 
-	//@Query("select ins from KQPPartyTemplateEntity ins where ins.party.nPartyId=:partyId ")
-	//List<KQPPartyTemplateEntity> findByPartyId(@Param("partyId") Integer partyId);	
-	
 	@Query("select ins from KQPPartyTemplateEntity ins where ins.kqpEntity.kqpId=:kqpId ")
 	List<KQPPartyTemplateEntity> findByKqpId(@Param("kqpId") Integer kqpId);	
 
@@ -31,7 +28,7 @@ public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTempla
 			" (SELECT rpt.qir_id FROM quality_inspection_report rpt where rpt.coil_no=inward.coilnumber limit 1) qirid, " +
 			" (SELECT aaa.partyname from product_tblpartydetails aaa where aaa.npartyid=inward.npartyid) , fwidth, " + 
 			" (select matdes.`material_code` from `product_tblmatdescription` matdes where matdes.`nmatid` = `inward`.`nmatid`) AS `material_code`  " +
-			" FROM product_tblinwardentry inward WHERE 1=1 ", nativeQuery = true)
+			" FROM product_tblinwardentry inward WHERE 1=1 order by inward.inwardentryid desc", nativeQuery = true)
 	List<Object[]> qirInwardListPage();
 	
 	@Query(value = "SELECT distinct part.part_details_id `Plan ID`, coilnumber `Coil No`,customerbatchid `Batch No`," + 
@@ -45,7 +42,7 @@ public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTempla
 			" FROM product_part_details part" + 
 			" INNER JOIN product_instruction ins ON part.id = ins.part_details_id" + 
 			" INNER JOIN product_tblinwardentry inward ON ins.inwardid = inward.inwardentryid" + 
-			" WHERE 1=1 ", nativeQuery = true)
+			" WHERE 1=1  order by inward.inwardentryid desc ", nativeQuery = true)
 	List<Object[]> qirPreProcessingListPage();
 
 	@Query(value = "SELECT distinct part.part_details_id `Plan ID`, coilnumber `Coil No`,customerbatchid `Batch No`," + 
@@ -59,7 +56,7 @@ public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTempla
 			" FROM product_part_details part" + 
 			" INNER JOIN product_instruction ins ON part.id = ins.part_details_id" + 
 			" INNER JOIN product_tblinwardentry inward ON ins.inwardid = inward.inwardentryid" + 
-			" WHERE 1=1 ", nativeQuery = true)
+			" WHERE 1=1  order by inward.inwardentryid desc", nativeQuery = true)
 	List<Object[]> qirProcessingListPage();
 	
 	@Query(value = "SELECT ins FROM Instruction ins where ins.inwardId.coilNumber = :coilNo and ins.partDetails.partDetailsId = :partDetailsId ")
@@ -77,7 +74,7 @@ public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTempla
 			+ " (select matdes.`material_code` from `product_tblmatdescription` matdes where matdes.`nmatid` = `inward`.`nmatid`) AS `material_code`, "  
 			+ " (select aa.`gradename` from `product_material_grades` aa where aa.`gradeid` = `inward`.`materialgradeid`) AS `material_grade`  " 
 			+ " FROM product_tbl_delivery_details deli, product_instruction ins, product_tblinwardentry inward "
-			+ " WHERE deli.deliveryid = ins.deliveryid and ins.inwardid = inward.inwardentryid", nativeQuery = true)
+			+ " WHERE deli.deliveryid = ins.deliveryid and ins.inwardid = inward.inwardentryid order by inward.inwardentryid desc", nativeQuery = true)
 	List<Object[]> qirPreDispatchList();
 
 	@Query(value = "SELECT DISTINCT coilnumber, DATE_FORMAT(deli.createdon, '%d/%m/%Y'), "
@@ -89,7 +86,7 @@ public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTempla
 			+ " (select matdes.`material_code` from `product_tblmatdescription` matdes where matdes.`nmatid` = `inward`.`nmatid`) AS `material_code`, "  
 			+ " (select aa.`gradename` from `product_material_grades` aa where aa.`gradeid` = `inward`.`materialgradeid`) AS `material_grade`  " 
 			+ " FROM product_tbl_delivery_details deli, product_instruction ins, product_tblinwardentry inward "
-			+ " WHERE deli.deliveryid = ins.deliveryid and ins.inwardid = inward.inwardentryid", nativeQuery = true)
+			+ " WHERE deli.deliveryid = ins.deliveryid and ins.inwardid = inward.inwardentryid order by inward.inwardentryid desc", nativeQuery = true)
 	List<Object[]> qirPostDispatchList();
 
 	@Query(value = "SELECT ins FROM Instruction ins where ins.inwardId.coilNumber = :coilNo and ins.deliveryDetails.deliveryId = :partDetailsId ")

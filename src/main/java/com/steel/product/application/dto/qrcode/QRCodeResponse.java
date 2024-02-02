@@ -45,6 +45,8 @@ public class QRCodeResponse {
 
 	private String receivedDate;
 
+	private String finishedDate;
+
 	private String motherCoilNo;
 
 	private Integer plannedNoOfPieces;
@@ -52,6 +54,5 @@ public class QRCodeResponse {
 	private Integer processId;
 
 	private Boolean isSlitAndCut;
-	
 	
 }

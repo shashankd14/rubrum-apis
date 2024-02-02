@@ -479,7 +479,7 @@ public class LabelPrintPDFGenerator {
 					newCoilDetailsTab.setWidthPercentage(100);
 					newCoilDetailsTab.setWidths(new int[] {100, 80, 100});
 	
-					PdfPCell companyNameCell12 = new PdfPCell(new Phrase(new Chunk("Batch No:  "+response.getCustomerBatchNo(), font7b)));
+					PdfPCell companyNameCell12 = new PdfPCell(new Phrase(new Chunk("Batch No:  "+response.getCoilBatchNo(), font7b)));
 					companyNameCell12.setHorizontalAlignment( Element.ALIGN_LEFT);
 					companyNameCell12.setVerticalAlignment( Element.ALIGN_MIDDLE);
 					companyNameCell12.setBorder( Rectangle.RIGHT);
@@ -639,6 +639,8 @@ public class LabelPrintPDFGenerator {
 			resp.setMotherCoilNo(result[16] != null ? (String) result[16] : "");
 			resp.setIsSlitAndCut(result[17] != null ? (Boolean) result[17] : false);
 			resp.setProcessId( result[18] != null ? (Integer) result[18] : 0);
+			resp.setCoilBatchNo( result[19] != null ? (String) result[19] : "");
+			resp.setFinishedDate( result[20] != null ? (String) result[20] : "");
 			qirList.add(resp);
 		}
 		return qirList;
@@ -738,8 +740,8 @@ public class LabelPrintPDFGenerator {
 					coilDetailsTab.addCell(companyNameCell2);	
 	
 					Paragraph dateParagraph = new Paragraph();
-					dateParagraph.add(new Phrase(new Chunk("Process Dt:  ", font8b)));
-					dateParagraph.add(new Phrase(new Chunk(""+response.getInstructionDate(), font11b)));	
+					dateParagraph.add(new Phrase(new Chunk("Finish Dt:  ", font8b)));
+					dateParagraph.add(new Phrase(new Chunk(""+response.getFinishedDate(), font11b)));	
 					PdfPCell companyNameCell8 = new PdfPCell(dateParagraph);
 					companyNameCell8.setHorizontalAlignment( Element.ALIGN_LEFT);
 					companyNameCell8.setVerticalAlignment( Element.ALIGN_MIDDLE);
@@ -839,7 +841,7 @@ public class LabelPrintPDFGenerator {
 					newCoilDetailsTab.setWidthPercentage(100);
 					newCoilDetailsTab.setWidths(new int[] {100, 80, 100});
 	
-					PdfPCell companyNameCell12 = new PdfPCell(new Phrase(new Chunk("Batch No:  "+response.getCustomerBatchNo(), font7b)));
+					PdfPCell companyNameCell12 = new PdfPCell(new Phrase(new Chunk("Batch No:  "+response.getCoilBatchNo(), font7b)));
 					companyNameCell12.setHorizontalAlignment( Element.ALIGN_LEFT);
 					companyNameCell12.setVerticalAlignment( Element.ALIGN_MIDDLE);
 					companyNameCell12.setBorder( Rectangle.RIGHT);
