@@ -63,13 +63,18 @@ public class ReportsEmailScheduler {
 			logger.info("sendMonthlyNotifications apiAlertRequired == " + apiAlertRequired);
 			LocalDate currentDate = LocalDate.now();
 			LocalDate previousMonth = currentDate.minusMonths(1);
+			Integer currentYear = currentDate.getYear();
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM");
 			Integer month = Integer.parseInt(previousMonth.format(formatter));
+			if(month==12) {
+				 currentYear = currentYear-1;
+			}
+			logger.info("currentYear  == " + currentYear);
 			logger.info("month  == " + month);
 			List<Party> partyList = partyRepo.findAll();
 			for (Party party : partyList) {
 				if (party.getEmail1() != null && party.getEmail1().length() > 0 && party.getMonthlyReportsList() != null && party.getMonthlyReportsList().length() > 0) {
-					mailSender.sendMonthlyReportsMail(party, month);
+					mailSender.sendMonthlyReportsMail(party, month, currentYear);
 					Thread.sleep(200);
 				}
 			}

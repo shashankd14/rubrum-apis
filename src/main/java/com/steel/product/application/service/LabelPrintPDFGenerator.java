@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -291,24 +290,7 @@ public class LabelPrintPDFGenerator {
 		Document document = null;
 		int tableRowHeight = 20;
 		try {
-			List<QRCodeResponse> respListOld = fetchLabelData(2, labelPrintDTO);
-			List<QRCodeResponse> respList = new ArrayList<>();
-
-			for (QRCodeResponse qrCodeResponse : respListOld) {
-				if(qrCodeResponse.getProcessId() == 2 && qrCodeResponse.getIsSlitAndCut()!=null && qrCodeResponse.getIsSlitAndCut()) {
-					if(qrCodeResponse.getPlannedNoOfPieces() !=null && qrCodeResponse.getPlannedNoOfPieces()>1) {
-						for (int i=1; i<=qrCodeResponse.getPlannedNoOfPieces(); i++) {
-							BigDecimal newWeight = new BigDecimal(qrCodeResponse.getFweight()).divide(new BigDecimal(qrCodeResponse.getPlannedNoOfPieces()));
-							qrCodeResponse.setFweight(String.valueOf(newWeight));
-							respList.add(qrCodeResponse);
-						}
-					} else {
-						respList.add(qrCodeResponse);
-					}
-				} else {
-					respList.add(qrCodeResponse);
-				}
-			}
+			List<QRCodeResponse> respList = fetchLabelData(2, labelPrintDTO);
 			
 			if(respList!=null && respList.size()>0) {
 				document = new Document();
@@ -497,7 +479,7 @@ public class LabelPrintPDFGenerator {
 					newCoilDetailsTab.setWidthPercentage(100);
 					newCoilDetailsTab.setWidths(new int[] {100, 80, 100});
 	
-					PdfPCell companyNameCell12 = new PdfPCell(new Phrase(new Chunk("M/C NO:  "+response.getMotherCoilNo(), font7b)));
+					PdfPCell companyNameCell12 = new PdfPCell(new Phrase(new Chunk("Batch No:  "+response.getCustomerBatchNo(), font7b)));
 					companyNameCell12.setHorizontalAlignment( Element.ALIGN_LEFT);
 					companyNameCell12.setVerticalAlignment( Element.ALIGN_MIDDLE);
 					companyNameCell12.setBorder( Rectangle.RIGHT);
@@ -621,7 +603,11 @@ public class LabelPrintPDFGenerator {
 	public List<QRCodeResponse> fetchLabelData(Integer stts, LabelPrintDTO labelPrintDTO) {
 		List<Object[]> packetsList = null;
 
-		packetsList = partDetailsRepository.wipLabelData(stts, labelPrintDTO.getPartDetailsId());
+		if(stts == 2) {
+			packetsList = partDetailsRepository.wipLabelData(stts, labelPrintDTO.getPartDetailsId());
+		} else {
+			packetsList = partDetailsRepository.fgLabelData(stts, labelPrintDTO.getPartDetailsId());
+		}
 		
 		List<QRCodeResponse> qirList = new ArrayList<QRCodeResponse>();
 		for (Object[] result : packetsList) {
@@ -665,25 +651,7 @@ public class LabelPrintPDFGenerator {
 		int tableRowHeight = 20;
 		try {
 			
-			List<QRCodeResponse> respListOld = fetchLabelData(3, labelPrintDTO);
-			List<QRCodeResponse> respList = new ArrayList<>();
-
-			for (QRCodeResponse qrCodeResponse : respListOld) {
-				if(qrCodeResponse.getProcessId() == 2 && qrCodeResponse.getIsSlitAndCut()!=null && qrCodeResponse.getIsSlitAndCut()) {
-					if(qrCodeResponse.getPlannedNoOfPieces() !=null && qrCodeResponse.getPlannedNoOfPieces()>1) {
-						for (int i=1; i<=qrCodeResponse.getPlannedNoOfPieces(); i++) {
-							BigDecimal newWeight = new BigDecimal(qrCodeResponse.getActualweight()).divide(new BigDecimal(qrCodeResponse.getPlannedNoOfPieces()));
-							qrCodeResponse.setActualweight(String.valueOf(newWeight));
-							respList.add(qrCodeResponse);
-						}
-					} else {
-						respList.add(qrCodeResponse);
-					}
-				} else {
-					respList.add(qrCodeResponse);
-				}
-			}
-
+			List<QRCodeResponse> respList = fetchLabelData(3, labelPrintDTO);
 			if(respList!=null && respList.size()>0) {
 				document = new Document();
 				Rectangle myPagesize = new Rectangle (284, 213);
@@ -871,7 +839,7 @@ public class LabelPrintPDFGenerator {
 					newCoilDetailsTab.setWidthPercentage(100);
 					newCoilDetailsTab.setWidths(new int[] {100, 80, 100});
 	
-					PdfPCell companyNameCell12 = new PdfPCell(new Phrase(new Chunk("M/C NO:  "+response.getMotherCoilNo(), font7b)));
+					PdfPCell companyNameCell12 = new PdfPCell(new Phrase(new Chunk("Batch No:  "+response.getCustomerBatchNo(), font7b)));
 					companyNameCell12.setHorizontalAlignment( Element.ALIGN_LEFT);
 					companyNameCell12.setVerticalAlignment( Element.ALIGN_MIDDLE);
 					companyNameCell12.setBorder( Rectangle.RIGHT);

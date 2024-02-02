@@ -21,7 +21,10 @@ public class InwardReportViewEntity {
 	
 	@Column(name = "mnth")
 	private Integer mnth;
-
+	
+	@Column(name = "yer")
+	private Integer yer;
+	
 	@Column(name = "customer_name")
 	private String customerName;
 

@@ -117,7 +117,7 @@ public class MailSender {
 		}
 	}
 	
-	public void sendMonthlyReportsMail(Party party, Integer month) {
+	public void sendMonthlyReportsMail(Party party, Integer month, Integer year) {
 
 		logger.info("******MailSender.sendMonthlyReportsMail**************");
 		boolean mailStts=false;
@@ -146,7 +146,7 @@ public class MailSender {
 
 				if (party.getMonthlyReportsList().contains("INWARDREPORT")) {
 					mailStts = true;
-					reportsService.createInwardMonthlyReport(party.getnPartyId(), helper, month, months);
+					reportsService.createInwardMonthlyReport(party.getnPartyId(), helper, month, months, year);
 				}
 				if (party.getMonthlyReportsList().contains("STOCKREPORT")) {
 					mailStts = true;
@@ -154,7 +154,7 @@ public class MailSender {
 				}
 				if (party.getMonthlyReportsList().contains("OUTWARDREPORT")) {
 					mailStts = true;
-					reportsService.createOutwardMonthlyReport(party.getnPartyId(), helper, month, months);
+					reportsService.createOutwardMonthlyReport(party.getnPartyId(), helper, month, months, year);
 				}
 			}
 			helper.setFrom(fromMailId);

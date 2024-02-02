@@ -9,8 +9,6 @@ import java.util.List;
 @Repository
 public interface OutwardReportViewRepository extends JpaRepository<OutwardReportViewEntity, Integer> {
 
-	List<OutwardReportViewEntity> findByPartyId(int partyId);
-
-	List<OutwardReportViewEntity> findByPartyIdAndMnth(int partyId, Integer mnth);
+	List<OutwardReportViewEntity> findByPartyIdAndMnthAndYer(int partyId, Integer mnth, Integer year);
 
 }

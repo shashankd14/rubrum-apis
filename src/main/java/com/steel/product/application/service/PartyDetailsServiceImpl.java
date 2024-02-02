@@ -69,7 +69,7 @@ public class PartyDetailsServiceImpl implements PartyDetailsService {
 			Party partyEntity = partyList.get(0);
 
 			if (partyEntity.getnPartyId() > 0) {
-				if (partyEntity.getnPartyId() != party.getnPartyId()
+				if ((!partyEntity.getnPartyId().equals(party.getnPartyId()))
 						&& partyEntity.getPartyName().equalsIgnoreCase(partyEntity.getPartyName())) {
 					stts = false;
 				}
@@ -123,7 +123,10 @@ public class PartyDetailsServiceImpl implements PartyDetailsService {
 		party.setUpdatedBy(userId);
 
 		Party savedParty = partyRepo.save(party);
-		qualityService.templateMapSaveNew(partyDto.getTemplateIdList(), savedParty.getnPartyId(), userId) ;
+		try {
+			qualityService.templateMapSaveNew(partyDto.getTemplateIdList(), savedParty.getnPartyId(), userId) ;
+		} catch (Exception e) {
+		}
 
 		LOGGER.info("party saved ok ! " + savedParty.getPartyName());
 		return savedParty;

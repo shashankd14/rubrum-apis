@@ -637,7 +637,7 @@ public class ReportsServiceImpl implements ReportsService {
 
 	@Override
 	public boolean createInwardMonthlyReport(Integer partyId, MimeMessageHelper helper,
-			Integer month, Map<Integer, String> months) {
+			Integer month, Map<Integer, String> months, Integer year) {
 
 		boolean attachmentRequired=true;
 		try {
@@ -657,7 +657,7 @@ public class ReportsServiceImpl implements ReportsService {
 			// Create row object
 			XSSFRow row;
 
-			Map<String, Object[]> acctStatementMap = getMonthlyInwardReportDetails(partyId, month);
+			Map<String, Object[]> acctStatementMap = getMonthlyInwardReportDetails(partyId, month, year);
 
 			// Iterate over data and write to sheet
 			Set<String> keyid = acctStatementMap.keySet();
@@ -704,7 +704,7 @@ public class ReportsServiceImpl implements ReportsService {
 
 	@Override
 	public boolean createOutwardMonthlyReport(Integer partyId, MimeMessageHelper helper,
-			Integer month, Map<Integer, String> months) {
+			Integer month, Map<Integer, String> months, Integer year) {
 
 		boolean attachmentRequired=true;
 		try {
@@ -724,7 +724,7 @@ public class ReportsServiceImpl implements ReportsService {
 			// Create row object
 			XSSFRow row;
 
-			Map<String, Object[]> acctStatementMap = getMonthlyOutwardReportDetails(partyId, month);
+			Map<String, Object[]> acctStatementMap = getMonthlyOutwardReportDetails(partyId, month, year);
 
 			// Iterate over data and write to sheet
 			Set<String> keyid = acctStatementMap.keySet();
@@ -836,12 +836,12 @@ public class ReportsServiceImpl implements ReportsService {
 		return attachmentRequired;
 	}
 	
-	public Map<String, Object[]> getMonthlyInwardReportDetails(Integer partyId, Integer month) {
+	public Map<String, Object[]> getMonthlyInwardReportDetails(Integer partyId, Integer month, Integer year) {
 
 		Map<String, Object[]> acctStatementMap = new LinkedHashMap<>();
 
 		try {
-			List<InwardReportViewEntity> partyList = inwardReportViewRepository.findByPartyIdAndMnth(partyId, month);
+			List<InwardReportViewEntity> partyList = inwardReportViewRepository.findByPartyIdAndMnthAndYer(partyId, month, year);
 
 			acctStatementMap.put("1",
 					new Object[] { "CustomerName", "CoilNumber", "CustomerBatchId", "ReceivedDate", "MaterialDesc",
@@ -864,12 +864,12 @@ public class ReportsServiceImpl implements ReportsService {
 		return acctStatementMap;
 	}
 	
-	public Map<String, Object[]> getMonthlyOutwardReportDetails(Integer partyId, Integer month) {
+	public Map<String, Object[]> getMonthlyOutwardReportDetails(Integer partyId, Integer month, Integer year) {
 
 		Map<String, Object[]> acctStatementMap = new LinkedHashMap<>();
 
 		try {
-			List<OutwardReportViewEntity> partyList = outwardReportViewRepository.findByPartyIdAndMnth(partyId, month);
+			List<OutwardReportViewEntity> partyList = outwardReportViewRepository.findByPartyIdAndMnthAndYer(partyId, month, year);
 
 			acctStatementMap.put("1",
 					new Object[] { "CoilNumber", "CustomerBatchId", "CustomerName","MaterialDesc",

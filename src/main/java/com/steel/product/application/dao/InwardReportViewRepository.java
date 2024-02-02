@@ -8,8 +8,6 @@ import java.util.List;
 @Repository
 public interface InwardReportViewRepository extends JpaRepository<InwardReportViewEntity, Integer> {
 
-	List<InwardReportViewEntity> findByPartyId(int partyId);
-
-	List<InwardReportViewEntity> findByPartyIdAndMnth(int partyId, Integer mnth);
+	List<InwardReportViewEntity> findByPartyIdAndMnthAndYer(int partyId, Integer mnth, Integer yer);
 
 }
