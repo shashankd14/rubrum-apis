@@ -32,4 +32,9 @@ public interface ReportsService {
 
 	boolean createStockMonthlyReport(Integer partyId, MimeMessageHelper helper, Integer month,
 			Map<Integer, String> months);
+	
+	boolean createProcessingMonthlyReport(Integer partyId, MimeMessageHelper helper, Integer month,
+			Map<Integer, String> months, Integer year);
+	
+	
 }

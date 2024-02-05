@@ -42,7 +42,7 @@ public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTempla
 			" FROM product_part_details part" + 
 			" INNER JOIN product_instruction ins ON part.id = ins.part_details_id" + 
 			" INNER JOIN product_tblinwardentry inward ON ins.inwardid = inward.inwardentryid" + 
-			" WHERE 1=1  order by inward.inwardentryid desc ", nativeQuery = true)
+			" WHERE 1=1 and inward.vstatus <=3 order by inward.inwardentryid desc ", nativeQuery = true)
 	List<Object[]> qirPreProcessingListPage();
 
 	@Query(value = "SELECT distinct part.part_details_id `Plan ID`, coilnumber `Coil No`,customerbatchid `Batch No`," + 
@@ -56,7 +56,7 @@ public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTempla
 			" FROM product_part_details part" + 
 			" INNER JOIN product_instruction ins ON part.id = ins.part_details_id" + 
 			" INNER JOIN product_tblinwardentry inward ON ins.inwardid = inward.inwardentryid" + 
-			" WHERE 1=1  order by inward.inwardentryid desc", nativeQuery = true)
+			" WHERE 1=1 and inward.vstatus <=3 order by inward.inwardentryid desc", nativeQuery = true)
 	List<Object[]> qirProcessingListPage();
 	
 	@Query(value = "SELECT ins FROM Instruction ins where ins.inwardId.coilNumber = :coilNo and ins.partDetails.partDetailsId = :partDetailsId ")

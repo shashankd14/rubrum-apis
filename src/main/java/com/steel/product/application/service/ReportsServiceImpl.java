@@ -3,6 +3,7 @@ package com.steel.product.application.service;
 import com.steel.product.application.dao.FGReportViewRepository;
 import com.steel.product.application.dao.InwardReportViewRepository;
 import com.steel.product.application.dao.OutwardReportViewRepository;
+import com.steel.product.application.dao.ProcessingReportViewRepository;
 import com.steel.product.application.dao.RMReportViewRepository;
 import com.steel.product.application.dao.StockReportViewRepository;
 import com.steel.product.application.dao.StockSummaryReportViewRepository;
@@ -12,6 +13,7 @@ import com.steel.product.application.entity.FGReportViewEntity;
 import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.entity.InwardReportViewEntity;
 import com.steel.product.application.entity.OutwardReportViewEntity;
+import com.steel.product.application.entity.ProcessingReportViewEntity;
 import com.steel.product.application.entity.RMReportViewEntity;
 import com.steel.product.application.entity.StockReportViewEntity;
 import com.steel.product.application.entity.StockSummaryReportViewEntity;
@@ -70,6 +72,8 @@ public class ReportsServiceImpl implements ReportsService {
 	
 	@Autowired
 	StockSummaryReportViewRepository stockSummaryReportViewRepository;
+    
+	@Autowired ProcessingReportViewRepository processingRepository;
 	
     private final InstructionService instructionService;
     private final CSVUtil csvUtil;
@@ -146,7 +150,7 @@ public class ReportsServiceImpl implements ReportsService {
 				for (Object obj : objectArr) {
 					Cell cell = row.createCell(cellid++);
 				    cell.setCellStyle(borderStyle);
-					cell.setCellValue((String) obj);
+					cell.setCellValue(""+obj);
 				}
 			
 			}
@@ -239,7 +243,7 @@ public class ReportsServiceImpl implements ReportsService {
 				for (Object obj : objectArr) {
 					Cell cell = row.createCell(cellid++);
 				    cell.setCellStyle(borderStyle);
-					cell.setCellValue((String) obj);
+					cell.setCellValue(""+obj);
 				}
 			}
 
@@ -254,7 +258,7 @@ public class ReportsServiceImpl implements ReportsService {
 				for (Object obj : objectArr) {
 					Cell cell = row.createCell(cellid++);
 				    cell.setCellStyle(borderStyle);
-					cell.setCellValue((String) obj);
+					cell.setCellValue(""+obj);
 				}
 			}
 			
@@ -382,7 +386,7 @@ public class ReportsServiceImpl implements ReportsService {
 				for (Object obj : objectArr) {
 					Cell cell = row.createCell(cellid++);
 				    cell.setCellStyle(borderStyle);
-					cell.setCellValue((String) obj);
+					cell.setCellValue(""+obj);
 				}
 			
 			}
@@ -476,7 +480,7 @@ public class ReportsServiceImpl implements ReportsService {
 				for (Object obj : objectArr) {
 					Cell cell = row.createCell(cellid++);
 				    cell.setCellStyle(borderStyle);
-					cell.setCellValue((String) obj);
+					cell.setCellValue(""+obj);
 				}
 			
 			}
@@ -574,7 +578,7 @@ public class ReportsServiceImpl implements ReportsService {
 				for (Object obj : objectArr) {
 					Cell cell = row.createCell(cellid++);
 				    cell.setCellStyle(borderStyle);
-					cell.setCellValue((String) obj);
+					cell.setCellValue(""+obj);
 				}
 			
 			}
@@ -671,7 +675,7 @@ public class ReportsServiceImpl implements ReportsService {
 				for (Object obj : objectArr) {
 					Cell cell = row.createCell(cellid++);
 				    cell.setCellStyle(borderStyle);
-					cell.setCellValue((String) obj);
+					cell.setCellValue(""+obj);
 				}
 			
 			}
@@ -738,9 +742,8 @@ public class ReportsServiceImpl implements ReportsService {
 				for (Object obj : objectArr) {
 					Cell cell = row.createCell(cellid++);
 				    cell.setCellStyle(borderStyle);
-					cell.setCellValue((String) obj);
+					cell.setCellValue(""+obj);
 				}
-			
 			}
 			
             String baseDirectory = env.getProperty("email.folderpath")+File.separator;
@@ -805,7 +808,7 @@ public class ReportsServiceImpl implements ReportsService {
 				for (Object obj : objectArr) {
 					Cell cell = row.createCell(cellid++);
 				    cell.setCellStyle(borderStyle);
-					cell.setCellValue((String) obj);
+					cell.setCellValue(""+obj);
 				}
 			
 			}
@@ -914,10 +917,95 @@ public class ReportsServiceImpl implements ReportsService {
 		return acctStatementMap;
 	}
 	
+	@Override
+	public boolean createProcessingMonthlyReport(Integer partyId, MimeMessageHelper helper,
+			Integer month, Map<Integer, String> months, Integer year) {
 
-	
-	
-	
+		boolean attachmentRequired=true;
+		try {
+			// Create blank workbook
+			XSSFWorkbook workbook = new XSSFWorkbook();
+			
+			CellStyle borderStyle = workbook.createCellStyle();
+			borderStyle.setBorderBottom(BorderStyle.THIN);
+		    borderStyle.setBorderLeft(BorderStyle.THIN);
+			borderStyle.setBorderRight(BorderStyle.THIN);
+			borderStyle.setBorderTop(BorderStyle.THIN);
+			borderStyle.setAlignment(HorizontalAlignment.CENTER);
+			
+			// Create a blank sheet
+			XSSFSheet spreadsheet = workbook.createSheet("Processing_Report");
+
+			// Create row object
+			XSSFRow row;
+
+			Map<String, Object[]> acctStatementMap = getMonthlyProcessingReportDetails(partyId, month, year);
+
+			// Iterate over data and write to sheet
+			Set<String> keyid = acctStatementMap.keySet();
+			int rowid = 0;
+
+			for (String key : keyid) {
+				row = spreadsheet.createRow(rowid++);
+				Object[] objectArr = acctStatementMap.get(key);
+				int cellid = 0;
+
+				for (Object obj : objectArr) {
+					Cell cell = row.createCell(cellid++);
+				    cell.setCellStyle(borderStyle);
+					cell.setCellValue(""+obj);
+				}
+			}
+			
+            String baseDirectory = env.getProperty("email.folderpath")+File.separator;            
+			File outputPojoDirectory = new File(baseDirectory);
+			outputPojoDirectory.mkdirs();
+			
+			File fullPath = new File(baseDirectory +File.separator+"ProcessingReport_"+months.get(month)+".xlsx");
+			
+			FileOutputStream out = new FileOutputStream(fullPath);
+			workbook.write(out);
+			
+			FileSystemResource file = new FileSystemResource(fullPath);
+			if(acctStatementMap!=null && acctStatementMap.size()>1) {
+				attachmentRequired=false;
+				helper.addAttachment("ProcessingReport_"+months.get(month)+".xlsx", file);
+			}
+			
+			out.close();
+			fullPath.deleteOnExit();
+			//System.out.println("File Created At -- " + baseDirectory);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return attachmentRequired;
+	}
+
+	public Map<String, Object[]> getMonthlyProcessingReportDetails(Integer partyId, Integer month, Integer year) {
+
+		Map<String, Object[]> acctStatementMap = new LinkedHashMap<>();
+
+		try {
+			List<ProcessingReportViewEntity> partyList = processingRepository.findByPartyIdAndMnthAndYer(partyId, month, year);
+
+			acctStatementMap.put("1",
+					new Object[] { "CoilNumber", "CustomerBatchId", "CustomerName", "ProcessName","MaterialDesc",
+							"MaterialGrade", "ProcessDate", "PacketId", "Packet Thickness", "Packet Width", "Packet Length",
+							"Finishing Weight", "Finishing Date", "End User Tag"});
+			int cnt = 1;
+			for (ProcessingReportViewEntity kk : partyList) {
+				cnt++;
+				acctStatementMap.put("" + cnt,
+						new Object[] { kk.getCoilnumber(), kk.getCustomerbatchid(), kk.getCustomerName(),
+						kk.getProcessName(), kk.getMaterialdesc(), kk.getMaterialGrade(), kk.getProcessdate(),kk.getPacketId(),
+						kk.getPacketThickness(), kk.getPacketWidth(), kk.getPacketLength(),
+						kk.getFinishingWeight(), kk.getFinishingDate(), kk.getEnduser_tag_name() });
+			}
+		} catch (Exception e) {
+			LOGGER.error("Error at getMonthlyOutwardReportDetails " + e.getMessage());
+		}
+		return acctStatementMap;
+	}
 	
 	
 	
