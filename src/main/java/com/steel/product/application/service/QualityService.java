@@ -3,13 +3,11 @@ package com.steel.product.application.service;
 import java.io.File;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.steel.product.application.dto.instruction.InstructionFinishDto;
 import com.steel.product.application.dto.instruction.InstructionResponseDto;
-import com.steel.product.application.dto.pdf.LabelPrintDTO;
 import com.steel.product.application.dto.quality.KQPPartyMappingRequest;
 import com.steel.product.application.dto.quality.KQPPartyMappingResponse;
 import com.steel.product.application.dto.quality.KQPRequest;
@@ -17,13 +15,10 @@ import com.steel.product.application.dto.quality.KQPResponse;
 import com.steel.product.application.dto.quality.QIRSaveDataRequest;
 import com.steel.product.application.dto.quality.QualityCheckRequest;
 import com.steel.product.application.dto.quality.QualityCheckResponse;
-import com.steel.product.application.dto.quality.QualityInspDispatchListResponse;
-import com.steel.product.application.dto.quality.QualityInspReportListPageResponse;
 import com.steel.product.application.dto.quality.QualityInspectionReportResponse;
 import com.steel.product.application.dto.quality.QualityPartyMappingRequest;
 import com.steel.product.application.dto.quality.QualityPartyMappingRequestNew;
 import com.steel.product.application.dto.quality.QualityPartyMappingResponse;
-import com.steel.product.application.dto.quality.QualityReportResponse;
 import com.steel.product.application.dto.quality.QualityTemplateResponse;
 
 public interface QualityService {
@@ -55,22 +50,6 @@ public interface QualityService {
 			MultipartFile waterExposure, MultipartFile wireRopeDamages, MultipartFile packingIntact,
 			MultipartFile improperStorage, MultipartFile strapping, MultipartFile weighmentSlip,
 			MultipartFile weighment, MultipartFile acknowledgementReceipt, MultipartFile unloadingImproper);
-
-	/*
-	 * ResponseEntity<Object> reportsSave(String inspectionId, String coilNumber,
-	 * String inwardId, String templateId, String stageName, String templateDetails,
-	 * String userId, MultipartFile rustObserved, MultipartFile safetyIssues,
-	 * MultipartFile waterExposure, MultipartFile wireRopeDamages, MultipartFile
-	 * packingIntact, MultipartFile improperStorage, MultipartFile strapping,
-	 * MultipartFile weighmentSlip, MultipartFile weighment, MultipartFile
-	 * acknowledgementReceipt, MultipartFile unloadingImproper);
-	 * 
-	 * QualityReportResponse inspectionreportGetById(int id);
-	 * 
-	 * ResponseEntity<Object> deleteInspectionReport(int id);
-	 * 
-	 * List<QualityReportResponse> inspectionreportGetAll();
-	 */
 
 	List<QualityPartyMappingResponse> getByPartyIdAndStageName(int partyId, String stageName);
 
@@ -116,17 +95,17 @@ public interface QualityService {
 
 	QualityInspectionReportResponse getQIRReport(String stageName, String coilNo, String planId);
 
-	List<QualityInspReportListPageResponse> qirInwardListPage();
+	Page<Object[]> qirInwardListPage(Integer pageNo, Integer pageSize);
 
 	QualityInspectionReportResponse getQIRReportById(int id);
 
 	File qirPDF(Integer id);
 
-	List<QualityInspReportListPageResponse> qirPreProcessingListPage();
+	Page<Object[]> qirPreProcessingListPage(Integer pageNo, Integer pageSize);
 
-	List<QualityInspReportListPageResponse> qirProcessingListPage();
+	Page<Object[]> qirPreDispatchList(Integer pageNo, Integer pageSize);
 
-	List<QualityInspDispatchListResponse> qirPreDispatchList();
+	Page<Object[]> qirProcessingListPage(Integer pageNo, Integer pageSize);
 
-	List<QualityInspDispatchListResponse> qirPostDispatchList();
+	Page<Object[]> qirPostDispatchList(Integer pageNo, Integer pageSize);
 }

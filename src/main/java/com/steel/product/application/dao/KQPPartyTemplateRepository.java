@@ -5,6 +5,8 @@ import com.steel.product.application.entity.KQPPartyTemplateEntity;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -21,15 +23,17 @@ public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTempla
 			+ " where 1=1 ")
 	List<KQPPartyTemplateEntity> findByAll2();	
 	
-	@Query(value = "SELECT distinct inwardentryid, coilnumber `Coil No`,customerbatchid `Batch No`," + 
-			" DATE_FORMAT(createdon,'%d/%m/%Y') `Plan Date`," + 
-			" (select aa.`gradename` from `product_material_grades` aa where aa.`gradeid` = `inward`.`materialgradeid`) AS `material_grade`," + 
+	@Query(value = "SELECT distinct inwardentryid, coilnumber,customerbatchid," + 
+			" DATE_FORMAT(createdon,'%d/%m/%Y')," + 
+			" (select aa.`gradename` from `product_material_grades` aa where aa.`gradeid` = `inward`.`materialgradeid`)," + 
 			" fthickness, grossweight, inward.npartyid, " + 
 			" (SELECT rpt.qir_id FROM quality_inspection_report rpt where rpt.coil_no=inward.coilnumber limit 1) qirid, " +
 			" (SELECT aaa.partyname from product_tblpartydetails aaa where aaa.npartyid=inward.npartyid) , fwidth, " + 
-			" (select matdes.`material_code` from `product_tblmatdescription` matdes where matdes.`nmatid` = `inward`.`nmatid`) AS `material_code`  " +
-			" FROM product_tblinwardentry inward WHERE 1=1 order by inward.inwardentryid desc", nativeQuery = true)
-	List<Object[]> qirInwardListPage();
+			" (select matdes.`material_code` from `product_tblmatdescription` matdes where matdes.`nmatid` = `inward`.`nmatid` ) " +
+			" FROM product_tblinwardentry inward WHERE 1=1 order by inward.inwardentryid desc", 
+			countQuery = "SELECT count(distinct inwardentryid) FROM product_tblinwardentry inward WHERE 1=1", 
+			nativeQuery = true)
+	Page<Object[]> qirInwardListPage(Pageable pageable);
 	
 	@Query(value = "SELECT distinct part.part_details_id `Plan ID`, coilnumber `Coil No`,customerbatchid `Batch No`," + 
 			" DATE_FORMAT(instructiondate,'%d/%m/%Y') `Plan Date`," + 
@@ -42,8 +46,13 @@ public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTempla
 			" FROM product_part_details part" + 
 			" INNER JOIN product_instruction ins ON part.id = ins.part_details_id" + 
 			" INNER JOIN product_tblinwardentry inward ON ins.inwardid = inward.inwardentryid" + 
-			" WHERE 1=1 and inward.vstatus <=3 order by inward.inwardentryid desc ", nativeQuery = true)
-	List<Object[]> qirPreProcessingListPage();
+			" WHERE 1=1 and inward.vstatus <=3 order by inward.inwardentryid desc ",
+			countQuery = "SELECT count(distinct part.part_details_id ) FROM product_part_details part" + 
+					" INNER JOIN product_instruction ins ON part.id = ins.part_details_id" + 
+					" INNER JOIN product_tblinwardentry inward ON ins.inwardid = inward.inwardentryid" + 
+					" WHERE 1=1 and inward.vstatus <=3", 
+			nativeQuery = true)
+	Page<Object[]> qirPreProcessingListPage(Pageable pageable);
 
 	@Query(value = "SELECT distinct part.part_details_id `Plan ID`, coilnumber `Coil No`,customerbatchid `Batch No`," + 
 			" DATE_FORMAT(instructiondate,'%d/%m/%Y') `Plan Date`," + 
@@ -56,8 +65,13 @@ public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTempla
 			" FROM product_part_details part" + 
 			" INNER JOIN product_instruction ins ON part.id = ins.part_details_id" + 
 			" INNER JOIN product_tblinwardentry inward ON ins.inwardid = inward.inwardentryid" + 
-			" WHERE 1=1 and inward.vstatus <=3 order by inward.inwardentryid desc", nativeQuery = true)
-	List<Object[]> qirProcessingListPage();
+			" WHERE 1=1 and inward.vstatus <=3 order by inward.inwardentryid desc", 
+			countQuery = "SELECT count(distinct part.part_details_id) FROM product_part_details part " + 
+					" INNER JOIN product_instruction ins ON part.id = ins.part_details_id" + 
+					" INNER JOIN product_tblinwardentry inward ON ins.inwardid = inward.inwardentryid" + 
+					" WHERE 1=1 and inward.vstatus <=3", 
+			nativeQuery = true)
+	Page<Object[]> qirProcessingListPage(Pageable pageable);
 	
 	@Query(value = "SELECT ins FROM Instruction ins where ins.inwardId.coilNumber = :coilNo and ins.partDetails.partDetailsId = :partDetailsId ")
 	List<Instruction> fetchpacketdtls(@Param("coilNo") String coilNo, @Param("partDetailsId") String partDetailsId);
@@ -74,8 +88,11 @@ public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTempla
 			+ " (select matdes.`material_code` from `product_tblmatdescription` matdes where matdes.`nmatid` = `inward`.`nmatid`) AS `material_code`, "  
 			+ " (select aa.`gradename` from `product_material_grades` aa where aa.`gradeid` = `inward`.`materialgradeid`) AS `material_grade`  " 
 			+ " FROM product_tbl_delivery_details deli, product_instruction ins, product_tblinwardentry inward "
-			+ " WHERE deli.deliveryid = ins.deliveryid and ins.inwardid = inward.inwardentryid order by inward.inwardentryid desc", nativeQuery = true)
-	List<Object[]> qirPreDispatchList();
+			+ " WHERE deli.deliveryid = ins.deliveryid and ins.inwardid = inward.inwardentryid order by inward.inwardentryid desc", 
+			countQuery = "SELECT count(distinct coilnumber) FROM product_tbl_delivery_details deli, product_instruction ins, product_tblinwardentry inward " + 
+					" WHERE deli.deliveryid = ins.deliveryid and ins.inwardid = inward.inwardentryid", 
+			nativeQuery = true)
+	Page<Object[]> qirPreDispatchList(Pageable pageable);
 
 	@Query(value = "SELECT DISTINCT coilnumber, DATE_FORMAT(deli.createdon, '%d/%m/%Y'), "
 			+ " deli.deliveryid, customerbatchid, totalweight, vehicleno, inward.customerinvoiceno, "
@@ -86,8 +103,11 @@ public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTempla
 			+ " (select matdes.`material_code` from `product_tblmatdescription` matdes where matdes.`nmatid` = `inward`.`nmatid`) AS `material_code`, "  
 			+ " (select aa.`gradename` from `product_material_grades` aa where aa.`gradeid` = `inward`.`materialgradeid`) AS `material_grade`  " 
 			+ " FROM product_tbl_delivery_details deli, product_instruction ins, product_tblinwardentry inward "
-			+ " WHERE deli.deliveryid = ins.deliveryid and ins.inwardid = inward.inwardentryid order by inward.inwardentryid desc", nativeQuery = true)
-	List<Object[]> qirPostDispatchList();
+			+ " WHERE deli.deliveryid = ins.deliveryid and ins.inwardid = inward.inwardentryid order by inward.inwardentryid desc",
+			countQuery = "SELECT count(distinct coilnumber) FROM product_tbl_delivery_details deli, product_instruction ins, product_tblinwardentry inward " + 
+					" WHERE deli.deliveryid = ins.deliveryid and ins.inwardid = inward.inwardentryid", 
+			nativeQuery = true)
+	Page<Object[]> qirPostDispatchList(Pageable pageable);
 
 	@Query(value = "SELECT ins FROM Instruction ins where ins.inwardId.coilNumber = :coilNo and ins.deliveryDetails.deliveryId = :partDetailsId ")
 	List<Instruction> getDispatchDetails(@Param("coilNo") String coilNo, @Param("partDetailsId") Integer partDetailsId);

@@ -129,6 +129,9 @@ public class Instruction {
 	@Column(name="updatedon")
     private Date updatedOn;
 
+	@Column(name="finished_date")
+    private Date finishedDate;
+
     @Column(name = "isdeleted", columnDefinition = "BIT")
     private Boolean isDeleted;
 

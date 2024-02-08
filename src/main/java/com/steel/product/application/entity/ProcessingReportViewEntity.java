@@ -12,18 +12,24 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Data
 @Entity
-@Table(name = "processing_report_vw")
+@Table(name = "process_finish_report_vw")
 public class ProcessingReportViewEntity {
 
 	@Id
 	@Column(name = "id")
 	private Integer id;
 	
-	@Column(name = "mnth")
-	private Integer mnth;
+	@Column(name = "finishmonth")
+	private Integer finishmonth;
 	
-	@Column(name = "yer")
-	private Integer yer;
+	@Column(name = "finishyear")
+	private Integer finishyear;
+	
+	@Column(name = "processmonth")
+	private Integer processmonth;
+	
+	@Column(name = "processyear")
+	private Integer processyear;
 	
 	@Column(name = "customer_name")
 	private String customerName;
@@ -66,6 +72,9 @@ public class ProcessingReportViewEntity {
 
 	@Column(name = "enduser_tag_name")
 	private String enduser_tag_name;
+
+	@Column(name = "statusname")
+	private String statusname;
 
 	@Column(name = "party_id")
 	private int partyId;

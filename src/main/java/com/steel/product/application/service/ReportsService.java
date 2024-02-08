@@ -35,6 +35,9 @@ public interface ReportsService {
 	
 	boolean createProcessingMonthlyReport(Integer partyId, MimeMessageHelper helper, Integer month,
 			Map<Integer, String> months, Integer year);
+
+	boolean createFinishingMonthlyReport(Integer getnPartyId, MimeMessageHelper helper, Integer month,
+			Map<Integer, String> months, Integer year);
 	
 	
 }

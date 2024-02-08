@@ -380,6 +380,7 @@ public class InstructionServiceImpl implements InstructionService {
             instruction.setEndUserTagsEntity(endUserTagsEntityMap.get(ins.getEndUserTagId()));
             instruction.setStatus(currentStatus);
             instruction.setUpdatedBy(userId);
+            instruction.setFinishedDate(new Date());
             updatedInstructionList.add(instruction);
         }
         instructionRepository.saveAll(updatedInstructionList);
@@ -439,6 +440,7 @@ public class InstructionServiceImpl implements InstructionService {
                 LOGGER.info("parent actual weight "+parentActualWeight);
                 parentInstruction.setActualWeight(parentActualWeight);
                 parentInstruction.setStatus(readyToDeliverStatus);
+                parentInstruction.setFinishedDate(new Date());
                 LOGGER.info("saving parent instruction id " + parentInstruction.getInstructionId());
                 instructionRepository.save(parentInstruction);
             }
@@ -565,6 +567,7 @@ public class InstructionServiceImpl implements InstructionService {
         unprocessedInstruction.setUpdatedBy(userId);
         unprocessedInstruction.setCreatedOn(date);
         unprocessedInstruction.setUpdatedOn(date);
+        unprocessedInstruction.setFinishedDate(date);
         unprocessedInstruction.setIsDeleted(false);
         unprocessedInstruction.setIsSlitAndCut(false);
 
@@ -607,6 +610,7 @@ public class InstructionServiceImpl implements InstructionService {
         unprocessedInstruction.setUpdatedBy(userId);
         unprocessedInstruction.setCreatedOn(date);
         unprocessedInstruction.setUpdatedOn(date);
+        unprocessedInstruction.setFinishedDate(date);
         unprocessedInstruction.setIsDeleted(false);
         unprocessedInstruction.setIsSlitAndCut(false);
 

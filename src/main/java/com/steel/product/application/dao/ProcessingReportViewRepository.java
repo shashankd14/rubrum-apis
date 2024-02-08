@@ -9,6 +9,9 @@ import java.util.List;
 @Repository
 public interface ProcessingReportViewRepository extends JpaRepository<ProcessingReportViewEntity, Integer> {
 
-	List<ProcessingReportViewEntity> findByPartyIdAndMnthAndYer(int partyId, Integer mnth, Integer year);
+	List<ProcessingReportViewEntity> findByPartyIdAndProcessmonthAndProcessyear(Integer partyId, Integer processmonth,
+			Integer processyear);
+
+	List<ProcessingReportViewEntity> findByPartyIdAndFinishmonthAndFinishyear(Integer partyId, Integer finishmonth,Integer finishyear);
 
 }

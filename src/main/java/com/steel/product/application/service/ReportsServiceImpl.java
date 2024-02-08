@@ -986,7 +986,7 @@ public class ReportsServiceImpl implements ReportsService {
 		Map<String, Object[]> acctStatementMap = new LinkedHashMap<>();
 
 		try {
-			List<ProcessingReportViewEntity> partyList = processingRepository.findByPartyIdAndMnthAndYer(partyId, month, year);
+			List<ProcessingReportViewEntity> partyList = processingRepository.findByPartyIdAndProcessmonthAndProcessyear(partyId, month, year);
 
 			acctStatementMap.put("1",
 					new Object[] { "CoilNumber", "CustomerBatchId", "CustomerName", "ProcessName","MaterialDesc",
@@ -997,17 +997,113 @@ public class ReportsServiceImpl implements ReportsService {
 				cnt++;
 				acctStatementMap.put("" + cnt,
 						new Object[] { kk.getCoilnumber(), kk.getCustomerbatchid(), kk.getCustomerName(),
-						kk.getProcessName(), kk.getMaterialdesc(), kk.getMaterialGrade(), kk.getProcessdate(),kk.getPacketId(),
-						kk.getPacketThickness(), kk.getPacketWidth(), kk.getPacketLength(),
-						kk.getFinishingWeight(), kk.getFinishingDate(), kk.getEnduser_tag_name() });
+								kk.getProcessName(), kk.getMaterialdesc(), kk.getMaterialGrade(), kk.getProcessdate(),
+								kk.getPacketId(), kk.getPacketThickness(),
+								(kk.getPacketWidth() == null ? "" : kk.getPacketWidth()),
+								(kk.getPacketLength() == null ? "" : kk.getPacketLength()),
+								(kk.getFinishingWeight() == null ? "" : kk.getFinishingWeight()),
+								(kk.getFinishingWeight() == null ? "" : kk.getFinishingDate()),
+								(kk.getEnduser_tag_name() == null ? "" : kk.getEnduser_tag_name()) });
 			}
 		} catch (Exception e) {
-			LOGGER.error("Error at getMonthlyOutwardReportDetails " + e.getMessage());
+			LOGGER.error("Error at getMonthlyProcessingReportDetails " + e.getMessage());
 		}
 		return acctStatementMap;
 	}
 	
-	
+	@Override
+	public boolean createFinishingMonthlyReport(Integer partyId, MimeMessageHelper helper,
+			Integer month, Map<Integer, String> months, Integer year) {
+
+		boolean attachmentRequired=true;
+		try {
+			// Create blank workbook
+			XSSFWorkbook workbook = new XSSFWorkbook();
+			
+			CellStyle borderStyle = workbook.createCellStyle();
+			borderStyle.setBorderBottom(BorderStyle.THIN);
+		    borderStyle.setBorderLeft(BorderStyle.THIN);
+			borderStyle.setBorderRight(BorderStyle.THIN);
+			borderStyle.setBorderTop(BorderStyle.THIN);
+			borderStyle.setAlignment(HorizontalAlignment.CENTER);
+			
+			// Create a blank sheet
+			XSSFSheet spreadsheet = workbook.createSheet("Finishing_Report");
+
+			// Create row object
+			XSSFRow row;
+
+			Map<String, Object[]> acctStatementMap = getMonthlyFinishingReportDetails(partyId, month, year);
+
+			// Iterate over data and write to sheet
+			Set<String> keyid = acctStatementMap.keySet();
+			int rowid = 0;
+
+			for (String key : keyid) {
+				row = spreadsheet.createRow(rowid++);
+				Object[] objectArr = acctStatementMap.get(key);
+				int cellid = 0;
+
+				for (Object obj : objectArr) {
+					Cell cell = row.createCell(cellid++);
+				    cell.setCellStyle(borderStyle);
+					cell.setCellValue(""+obj);
+				}
+			}
+			
+            String baseDirectory = env.getProperty("email.folderpath")+File.separator;            
+			File outputPojoDirectory = new File(baseDirectory);
+			outputPojoDirectory.mkdirs();
+			
+			File fullPath = new File(baseDirectory +File.separator+"FinishingReport_"+months.get(month)+".xlsx");
+			
+			FileOutputStream out = new FileOutputStream(fullPath);
+			workbook.write(out);
+			
+			FileSystemResource file = new FileSystemResource(fullPath);
+			if(acctStatementMap!=null && acctStatementMap.size()>1) {
+				attachmentRequired=false;
+				helper.addAttachment("FinishingReport_"+months.get(month)+".xlsx", file);
+			}
+			
+			out.close();
+			fullPath.deleteOnExit();
+			//System.out.println("File Created At -- " + baseDirectory);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return attachmentRequired;
+	}
+
+	public Map<String, Object[]> getMonthlyFinishingReportDetails(Integer partyId, Integer month, Integer year) {
+
+		Map<String, Object[]> acctStatementMap = new LinkedHashMap<>();
+
+		try {
+			List<ProcessingReportViewEntity> partyList = processingRepository.findByPartyIdAndFinishmonthAndFinishyear(partyId, month, year);
+
+			acctStatementMap.put("1",
+					new Object[] { "CoilNumber", "CustomerBatchId", "CustomerName", "ProcessName","MaterialDesc",
+							"MaterialGrade", "ProcessDate", "PacketId", "Packet Thickness", "Packet Width", "Packet Length",
+							"Finishing Weight", "Finishing Date", "End User Tag"});
+			int cnt = 1;
+			for (ProcessingReportViewEntity kk : partyList) {
+				cnt++;
+				acctStatementMap.put("" + cnt,
+						new Object[] { kk.getCoilnumber(), kk.getCustomerbatchid(), kk.getCustomerName(),
+								kk.getProcessName(), kk.getMaterialdesc(), kk.getMaterialGrade(), kk.getProcessdate(),
+								kk.getPacketId(), kk.getPacketThickness(),
+								(kk.getPacketWidth() == null ? "" : kk.getPacketWidth()),
+								(kk.getPacketLength() == null ? "" : kk.getPacketLength()),
+								(kk.getFinishingWeight() == null ? "" : kk.getFinishingWeight()),
+								(kk.getFinishingWeight() == null ? "" : kk.getFinishingDate()),
+								(kk.getEnduser_tag_name() == null ? "" : kk.getEnduser_tag_name()) });
+			}
+		} catch (Exception e) {
+			LOGGER.error("Error at getMonthlyFinishingReportDetails " + e.getMessage());
+		}
+		return acctStatementMap;
+	}
 	
 	
 	

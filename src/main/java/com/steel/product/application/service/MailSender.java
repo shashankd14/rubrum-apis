@@ -159,6 +159,7 @@ public class MailSender {
 				if (party.getMonthlyReportsList().contains("PROCESSINGREPORT")) {
 					mailStts = true;
 					reportsService.createProcessingMonthlyReport(party.getnPartyId(), helper, month, months, year);
+					reportsService.createFinishingMonthlyReport(party.getnPartyId(), helper, month, months, year);
 				}
 			}
 			helper.setFrom(fromMailId);

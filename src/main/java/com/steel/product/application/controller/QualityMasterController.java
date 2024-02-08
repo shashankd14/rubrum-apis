@@ -19,7 +19,10 @@ import com.steel.product.application.service.InwardEntryService;
 import com.steel.product.application.service.QualityService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -360,22 +363,113 @@ public class QualityMasterController {
 		return list;
 	}
 
-	@GetMapping(value = "/qir/inward/listpage", produces = "application/json")
-	public List<QualityInspReportListPageResponse> qirInwardListPage() {
-		List<QualityInspReportListPageResponse> list = qualityService.qirInwardListPage();
-		return list;
+	@RequestMapping(value = "/qir/inward/listpage/{pageNo}/{pageSize}", method = { RequestMethod.GET, RequestMethod.POST })
+	public ResponseEntity<Object> qirInwardListPage(@PathVariable Integer pageNo, @PathVariable Integer pageSize) {
+		
+		Map<String, Object> response = new HashMap<>();
+		Page<Object[]> packetsList = qualityService.qirInwardListPage(pageNo, pageSize);
+		
+		List<QualityInspReportListPageResponse> qirList = new ArrayList<>();
+
+		for (Object[] result : packetsList) {
+			QualityInspReportListPageResponse resp = new QualityInspReportListPageResponse();
+			resp.setInwardEntryId(result[0] != null ? (Integer) result[0] : null);
+			resp.setCoilNo(result[1] != null ? (String) result[1] : null);
+			resp.setCustomerBatchNo(result[2] != null ? (String) result[2] : null);
+			resp.setPlanDate(result[3] != null ? (String) result[3] : null);
+			resp.setMaterialGrade(result[4] != null ? (String) result[4] : null);
+			resp.setFthickness(result[5] != null ? (Float) result[5] : null);
+			resp.setTargetWeight(result[6] != null ? (Float) result[6] : null);
+			resp.setNPartyId(result[7] != null ? Integer.parseInt(result[7].toString()) : null);
+			if (result[8] != null && result[8].toString().length() > 0) {
+				resp.setQirId(Integer.parseInt(result[8].toString()));
+			} else {
+				resp.setQirId(null);
+			}
+			resp.setPartyName(result[9] != null ? (String) result[9] : null);
+			resp.setFwidth(result[10] != null ? (Float) result[10] : null);
+			resp.setMaterialDesc(result[11] != null ? (String) result[11] : null);
+			qirList.add(resp);
+		}
+		
+		response.put("content", qirList);
+		response.put("currentPage", packetsList.getNumber());
+		response.put("totalItems", packetsList.getTotalElements());
+		response.put("totalPages", packetsList.getTotalPages());
+		return new ResponseEntity<Object>(response, HttpStatus.OK);
 	}
 
-	@GetMapping(value = "/qir/preprocessing/listpage", produces = "application/json")
-	public List<QualityInspReportListPageResponse> qirPreListPage() {
-		List<QualityInspReportListPageResponse> list = qualityService.qirPreProcessingListPage();
-		return list;
+	@RequestMapping(value = "/qir/preprocessing/listpage/{pageNo}/{pageSize}", method = { RequestMethod.GET, RequestMethod.POST })
+	public ResponseEntity<Object> qirPreListPage(@PathVariable Integer pageNo, @PathVariable Integer pageSize) {
+		Map<String, Object> response = new HashMap<>();
+		Page<Object[]>  packetsList = qualityService.qirPreProcessingListPage(pageNo, pageSize);
+		
+		Map<String, QualityInspReportListPageResponse> kk = new LinkedHashMap<>();
+		for (Object[] result : packetsList) {
+			QualityInspReportListPageResponse resp = new QualityInspReportListPageResponse();
+			resp.setPlanId(result[0] != null ? (String) result[0] : null);
+			resp.setCoilNo(result[1] != null ? (String) result[1] : null);
+			resp.setCustomerBatchNo(result[2] != null ? (String) result[2] : null);
+			resp.setPlanDate(result[3] != null ? (String) result[3] : null);
+			resp.setMaterialGrade(result[4] != null ? (String) result[4] : null);
+			resp.setFthickness(result[5] != null ? (Float) result[5] : null);
+			resp.setTargetWeight(result[6] != null ? (Float) result[6] : null);
+			resp.setNPartyId(result[7] != null ? Integer.parseInt(result[7].toString()) : null);
+			if (result[8] != null && result[8].toString().length() > 0) {
+				resp.setQirId(Integer.parseInt(result[8].toString()));
+			} else {
+				resp.setQirId(null);
+			}
+			resp.setPartyName(result[9] != null ? (String) result[9] : null);
+			resp.setFwidth(result[10] != null ? (Float) result[10] : null);
+			resp.setMaterialDesc(result[11] != null ? (String) result[11] : null);
+			resp.setInwardEntryId(result[12] != null ? (Integer) result[12] : null);
+			kk.put(resp.getPlanId(), resp);
+		}
+		List<QualityInspReportListPageResponse> qirList = new ArrayList<QualityInspReportListPageResponse>(kk.values());
+
+		response.put("content", qirList);
+		response.put("currentPage", packetsList.getNumber());
+		response.put("totalItems", packetsList.getTotalElements());
+		response.put("totalPages", packetsList.getTotalPages());
+		return new ResponseEntity<Object>(response, HttpStatus.OK);
 	}
 
-	@GetMapping(value = "/qir/processing/listpage", produces = "application/json")
-	public List<QualityInspReportListPageResponse> qirPostListPage() {
-		List<QualityInspReportListPageResponse> list = qualityService.qirProcessingListPage();
-		return list;
+	@RequestMapping(value = "/qir/processing/listpage/{pageNo}/{pageSize}", method = { RequestMethod.GET, RequestMethod.POST })
+	public ResponseEntity<Object> qirPostListPage(@PathVariable Integer pageNo, @PathVariable Integer pageSize) {
+		Map<String, Object> response = new HashMap<>();
+		Page<Object[]> packetsList = qualityService.qirProcessingListPage(pageNo, pageSize);
+		
+		Map<String, QualityInspReportListPageResponse> kk = new LinkedHashMap<>();
+		for (Object[] result : packetsList) {
+			QualityInspReportListPageResponse resp = new QualityInspReportListPageResponse();
+			resp.setPlanId(result[0] != null ? (String) result[0] : null);
+			resp.setCoilNo(result[1] != null ? (String) result[1] : null);
+			resp.setCustomerBatchNo(result[2] != null ? (String) result[2] : null);
+			resp.setPlanDate(result[3] != null ? (String) result[3] : null);
+			resp.setMaterialGrade(result[4] != null ? (String) result[4] : null);
+			resp.setFthickness(result[5] != null ? (Float) result[5] : null);
+			resp.setTargetWeight(result[6] != null ? (Float) result[6] : null);
+			resp.setNPartyId(result[7] != null ? Integer.parseInt(result[7].toString()) : null);
+			if (result[8] != null && result[8].toString().length() > 0) {
+				resp.setQirId(Integer.parseInt(result[8].toString()));
+			} else {
+				resp.setQirId(null);
+			}
+			resp.setPartyName(result[9] != null ? (String) result[9] : null);
+			resp.setFwidth(result[10] != null ? (Float) result[10] : null);
+			resp.setMaterialDesc(result[11] != null ? (String) result[11] : null);
+			resp.setInwardEntryId(result[12] != null ? (Integer) result[12] : null);
+			kk.put(resp.getPlanId(), resp);
+		}
+		
+		List<QualityInspReportListPageResponse> qirList = new ArrayList<QualityInspReportListPageResponse>(kk.values());
+
+		response.put("content", qirList);
+		response.put("currentPage", packetsList.getNumber());
+		response.put("totalItems", packetsList.getTotalElements());
+		response.put("totalPages", packetsList.getTotalPages());
+		return new ResponseEntity<Object>(response, HttpStatus.OK);
 	}
 
 	@PostMapping(value = "/qir/fetchpacketdtls", produces = "application/json")
@@ -388,17 +482,79 @@ public class QualityMasterController {
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+	
+	@RequestMapping(value = "/qir/postdispatch/dispatchlist/{pageNo}/{pageSize}", method = { RequestMethod.GET, RequestMethod.POST })
+	public ResponseEntity<Object> qirPostDispatchList(@PathVariable Integer pageNo, @PathVariable Integer pageSize) {
+		Map<String, Object> response = new HashMap<>();
 
-	@GetMapping(value = "/qir/postdispatch/dispatchlist", produces = "application/json")
-	public List<QualityInspDispatchListResponse> qirPostDispatchList() {
-		List<QualityInspDispatchListResponse> list = qualityService.qirPostDispatchList();
-		return list;
+		Page<Object[]> packetsList = qualityService.qirPostDispatchList(pageNo, pageSize);
+		List<QualityInspDispatchListResponse> qirList = new ArrayList<>();
+
+		for (Object[] result : packetsList) {
+			QualityInspDispatchListResponse resp = new QualityInspDispatchListResponse();
+			resp.setCoilNo(result[0] != null ? (String) result[0] : null);
+			resp.setDeliveryDate(result[1] != null ? (String) result[1] : null);
+			resp.setDeliveryChalanNo(result[2] != null ? (Integer) result[2] : null);
+			resp.setCustomerBatchNo(result[3] != null ? (String) result[3] : null);
+			resp.setQtyDelivered(result[4] != null ? (new BigDecimal(result[4].toString())) : null);
+			resp.setVehicleNo(result[5] != null ? (String) result[5] : null);
+			resp.setCustomerInvoiceNo(result[6] != null ? (String) result[6] : null);
+			resp.setCustomerInvoiceDate(result[7] != null ? (String) result[7] : null);
+			resp.setEndUserTags(result[8] != null ? (String) result[8] : null);
+			resp.setNPartyId(result[9] != null ? Integer.parseInt(result[9].toString()) : null);
+			if (result[10] != null && result[10].toString().length() > 0) {
+				resp.setQirId(Integer.parseInt(result[10].toString()));
+			} else {
+				resp.setQirId(null);
+			}
+			resp.setPartyName(result[11] != null ? (String) result[11] : null);
+			resp.setFwidth(result[12] != null ? (Float) result[12] : null);
+			resp.setMaterialDesc(result[13] != null ? (String) result[13] : null);
+			resp.setMaterialGrade( result[14] != null ? (String) result[14] : null);
+			qirList.add(resp);
+		}
+		response.put("content", qirList);
+		response.put("currentPage", packetsList.getNumber());
+		response.put("totalItems", packetsList.getTotalElements());
+		response.put("totalPages", packetsList.getTotalPages());
+		return new ResponseEntity<Object>(response, HttpStatus.OK);
 	}
-			
-	@GetMapping(value = "/qir/predispatch/dispatchlist", produces = "application/json")
-	public List<QualityInspDispatchListResponse> qirPreDispatchList() {
-		List<QualityInspDispatchListResponse> list = qualityService.qirPreDispatchList();
-		return list;
+	
+	@RequestMapping(value = "/qir/predispatch/dispatchlist/{pageNo}/{pageSize}", method = { RequestMethod.GET, RequestMethod.POST })
+	public ResponseEntity<Object> qirPreDispatchList(@PathVariable Integer pageNo, @PathVariable Integer pageSize) {
+		Map<String, Object> response = new HashMap<>();
+
+		Page<Object[]> packetsList = qualityService.qirPreDispatchList(pageNo, pageSize);
+		List<QualityInspDispatchListResponse> qirList = new ArrayList<>();
+
+		for (Object[] result : packetsList) {
+			QualityInspDispatchListResponse resp = new QualityInspDispatchListResponse();
+			resp.setCoilNo(result[0] != null ? (String) result[0] : null);
+			resp.setDeliveryDate(result[1] != null ? (String) result[1] : null);
+			resp.setDeliveryChalanNo(result[2] != null ? (Integer) result[2] : null);
+			resp.setCustomerBatchNo(result[3] != null ? (String) result[3] : null);
+			resp.setQtyDelivered(result[4] != null ? (new BigDecimal(result[4].toString())) : null);
+			resp.setVehicleNo(result[5] != null ? (String) result[5] : null);
+			resp.setCustomerInvoiceNo(result[6] != null ? (String) result[6] : null);
+			resp.setCustomerInvoiceDate(result[7] != null ? (String) result[7] : null);
+			resp.setEndUserTags(result[8] != null ? (String) result[8] : null);
+			resp.setNPartyId(result[9] != null ? Integer.parseInt(result[9].toString()) : null);
+			if (result[10] != null && result[10].toString().length() > 0) {
+				resp.setQirId(Integer.parseInt(result[10].toString()));
+			} else {
+				resp.setQirId(null);
+			}
+			resp.setPartyName(result[11] != null ? (String) result[11] : null);
+			resp.setFwidth(result[12] != null ? (Float) result[12] : null);
+			resp.setMaterialDesc(result[13] != null ? (String) result[13] : null);
+			resp.setMaterialGrade( result[14] != null ? (String) result[14] : null);
+			qirList.add(resp);
+		}
+		response.put("content", qirList);
+		response.put("currentPage", packetsList.getNumber());
+		response.put("totalItems", packetsList.getTotalElements());
+		response.put("totalPages", packetsList.getTotalPages());
+		return new ResponseEntity<Object>(response, HttpStatus.OK);
 	}
 
 	@PostMapping(value = "/qir/dispatchdtls", produces = "application/json")

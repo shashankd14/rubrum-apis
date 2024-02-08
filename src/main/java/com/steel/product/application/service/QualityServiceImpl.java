@@ -36,8 +36,6 @@ import com.steel.product.application.dto.quality.QIRSaveDataRequest;
 import com.steel.product.application.dto.quality.QIRTemplateDtlsJsonArrayDTO;
 import com.steel.product.application.dto.quality.QualityCheckRequest;
 import com.steel.product.application.dto.quality.QualityCheckResponse;
-import com.steel.product.application.dto.quality.QualityInspDispatchListResponse;
-import com.steel.product.application.dto.quality.QualityInspReportListPageResponse;
 import com.steel.product.application.dto.quality.QualityInspectionReportResponse;
 import com.steel.product.application.dto.quality.QualityPartyMappingRequest;
 import com.steel.product.application.dto.quality.QualityPartyMappingRequestNew;
@@ -57,17 +55,17 @@ import lombok.extern.log4j.Log4j2;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -800,94 +798,40 @@ public class QualityServiceImpl implements QualityService {
 	}
 
 	@Override
-	public List<QualityInspReportListPageResponse> qirInwardListPage() {
-		List<Object[]> packetsList = kqpPartyTemplateRepository.qirInwardListPage();
-		List<QualityInspReportListPageResponse> qirList = new ArrayList<>();
-
-		for (Object[] result : packetsList) {
-			QualityInspReportListPageResponse resp = new QualityInspReportListPageResponse();
-			resp.setInwardEntryId(result[0] != null ? (Integer) result[0] : null);
-			resp.setCoilNo(result[1] != null ? (String) result[1] : null);
-			resp.setCustomerBatchNo(result[2] != null ? (String) result[2] : null);
-			resp.setPlanDate(result[3] != null ? (String) result[3] : null);
-			resp.setMaterialGrade(result[4] != null ? (String) result[4] : null);
-			resp.setFthickness(result[5] != null ? (Float) result[5] : null);
-			resp.setTargetWeight(result[6] != null ? (Float) result[6] : null);
-			resp.setNPartyId(result[7] != null ? Integer.parseInt(result[7].toString()) : null);
-			if (result[8] != null && result[8].toString().length() > 0) {
-				resp.setQirId(Integer.parseInt(result[8].toString()));
-			} else {
-				resp.setQirId(null);
-			}
-			resp.setPartyName(result[9] != null ? (String) result[9] : null);
-			resp.setFwidth(result[10] != null ? (Float) result[10] : null);
-			resp.setMaterialDesc(result[11] != null ? (String) result[11] : null);
-			qirList.add(resp);
-		}
-		return qirList;
+	public Page<Object[]> qirInwardListPage(Integer pageNo, Integer pageSize) {
+		Pageable pageable = PageRequest.of((pageNo - 1), pageSize);
+		Page<Object[]> packetsList = kqpPartyTemplateRepository.qirInwardListPage(pageable);
+		return packetsList;
 	}
 
 	@Override
-	public List<QualityInspReportListPageResponse> qirPreProcessingListPage() {
-		List<Object[]> packetsList = kqpPartyTemplateRepository.qirPreProcessingListPage();
-		Map<String, QualityInspReportListPageResponse> kk = new LinkedHashMap<>();
-		for (Object[] result : packetsList) {
-			QualityInspReportListPageResponse resp = new QualityInspReportListPageResponse();
-			resp.setPlanId(result[0] != null ? (String) result[0] : null);
-			resp.setCoilNo(result[1] != null ? (String) result[1] : null);
-			resp.setCustomerBatchNo(result[2] != null ? (String) result[2] : null);
-			resp.setPlanDate(result[3] != null ? (String) result[3] : null);
-			resp.setMaterialGrade(result[4] != null ? (String) result[4] : null);
-			resp.setFthickness(result[5] != null ? (Float) result[5] : null);
-			resp.setTargetWeight(result[6] != null ? (Float) result[6] : null);
-			resp.setNPartyId(result[7] != null ? Integer.parseInt(result[7].toString()) : null);
-			if (result[8] != null && result[8].toString().length() > 0) {
-				resp.setQirId(Integer.parseInt(result[8].toString()));
-			} else {
-				resp.setQirId(null);
-			}
-			resp.setPartyName(result[9] != null ? (String) result[9] : null);
-			resp.setFwidth(result[10] != null ? (Float) result[10] : null);
-			resp.setMaterialDesc(result[11] != null ? (String) result[11] : null);
-			resp.setInwardEntryId(result[12] != null ? (Integer) result[12] : null);
-			kk.put(resp.getPlanId(), resp);
-			//qirList.add(resp);
-		}
-		List<QualityInspReportListPageResponse> qirList = new ArrayList<QualityInspReportListPageResponse>(kk.values());
-		return qirList;
+	public Page<Object[]> qirPreProcessingListPage(Integer pageNo, Integer pageSize) {
+		Pageable pageable = PageRequest.of((pageNo - 1), pageSize);
+		Page<Object[]> packetsList = kqpPartyTemplateRepository.qirPreProcessingListPage(pageable);
+		return packetsList;
 	}
 
 	@Override
-	public List<QualityInspReportListPageResponse> qirProcessingListPage() {
-		List<Object[]> packetsList = kqpPartyTemplateRepository.qirProcessingListPage();
-		Map<String, QualityInspReportListPageResponse> kk = new LinkedHashMap<>();
-		for (Object[] result : packetsList) {
-			QualityInspReportListPageResponse resp = new QualityInspReportListPageResponse();
-			resp.setPlanId(result[0] != null ? (String) result[0] : null);
-			resp.setCoilNo(result[1] != null ? (String) result[1] : null);
-			resp.setCustomerBatchNo(result[2] != null ? (String) result[2] : null);
-			resp.setPlanDate(result[3] != null ? (String) result[3] : null);
-			resp.setMaterialGrade(result[4] != null ? (String) result[4] : null);
-			resp.setFthickness(result[5] != null ? (Float) result[5] : null);
-			resp.setTargetWeight(result[6] != null ? (Float) result[6] : null);
-			resp.setNPartyId(result[7] != null ? Integer.parseInt(result[7].toString()) : null);
-			if (result[8] != null && result[8].toString().length() > 0) {
-				resp.setQirId(Integer.parseInt(result[8].toString()));
-			} else {
-				resp.setQirId(null);
-			}
-			resp.setPartyName(result[9] != null ? (String) result[9] : null);
-			resp.setFwidth(result[10] != null ? (Float) result[10] : null);
-			resp.setMaterialDesc(result[11] != null ? (String) result[11] : null);
-			resp.setInwardEntryId(result[12] != null ? (Integer) result[12] : null);
-			kk.put(resp.getPlanId(), resp);
-			//qirList.add(resp);
-		}
-		
-		List<QualityInspReportListPageResponse> qirList = new ArrayList<QualityInspReportListPageResponse>(kk.values());
-
-		return qirList;
+	public Page<Object[]> qirProcessingListPage(Integer pageNo, Integer pageSize) {
+		Pageable pageable = PageRequest.of((pageNo - 1), pageSize);
+		Page<Object[]> packetsList = kqpPartyTemplateRepository.qirProcessingListPage(pageable);
+		return packetsList;
 	}
+
+	@Override
+	public Page<Object[]> qirPreDispatchList(Integer pageNo, Integer pageSize) {
+		Pageable pageable = PageRequest.of((pageNo - 1), pageSize);
+		Page<Object[]> packetsList = kqpPartyTemplateRepository.qirPreDispatchList(pageable);
+		return packetsList;
+	}
+
+	@Override
+	public Page<Object[]> qirPostDispatchList(Integer pageNo, Integer pageSize) {
+		Pageable pageable = PageRequest.of((pageNo - 1), pageSize);
+		Page<Object[]> packetsList = kqpPartyTemplateRepository.qirPostDispatchList(pageable);
+		return packetsList;
+	}
+
 	@Override
 	public List<InstructionResponseDto> fetchpacketdtls(QIRSaveDataRequest qirSaveDataRequest) {
 
@@ -897,69 +841,7 @@ public class QualityServiceImpl implements QualityService {
 
 		return instructionList;
 	}
-
-	@Override
-	public List<QualityInspDispatchListResponse> qirPreDispatchList() {
-		List<Object[]> packetsList = kqpPartyTemplateRepository.qirPreDispatchList();
-		List<QualityInspDispatchListResponse> qirList = new ArrayList<>();
-
-		for (Object[] result : packetsList) {
-			QualityInspDispatchListResponse resp = new QualityInspDispatchListResponse();
-			resp.setCoilNo(result[0] != null ? (String) result[0] : null);
-			resp.setDeliveryDate(result[1] != null ? (String) result[1] : null);
-			resp.setDeliveryChalanNo(result[2] != null ? (Integer) result[2] : null);
-			resp.setCustomerBatchNo(result[3] != null ? (String) result[3] : null);
-			resp.setQtyDelivered(result[4] != null ? (new BigDecimal(result[4].toString())) : null);
-			resp.setVehicleNo(result[5] != null ? (String) result[5] : null);
-			resp.setCustomerInvoiceNo(result[6] != null ? (String) result[6] : null);
-			resp.setCustomerInvoiceDate(result[7] != null ? (String) result[7] : null);
-			resp.setEndUserTags(result[8] != null ? (String) result[8] : null);
-			resp.setNPartyId(result[9] != null ? Integer.parseInt(result[9].toString()) : null);
-			if (result[10] != null && result[10].toString().length() > 0) {
-				resp.setQirId(Integer.parseInt(result[10].toString()));
-			} else {
-				resp.setQirId(null);
-			}
-			resp.setPartyName(result[11] != null ? (String) result[11] : null);
-			resp.setFwidth(result[12] != null ? (Float) result[12] : null);
-			resp.setMaterialDesc(result[13] != null ? (String) result[13] : null);
-			resp.setMaterialGrade( result[14] != null ? (String) result[14] : null);
-			qirList.add(resp);
-		}
-		return qirList;
-	}
-
-	@Override
-	public List<QualityInspDispatchListResponse> qirPostDispatchList() {
-		List<Object[]> packetsList = kqpPartyTemplateRepository.qirPostDispatchList();
-		List<QualityInspDispatchListResponse> qirList = new ArrayList<>();
-
-		for (Object[] result : packetsList) {
-			QualityInspDispatchListResponse resp = new QualityInspDispatchListResponse();
-			resp.setCoilNo(result[0] != null ? (String) result[0] : null);
-			resp.setDeliveryDate(result[1] != null ? (String) result[1] : null);
-			resp.setDeliveryChalanNo(result[2] != null ? (Integer) result[2] : null);
-			resp.setCustomerBatchNo(result[3] != null ? (String) result[3] : null);
-			resp.setQtyDelivered(result[4] != null ? (new BigDecimal(result[4].toString())) : null);
-			resp.setVehicleNo(result[5] != null ? (String) result[5] : null);
-			resp.setCustomerInvoiceNo(result[6] != null ? (String) result[6] : null);
-			resp.setCustomerInvoiceDate(result[7] != null ? (String) result[7] : null);
-			resp.setEndUserTags(result[8] != null ? (String) result[8] : null);
-			resp.setNPartyId(result[9] != null ? Integer.parseInt(result[9].toString()) : null);
-			if (result[10] != null && result[10].toString().length() > 0) {
-				resp.setQirId(Integer.parseInt(result[10].toString()));
-			} else {
-				resp.setQirId(null);
-			}
-			resp.setPartyName(result[11] != null ? (String) result[11] : null);
-			resp.setFwidth(result[12] != null ? (Float) result[12] : null);
-			resp.setMaterialDesc(result[13] != null ? (String) result[13] : null);
-			resp.setMaterialGrade( result[14] != null ? (String) result[14] : null);
-			qirList.add(resp);
-		}
-		return qirList;
-	}
-
+	
 	@Override
 	public List<InstructionResponseDto> getDispatchDetails(QIRSaveDataRequest qirSaveDataRequest) {
 
@@ -2539,5 +2421,4 @@ public class QualityServiceImpl implements QualityService {
 		}
 	}
 
-	 
 }
