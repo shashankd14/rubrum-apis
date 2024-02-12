@@ -46,11 +46,11 @@ public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTempla
 			" FROM product_part_details part" + 
 			" INNER JOIN product_instruction ins ON part.id = ins.part_details_id" + 
 			" INNER JOIN product_tblinwardentry inward ON ins.inwardid = inward.inwardentryid" + 
-			" WHERE 1=1 and inward.vstatus <=3 order by inward.inwardentryid desc ",
+			" WHERE 1=1 order by inward.inwardentryid desc ",
 			countQuery = "SELECT count(distinct part.part_details_id ) FROM product_part_details part" + 
 					" INNER JOIN product_instruction ins ON part.id = ins.part_details_id" + 
 					" INNER JOIN product_tblinwardentry inward ON ins.inwardid = inward.inwardentryid" + 
-					" WHERE 1=1 and inward.vstatus <=3", 
+					" WHERE 1=1 ", 
 			nativeQuery = true)
 	Page<Object[]> qirPreProcessingListPage(Pageable pageable);
 
@@ -65,11 +65,11 @@ public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTempla
 			" FROM product_part_details part" + 
 			" INNER JOIN product_instruction ins ON part.id = ins.part_details_id" + 
 			" INNER JOIN product_tblinwardentry inward ON ins.inwardid = inward.inwardentryid" + 
-			" WHERE 1=1 and inward.vstatus <=3 order by inward.inwardentryid desc", 
+			" WHERE 1=1 order by inward.inwardentryid desc", 
 			countQuery = "SELECT count(distinct part.part_details_id) FROM product_part_details part " + 
 					" INNER JOIN product_instruction ins ON part.id = ins.part_details_id" + 
 					" INNER JOIN product_tblinwardentry inward ON ins.inwardid = inward.inwardentryid" + 
-					" WHERE 1=1 and inward.vstatus <=3", 
+					" WHERE 1=1", 
 			nativeQuery = true)
 	Page<Object[]> qirProcessingListPage(Pageable pageable);
 	
