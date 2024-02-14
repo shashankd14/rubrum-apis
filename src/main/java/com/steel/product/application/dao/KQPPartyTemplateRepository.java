@@ -1,6 +1,7 @@
 package com.steel.product.application.dao;
 
 import com.steel.product.application.entity.Instruction;
+import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.entity.KQPPartyTemplateEntity;
 
 import java.util.List;
@@ -30,11 +31,18 @@ public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTempla
 			" (SELECT rpt.qir_id FROM quality_inspection_report rpt where rpt.coil_no=inward.coilnumber limit 1) qirid, " +
 			" (SELECT aaa.partyname from product_tblpartydetails aaa where aaa.npartyid=inward.npartyid) , fwidth, " + 
 			" (select matdes.`material_code` from `product_tblmatdescription` matdes where matdes.`nmatid` = `inward`.`nmatid` ) " +
-			" FROM product_tblinwardentry inward WHERE 1=1 order by inward.inwardentryid desc", 
-			countQuery = "SELECT count(distinct inwardentryid) FROM product_tblinwardentry inward WHERE 1=1", 
+			" FROM product_tblinwardentry inward " +
+			" WHERE case when :searchText is not null and LENGTH(:searchText) >0 then (inward.coilNumber like %:searchText% or inward.customerBatchId like %:searchText% or " + 
+			" inward.customerInvoiceNo like %:searchText%) else 1=1 end" + 
+			" and case when :partyIds is not null and LENGTH(:partyIds) >0 then npartyid in :partyIds else 1=1 end " +
+			" order by inward.inwardentryid desc", 
+			countQuery = "SELECT count(distinct inwardentryid) FROM product_tblinwardentry inward " +
+					" WHERE case when :searchText is not null and LENGTH(:searchText) >0 then (inward.coilNumber like %:searchText% or inward.customerBatchId like %:searchText% or " + 
+					" inward.customerInvoiceNo like %:searchText%) else 1=1 end " + 
+					" and case when :partyIds is not null  and LENGTH(:partyIds) >0 then npartyid in :partyIds else 1=1 end ", 
 			nativeQuery = true)
-	Page<Object[]> qirInwardListPage(Pageable pageable);
-	
+	Page<Object[]> qirInwardListPage(@Param("searchText") String searchText, @Param("partyIds") List<Integer> partyIds, Pageable pageable);
+
 	@Query(value = "SELECT distinct part.part_details_id `Plan ID`, coilnumber `Coil No`,customerbatchid `Batch No`," + 
 			" DATE_FORMAT(instructiondate,'%d/%m/%Y') `Plan Date`," + 
 			" (select aa.`gradename` from `product_material_grades` aa where aa.`gradeid` = `inward`.`materialgradeid`) AS `material_grade`," + 
@@ -46,13 +54,17 @@ public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTempla
 			" FROM product_part_details part" + 
 			" INNER JOIN product_instruction ins ON part.id = ins.part_details_id" + 
 			" INNER JOIN product_tblinwardentry inward ON ins.inwardid = inward.inwardentryid" + 
-			" WHERE 1=1 order by inward.inwardentryid desc ",
+			" WHERE case when :searchText is not null and LENGTH(:searchText) >0 then (inward.coilNumber like %:searchText% or inward.customerBatchId like %:searchText% or " + 
+			" inward.customerInvoiceNo like %:searchText%) else 1=1 end" + 
+			" and case when :partyIds is not null and LENGTH(:partyIds) >0 then npartyid in :partyIds else 1=1 end order by inward.inwardentryid desc ",
 			countQuery = "SELECT count(distinct part.part_details_id ) FROM product_part_details part" + 
 					" INNER JOIN product_instruction ins ON part.id = ins.part_details_id" + 
 					" INNER JOIN product_tblinwardentry inward ON ins.inwardid = inward.inwardentryid" + 
-					" WHERE 1=1 ", 
+					" WHERE case when :searchText is not null and LENGTH(:searchText) >0 then (inward.coilNumber like %:searchText% or inward.customerBatchId like %:searchText% or " + 
+					" inward.customerInvoiceNo like %:searchText%) else 1=1 end " + 
+					" and case when :partyIds is not null and LENGTH(:partyIds) >0 then npartyid in :partyIds else 1=1 end  ", 
 			nativeQuery = true)
-	Page<Object[]> qirPreProcessingListPage(Pageable pageable);
+	Page<Object[]> qirPreProcessingListPage(@Param("searchText") String searchText, @Param("partyIds") List<Integer> partyIds, Pageable pageable);
 
 	@Query(value = "SELECT distinct part.part_details_id `Plan ID`, coilnumber `Coil No`,customerbatchid `Batch No`," + 
 			" DATE_FORMAT(instructiondate,'%d/%m/%Y') `Plan Date`," + 
@@ -65,13 +77,17 @@ public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTempla
 			" FROM product_part_details part" + 
 			" INNER JOIN product_instruction ins ON part.id = ins.part_details_id" + 
 			" INNER JOIN product_tblinwardentry inward ON ins.inwardid = inward.inwardentryid" + 
-			" WHERE 1=1 order by inward.inwardentryid desc", 
+			" WHERE case when :searchText is not null and LENGTH(:searchText) >0 then (inward.coilNumber like %:searchText% or inward.customerBatchId like %:searchText% or " + 
+			" inward.customerInvoiceNo like %:searchText%) else 1=1 end" + 
+			" and case when :partyIds is not null and LENGTH(:partyIds) >0 then npartyid in :partyIds else 1=1 end  order by inward.inwardentryid desc", 
 			countQuery = "SELECT count(distinct part.part_details_id) FROM product_part_details part " + 
 					" INNER JOIN product_instruction ins ON part.id = ins.part_details_id" + 
 					" INNER JOIN product_tblinwardentry inward ON ins.inwardid = inward.inwardentryid" + 
-					" WHERE 1=1", 
+					" WHERE case when :searchText is not null and LENGTH(:searchText) >0 then (inward.coilNumber like %:searchText% or inward.customerBatchId like %:searchText% or " + 
+					" inward.customerInvoiceNo like %:searchText%) else 1=1 end " + 
+					" and case when :partyIds is not null and LENGTH(:partyIds) >0 then npartyid in :partyIds else 1=1 end ", 
 			nativeQuery = true)
-	Page<Object[]> qirProcessingListPage(Pageable pageable);
+	Page<Object[]> qirProcessingListPage(@Param("searchText") String searchText, @Param("partyIds") List<Integer> partyIds, Pageable pageable);
 	
 	@Query(value = "SELECT ins FROM Instruction ins where ins.inwardId.coilNumber = :coilNo and ins.partDetails.partDetailsId = :partDetailsId ")
 	List<Instruction> fetchpacketdtls(@Param("coilNo") String coilNo, @Param("partDetailsId") String partDetailsId);
@@ -88,11 +104,18 @@ public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTempla
 			+ " (select matdes.`material_code` from `product_tblmatdescription` matdes where matdes.`nmatid` = `inward`.`nmatid`) AS `material_code`, "  
 			+ " (select aa.`gradename` from `product_material_grades` aa where aa.`gradeid` = `inward`.`materialgradeid`) AS `material_grade`  " 
 			+ " FROM product_tbl_delivery_details deli, product_instruction ins, product_tblinwardentry inward "
-			+ " WHERE deli.deliveryid = ins.deliveryid and ins.inwardid = inward.inwardentryid order by inward.inwardentryid desc", 
+			+ " WHERE deli.deliveryid = ins.deliveryid and ins.inwardid = inward.inwardentryid and "
+			+ " case when :searchText is not null and LENGTH(:searchText) >0 then (inward.coilNumber like %:searchText% or inward.customerBatchId like %:searchText% or "
+			+ " inward.customerInvoiceNo like %:searchText%) else 1=1 end " 
+			+ " and case when :partyIds is not null and LENGTH(:partyIds) >0 then npartyid in :partyIds else 1=1 end "
+			+ " order by inward.inwardentryid desc", 
 			countQuery = "SELECT count(distinct coilnumber) FROM product_tbl_delivery_details deli, product_instruction ins, product_tblinwardentry inward " + 
-					" WHERE deli.deliveryid = ins.deliveryid and ins.inwardid = inward.inwardentryid", 
+					" WHERE deli.deliveryid = ins.deliveryid and ins.inwardid = inward.inwardentryid and "+
+					" case when :searchText is not null and LENGTH(:searchText) >0 then (inward.coilNumber like %:searchText% or inward.customerBatchId like %:searchText% or " + 
+					" inward.customerInvoiceNo like %:searchText%) else 1=1 end " + 
+					" and case when :partyIds is not null and LENGTH(:partyIds) >0 then npartyid in :partyIds else 1=1 end ", 
 			nativeQuery = true)
-	Page<Object[]> qirPreDispatchList(Pageable pageable);
+	Page<Object[]> qirPreDispatchList(@Param("searchText") String searchText, @Param("partyIds") List<Integer> partyIds, Pageable pageable);
 
 	@Query(value = "SELECT DISTINCT coilnumber, DATE_FORMAT(deli.createdon, '%d/%m/%Y'), "
 			+ " deli.deliveryid, customerbatchid, totalweight, vehicleno, inward.customerinvoiceno, "
@@ -103,11 +126,18 @@ public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTempla
 			+ " (select matdes.`material_code` from `product_tblmatdescription` matdes where matdes.`nmatid` = `inward`.`nmatid`) AS `material_code`, "  
 			+ " (select aa.`gradename` from `product_material_grades` aa where aa.`gradeid` = `inward`.`materialgradeid`) AS `material_grade`  " 
 			+ " FROM product_tbl_delivery_details deli, product_instruction ins, product_tblinwardentry inward "
-			+ " WHERE deli.deliveryid = ins.deliveryid and ins.inwardid = inward.inwardentryid order by inward.inwardentryid desc",
+			+ " WHERE deli.deliveryid = ins.deliveryid and ins.inwardid = inward.inwardentryid and"
+			+ " case when :searchText is not null and LENGTH(:searchText) >0 then (inward.coilNumber like %:searchText% or inward.customerBatchId like %:searchText% or "
+			+" inward.customerInvoiceNo like %:searchText%) else 1=1 end " 
+			+" and case when :partyIds is not null and LENGTH(:partyIds) >0 then npartyid in :partyIds else 1=1 end "
+			+" order by inward.inwardentryid desc",
 			countQuery = "SELECT count(distinct coilnumber) FROM product_tbl_delivery_details deli, product_instruction ins, product_tblinwardentry inward " + 
-					" WHERE deli.deliveryid = ins.deliveryid and ins.inwardid = inward.inwardentryid", 
+					" WHERE deli.deliveryid = ins.deliveryid and ins.inwardid = inward.inwardentryid"+
+					" case when :searchText is not null and LENGTH(:searchText) >0 then (inward.coilNumber like %:searchText% or inward.customerBatchId like %:searchText% or " + 
+					" inward.customerInvoiceNo like %:searchText%) else 1=1 end " + 
+					" and case when :partyIds is not null and LENGTH(:partyIds) >0 then npartyid in :partyIds else 1=1 end  ", 
 			nativeQuery = true)
-	Page<Object[]> qirPostDispatchList(Pageable pageable);
+	Page<Object[]> qirPostDispatchList(@Param("searchText") String searchText, @Param("partyIds") List<Integer> partyIds, Pageable pageable);
 
 	@Query(value = "SELECT ins FROM Instruction ins where ins.inwardId.coilNumber = :coilNo and ins.deliveryDetails.deliveryId = :partDetailsId ")
 	List<Instruction> getDispatchDetails(@Param("coilNo") String coilNo, @Param("partDetailsId") Integer partDetailsId);

@@ -29,6 +29,7 @@ import com.steel.product.application.dto.quality.KQPPartyMappingRequest;
 import com.steel.product.application.dto.quality.KQPPartyMappingResponse;
 import com.steel.product.application.dto.quality.KQPRequest;
 import com.steel.product.application.dto.quality.KQPResponse;
+import com.steel.product.application.dto.quality.ListPageSearchRequest;
 import com.steel.product.application.dto.quality.QIRPanDetailsJsonArrayChildDTO;
 import com.steel.product.application.dto.quality.QIRPanDetailsJsonArrayDTO;
 import com.steel.product.application.dto.quality.QIRPanToleranceChildDTO;
@@ -41,6 +42,7 @@ import com.steel.product.application.dto.quality.QualityPartyMappingRequest;
 import com.steel.product.application.dto.quality.QualityPartyMappingRequestNew;
 import com.steel.product.application.dto.quality.QualityPartyMappingResponse;
 import com.steel.product.application.dto.quality.QualityTemplateResponse;
+import com.steel.product.application.entity.AdminUserEntity;
 import com.steel.product.application.entity.CompanyDetails;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
@@ -49,6 +51,8 @@ import com.steel.product.application.entity.KQPPartyTemplateEntity;
 import com.steel.product.application.entity.QualityInspectionReportEntity;
 import com.steel.product.application.entity.QualityPartyTemplateEntity;
 import com.steel.product.application.entity.QualityTemplateEntity;
+import com.steel.product.application.entity.UserPartyMap;
+import com.steel.product.application.util.CommonUtil;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -108,6 +112,9 @@ public class QualityServiceImpl implements QualityService {
 
 	@Value("${templateFilesPath}")
 	private String templateFilesPath;
+
+	@Autowired
+	private CommonUtil commonUtil;
 
 	@Override
 	public ResponseEntity<Object> save(String templateId, String templateName, String stageName, String templateDetails,
@@ -798,37 +805,114 @@ public class QualityServiceImpl implements QualityService {
 	}
 
 	@Override
-	public Page<Object[]> qirInwardListPage(Integer pageNo, Integer pageSize) {
-		Pageable pageable = PageRequest.of((pageNo - 1), pageSize);
-		Page<Object[]> packetsList = kqpPartyTemplateRepository.qirInwardListPage(pageable);
+	public Page<Object[]> qirInwardListPage(ListPageSearchRequest listPageSearchRequest) {
+		Pageable pageable = PageRequest.of((listPageSearchRequest.getPageNo() - 1), listPageSearchRequest.getPageSize());
+		
+		List<Integer> partyIds = new ArrayList<>();
+		if (listPageSearchRequest.getPartyId() != null && listPageSearchRequest.getPartyId() > 0) {
+			partyIds.add(listPageSearchRequest.getPartyId());
+		} else {
+			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
+			if(adminUserEntity.getUserPartyMap()!=null && adminUserEntity.getUserPartyMap().size()>0) {
+				partyIds=new ArrayList<>();
+				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
+					partyIds.add(userPartyMap.getPartyId());
+					log.info("In partyIds === "+partyIds);
+				}
+			} else {
+				partyIds = new ArrayList<>();
+			}
+		}
+		Page<Object[]> pageResult = kqpPartyTemplateRepository.qirInwardListPage(listPageSearchRequest.getSearchText(), partyIds, pageable);
+		return pageResult;
+	}
+
+	@Override
+	public Page<Object[]> qirPreProcessingListPage(ListPageSearchRequest listPageSearchRequest) {
+		Pageable pageable = PageRequest.of((listPageSearchRequest.getPageNo() - 1), listPageSearchRequest.getPageSize());
+		List<Integer> partyIds = new ArrayList<>();
+		if (listPageSearchRequest.getPartyId() != null && listPageSearchRequest.getPartyId() > 0) {
+			partyIds.add(listPageSearchRequest.getPartyId());
+		} else {
+			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
+			if(adminUserEntity.getUserPartyMap()!=null && adminUserEntity.getUserPartyMap().size()>0) {
+				partyIds=new ArrayList<>();
+				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
+					partyIds.add(userPartyMap.getPartyId());
+					log.info("In partyIds === "+partyIds);
+				}
+			} else {
+				partyIds = new ArrayList<>();
+			}
+		}
+		
+		Page<Object[]> packetsList = kqpPartyTemplateRepository.qirPreProcessingListPage(listPageSearchRequest.getSearchText(), partyIds, pageable);
 		return packetsList;
 	}
 
 	@Override
-	public Page<Object[]> qirPreProcessingListPage(Integer pageNo, Integer pageSize) {
-		Pageable pageable = PageRequest.of((pageNo - 1), pageSize);
-		Page<Object[]> packetsList = kqpPartyTemplateRepository.qirPreProcessingListPage(pageable);
+	public Page<Object[]> qirProcessingListPage(ListPageSearchRequest listPageSearchRequest) {
+		Pageable pageable = PageRequest.of((listPageSearchRequest.getPageNo() - 1), listPageSearchRequest.getPageSize());
+		List<Integer> partyIds = new ArrayList<>();
+		if (listPageSearchRequest.getPartyId() != null && listPageSearchRequest.getPartyId() > 0) {
+			partyIds.add(listPageSearchRequest.getPartyId());
+		} else {
+			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
+			if(adminUserEntity.getUserPartyMap()!=null && adminUserEntity.getUserPartyMap().size()>0) {
+				partyIds=new ArrayList<>();
+				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
+					partyIds.add(userPartyMap.getPartyId());
+					log.info("In partyIds === "+partyIds);
+				}
+			} else {
+				partyIds = new ArrayList<>();
+			}
+		}
+		Page<Object[]> packetsList = kqpPartyTemplateRepository.qirProcessingListPage(listPageSearchRequest.getSearchText(), partyIds, pageable);
 		return packetsList;
 	}
 
 	@Override
-	public Page<Object[]> qirProcessingListPage(Integer pageNo, Integer pageSize) {
-		Pageable pageable = PageRequest.of((pageNo - 1), pageSize);
-		Page<Object[]> packetsList = kqpPartyTemplateRepository.qirProcessingListPage(pageable);
+	public Page<Object[]> qirPreDispatchList(ListPageSearchRequest listPageSearchRequest) {
+		Pageable pageable = PageRequest.of((listPageSearchRequest.getPageNo() - 1), listPageSearchRequest.getPageSize());
+		List<Integer> partyIds = new ArrayList<>();
+		if (listPageSearchRequest.getPartyId() != null && listPageSearchRequest.getPartyId() > 0) {
+			partyIds.add(listPageSearchRequest.getPartyId());
+		} else {
+			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
+			if(adminUserEntity.getUserPartyMap()!=null && adminUserEntity.getUserPartyMap().size()>0) {
+				partyIds=new ArrayList<>();
+				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
+					partyIds.add(userPartyMap.getPartyId());
+					log.info("In partyIds === "+partyIds);
+				}
+			} else {
+				partyIds = new ArrayList<>();
+			}
+		}
+		Page<Object[]> packetsList = kqpPartyTemplateRepository.qirPreDispatchList(listPageSearchRequest.getSearchText(), partyIds, pageable);
 		return packetsList;
 	}
 
 	@Override
-	public Page<Object[]> qirPreDispatchList(Integer pageNo, Integer pageSize) {
-		Pageable pageable = PageRequest.of((pageNo - 1), pageSize);
-		Page<Object[]> packetsList = kqpPartyTemplateRepository.qirPreDispatchList(pageable);
-		return packetsList;
-	}
-
-	@Override
-	public Page<Object[]> qirPostDispatchList(Integer pageNo, Integer pageSize) {
-		Pageable pageable = PageRequest.of((pageNo - 1), pageSize);
-		Page<Object[]> packetsList = kqpPartyTemplateRepository.qirPostDispatchList(pageable);
+	public Page<Object[]> qirPostDispatchList(ListPageSearchRequest listPageSearchRequest) {
+		Pageable pageable = PageRequest.of((listPageSearchRequest.getPageNo() - 1), listPageSearchRequest.getPageSize());
+		List<Integer> partyIds = new ArrayList<>();
+		if (listPageSearchRequest.getPartyId() != null && listPageSearchRequest.getPartyId() > 0) {
+			partyIds.add(listPageSearchRequest.getPartyId());
+		} else {
+			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
+			if(adminUserEntity.getUserPartyMap()!=null && adminUserEntity.getUserPartyMap().size()>0) {
+				partyIds=new ArrayList<>();
+				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
+					partyIds.add(userPartyMap.getPartyId());
+					log.info("In partyIds === "+partyIds);
+				}
+			} else {
+				partyIds = new ArrayList<>();
+			}
+		}
+		Page<Object[]> packetsList = kqpPartyTemplateRepository.qirPostDispatchList(listPageSearchRequest.getSearchText(), partyIds, pageable);
 		return packetsList;
 	}
 

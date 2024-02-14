@@ -12,6 +12,7 @@ import com.steel.product.application.dto.quality.KQPPartyMappingRequest;
 import com.steel.product.application.dto.quality.KQPPartyMappingResponse;
 import com.steel.product.application.dto.quality.KQPRequest;
 import com.steel.product.application.dto.quality.KQPResponse;
+import com.steel.product.application.dto.quality.ListPageSearchRequest;
 import com.steel.product.application.dto.quality.QIRSaveDataRequest;
 import com.steel.product.application.dto.quality.QualityCheckRequest;
 import com.steel.product.application.dto.quality.QualityCheckResponse;
@@ -95,17 +96,17 @@ public interface QualityService {
 
 	QualityInspectionReportResponse getQIRReport(String stageName, String coilNo, String planId);
 
-	Page<Object[]> qirInwardListPage(Integer pageNo, Integer pageSize);
+	Page<Object[]> qirInwardListPage(ListPageSearchRequest listPageSearchRequest);
 
 	QualityInspectionReportResponse getQIRReportById(int id);
 
 	File qirPDF(Integer id);
 
-	Page<Object[]> qirPreProcessingListPage(Integer pageNo, Integer pageSize);
+	Page<Object[]> qirPreProcessingListPage(ListPageSearchRequest listPageSearchRequest);
 
-	Page<Object[]> qirPreDispatchList(Integer pageNo, Integer pageSize);
+	Page<Object[]> qirPreDispatchList(ListPageSearchRequest listPageSearchRequest);
 
-	Page<Object[]> qirProcessingListPage(Integer pageNo, Integer pageSize);
+	Page<Object[]> qirProcessingListPage(ListPageSearchRequest listPageSearchRequest);
 
-	Page<Object[]> qirPostDispatchList(Integer pageNo, Integer pageSize);
+	Page<Object[]> qirPostDispatchList(ListPageSearchRequest listPageSearchRequest);
 }

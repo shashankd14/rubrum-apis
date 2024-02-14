@@ -5,6 +5,7 @@ import com.steel.product.application.dto.quality.KQPPartyMappingRequest;
 import com.steel.product.application.dto.quality.KQPPartyMappingResponse;
 import com.steel.product.application.dto.quality.KQPRequest;
 import com.steel.product.application.dto.quality.KQPResponse;
+import com.steel.product.application.dto.quality.ListPageSearchRequest;
 import com.steel.product.application.dto.quality.QIRSaveDataRequest;
 import com.steel.product.application.dto.quality.QualityCheckRequest;
 import com.steel.product.application.dto.quality.QualityCheckResponse;
@@ -363,11 +364,11 @@ public class QualityMasterController {
 		return list;
 	}
 
-	@RequestMapping(value = "/qir/inward/listpage/{pageNo}/{pageSize}", method = { RequestMethod.GET, RequestMethod.POST })
-	public ResponseEntity<Object> qirInwardListPage(@PathVariable Integer pageNo, @PathVariable Integer pageSize) {
+	@PostMapping(value = "/qir/inward/listpage", produces = "application/json")
+	public ResponseEntity<Object> qirInwardListPage(@RequestBody ListPageSearchRequest listPageSearchRequest) {
 		
 		Map<String, Object> response = new HashMap<>();
-		Page<Object[]> packetsList = qualityService.qirInwardListPage(pageNo, pageSize);
+		Page<Object[]> packetsList = qualityService.qirInwardListPage(listPageSearchRequest);
 		
 		List<QualityInspReportListPageResponse> qirList = new ArrayList<>();
 
@@ -398,11 +399,11 @@ public class QualityMasterController {
 		response.put("totalPages", packetsList.getTotalPages());
 		return new ResponseEntity<Object>(response, HttpStatus.OK);
 	}
-
-	@RequestMapping(value = "/qir/preprocessing/listpage/{pageNo}/{pageSize}", method = { RequestMethod.GET, RequestMethod.POST })
-	public ResponseEntity<Object> qirPreListPage(@PathVariable Integer pageNo, @PathVariable Integer pageSize) {
+	
+	@PostMapping(value = "/qir/preprocessing/listpage", produces = "application/json")
+	public ResponseEntity<Object> preprocessing(@RequestBody ListPageSearchRequest listPageSearchRequest) {
 		Map<String, Object> response = new HashMap<>();
-		Page<Object[]>  packetsList = qualityService.qirPreProcessingListPage(pageNo, pageSize);
+		Page<Object[]>  packetsList = qualityService.qirPreProcessingListPage(listPageSearchRequest);
 		
 		Map<String, QualityInspReportListPageResponse> kk = new LinkedHashMap<>();
 		for (Object[] result : packetsList) {
@@ -434,11 +435,11 @@ public class QualityMasterController {
 		response.put("totalPages", packetsList.getTotalPages());
 		return new ResponseEntity<Object>(response, HttpStatus.OK);
 	}
-
-	@RequestMapping(value = "/qir/processing/listpage/{pageNo}/{pageSize}", method = { RequestMethod.GET, RequestMethod.POST })
-	public ResponseEntity<Object> qirPostListPage(@PathVariable Integer pageNo, @PathVariable Integer pageSize) {
+	
+	@PostMapping(value = "/qir/processing/listpage", produces = "application/json")
+	public ResponseEntity<Object> qirPostListPage(@RequestBody ListPageSearchRequest listPageSearchRequest) {
 		Map<String, Object> response = new HashMap<>();
-		Page<Object[]> packetsList = qualityService.qirProcessingListPage(pageNo, pageSize);
+		Page<Object[]> packetsList = qualityService.qirProcessingListPage(listPageSearchRequest);
 		
 		Map<String, QualityInspReportListPageResponse> kk = new LinkedHashMap<>();
 		for (Object[] result : packetsList) {
@@ -483,11 +484,11 @@ public class QualityMasterController {
 		}
 	}
 	
-	@RequestMapping(value = "/qir/postdispatch/dispatchlist/{pageNo}/{pageSize}", method = { RequestMethod.GET, RequestMethod.POST })
-	public ResponseEntity<Object> qirPostDispatchList(@PathVariable Integer pageNo, @PathVariable Integer pageSize) {
+	@PostMapping(value = "/qir/postdispatch/listpage", produces = "application/json")
+	public ResponseEntity<Object> qirPostDispatchList(@RequestBody ListPageSearchRequest listPageSearchRequest) {
 		Map<String, Object> response = new HashMap<>();
 
-		Page<Object[]> packetsList = qualityService.qirPostDispatchList(pageNo, pageSize);
+		Page<Object[]> packetsList = qualityService.qirPostDispatchList(listPageSearchRequest);
 		List<QualityInspDispatchListResponse> qirList = new ArrayList<>();
 
 		for (Object[] result : packetsList) {
@@ -520,11 +521,11 @@ public class QualityMasterController {
 		return new ResponseEntity<Object>(response, HttpStatus.OK);
 	}
 	
-	@RequestMapping(value = "/qir/predispatch/dispatchlist/{pageNo}/{pageSize}", method = { RequestMethod.GET, RequestMethod.POST })
-	public ResponseEntity<Object> qirPreDispatchList(@PathVariable Integer pageNo, @PathVariable Integer pageSize) {
+	@PostMapping(value = "/qir/predispatch/listpage", produces = "application/json")
+	public ResponseEntity<Object> qirPreDispatchList(@RequestBody ListPageSearchRequest listPageSearchRequest) {
 		Map<String, Object> response = new HashMap<>();
 
-		Page<Object[]> packetsList = qualityService.qirPreDispatchList(pageNo, pageSize);
+		Page<Object[]> packetsList = qualityService.qirPreDispatchList(listPageSearchRequest);
 		List<QualityInspDispatchListResponse> qirList = new ArrayList<>();
 
 		for (Object[] result : packetsList) {
