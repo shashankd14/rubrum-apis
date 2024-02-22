@@ -132,10 +132,10 @@ public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTempla
 			+" and case when :partyIds is not null and LENGTH(:partyIds) >0 then npartyid in :partyIds else 1=1 end "
 			+" order by inward.inwardentryid desc",
 			countQuery = "SELECT count(distinct coilnumber) FROM product_tbl_delivery_details deli, product_instruction ins, product_tblinwardentry inward " + 
-					" WHERE deli.deliveryid = ins.deliveryid and ins.inwardid = inward.inwardentryid"+
+					" WHERE deli.deliveryid = ins.deliveryid and ins.inwardid = inward.inwardentryid and " + 
 					" case when :searchText is not null and LENGTH(:searchText) >0 then (inward.coilNumber like %:searchText% or inward.customerBatchId like %:searchText% or " + 
 					" inward.customerInvoiceNo like %:searchText%) else 1=1 end " + 
-					" and case when :partyIds is not null and LENGTH(:partyIds) >0 then npartyid in :partyIds else 1=1 end  ", 
+					" and case when :partyIds is not null and LENGTH(:partyIds) >0 then npartyid in :partyIds else 1=1 end ", 
 			nativeQuery = true)
 	Page<Object[]> qirPostDispatchList(@Param("searchText") String searchText, @Param("partyIds") List<Integer> partyIds, Pageable pageable);
 

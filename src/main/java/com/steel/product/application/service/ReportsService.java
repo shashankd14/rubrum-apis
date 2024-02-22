@@ -38,6 +38,8 @@ public interface ReportsService {
 
 	boolean createFinishingMonthlyReport(Integer getnPartyId, MimeMessageHelper helper, Integer month,
 			Map<Integer, String> months, Integer year);
+
+	boolean createEndUserTagWiseFGReport(Integer getnPartyId, String strDate, MimeMessageHelper helper);
 	
 	
 }

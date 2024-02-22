@@ -73,6 +73,7 @@ public class MailSender {
 					&& party.getDailyReportsList().contains("FGREPORT")) {
 				mailStts = true;
 				reportsService.createFGReport(party.getnPartyId(), strDate, helper);
+				reportsService.createEndUserTagWiseFGReport(party.getnPartyId(), strDate, helper);
 			}
 			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0
 					&& party.getDailyReportsList().contains("WIPREPORT")) {

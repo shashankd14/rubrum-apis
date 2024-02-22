@@ -323,7 +323,7 @@ public class ReportsServiceImpl implements ReportsService {
 		}
 		return acctStatementMap;
 	}
-
+	
 	public Map<String, Object[]> getOthersCassificationDetails(List<FGReportViewEntity> partyList ) {
 
 		Map<String, Object[]> acctStatementMap = new LinkedHashMap<>();
@@ -1105,6 +1105,117 @@ public class ReportsServiceImpl implements ReportsService {
 		return acctStatementMap;
 	}
 	
-	
+	@Override
+	public boolean createEndUserTagWiseFGReport(Integer partyId, String strDate, MimeMessageHelper helper) {
+
+		boolean attachmentRequired = false;
+		try {
+			// Create blank workbook
+			XSSFWorkbook workbook = new XSSFWorkbook();
+			
+			CellStyle borderStyle = workbook.createCellStyle();
+			borderStyle.setBorderBottom(BorderStyle.THIN);
+		    borderStyle.setBorderLeft(BorderStyle.THIN);
+			borderStyle.setBorderRight(BorderStyle.THIN);
+			borderStyle.setBorderTop(BorderStyle.THIN);
+			borderStyle.setAlignment(HorizontalAlignment.CENTER);
+			
+			List<FGReportViewEntity> fgReportDetailsList =getFGReportDetails(partyId);
+			
+			Map<String, String> listOfEndUserTags =  getListOfEndUserTags(fgReportDetailsList);
+			System.out.println("listOfEndUserTags ===================== "+listOfEndUserTags);
+
+			for (Map.Entry<String, String> entry : listOfEndUserTags.entrySet()) {
+				// Create a blank sheet
+				XSSFSheet fgSpreadsheet = workbook.createSheet(entry.getKey()+"_EndUserTag");
+
+				// Create row object
+				XSSFRow row;
+				
+				Map<String, Object[]> fgAcctStatementMap = getEndUserWiseFGDetails(fgReportDetailsList, entry.getKey());
+				// Iterate over data and write to sheet
+				Set<String> keyid = fgAcctStatementMap.keySet();
+				int rowid = 0;
+
+				for (String key : keyid) {
+					row = fgSpreadsheet.createRow(rowid++);
+					Object[] objectArr = fgAcctStatementMap.get(key);
+					int cellid = 0;
+					for (Object obj : objectArr) {
+						Cell cell = row.createCell(cellid++);
+					    cell.setCellStyle(borderStyle);
+						cell.setCellValue(""+obj);
+					}
+				}
+				
+			}
+			
+			 
+			
+            String baseDirectory = env.getProperty("email.folderpath")+File.separator;
+            
+			File outputPojoDirectory = new File(baseDirectory);
+			outputPojoDirectory.mkdirs();
+			
+			File fullPath = new File(baseDirectory +File.separator+"EndUserTagwiseFGReport_"+strDate+".xlsx");
+			
+			FileOutputStream out = new FileOutputStream(fullPath);
+			workbook.write(out);
+			
+			FileSystemResource file = new FileSystemResource(fullPath);
+			helper.addAttachment("EndUserTagwiseFGReport_" + strDate + ".xlsx", file);
+			
+			out.close();
+			fullPath.deleteOnExit();
+			//System.out.println("File Created At -- " + baseDirectory);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return attachmentRequired;
+	}
+
+	public Map<String, String> getListOfEndUserTags(List<FGReportViewEntity> partyList) {
+		Map<String, String> listOfEndUserTags = new LinkedHashMap<>();
+		try {
+			for (FGReportViewEntity kk : partyList) {
+				if (kk.getEnduserTagName() != null && kk.getEnduserTagName().length() > 0) {
+					listOfEndUserTags.put(kk.getEnduserTagName(), kk.getEnduserTagName());
+				} else {
+					listOfEndUserTags.put("NO_ENDUSERTAG", "NO_ENDUSERTAG");
+				}
+			}
+		} catch (Exception e) {
+			LOGGER.error("Error at getListOfEndUserTags " + e.getMessage());
+		}
+		return listOfEndUserTags;
+	}
+
+	public Map<String, Object[]> getEndUserWiseFGDetails(List<FGReportViewEntity> partyList, String endUserTagName ) {
+		Map<String, Object[]> acctStatementMap = new LinkedHashMap<>();
+		try {
+
+			acctStatementMap.put("1",
+					new Object[] { "CoilNumber", "CustomerBatchId", "Finishing Date","MaterialDesc", "MaterialGrade","Packet Id",
+							"Thickness", "Actual Width", "Actual Length", "Actual Weight", "Classification Tag", "End User Tag" });
+
+			int cnt = 1;
+			for (FGReportViewEntity kk : partyList) {
+				if( kk.getEnduserTagName()==null || "".equals(kk.getEnduserTagName())  ) {
+					kk.setEnduserTagName("NO_ENDUSERTAG");
+				}
+				if(endUserTagName.equals(kk.getEnduserTagName())) {
+					cnt++;
+					acctStatementMap.put("" + cnt,
+					new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getFinishingDate(), kk.getMaterialDesc(),
+					kk.getMaterialGrade(),kk.getPacketId(),
+					kk.getThickness(), kk.getActualwidth(), kk.getActuallength(), kk.getActualweight(),
+					kk.getClassificationTag(), ("NO_ENDUSERTAG".equals(kk.getEnduserTagName()) ? "": kk.getEnduserTagName())});
+				} 
+			}
+		} catch (Exception e) {
+			LOGGER.error("Error at getFGReportDetails " + e.getMessage());
+		}
+		return acctStatementMap;
+	}
 	
 }

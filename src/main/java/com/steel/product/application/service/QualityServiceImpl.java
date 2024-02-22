@@ -1949,7 +1949,12 @@ public class QualityServiceImpl implements QualityService {
 			footerDetailsTab.setWidthPercentage(95);
 			footerDetailsTab.setWidths(new int[] { 50, 50 , 50, 50 });
 			
-			PdfPCell inspectedByCell  = new PdfPCell(new Phrase("Quality Inspected By ", font11));
+			PdfPCell inspectedByCell  = null;
+			if(findFieldValue(templateDetailsList, "qualityEngineer")!=null && findFieldValue(templateDetailsList, "qualityEngineer").length()>0) {
+				inspectedByCell  = new PdfPCell(new Phrase("Quality Inspected By : "+findFieldValue(templateDetailsList, "qualityEngineer"), font11));
+			} else {
+				inspectedByCell  = new PdfPCell(new Phrase("Quality Inspected By ", font11));
+			}
 			inspectedByCell.setHorizontalAlignment( Element.ALIGN_LEFT);
 			inspectedByCell.setVerticalAlignment( Element.ALIGN_BOTTOM);
 			inspectedByCell.setFixedHeight(66);
@@ -1957,7 +1962,12 @@ public class QualityServiceImpl implements QualityService {
 			inspectedByCell.setBorder(Rectangle.NO_BORDER);
 			footerDetailsTab.addCell(inspectedByCell);
 			
-			PdfPCell approvedByCell  = new PdfPCell(new Phrase("Quality Approved By ", font11));
+			PdfPCell approvedByCell  = null;
+			if(findFieldValue(templateDetailsList, "qualityHead")!=null && findFieldValue(templateDetailsList, "qualityHead").length()>0 ) {
+				approvedByCell  = new PdfPCell(new Phrase("Quality Approved By : "+findFieldValue(templateDetailsList, "qualityHead"), font11));
+			} else {
+				approvedByCell  = new PdfPCell(new Phrase("Quality Approved By ", font11));
+			}
 			approvedByCell.setHorizontalAlignment( Element.ALIGN_LEFT);
 			approvedByCell.setVerticalAlignment( Element.ALIGN_BOTTOM);
 			approvedByCell.setFixedHeight(66);
@@ -1982,7 +1992,7 @@ public class QualityServiceImpl implements QualityService {
  
 	public static String findFieldValue (List<QIRTemplateDtlsJsonArrayDTO> templateDetailsList, String fieldName) {
 
-		String resp = "No";
+		String resp = "";
 		for (QIRTemplateDtlsJsonArrayDTO dto : templateDetailsList) {
 			if (fieldName.equals(dto.getType())) {
 				resp = ""+dto.getValue();
