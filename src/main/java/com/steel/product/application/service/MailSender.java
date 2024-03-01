@@ -64,29 +64,24 @@ public class MailSender {
 			MimeMessage message = javaMailSender.createMimeMessage();
 			MimeMessageHelper helper = new MimeMessageHelper(message, true);
 			
-			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0
-					&& party.getDailyReportsList().contains("STOCKREPORT")) {
+			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0 && party.getDailyReportsList().contains("STOCKREPORT")) {
 				mailStts = true;
 				reportsService.createStockReport(party.getnPartyId(), strDate, helper);
 			}
-			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0
-					&& party.getDailyReportsList().contains("FGREPORT")) {
+			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0	&& party.getDailyReportsList().contains("FGREPORT")) {
 				mailStts = true;
 				reportsService.createFGReport(party.getnPartyId(), strDate, helper);
 				reportsService.createEndUserTagWiseFGReport(party.getnPartyId(), strDate, helper);
 			}
-			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0
-					&& party.getDailyReportsList().contains("WIPREPORT")) {
+			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0	&& party.getDailyReportsList().contains("WIPREPORT")) {
 				mailStts = true;
 				reportsService.createWIPReport(party.getnPartyId(), strDate, helper);
 			}
-			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0
-					&& party.getDailyReportsList().contains("STOCKSUMMARYREPORT")) {
+			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0 && party.getDailyReportsList().contains("STOCKSUMMARYREPORT")) {
 				mailStts = true;
 				reportsService.createStockSummaryReport(party.getnPartyId(), strDate, helper);
 			}
-			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0
-					&& party.getDailyReportsList().contains("RMREPORT")) {
+			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0	&& party.getDailyReportsList().contains("RMREPORT")) {
 				mailStts = true;
 				reportsService.createRMReport(party.getnPartyId(), strDate, helper);
 			}

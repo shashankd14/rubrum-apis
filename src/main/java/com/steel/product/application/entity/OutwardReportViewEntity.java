@@ -61,6 +61,9 @@ public class OutwardReportViewEntity {
 	@Column(name = "vehicleno")
 	private String vehicleno;
 
+	@Column(name = "endusertagname")
+	private String endusertagname;
+
 	@Column(name = "party_id")
 	private int partyId;
 

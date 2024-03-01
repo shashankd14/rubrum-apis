@@ -39,6 +39,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -228,7 +229,6 @@ public class ReportsServiceImpl implements ReportsService {
 			XSSFRow row;
 			
 			List<FGReportViewEntity> fgReportDetailsList =getFGReportDetails(partyId);
-			
 			Map<String, Object[]> fgAcctStatementMap = getFGCassificationDetails(fgReportDetailsList);
 			Map<String, Object[]> othersActStatementMap = getOthersCassificationDetails( fgReportDetailsList);
 
@@ -315,7 +315,7 @@ public class ReportsServiceImpl implements ReportsService {
 					new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getFinishingDate(), kk.getMaterialDesc(),
 					kk.getMaterialGrade(),kk.getPacketId(),
 					kk.getThickness(), kk.getActualwidth(), kk.getActuallength(), kk.getActualweight(),
-					kk.getClassificationTag(), kk.getEnduserTagName() });
+					kk.getClassificationTag(), ( (kk.getEnduserTagName() != null && kk.getEnduserTagName().length()>0 ) ? kk.getEnduserTagName() : "" ) });
 				}
 			}
 		} catch (Exception e) {
@@ -342,7 +342,7 @@ public class ReportsServiceImpl implements ReportsService {
 					new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getFinishingDate(), kk.getMaterialDesc(),
 					kk.getMaterialGrade(),kk.getPacketId(),
 					kk.getThickness(), kk.getActualwidth(), kk.getActuallength(), kk.getActualweight(),
-					kk.getClassificationTag(), kk.getEnduserTagName() });
+					kk.getClassificationTag(), ( (kk.getEnduserTagName() != null && kk.getEnduserTagName().length()>0 ) ? kk.getEnduserTagName() : "" ) });
 				}
 			}
 		} catch (Exception e) {
@@ -875,17 +875,17 @@ public class ReportsServiceImpl implements ReportsService {
 			List<OutwardReportViewEntity> partyList = outwardReportViewRepository.findByPartyIdAndMnthAndYer(partyId, month, year);
 
 			acctStatementMap.put("1",
-					new Object[] { "CoilNumber", "CustomerBatchId", "CustomerName","MaterialDesc",
-							"MaterialGrade", "Thickness", "Width", "Length", "Delivery Weight", "DC No", 
-							"DC Date", "Vehicle No"});
+					new Object[] { "CoilNumber", "CustomerBatchId", "CustomerName", "MaterialDesc", "MaterialGrade",
+							"Thickness", "Width", "Length", "Delivery Weight", "DC No", "End User Tag", "DC Date",
+							"Vehicle No" });
 			int cnt = 1;
 			for (OutwardReportViewEntity kk : partyList) {
 				cnt++;
 				acctStatementMap.put("" + cnt,
-						new Object[] { kk.getCoilnumber(), kk.getCustomerbatchid(), kk.getCustomerName(),
-								kk.getMaterialdesc(), kk.getMaterialGrade(), kk.getFthickness(), kk.getFwidth(),
-								kk.getFlength(), kk.getDeliveryWeight(), kk.getDeliveryid(), kk.getCreatedon(),
-								kk.getVehicleno() });
+				new Object[] { kk.getCoilnumber(), kk.getCustomerbatchid(), kk.getCustomerName(),
+						kk.getMaterialdesc(), kk.getMaterialGrade(), kk.getFthickness(), kk.getFwidth(),
+						kk.getFlength(), kk.getDeliveryWeight(), kk.getDeliveryid(), kk.getEndusertagname(),
+						kk.getCreatedon(), kk.getVehicleno() });
 			}
 		} catch (Exception e) {
 			LOGGER.error("Error at getMonthlyOutwardReportDetails " + e.getMessage());
@@ -1120,11 +1120,16 @@ public class ReportsServiceImpl implements ReportsService {
 			borderStyle.setBorderTop(BorderStyle.THIN);
 			borderStyle.setAlignment(HorizontalAlignment.CENTER);
 			
-			List<FGReportViewEntity> fgReportDetailsList =getFGReportDetails(partyId);
+			List<FGReportViewEntity> fgReportDetailsListDummy =getFGReportDetails(partyId);
+			List<FGReportViewEntity> fgClassificationList = new ArrayList<>();
 			
-			Map<String, String> listOfEndUserTags =  getListOfEndUserTags(fgReportDetailsList);
-			System.out.println("listOfEndUserTags ===================== "+listOfEndUserTags);
-
+			for (FGReportViewEntity kk : fgReportDetailsListDummy) {
+				if("FG".equals(kk.getClassificationTag())) {
+					fgClassificationList.add(kk);
+				}
+			}
+			
+			Map<String, String> listOfEndUserTags =  getListOfEndUserTags(fgClassificationList);
 			for (Map.Entry<String, String> entry : listOfEndUserTags.entrySet()) {
 				// Create a blank sheet
 				XSSFSheet fgSpreadsheet = workbook.createSheet(entry.getKey()+"_EndUserTag");
@@ -1132,7 +1137,7 @@ public class ReportsServiceImpl implements ReportsService {
 				// Create row object
 				XSSFRow row;
 				
-				Map<String, Object[]> fgAcctStatementMap = getEndUserWiseFGDetails(fgReportDetailsList, entry.getKey());
+				Map<String, Object[]> fgAcctStatementMap = getEndUserWiseFGDetails(fgClassificationList, entry.getKey());
 				// Iterate over data and write to sheet
 				Set<String> keyid = fgAcctStatementMap.keySet();
 				int rowid = 0;
@@ -1147,10 +1152,24 @@ public class ReportsServiceImpl implements ReportsService {
 						cell.setCellValue(""+obj);
 					}
 				}
-				
 			}
 			
-			 
+			Map<String, Object[]> othersActStatementMap = getOthersCassificationDetails(fgReportDetailsListDummy);
+			// Iterate over data and write to sheet
+			Set<String> keyid1 = othersActStatementMap.keySet();
+			int rowid = 0;
+			XSSFSheet othersSpreadsheet = workbook.createSheet("Others_Classification");
+
+			for (String key : keyid1) {
+				XSSFRow row = othersSpreadsheet.createRow(rowid++);
+				Object[] objectArr = othersActStatementMap.get(key);
+				int cellid = 0;
+				for (Object obj : objectArr) {
+					Cell cell = row.createCell(cellid++);
+				    cell.setCellStyle(borderStyle);
+					cell.setCellValue(""+obj);
+				}
+			}
 			
             String baseDirectory = env.getProperty("email.folderpath")+File.separator;
             
