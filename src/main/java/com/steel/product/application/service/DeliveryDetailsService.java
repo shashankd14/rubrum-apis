@@ -4,6 +4,7 @@ import com.steel.product.application.dto.TallyBillingInvoiceListDTO;
 import com.steel.product.application.dto.delivery.DeliveryDto;
 import com.steel.product.application.dto.delivery.DeliveryPacketsDto;
 import com.steel.product.application.dto.delivery.TallyUpdateSttsRequestDTO;
+import com.steel.product.application.dto.delivery.ValidatePriceMappingDTO;
 import com.steel.product.application.dto.pricemaster.PriceCalculateResponseDTO;
 import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.Instruction;
@@ -41,5 +42,7 @@ public interface DeliveryDetailsService {
 	DeliveryDetails updateTallyStatus(TallyUpdateSttsRequestDTO deliveryDto);
 
 	Page<DeliveryDetails> findAllDeliveriesForBillingNew(int pageNo, int pageSize);
+
+	public PriceCalculateResponseDTO calculateInwardWisePrice(ValidatePriceMappingDTO deliveryDto, Integer userId);
 
 }

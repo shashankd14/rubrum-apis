@@ -7,6 +7,7 @@ import com.steel.product.application.dto.delivery.DeliveryItemDetails;
 import com.steel.product.application.dto.delivery.DeliveryPacketsDto;
 import com.steel.product.application.dto.delivery.TallyUpdateStatusDTO;
 import com.steel.product.application.dto.delivery.TallyUpdateSttsRequestDTO;
+import com.steel.product.application.dto.delivery.ValidatePriceMappingDTO;
 import com.steel.product.application.dto.pricemaster.PriceCalculateDTO;
 import com.steel.product.application.dto.pricemaster.PriceCalculateResponseDTO;
 import com.steel.product.application.entity.AdminUserEntity;
@@ -564,6 +565,73 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 			throw e;
 		}
 		return null;
+	}
+
+	@Override
+    public PriceCalculateResponseDTO calculateInwardWisePrice(ValidatePriceMappingDTO deliveryDto, Integer userId) {
+		PriceCalculateResponseDTO priceCalculateResponseDTO= new PriceCalculateResponseDTO();
+        try {
+			LOGGER.info("in validatePriceMapping delivery api");
+			List<Integer> inwardList = deliveryDto.getInwardList();
+			boolean mainStts = false;
+			List<PriceCalculateDTO> priceDetailsList=new ArrayList<>();
+
+			for (Integer inwardId  : inwardList) {
+				InwardEntry inwardEntry =  inwardEntryService.getByEntryId(inwardId);
+					 
+				boolean innerStts = false;
+				
+				PriceCalculateDTO priceCalculateDTO = priceMasterService.calculateInwardWisePrice(inwardEntry, deliveryDto.getPackingRateId(), deliveryDto.getLaminationId());
+
+				priceCalculateDTO.setCoilNo(inwardEntry.getCoilNumber());
+				priceCalculateDTO.setCustomerBatchNo(inwardEntry.getCustomerBatchId());
+				priceCalculateDTO.setInstructionId(inwardEntry.getInwardEntryId());
+				priceCalculateDTO.setThickness(BigDecimal.valueOf(inwardEntry.getfThickness()));
+				priceCalculateDTO.setMatGradeName(inwardEntry.getMaterialGrade().getGradeName());
+				priceCalculateDTO.setActualWeight(inwardEntry.getFpresent());
+
+				BigDecimal amount =new BigDecimal("0.00");
+				
+				if(priceCalculateDTO!=null && priceCalculateDTO.getBasePrice() !=null) {
+					amount=amount.add(priceCalculateDTO.getBasePrice());
+				}
+				if(priceCalculateDTO!=null && priceCalculateDTO.getAdditionalPrice() != null) {
+					amount=amount.add(priceCalculateDTO.getAdditionalPrice());
+				}
+				if(priceCalculateDTO!=null && priceCalculateDTO.getPackingPrice() != null) {
+					amount=amount.add(priceCalculateDTO.getPackingPrice() );
+				}
+				if(priceCalculateDTO!=null && priceCalculateDTO.getLaminationCharges() != null) {
+					amount=amount.add(priceCalculateDTO.getLaminationCharges() );
+				}
+				if(amount!=null ) {
+					priceCalculateDTO.setRate(amount.setScale(3, RoundingMode.HALF_EVEN));
+					BigDecimal totalAmount = new BigDecimal(BigInteger.ZERO,  2);
+					totalAmount = (amount.multiply(BigDecimal.valueOf(priceCalculateDTO.getActualWeight())));
+					totalAmount = totalAmount.divide(BigDecimal.valueOf(1000));
+					priceCalculateDTO.setTotalPrice(totalAmount.setScale(3, RoundingMode.HALF_EVEN));
+				}
+				if (priceCalculateDTO.getBasePrice() != null && priceCalculateDTO.getBasePrice().compareTo(BigDecimal.ZERO) > 0) {
+					//if (priceCalculateDTO.getPackingPrice() != null && priceCalculateDTO.getPackingPrice().compareTo(BigDecimal.ZERO) > 0) {
+						innerStts = true;
+					//}
+				}
+				priceDetailsList.add(priceCalculateDTO);
+				mainStts = innerStts;
+			}
+			
+			priceCalculateResponseDTO.setValidationStatus(mainStts);
+			if(priceCalculateResponseDTO.isValidationStatus()) {
+			    priceCalculateResponseDTO.setRemarks("Thickness range found for all selected Inwards");
+			} else {
+			    priceCalculateResponseDTO.setRemarks("This thickness range already has a value (rate) defined. Please recheck.");
+			}
+			priceCalculateResponseDTO.setPriceDetailsList(priceDetailsList);
+      
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return priceCalculateResponseDTO;
 	}
 
 }

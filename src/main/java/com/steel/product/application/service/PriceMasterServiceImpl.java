@@ -10,6 +10,7 @@ import com.steel.product.application.dto.pricemaster.PriceCalculateDTO;
 import com.steel.product.application.dto.pricemaster.PriceMasterListPageRequest;
 import com.steel.product.application.dto.pricemaster.PriceMasterRequest;
 import com.steel.product.application.entity.Instruction;
+import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.entity.PriceMasterEntity;
 import lombok.extern.log4j.Log4j2;
 import java.io.IOException;
@@ -631,5 +632,51 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 				request.getThicknessRange(), pageable);
 		return pageResult;
 	}
+
+	@Override
+	public PriceCalculateDTO calculateInwardWisePrice(InwardEntry inwardEntity, Integer packingRateId, Integer laminationId) {
+
+		PriceCalculateDTO priceCalculateDTO=new PriceCalculateDTO();
+		
+		try {
+			BigDecimal totalPrice = new BigDecimal(BigInteger.ZERO,  2);
+			BigDecimal additionalPrice = new BigDecimal(BigInteger.ZERO,  2);
+			
+			int processId=8;
+			
+			List<PriceMasterResponse> basePriceList = getPartyGradeWiseDetails(inwardEntity.getParty().getnPartyId(), processId, inwardEntity.getMaterialGrade().getGradeId());
+						
+			for (PriceMasterResponse priceMasterResponse : basePriceList) {
+				if(processId==8 || processId==7) {
+					if (inwardEntity.getMaterialGrade().getGradeId() == priceMasterResponse.getMatGradeId()
+							&& inwardEntity.getParty().getnPartyId() == priceMasterResponse.getPartyId()
+							&& processId == priceMasterResponse.getProcessId()) {
+
+						priceCalculateDTO.setBasePrice(priceMasterResponse.getPrice());
+						totalPrice = totalPrice.add(priceCalculateDTO.getBasePrice()); 
+					} 
+				} else { }
+			}
+			
+			PackingRateMasterResponse packrate = packingMasterService.getByIdRate(packingRateId);
+			if(packrate != null && packrate.getPackingRate() !=null && packrate.getPackingRate().compareTo(BigDecimal.ZERO) > 0) {
+				priceCalculateDTO.setPackingPrice(packrate.getPackingRate());
+				totalPrice = totalPrice.add(priceCalculateDTO.getPackingPrice());
+			}
+
+			LaminationChargesResponse laminationResponse = laminationService.getById(laminationId);
+			if(laminationResponse != null && laminationResponse.getCharges() !=null && laminationResponse.getCharges().compareTo(BigDecimal.ZERO) > 0) {
+				priceCalculateDTO.setLaminationCharges( laminationResponse.getCharges());
+				totalPrice = totalPrice.add(priceCalculateDTO.getLaminationCharges());
+			}
+			
+			priceCalculateDTO.setAdditionalPrice(additionalPrice);
+			priceCalculateDTO.setTotalPrice(totalPrice);
+		} catch (Exception e) { 
+			e.printStackTrace();
+		}
+		return priceCalculateDTO;
+	}
+
 
 }

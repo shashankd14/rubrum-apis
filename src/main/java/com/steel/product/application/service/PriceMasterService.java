@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 
 import com.steel.product.application.dto.pricemaster.PriceMasterResponse;
 import com.steel.product.application.entity.Instruction;
+import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.entity.PriceMasterEntity;
 import com.steel.product.application.dto.pricemaster.PriceCalculateDTO;
 import com.steel.product.application.dto.pricemaster.PriceMasterListPageRequest;
@@ -36,5 +37,8 @@ public interface PriceMasterService {
 	String calculateInstructionPrice(Instruction ins, int packingRateId, Integer laminationId);
 
 	Page<PriceMasterEntity> findAllWithPagination(PriceMasterListPageRequest request);
+
+	PriceCalculateDTO calculateInwardWisePrice(InwardEntry inwardEntity, Integer packingRateId, Integer laminationId);
+
 
 }

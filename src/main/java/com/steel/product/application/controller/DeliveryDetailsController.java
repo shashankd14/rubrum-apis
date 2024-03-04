@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.steel.product.application.dto.delivery.DeliveryDto;
 import com.steel.product.application.dto.delivery.DeliveryPacketsDto;
+import com.steel.product.application.dto.delivery.ValidatePriceMappingDTO;
 import com.steel.product.application.dto.pricemaster.PriceCalculateResponseDTO;
 import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.Instruction;
@@ -103,6 +104,32 @@ public class DeliveryDetailsController {
 		return result;
 	}
 
+    @PostMapping("/validatePriceMappingFullHandling")
+	public ResponseEntity<Object> validatePriceMappingFullHandling(@RequestBody ValidatePriceMappingDTO validatePriceMappingDTO, HttpServletRequest request) {
+		ResponseEntity<Object> result = null;
+		HttpHeaders headers = new HttpHeaders();
+		headers.set("Content-Type", "application/json");
+		try {
+			int userId = (request.getHeader("userId") == null ? 1 : Integer.parseInt(request.getHeader("userId")));
+			if(!(validatePriceMappingDTO.getPackingRateId() !=null && validatePriceMappingDTO.getPackingRateId() > 0 )) {
+				validatePriceMappingDTO.setPackingRateId(0);
+			}		
+			if(!(validatePriceMappingDTO.getLaminationId() !=null && validatePriceMappingDTO.getLaminationId() > 0 )) {
+				validatePriceMappingDTO.setLaminationId(0);
+			}
+			PriceCalculateResponseDTO priceCalculateResponseDTO = deliveryDetailsService.calculateInwardWisePrice(validatePriceMappingDTO, validatePriceMappingDTO.getPackingRateId());
+			if (priceCalculateResponseDTO.isValidationStatus()) {
+				result = new ResponseEntity<>(priceCalculateResponseDTO, headers, HttpStatus.OK);
+			} else {
+				result = new ResponseEntity<>(priceCalculateResponseDTO, headers, HttpStatus.OK);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			result = new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return result;
+	}
+    
     @PostMapping("/save")
 	public ResponseEntity<Object> save(@RequestBody DeliveryDto deliveryDto, HttpServletRequest request) {
 		ResponseEntity<Object> result = null;
