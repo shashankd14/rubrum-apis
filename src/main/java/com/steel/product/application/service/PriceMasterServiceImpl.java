@@ -669,7 +669,13 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 				priceCalculateDTO.setLaminationCharges( laminationResponse.getCharges());
 				totalPrice = totalPrice.add(priceCalculateDTO.getLaminationCharges());
 			}
-			
+			List<AdditionalPriceMasterResponse> addPriceList = additionalPriceMasterService.getAllPriceDetails();
+			for (AdditionalPriceMasterResponse additionalPriceMasterResponse : addPriceList) {
+				if (inwardEntity.getParty().getnPartyId() == additionalPriceMasterResponse.getPartyId() && processId == additionalPriceMasterResponse.getProcessId()) {
+					additionalPrice = additionalPrice.add(additionalPriceMasterResponse.getPrice());
+					totalPrice = totalPrice.add(additionalPriceMasterResponse.getPrice());
+				}
+			}
 			priceCalculateDTO.setAdditionalPrice(additionalPrice);
 			priceCalculateDTO.setTotalPrice(totalPrice);
 		} catch (Exception e) { 

@@ -20,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -133,8 +132,13 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 				Page<InwardEntry> pageResult = inwdEntryRepo.findAll(searchText, partyIds, pageable);
 				return pageResult;
 			} else {
-				Page<InwardEntry> pageResult = inwdEntryRepo.findAll(searchText, pageable);
-				return pageResult;
+				if(searchText!=null && searchText.length()>0) {
+					Page<InwardEntry> pageResult = inwdEntryRepo.findAll(searchText, pageable);
+					return pageResult;
+				} else {
+					Page<InwardEntry> pageResult = inwdEntryRepo.findAllPartyWiseRegister(pageable);
+					return pageResult;
+				}
 			}
 		}
 	}
