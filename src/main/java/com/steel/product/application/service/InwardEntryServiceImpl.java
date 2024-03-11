@@ -132,6 +132,31 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 				Page<InwardEntry> pageResult = inwdEntryRepo.findAll(searchText, partyIds, pageable);
 				return pageResult;
 			} else {
+				Page<InwardEntry> pageResult = inwdEntryRepo.findAll(searchText, pageable);
+					return pageResult;
+			}
+		}
+	}
+
+	@Override
+	public Page<InwardEntry> findAllPartyWiseWithPagination(int pageNo, int pageSize, String searchText, String partyId) {
+		LOGGER.info("In findAllPartyWiseWithPagination page ");
+		Pageable pageable = PageRequest.of((pageNo-1), pageSize);
+		
+		if(partyId!=null && partyId.length()>0) {
+			Page<InwardEntry> pageResult = inwdEntryRepo.findAll(searchText, Integer.parseInt(partyId), pageable);
+			return pageResult;
+		} else {
+			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
+			if(adminUserEntity.getUserPartyMap()!=null && adminUserEntity.getUserPartyMap().size()>0) {
+				List<Integer> partyIds=new ArrayList<>();
+				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
+					partyIds.add(userPartyMap.getPartyId());
+					LOGGER.info("In partyIds === "+partyIds);
+				}
+				Page<InwardEntry> pageResult = inwdEntryRepo.findAll(searchText, partyIds, pageable);
+				return pageResult;
+			} else {
 				if(searchText!=null && searchText.length()>0) {
 					Page<InwardEntry> pageResult = inwdEntryRepo.findAll(searchText, pageable);
 					return pageResult;
@@ -142,7 +167,7 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 			}
 		}
 	}
-
+	
 	@Override
 	public Page<InwardEntry> findAllWIPlistWithPagination(int pageNo, int pageSize, String searchText, String partyId) {
 		LOGGER.info("In findAllWithPagination page ");

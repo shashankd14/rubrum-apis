@@ -8,6 +8,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import javax.persistence.*;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Setter
@@ -63,7 +64,7 @@ public class PartDetails {
 
     public void addInstruction(Instruction instruction) {
         if (this.instructions == null) {
-            this.instructions = new HashSet<>();
+            this.instructions = new LinkedHashSet<>();
         }
         this.getInstructions().add(instruction);
         instruction.setPartDetails(this);

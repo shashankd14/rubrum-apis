@@ -155,7 +155,7 @@ public class InwardEntry {
 
 	public void addInstruction(Instruction instruction){
 		if(this.instructions == null){
-			this.instructions = new HashSet<>();
+			this.instructions = new LinkedHashSet<>();
 		}
 		this.getInstructions().add(instruction);
 		instruction.setInwardId(this);

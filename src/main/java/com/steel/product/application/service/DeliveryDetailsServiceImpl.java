@@ -140,7 +140,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
         List<Instruction> groupInstructions = null;
         Set<Instruction> parentGroupInstructions = null;
         Set<Instruction> childrenInstructions;
-        Set<InwardEntry> inwardEntryList = new HashSet<>();
+        Set<InwardEntry> inwardEntryList = new LinkedHashSet<>();
         Integer parentGroupId;
         boolean isAnyInstructionNotDelivered = true;
         try {
@@ -155,7 +155,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
                 if (parentGroupId != null) {
                     LOGGER.info("instruction has inward id,parentGroupId " + inwardEntry.getInwardEntryId() + " " + parentGroupId);
                     if(parentGroupInstructions == null || !parentGroupInstructions.contains(instruction)) {
-                        parentGroupInstructions = new HashSet<>();
+                        parentGroupInstructions = new LinkedHashSet<>();
                         parentGroupInstructions.addAll(instructionService.findAllByParentGroupId(parentGroupId));
                         LOGGER.info("total parent group instructions "+parentGroupInstructions.size());
                     }

@@ -6,7 +6,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.util.Date;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Entity
@@ -23,7 +23,7 @@ public class EndUserTagsEntity {
 
 	@JsonIgnore
 	@ManyToMany(mappedBy = "endUserTags", fetch = FetchType.LAZY)
-	private Set<Party> parties = new HashSet<>();
+	private Set<Party> parties = new LinkedHashSet<>();
 
 	@Column(name = "created_on", updatable = false)
 	@CreationTimestamp

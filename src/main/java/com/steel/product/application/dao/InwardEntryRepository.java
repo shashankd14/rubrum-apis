@@ -31,7 +31,7 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
     		+ " order by inwardEntryId desc")
     Page<InwardEntry> findAll(@Param("searchText") String searchText, Pageable pageable);
     
-    @Query("select inw from InwardEntry inw where inw.status.statusId in (1,2,3) order by inwardEntryId desc")
+    @Query("select inw from InwardEntry inw where inw.status.statusId in (1,2,3) and inStockWeight > 0 order by inwardEntryId desc")
     Page<InwardEntry> findAllPartyWiseRegister(Pageable pageable);
     
 	@Query("select inw from InwardEntry inw where (inw.coilNumber like %:searchText% or "
@@ -52,7 +52,7 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
     @Query(nativeQuery = true, value = "SELECT customerbatchid FROM product_tblinwardentry WHERE customerbatchid = :customerbatchid limit 1")
     String isCustomerBatchIdPresent(@Param("customerbatchid") String customerbatchId);
 
-    @Query("select inw from InwardEntry inw left join fetch inw.instructions ins where inw.coilNumber = :coilNumber order by ins.instructionId desc")
+    @Query("select inw from InwardEntry inw left join fetch inw.instructions ins where inw.coilNumber = :coilNumber order by ins.instructionId asc")
     <T> Optional<InwardEntry> findByCoilNumber(@Param("coilNumber")String coilNumber);
 
     @Query("select DISTINCT(inw) from InwardEntry inw join fetch inw.party join fetch inw.material join fetch inw.materialGrade join fetch inw.instructions ins join fetch ins.deliveryDetails dd where dd is not null" +

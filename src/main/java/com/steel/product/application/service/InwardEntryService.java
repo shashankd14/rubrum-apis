@@ -62,4 +62,6 @@ public interface InwardEntryService {
 
 	JSONObject getLabels(int inwardEntryId, String processType);
 
+	public Page<InwardEntry> findAllPartyWiseWithPagination(int pageNo, int pageSize, String searchText, String partyId);
+
 }

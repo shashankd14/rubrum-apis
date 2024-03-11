@@ -68,7 +68,7 @@ public class DeliveryDetails {
 
     public void addInstruction(Instruction instruction){
         if(this.instructions == null){
-            this.instructions = new HashSet<>();
+            this.instructions = new LinkedHashSet<>();
         }
         this.instructions.add(instruction);
         instruction.setDeliveryDetails(this);
@@ -76,7 +76,7 @@ public class DeliveryDetails {
 
     public void addAllInstructions(Collection<Instruction> instructions){
         if(this.instructions == null){
-            this.instructions = new HashSet<>();
+            this.instructions = new LinkedHashSet<>();
         }
         this.instructions.addAll(instructions);
         instructions.forEach(ins -> ins.setDeliveryDetails(this));

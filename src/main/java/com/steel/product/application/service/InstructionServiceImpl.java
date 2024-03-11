@@ -712,6 +712,7 @@ public class InstructionServiceImpl implements InstructionService {
         for (Object[] obj : objects) {
             PartDetails partDetails = (PartDetails) obj[0];
             Instruction instruction = (Instruction) obj[1];
+            System.out.println("Hi Kanak == "+instruction.getInstructionId());
             instructions.add(Instruction.valueOfInstructionPdf(instruction, null));
             if (inwardId == null) {
                 try {
@@ -729,14 +730,14 @@ public class InstructionServiceImpl implements InstructionService {
             if(processId == 1 || processId == 3){
                 totalWeightCut += instruction.getPlannedWeight()*count;
                 if(partDetailsCutMap == null) {
-                    partDetailsCutMap = new HashMap<>();
+                    partDetailsCutMap = new LinkedHashMap<>();
                 }
                 partDetailsCutMap = addInstructionToPartDetailsMap(partDetailsCutMap,partDetailsPdfResponse,instructionResponsePdfDto);
 
             }else{//slit process
                 totalWeightSlit += instruction.getPlannedWeight()*count;
                 if(partDetailsSlitMap == null) {
-                    partDetailsSlitMap = new HashMap<>();
+                    partDetailsSlitMap = new LinkedHashMap<>();
                 }
                 partDetailsSlitMap = addInstructionToPartDetailsMap(partDetailsSlitMap,partDetailsPdfResponse,instructionResponsePdfDto);
             }
