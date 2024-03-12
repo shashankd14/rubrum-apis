@@ -556,9 +556,10 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 			BigDecimal actualLength = new BigDecimal(Float.toString(ins.getActualLength()==null ? ins.getPlannedLength() : ins.getActualLength()));
 
 			for (AdditionalPriceMasterResponse additionalPriceMasterResponse : addPriceList) {
-				
-				if (ins.getInwardId().getParty().getnPartyId() == additionalPriceMasterResponse.getPartyId()
-				&& processId == additionalPriceMasterResponse.getProcessId()) {
+				System.out.println("additionalPriceMasterResponse == "+additionalPriceMasterResponse.getId());
+				if (ins.getInwardId().getParty().getnPartyId() == additionalPriceMasterResponse.getPartyId() &&
+						additionalPriceMasterResponse.getProcessId() !=null	&& 
+						processId == additionalPriceMasterResponse.getProcessId()) {
 					
 					if (additionalPriceMasterResponse.getProcessId() == 2 || additionalPriceMasterResponse.getProcessId() == 3) {
 								
@@ -611,6 +612,11 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 							&& bundleWeight.compareTo(additionalPriceMasterResponse.getRangeFrom()) >= 0
 							&& additionalPriceMasterResponse.getRangeTo().compareTo(bundleWeight) >= 0) {
 
+							additionalPrice = additionalPrice.add(additionalPriceMasterResponse.getPrice());
+							totalPrice = totalPrice.add(additionalPriceMasterResponse.getPrice());
+						}
+						
+						if (additionalPriceMasterResponse.getAdditionalPriceId() == 7 ) {
 							additionalPrice = additionalPrice.add(additionalPriceMasterResponse.getPrice());
 							totalPrice = totalPrice.add(additionalPriceMasterResponse.getPrice());
 						}

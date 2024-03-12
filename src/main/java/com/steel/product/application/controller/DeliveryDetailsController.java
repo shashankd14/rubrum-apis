@@ -154,7 +154,7 @@ public class DeliveryDetailsController {
 	public ResponseEntity<Object> deleteById(@PathVariable("deliveryId") Integer id) {
 		try {
 			deliveryDetailsService.deleteById(id);
-			return new ResponseEntity<>("Delete successful!", HttpStatus.OK);
+			return new ResponseEntity<>("Deleted successful!", HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
