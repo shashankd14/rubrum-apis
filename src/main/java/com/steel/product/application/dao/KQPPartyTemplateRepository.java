@@ -139,7 +139,7 @@ public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTempla
 			nativeQuery = true)
 	Page<Object[]> qirPostDispatchList(@Param("searchText") String searchText, @Param("partyIds") List<Integer> partyIds, Pageable pageable);
 
-	@Query(value = "SELECT ins FROM Instruction ins where ins.inwardId.coilNumber = :coilNo and ins.deliveryDetails.deliveryId = :partDetailsId ")
+	@Query(value = "SELECT ins FROM Instruction ins where ins.isDeleted is false and ins.inwardId.coilNumber = :coilNo and ins.deliveryDetails.deliveryId = :partDetailsId ")
 	List<Instruction> getDispatchDetails(@Param("coilNo") String coilNo, @Param("partDetailsId") Integer partDetailsId);
 	
 }

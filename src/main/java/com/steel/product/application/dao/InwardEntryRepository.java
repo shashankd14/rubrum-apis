@@ -104,10 +104,10 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
     @Query(nativeQuery = true, value = "SELECT qrcode_editfinish_s3_url FROM product_tblinwardentry WHERE inwardentryid = :inwardId")
     public String getQRCodeEditFinishS3URL(@Param("inwardId") Integer inwardId);
 
-    @Query("select distinct pd from DeliveryDetails pd join fetch pd.instructions ins join ins.inwardId where ins.inwardId.inwardEntryId= :inwardId")
+    @Query("select distinct pd from DeliveryDetails pd join fetch pd.instructions ins join ins.inwardId where pd.isDeleted is false and ins.inwardId.inwardEntryId= :inwardId")
     List<Object[]> getDCPDFs(@Param("inwardId") Integer inwardId);
     
-    @Query("select distinct pd from DeliveryDetails pd where pd.deliveryId in :dcidsList")
+    @Query("select distinct pd from DeliveryDetails pd where pd.isDeleted is false and pd.deliveryId in :dcidsList")
     List<Object[]> getDCALLPDFs( @Param("dcidsList") List<Integer> dcidsList);
 
 	@Query("select inw from InwardEntry inw where inw.status.statusId=2 and (inw.coilNumber like %:searchText% or inw.customerBatchId like %:searchText% or "

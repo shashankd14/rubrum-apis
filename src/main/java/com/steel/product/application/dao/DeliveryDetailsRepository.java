@@ -22,23 +22,23 @@ public interface DeliveryDetailsRepository extends JpaRepository<DeliveryDetails
     @Query(" from Instruction where deliveryId =:deliveryId")
     public List<Instruction> deliveredItemsById(@Param("deliveryId") int deliveryId);
 
-    @Query("select dd from DeliveryDetails dd join dd.instructions ins join ins.inwardId inw where ins.deliveryDetails is not null and "
+    @Query("select dd from DeliveryDetails dd join dd.instructions ins join ins.inwardId inw where dd.isDeleted is false and ins.deliveryDetails is not null and "
     		+ " ( inw.coilNumber like %:searchText% or inw.customerBatchId like %:searchText% or "
     		+ " inw.customerInvoiceNo like %:searchText% or inw.party.partyName like %:searchText% ) and inw.party.nPartyId=:partyId group by inw, dd")
     public Page<DeliveryDetails> findAllDeliveries(@Param("searchText") String searchText, @Param("partyId") int partyId, Pageable pageable);
 
-    @Query("select dd from DeliveryDetails dd join dd.instructions ins join ins.inwardId inw where ins.deliveryDetails is not null and "
+    @Query("select dd from DeliveryDetails dd join dd.instructions ins join ins.inwardId inw where dd.isDeleted is false and ins.deliveryDetails is not null and "
     		+ " ( inw.coilNumber like %:searchText% or inw.customerBatchId like %:searchText% or "
     		+ " inw.customerInvoiceNo like %:searchText% or inw.party.partyName like %:searchText% ) and inw.party.nPartyId in :partyIds group by inw, dd")
 	public Page<DeliveryDetails> findAllDeliveries(@Param("searchText") String searchText,
 			@Param("partyIds") List<Integer> partyIds, Pageable pageable);
     
-    @Query("select dd from DeliveryDetails dd join dd.instructions ins join ins.inwardId inw where ins.deliveryDetails is not null and "
+    @Query("select dd from DeliveryDetails dd join dd.instructions ins join ins.inwardId inw where dd.isDeleted is false and ins.deliveryDetails is not null and "
     		+ " ( inw.coilNumber like %:searchText% or inw.customerBatchId like %:searchText% or "
     		+ " inw.customerInvoiceNo like %:searchText% or inw.party.partyName like %:searchText% ) group by inw, dd")
     public Page<DeliveryDetails> findAllDeliveries(@Param("searchText") String searchText, Pageable pageable);
 
-    @Query("select dd from DeliveryDetails dd join dd.instructions ins join ins.inwardId inw where ins.deliveryDetails is not null group by inw, dd")
+    @Query("select dd from DeliveryDetails dd join dd.instructions ins join ins.inwardId inw where dd.isDeleted is false and ins.deliveryDetails is not null group by inw, dd")
     public List<DeliveryDetails> findAllDeliveries();
     
     @Query("select ins from Instruction ins left join fetch ins.parentInstruction inner join fetch ins.deliveryDetails dd where dd.deliveryId = :deliveryId")
@@ -54,7 +54,7 @@ public interface DeliveryDetailsRepository extends JpaRepository<DeliveryDetails
 	public void updateS3DCPDF(@Param("deliveryId") Integer deliveryId, @Param("url") String url);
 
     @Query("select distinct dd.deliveryId, ins.inwardId.coilNumber from DeliveryDetails dd join dd.instructions ins join ins.inwardId inw "
-    		+ " where ins.deliveryDetails is not null and dd.tallyStatus='PENDING' "
+    		+ " where dd.isDeleted is false and ins.deliveryDetails is not null and dd.tallyStatus='PENDING' "
     		+ " order by dd.deliveryId desc ")
 	public Page<DeliveryDetails> findAllDeliveriesForBillingNew(Pageable pageable);
     
@@ -64,7 +64,7 @@ public interface DeliveryDetailsRepository extends JpaRepository<DeliveryDetails
 			"    product_tblpartydetails party,\r\n" + 
 			"    product_instruction instr,\r\n" + 
 			"    product_tbl_delivery_details dc\r\n" + 
-			"WHERE\r\n" + 
+			"WHERE dc.isdeleted=0 and \r\n" + 
 			"    party.npartyid = inward.npartyid\r\n" + 
 			"        AND inward.inwardentryid = instr.inwardid\r\n" + 
 			"        AND instr.deliveryid = dc.deliveryid and dc.tally_status='PENDING' order by dc.deliveryid desc", nativeQuery = true)
