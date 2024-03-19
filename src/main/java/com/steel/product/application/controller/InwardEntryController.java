@@ -3,6 +3,7 @@ package com.steel.product.application.controller;
 import com.steel.product.application.dto.delivery.DeliveryPDFRequestDTO;
 import com.steel.product.application.dto.inward.InwardDto;
 import com.steel.product.application.dto.inward.InwardEntryResponseDto;
+import com.steel.product.application.dto.inward.SearchListPageRequest;
 import com.steel.product.application.entity.InwardDoc;
 import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.service.*;
@@ -221,13 +222,42 @@ public class InwardEntryController {
 		}
 	}
 
+	@PostMapping({ "/inwardist" })
+	public ResponseEntity<Object> inwardList(@RequestBody SearchListPageRequest searchListPageRequest) {
+		Map<String, Object> response = new HashMap<>();
+		Page<InwardEntry> pageResult = inwdEntrySvc.inwardList(searchListPageRequest);
+		List<Object> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponse(inw)).collect(Collectors.toList());
+		response.put("content", inwardList);
+		response.put("currentPage", pageResult.getNumber());
+		response.put("totalItems", pageResult.getTotalElements());
+		response.put("totalPages", pageResult.getTotalPages());
+		return new ResponseEntity<Object>(response, HttpStatus.OK);
+	}
+	
+	@PostMapping({ "/partywiselist" })
+	public ResponseEntity<Object> partywiselist(@RequestBody SearchListPageRequest searchListPageRequest) {
+		Map<String, Object> response = new HashMap<>();
+		Page<InwardEntry> pageResult = inwdEntrySvc.partywiselist(searchListPageRequest);
+		List<Object> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponse(inw)).collect(Collectors.toList());
+		response.put("content", inwardList);
+		response.put("currentPage", pageResult.getNumber());
+		response.put("totalItems", pageResult.getTotalElements());
+		response.put("totalPages", pageResult.getTotalPages());
+		return new ResponseEntity<Object>(response, HttpStatus.OK);
+	}
+	
 	@GetMapping({ "/list/{pageNo}/{pageSize}" })
 	public ResponseEntity<Object> findAllWithPagination(@PathVariable int pageNo, @PathVariable int pageSize,
 			@RequestParam(required = false, name = "searchText") String searchText,
 			@RequestParam(required = false, name = "partyId") String partyId) {
-
+		SearchListPageRequest searchListPageRequest = new SearchListPageRequest();
+		searchListPageRequest.setPageNo( pageNo);
+		searchListPageRequest.setPageSize(pageSize);
+		searchListPageRequest.setSearchText( searchText);
+		searchListPageRequest.setPartyId( partyId);
+		
 		Map<String, Object> response = new HashMap<>();
-		Page<InwardEntry> pageResult = inwdEntrySvc.findAllWithPagination(pageNo, pageSize, searchText, partyId);
+		Page<InwardEntry> pageResult = inwdEntrySvc.partywiselist(searchListPageRequest);
 		List<Object> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponse(inw)).collect(Collectors.toList());
 		response.put("content", inwardList);
 		response.put("currentPage", pageResult.getNumber());
@@ -240,9 +270,14 @@ public class InwardEntryController {
 	public ResponseEntity<Object> findAllPartyWiseWithPagination(@PathVariable int pageNo, @PathVariable int pageSize,
 			@RequestParam(required = false, name = "searchText") String searchText,
 			@RequestParam(required = false, name = "partyId") String partyId) {
-
+		SearchListPageRequest searchListPageRequest = new SearchListPageRequest();
+		searchListPageRequest.setPageNo( pageNo);
+		searchListPageRequest.setPageSize(pageSize);
+		searchListPageRequest.setSearchText( searchText);
+		searchListPageRequest.setPartyId( partyId);
+		
 		Map<String, Object> response = new HashMap<>();
-		Page<InwardEntry> pageResult = inwdEntrySvc.findAllPartyWiseWithPagination(pageNo, pageSize, searchText, partyId);
+		Page<InwardEntry> pageResult = inwdEntrySvc.partywiselist(searchListPageRequest);
 		List<Object> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponse(inw)).collect(Collectors.toList());
 		response.put("content", inwardList);
 		response.put("currentPage", pageResult.getNumber());

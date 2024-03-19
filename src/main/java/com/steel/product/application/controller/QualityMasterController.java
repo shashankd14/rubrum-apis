@@ -1,6 +1,7 @@
 package com.steel.product.application.controller;
 
 import com.steel.product.application.dto.instruction.InstructionResponseDto;
+import com.steel.product.application.dto.inward.SearchListPageRequest;
 import com.steel.product.application.dto.quality.KQPPartyMappingRequest;
 import com.steel.product.application.dto.quality.KQPPartyMappingResponse;
 import com.steel.product.application.dto.quality.KQPRequest;
@@ -248,7 +249,13 @@ public class QualityMasterController {
 			@RequestParam(required = false, name = "searchText") String searchText,
 			@RequestParam(required = false, name = "partyId") String partyId) {
 		Map<String, Object> response = new HashMap<>();
-		Page<InwardEntry> pageResult = inwdEntrySvc.findAllWithPagination(pageNo, pageSize, searchText, partyId);
+		SearchListPageRequest searchListPageRequest = new SearchListPageRequest();
+		searchListPageRequest.setPageNo( pageNo);
+		searchListPageRequest.setPageSize(pageSize);
+		searchListPageRequest.setSearchText( searchText);
+		searchListPageRequest.setPartyId( partyId);
+		
+		Page<InwardEntry> pageResult = inwdEntrySvc.inwardList(searchListPageRequest);
 		List<Object> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponse(inw)).collect(Collectors.toList());
 		response.put("content", inwardList);
 		response.put("currentPage", pageResult.getNumber());
@@ -261,8 +268,15 @@ public class QualityMasterController {
 	public ResponseEntity<Object> preprocessing(@PathVariable int pageNo, @PathVariable int pageSize,
 			@RequestParam(required = false, name = "searchText") String searchText,
 			@RequestParam(required = false, name = "partyId") String partyId) {
+		
+		SearchListPageRequest searchListPageRequest = new SearchListPageRequest();
+		searchListPageRequest.setPageNo( pageNo);
+		searchListPageRequest.setPageSize(pageSize);
+		searchListPageRequest.setSearchText( searchText);
+		searchListPageRequest.setPartyId( partyId);
+		
 		Map<String, Object> response = new HashMap<>();
-		Page<InwardEntry> pageResult = inwdEntrySvc.findAllWithPagination(pageNo, pageSize, searchText, partyId);
+		Page<InwardEntry> pageResult = inwdEntrySvc.inwardList(searchListPageRequest);
 		List<Object> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponse(inw)).collect(Collectors.toList());
 		response.put("content", inwardList);
 		response.put("currentPage", pageResult.getNumber());
@@ -275,8 +289,13 @@ public class QualityMasterController {
 	public ResponseEntity<Object> processing(@PathVariable int pageNo, @PathVariable int pageSize,
 			@RequestParam(required = false, name = "searchText") String searchText,
 			@RequestParam(required = false, name = "partyId") String partyId) {
+		SearchListPageRequest searchListPageRequest = new SearchListPageRequest();
+		searchListPageRequest.setPageNo( pageNo);
+		searchListPageRequest.setPageSize(pageSize);
+		searchListPageRequest.setSearchText( searchText);
+		searchListPageRequest.setPartyId( partyId);
 		Map<String, Object> response = new HashMap<>();
-		Page<InwardEntry> pageResult = inwdEntrySvc.findAllWithPagination(pageNo, pageSize, searchText, partyId);
+		Page<InwardEntry> pageResult = inwdEntrySvc.inwardList(searchListPageRequest);
 		List<Object> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponse(inw)).collect(Collectors.toList());
 		response.put("content", inwardList);
 		response.put("currentPage", pageResult.getNumber());
@@ -290,7 +309,13 @@ public class QualityMasterController {
 			@RequestParam(required = false, name = "searchText") String searchText,
 			@RequestParam(required = false, name = "partyId") String partyId) {
 		Map<String, Object> response = new HashMap<>();
-		Page<InwardEntry> pageResult = inwdEntrySvc.findAllWithPagination(pageNo, pageSize, searchText, partyId);
+		SearchListPageRequest searchListPageRequest = new SearchListPageRequest();
+		searchListPageRequest.setPageNo( pageNo);
+		searchListPageRequest.setPageSize(pageSize);
+		searchListPageRequest.setSearchText( searchText);
+		searchListPageRequest.setPartyId( partyId);
+		
+		Page<InwardEntry> pageResult = inwdEntrySvc.inwardList(searchListPageRequest);
 		List<Object> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponse(inw)).collect(Collectors.toList());
 		response.put("content", inwardList);
 		response.put("currentPage", pageResult.getNumber());
@@ -304,7 +329,13 @@ public class QualityMasterController {
 			@RequestParam(required = false, name = "searchText") String searchText,
 			@RequestParam(required = false, name = "partyId") String partyId) {
 		Map<String, Object> response = new HashMap<>();
-		Page<InwardEntry> pageResult = inwdEntrySvc.findAllWithPagination(pageNo, pageSize, searchText, partyId);
+		SearchListPageRequest searchListPageRequest = new SearchListPageRequest();
+		searchListPageRequest.setPageNo( pageNo);
+		searchListPageRequest.setPageSize(pageSize);
+		searchListPageRequest.setSearchText( searchText);
+		searchListPageRequest.setPartyId( partyId);
+		
+		Page<InwardEntry> pageResult = inwdEntrySvc.inwardList(searchListPageRequest);
 		List<Object> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponse(inw)).collect(Collectors.toList());
 		response.put("content", inwardList);
 		response.put("currentPage", pageResult.getNumber());

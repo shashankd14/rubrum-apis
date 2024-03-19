@@ -3,6 +3,7 @@ package com.steel.product.application.service;
 import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.dto.delivery.DeliveryPDFRequestDTO;
 import com.steel.product.application.dto.inward.InwardEntryResponseDto;
+import com.steel.product.application.dto.inward.SearchListPageRequest;
 import com.steel.product.application.dto.partDetails.PartDetailsLabelsResponse;
 import com.steel.product.application.dto.partDetails.PartDetailsPDFResponse;
 import com.steel.product.application.dto.qrcode.QRCodeResponse;
@@ -11,7 +12,7 @@ import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.entity.UserPartyMap;
 import com.steel.product.application.util.CommonUtil;
-
+import org.springframework.data.domain.Sort;
 import net.minidev.json.JSONObject;
 
 import org.slf4j.Logger;
@@ -114,13 +115,28 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 	}
 
 	@Override
-	public Page<InwardEntry> findAllWithPagination(int pageNo, int pageSize, String searchText, String partyId) {
+	public Page<InwardEntry> inwardList( SearchListPageRequest searchListPageRequest) {
 		LOGGER.info("In findAllWithPagination page ");
-		Pageable pageable = PageRequest.of((pageNo-1), pageSize);
-		
-		if(partyId!=null && partyId.length()>0) {
-			Page<InwardEntry> pageResult = inwdEntryRepo.findAll(searchText, Integer.parseInt(partyId), pageable);
-			return pageResult;
+		Pageable pageable = null;
+		if (searchListPageRequest.getSortColumn() != null && searchListPageRequest.getSortColumn().length() > 0
+				&& searchListPageRequest.getSortOrder() != null && searchListPageRequest.getSortOrder().length() > 0
+				&& "ASC".equalsIgnoreCase(searchListPageRequest.getSortOrder())) {
+			pageable = PageRequest.of((searchListPageRequest.getPageNo()-1), searchListPageRequest.getPageSize(), Sort.by(searchListPageRequest.getSortColumn()).ascending());
+		}else if (searchListPageRequest.getSortColumn() != null && searchListPageRequest.getSortColumn().length() > 0
+				&& searchListPageRequest.getSortOrder() != null && searchListPageRequest.getSortOrder().length() > 0
+				&& "DESC".equalsIgnoreCase(searchListPageRequest.getSortOrder())) {
+			pageable = PageRequest.of((searchListPageRequest.getPageNo()-1), searchListPageRequest.getPageSize(), Sort.by(searchListPageRequest.getSortColumn()).descending());
+		} else {
+			pageable = PageRequest.of((searchListPageRequest.getPageNo()-1), searchListPageRequest.getPageSize(), Sort.by("inwardEntryId").descending());
+		}		
+		if(searchListPageRequest.getPartyId()!=null && searchListPageRequest.getPartyId().length() > 0) {
+			if(searchListPageRequest.getSearchText() !=null && searchListPageRequest.getSearchText().length()>0) {
+				Page<InwardEntry> pageResult = inwdEntryRepo.findAllWithSearchTextAndPartyId(searchListPageRequest.getSearchText(), Integer.parseInt(searchListPageRequest.getPartyId()), pageable);
+				return pageResult;
+			} else {
+				Page<InwardEntry> pageResult = inwdEntryRepo.findAllInwardListWithPartyId(Integer.parseInt(searchListPageRequest.getPartyId()), pageable);
+				return pageResult;
+			}
 		} else {
 			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
 			if(adminUserEntity.getUserPartyMap()!=null && adminUserEntity.getUserPartyMap().size()>0) {
@@ -129,23 +145,44 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 					partyIds.add(userPartyMap.getPartyId());
 					LOGGER.info("In partyIds === "+partyIds);
 				}
-				Page<InwardEntry> pageResult = inwdEntryRepo.findAll(searchText, partyIds, pageable);
+				Page<InwardEntry> pageResult = inwdEntryRepo.findAll(searchListPageRequest.getSearchText(), partyIds, pageable);
 				return pageResult;
 			} else {
-				Page<InwardEntry> pageResult = inwdEntryRepo.findAll(searchText, pageable);
+				if(searchListPageRequest.getSearchText()!=null && searchListPageRequest.getSearchText().length()>0) {
+					Page<InwardEntry> pageResult = inwdEntryRepo.findAllWithSearch(searchListPageRequest.getSearchText(), pageable);
 					return pageResult;
+				} else {
+					Page<InwardEntry> pageResult = inwdEntryRepo.findAllInwardList(pageable);
+					return pageResult;
+				}
 			}
 		}
 	}
 
 	@Override
-	public Page<InwardEntry> findAllPartyWiseWithPagination(int pageNo, int pageSize, String searchText, String partyId) {
+	public Page<InwardEntry> partywiselist( SearchListPageRequest searchListPageRequest) {
 		LOGGER.info("In findAllPartyWiseWithPagination page ");
-		Pageable pageable = PageRequest.of((pageNo-1), pageSize);
+		Pageable pageable = null;
+		if (searchListPageRequest.getSortColumn() != null && searchListPageRequest.getSortColumn().length() > 0
+				&& searchListPageRequest.getSortOrder() != null && searchListPageRequest.getSortOrder().length() > 0
+				&& "ASC".equalsIgnoreCase(searchListPageRequest.getSortOrder())) {
+			pageable = PageRequest.of((searchListPageRequest.getPageNo()-1), searchListPageRequest.getPageSize(), Sort.by(searchListPageRequest.getSortColumn()).ascending());
+		}else if (searchListPageRequest.getSortColumn() != null && searchListPageRequest.getSortColumn().length() > 0
+				&& searchListPageRequest.getSortOrder() != null && searchListPageRequest.getSortOrder().length() > 0
+				&& "DESC".equalsIgnoreCase(searchListPageRequest.getSortOrder())) {
+			pageable = PageRequest.of((searchListPageRequest.getPageNo()-1), searchListPageRequest.getPageSize(), Sort.by(searchListPageRequest.getSortColumn()).descending());
+		} else {
+			pageable = PageRequest.of((searchListPageRequest.getPageNo()-1), searchListPageRequest.getPageSize(), Sort.by("inwardEntryId").descending());
+		}
 		
-		if(partyId!=null && partyId.length()>0) {
-			Page<InwardEntry> pageResult = inwdEntryRepo.findAll(searchText, Integer.parseInt(partyId), pageable);
-			return pageResult;
+		if(searchListPageRequest.getPartyId()!=null && searchListPageRequest.getPartyId().length() > 0) {			
+			if(searchListPageRequest.getSearchText() !=null && searchListPageRequest.getSearchText().length()>0) {
+				Page<InwardEntry> pageResult = inwdEntryRepo.findAllWithSearchTextAndPartyId(searchListPageRequest.getSearchText(), Integer.parseInt(searchListPageRequest.getPartyId()), pageable);
+				return pageResult;
+			} else {
+				Page<InwardEntry> pageResult = inwdEntryRepo.findAllWithPartyId(Integer.parseInt(searchListPageRequest.getPartyId()), pageable);
+				return pageResult;
+			}
 		} else {
 			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
 			if(adminUserEntity.getUserPartyMap()!=null && adminUserEntity.getUserPartyMap().size()>0) {
@@ -154,11 +191,11 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 					partyIds.add(userPartyMap.getPartyId());
 					LOGGER.info("In partyIds === "+partyIds);
 				}
-				Page<InwardEntry> pageResult = inwdEntryRepo.findAll(searchText, partyIds, pageable);
+				Page<InwardEntry> pageResult = inwdEntryRepo.findAll(searchListPageRequest.getSearchText(), partyIds, pageable);
 				return pageResult;
 			} else {
-				if(searchText!=null && searchText.length()>0) {
-					Page<InwardEntry> pageResult = inwdEntryRepo.findAll(searchText, pageable);
+				if(searchListPageRequest.getSearchText()!=null && searchListPageRequest.getSearchText().length()>0) {
+					Page<InwardEntry> pageResult = inwdEntryRepo.findAllWithSearch(searchListPageRequest.getSearchText(), pageable);
 					return pageResult;
 				} else {
 					Page<InwardEntry> pageResult = inwdEntryRepo.findAllPartyWiseRegister(pageable);

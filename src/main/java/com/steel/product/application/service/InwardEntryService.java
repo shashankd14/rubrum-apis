@@ -2,13 +2,13 @@ package com.steel.product.application.service;
 
 import com.steel.product.application.dto.delivery.DeliveryPDFRequestDTO;
 import com.steel.product.application.dto.inward.InwardEntryResponseDto;
+import com.steel.product.application.dto.inward.SearchListPageRequest;
 import com.steel.product.application.dto.qrcode.QRCodeResponse;
 import com.steel.product.application.entity.InwardEntry;
 import net.minidev.json.JSONObject;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-
 import java.util.List;
 import java.util.Set;
 
@@ -42,7 +42,7 @@ public interface InwardEntryService {
 
 	List<InwardEntryResponseDto> findAllInwards();
 
-	Page<InwardEntry> findAllWithPagination(int pageNo, int pageSize, String searchText, String partyId);
+	Page<InwardEntry> inwardList( SearchListPageRequest searchListPageRequest);
 
 	List<InwardEntry> findInwardByPartyId(Integer partyId);
 
@@ -62,6 +62,6 @@ public interface InwardEntryService {
 
 	JSONObject getLabels(int inwardEntryId, String processType);
 
-	public Page<InwardEntry> findAllPartyWiseWithPagination(int pageNo, int pageSize, String searchText, String partyId);
+	public Page<InwardEntry> partywiselist( SearchListPageRequest searchListPageRequest);
 
 }
