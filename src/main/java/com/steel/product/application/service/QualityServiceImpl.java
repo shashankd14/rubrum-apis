@@ -254,8 +254,7 @@ public class QualityServiceImpl implements QualityService {
 	@Override
 	public QualityTemplateResponse getById(int id) {
 
-		QualityTemplateResponse resp = QualityTemplateEntity.valueOf(qualityTemplateRepository.findByTemplateId(id));
-		;
+		QualityTemplateResponse resp = QualityTemplateEntity.valueOf(qualityTemplateRepository.findByTemplateId(id)); 
 
 		if (resp.getRustObserved() != null && resp.getRustObserved().length() > 0) {
 			resp.setRustObservedPreSingedURL(awsS3Service.generatePresignedUrl(resp.getRustObserved()));

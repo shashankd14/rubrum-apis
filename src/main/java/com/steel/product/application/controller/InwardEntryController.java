@@ -222,7 +222,7 @@ public class InwardEntryController {
 		}
 	}
 
-	@PostMapping({ "/inwardist" })
+	@PostMapping({ "/inwardlist" })
 	public ResponseEntity<Object> inwardList(@RequestBody SearchListPageRequest searchListPageRequest) {
 		Map<String, Object> response = new HashMap<>();
 		Page<InwardEntry> pageResult = inwdEntrySvc.inwardList(searchListPageRequest);

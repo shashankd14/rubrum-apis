@@ -1,41 +1,43 @@
 package com.steel.product.trading.request;
 
 import java.math.BigDecimal;
-import java.util.List;
-
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class MaterialMasterRequest  {
+public class MaterialMasterRequest extends BaseRequest {
 
-	private Integer id;
+	private Integer itemId;
 
-	private List<Integer> partyId;
+	private String itemName;
 
-	private Integer processId;
+	private String itemHsnCode;
 
-	private List<Integer> matGradeId;
-	
-	private BigDecimal thicknessFrom;
+	private String itemCode;
 
-	private BigDecimal thicknessTo;
+	private String itemGrade;
 
-	private BigDecimal price;
+	private String itemSubCategory;
 
-	private Integer toPartyId;
+	private String itemMainCategory;
 
-	private Integer toProcessId;
+	private String displayName;
 
-	private Integer toMatGradeId;
+	private String brandName;
 
-	private Integer userId;
+	private String manufacturerName;
 
-	private String ipAddress;
+	private String additionalParams;
 
-	private String requestId;
-	
-	
-	
+	private String itemImage;
+
+	private String crossSectionalImage;
+
+	private BigDecimal perMeter;
+
+	private BigDecimal perFeet;
+
+	private BigDecimal perPC;
+
 }

@@ -1,7 +1,6 @@
 package com.steel.product.application.service;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,6 +37,9 @@ public class AWSS3ServiceImpl implements AWSS3Service {
     
     @Value("${aws.s3.bucketPDFs}")
     private String bucketPDFs;
+    
+    @Value("${aws.s3.tradingFiles}")
+    private String tradingFiles;
     
     @Value("${aws.s3.bucket}")
     private String bucketName;
@@ -186,5 +188,30 @@ public class AWSS3ServiceImpl implements AWSS3Service {
 		kk = new BCryptPasswordEncoder().encode("admin@123") ;
 		System.out.println("Hi aknak22 =="+kk);		
 	}
+
+	@Override
+	public String persistTradingFiles(String applicationJarPath, String itemCode, 
+			MultipartFile file) throws IOException {
+		String path = applicationJarPath + File.separator + itemCode ;
+		String modifiedFileName = itemCode+"_"+ file.getOriginalFilename().replaceAll("[^a-zA-Z0-9\\.\\-]", "_");
+		String jsonFile = path + File.separator + modifiedFileName;
+		File dir = new File(path);
+		if (!dir.exists())
+			dir.mkdirs();
+		InputStream inputStream = file.getInputStream();
+		FileOutputStream outStream = new FileOutputStream(new File(jsonFile));
+		byte[] contents = new byte[inputStream.available()];
+		int length;
+		while ((length = inputStream.read(contents)) > 0) {
+			outStream.write(contents, 0, length);
+		}
+		inputStream.close();
+		outStream.close();
+		
+		uploadPDFFileToS3Bucket(tradingFiles, new File(jsonFile), modifiedFileName);
+
+		return modifiedFileName;
+	}
+
 	
 }

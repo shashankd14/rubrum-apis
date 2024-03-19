@@ -9,7 +9,7 @@ public interface AWSS3Service {
 
 	public String uploadFile(MultipartFile multipartFile);
 
-	public String uploadPDFFileToS3Bucket(String bucketName, File file,  String partDetailsId);
+	public String uploadPDFFileToS3Bucket(String bucketName, File file, String partDetailsId);
 
 	public String generatePresignedUrl(String fileName);
 
@@ -18,5 +18,7 @@ public interface AWSS3Service {
 
 	String persistQualityReportFiles(String applicationJarPath, String stageName, String templateName,
 			MultipartFile file) throws IOException;
+
+	String persistTradingFiles(String applicationJarPath, String stageName, MultipartFile file) throws IOException;
 
 }

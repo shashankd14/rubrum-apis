@@ -1,23 +1,21 @@
 package com.steel.product.trading.controller;
 
-import com.steel.product.application.dto.pricemaster.PriceMasterResponse;
-import com.steel.product.application.dto.pricemaster.PriceMasterListPageRequest;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.steel.product.trading.entity.MaterialMasterEntity;
 import com.steel.product.trading.request.MaterialMasterRequest;
+import com.steel.product.trading.request.MaterialMasterSearch;
 import com.steel.product.trading.service.MaterialMasterService;
-
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import javax.servlet.http.HttpServletRequest;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @CrossOrigin
@@ -28,51 +26,42 @@ public class MaterialController {
 	@Autowired
 	private MaterialMasterService materialMasterService;
 
-	@PostMapping(value = "/save", produces = "application/json" )
-	public ResponseEntity<Object> save(@RequestBody List<MaterialMasterRequest> priceMasterRequestList, HttpServletRequest request) {
-		int userId = (request.getHeader("userId")==null ? 1: Integer.parseInt(request.getHeader("userId")));
-		return materialMasterService.save(priceMasterRequestList, userId);
-	}
-	
-	@PutMapping(value = "/update", produces = "application/json")
-	public ResponseEntity<Object> update(@RequestBody List<MaterialMasterRequest> priceMasterRequestList, HttpServletRequest request) {
-		int userId = (request.getHeader("userId")==null ? 1: Integer.parseInt(request.getHeader("userId")));
-		return materialMasterService.save(priceMasterRequestList, userId);
-	}
-	
-	@DeleteMapping(value = "/{id}", produces = "application/json" )
-	public ResponseEntity<Object> delete(@PathVariable("id") int id) {
-		return materialMasterService.delete(id);
-	}
-
-	@GetMapping(value = "/{id}", produces = "application/json")
-	public ResponseEntity<Object> getById(@PathVariable("id") int id) {
-		PriceMasterResponse resp = materialMasterService.getById(id);
-		return new ResponseEntity<Object>(resp, HttpStatus.OK);
-	}
-
-	@GetMapping(produces = "application/json")
-	public List<PriceMasterResponse> getAllPriceDetails() {
-		List<PriceMasterResponse> list = materialMasterService.getAllPriceDetails();
-		return list;
+	@PostMapping(value = "/save", produces = "application/json")
+	public ResponseEntity<Object> save(
+			@RequestParam(value = "materialMasterRequest", required = true) String materialRequest,
+			@RequestParam(value = "additionalParams", required = true) String additionalParams,
+			@RequestParam(value = "itemImage", required = false) MultipartFile itemImage,
+			@RequestParam(value = "crossSectionalImage", required = false) MultipartFile crossSectionalImage) {
+		ResponseEntity<Object>  resp= null;
+		try {
+			
+			ObjectMapper mapper = new ObjectMapper();
+			mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+			MaterialMasterRequest materialMasterRequest = mapper.readValue(materialRequest, MaterialMasterRequest.class);
+			materialMasterRequest.setAdditionalParams(additionalParams);
+			resp = materialMasterService.save(materialMasterRequest, itemImage, crossSectionalImage);
+		} catch ( Exception e) {
+			e.printStackTrace();
+		}
+		return resp;
 	}
 
 	@PostMapping({ "/list" })
-	public ResponseEntity<Object> findAllWithPagination(@RequestBody PriceMasterListPageRequest request) {
+	public ResponseEntity<Object> getMaterialList(@RequestBody MaterialMasterSearch searchListPageRequest) {
 		Map<String, Object> response = new HashMap<>();
 
-		try {
-			Page<MaterialMasterEntity> pageResult = materialMasterService.findAllWithPagination(request);
-			List<Object> inwardList = null;//pageResult.stream().map(entity -> PriceMasterEntity.valueOf(entity)).collect(Collectors.toList());
-			response.put("content", inwardList);
+		if (searchListPageRequest.getItemId() != null && searchListPageRequest.getItemId() > 0) {
+			MaterialMasterEntity kk = materialMasterService.findByItemId(searchListPageRequest.getItemId());
+			return new ResponseEntity<Object>(kk, HttpStatus.OK);
+		} else {
+			Page<MaterialMasterEntity> pageResult = materialMasterService.getMaterialList(searchListPageRequest);
+			response.put("content", pageResult.toList());
 			response.put("currentPage", pageResult.getNumber());
 			response.put("totalItems", pageResult.getTotalElements());
 			response.put("totalPages", pageResult.getTotalPages());
-			return new ResponseEntity(response, HttpStatus.OK);
-		} catch (Exception e) {
-			return new ResponseEntity(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<Object>(response, HttpStatus.OK);
 		}
+
 	}
-
-
+	 
 }

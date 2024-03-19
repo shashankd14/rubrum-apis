@@ -2,38 +2,65 @@ package com.steel.product.trading.entity;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-
-import com.steel.product.application.entity.Process;
-
 import lombok.Data;
-
 import javax.persistence.*;
-
 import java.math.BigDecimal;
 import java.util.Date;
 
 @Entity
-@Table(name = "material_master")
+@Table(name = "trading_material_master")
 @Data
 public class MaterialMasterEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "material_id")
-	private Integer id;
+	@Column(name = "item_id")
+	private Integer itemId;
 
-	@ManyToOne(fetch = FetchType.EAGER)
-	@JoinColumn(name = "process_id")
-	private Process process;
+	@Column(name = "item_name")
+	private String itemName;
 
-	@Column(name = "thickness_from")
-	private BigDecimal thicknessFrom;
+	@Column(name = "item_hsn_code")
+	private String itemHsnCode;
 
-	@Column(name = "thickness_to")
-	private BigDecimal thicknessTo;
+	@Column(name = "item_code")
+	private String itemCode;
 
-	@Column(name = "price")
-	private BigDecimal price;
+	@Column(name = "item_grade")
+	private String itemGrade;
+
+	@Column(name = "item_sub_category")
+	private String itemSubCategory;
+
+	@Column(name = "item_main_category")
+	private String itemMainCategory;
+
+	@Column(name = "display_name")
+	private String displayName;
+
+	@Column(name = "brand_name")
+	private String brandName;
+
+	@Column(name = "manufacturer_name")
+	private String manufacturerName;
+
+	@Column(name = "additional_params")
+	private String additionalParams;
+
+	@Column(name = "item_image")
+	private String itemImage;
+
+	@Column(name = "cross_sectional_image")
+	private String crossSectionalImage;
+
+	@Column(name = "per_meter")
+	private BigDecimal perMeter;
+
+	@Column(name = "per_feet")
+	private BigDecimal perFeet;
+
+	@Column(name = "per_pc")
+	private BigDecimal perPC;
 
 	@Column(name = "created_by")
 	private Integer createdBy;
