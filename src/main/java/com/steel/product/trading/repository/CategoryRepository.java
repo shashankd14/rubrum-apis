@@ -15,8 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public interface CategoryRepository extends JpaRepository<CategoryEntity, Integer> {
 
-	CategoryEntity findByCategoryId(Integer categoryId);
-
 	@Query("select inw from CategoryEntity inw where inw.isDeleted is false and inw.categoryName = :categoryName and inw.categoryId not in :categoryId")
 	List<CategoryEntity> findByCategoryName(@Param("categoryName") String categoryName, @Param("categoryId") Integer categoryId);
 

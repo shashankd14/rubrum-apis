@@ -16,8 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public interface SubCategoryRepository extends JpaRepository<SubCategoryEntity, Integer> {
 
-	SubCategoryEntity findByCategoryId(Integer categoryId);
-
 	@Query("select inw from SubCategoryEntity inw where inw.isDeleted is false and inw.subcategoryName = :subcategoryName and inw.categoryId = :categoryId and inw.subcategoryId not in :subcategoryId")
 	List<SubCategoryEntity> findBySubCategoryNameforUpdate(@Param("subcategoryName") String subcategoryName, @Param("categoryId") Integer categoryId, @Param("subcategoryId") Integer subcategoryId);
 	

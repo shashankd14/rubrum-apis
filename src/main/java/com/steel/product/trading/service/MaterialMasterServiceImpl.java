@@ -46,14 +46,10 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 	MaterialMasterRepository materialMasterRepository;
 
 	@Autowired
-	MaterialMasterService materialMasterService;
-
-	@Autowired
 	AWSS3Service awsS3Service;
 
 	@Value("${templateFilesPath}")
 	private String templateFilesPath;
-	
 	
 	// Material Master Master APIs
 
@@ -267,7 +263,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 
 	@Override
 	public ResponseEntity<Object> categoryDelete(DeleteRequest deleteRequest) {
-		log.info("In materialDelete page ");
+		log.info("In categoryDelete page ");
 		ResponseEntity<Object> response = null;
 		HttpHeaders header = new HttpHeaders();
 		header.set("Content-Type", "application/json");
@@ -335,8 +331,8 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 
 	@Override
 	public Page<SubCategoryEntity> getSubCategoryList(SearchRequest searchListPageRequest) {
-		log.info("In getCategoryList page ");
-		Pageable pageable = PageRequest.of((searchListPageRequest.getPageNo() - 1), searchListPageRequest.getPageSize(), Sort.by("categoryId").descending());
+		log.info("In getSubCategoryList page ");
+		Pageable pageable = PageRequest.of((searchListPageRequest.getPageNo() - 1), searchListPageRequest.getPageSize(), Sort.by("subcategoryId").descending());
 
 		if (searchListPageRequest.getSearchText() != null && searchListPageRequest.getSearchText().length() > 0) {
 			Page<SubCategoryEntity> pageResult = subCategoryRepository.findAllWithSearchText(searchListPageRequest.getSearchText(), pageable);
@@ -349,7 +345,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 
 	@Override
 	public SubCategoryEntity findBySubCategoryId(Integer id) {
-		log.info("In findByCategoryId page ");
+		log.info("In findBySubCategoryId page ");
 		Optional<SubCategoryEntity> kk = subCategoryRepository.findById(id);
 		SubCategoryEntity categoryEntity = null;
 		if (kk.isPresent()) {
@@ -360,7 +356,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 
 	@Override
 	public ResponseEntity<Object> subcategoryDelete(DeleteRequest deleteRequest) {
-		log.info("In materialDelete page ");
+		log.info("In subcategoryDelete page ");
 		ResponseEntity<Object> response = null;
 		HttpHeaders header = new HttpHeaders();
 		header.set("Content-Type", "application/json");
