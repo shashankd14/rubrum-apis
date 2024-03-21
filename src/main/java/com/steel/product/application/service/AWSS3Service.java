@@ -21,4 +21,6 @@ public interface AWSS3Service {
 
 	String persistTradingFiles(String applicationJarPath, String stageName, MultipartFile file) throws IOException;
 
+	String generatePresignedUrlForTrading(String fileName);
+
 }

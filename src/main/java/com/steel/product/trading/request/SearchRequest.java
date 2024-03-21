@@ -4,11 +4,11 @@ import java.io.Serializable;
 import lombok.Data;
 
 @Data
-public class MaterialMasterSearch implements Serializable {
+public class SearchRequest implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	private Integer itemId;
+	private Integer id;
 
 	private String searchText;
 

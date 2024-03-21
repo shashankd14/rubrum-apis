@@ -39,7 +39,7 @@ public class AWSS3ServiceImpl implements AWSS3Service {
     private String bucketPDFs;
     
     @Value("${aws.s3.tradingFiles}")
-    private String tradingFiles;
+    private String tradingBucket;
     
     @Value("${aws.s3.bucket}")
     private String bucketName;
@@ -208,9 +208,27 @@ public class AWSS3ServiceImpl implements AWSS3Service {
 		inputStream.close();
 		outStream.close();
 		
-		uploadPDFFileToS3Bucket(tradingFiles, new File(jsonFile), modifiedFileName);
+		uploadPDFFileToS3Bucket(tradingBucket, new File(jsonFile), modifiedFileName);
 
 		return modifiedFileName;
+	}
+
+	@Override
+	public String generatePresignedUrlForTrading(String fileName) {
+
+		BasicAWSCredentials awsCreds = new BasicAWSCredentials(accessKey, secretKey);
+		
+		final AmazonS3 s3Client = AmazonS3ClientBuilder.standard().withCredentials(new AWSStaticCredentialsProvider(awsCreds)).withRegion(region).build();
+
+		// Set the expiry time
+		java.util.Date expiration = new java.util.Date();
+		long expTimeMillis = expiration.getTime();
+		expTimeMillis += 1000 * 60 * 60;
+		expiration.setTime(expTimeMillis);
+
+		GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(tradingBucket, fileName).withMethod(HttpMethod.GET).withExpiration(expiration);
+		URL url = s3Client.generatePresignedUrl(generatePresignedUrlRequest);
+		return url.toString();
 	}
 
 	

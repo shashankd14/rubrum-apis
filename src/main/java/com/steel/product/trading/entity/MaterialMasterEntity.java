@@ -2,11 +2,15 @@ package com.steel.product.trading.entity;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import lombok.Data;
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.Date;
 
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Entity
 @Table(name = "trading_material_master")
 @Data
@@ -26,14 +30,16 @@ public class MaterialMasterEntity {
 	@Column(name = "item_code")
 	private String itemCode;
 
-	@Column(name = "item_grade")
-	private String itemGrade;
+	@Column(name = "item_grade_id")
+	private Integer itemGradeId;
 
-	@Column(name = "item_sub_category")
-	private String itemSubCategory;
-
-	@Column(name = "item_main_category")
-	private String itemMainCategory;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "category_id")
+	private CategoryEntity categoryEntity;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "subcategory_id")
+	private SubCategoryEntity subCategoryEntity;
 
 	@Column(name = "display_name")
 	private String displayName;
@@ -62,6 +68,9 @@ public class MaterialMasterEntity {
 	@Column(name = "per_pc")
 	private BigDecimal perPC;
 
+	@Column(name = "is_deleted", columnDefinition = "BIT")
+	private Boolean isDeleted;
+
 	@Column(name = "created_by")
 	private Integer createdBy;
 
@@ -75,5 +84,11 @@ public class MaterialMasterEntity {
 	@Column(name = "updated_on")
 	@UpdateTimestamp
 	private Date updatedOn;
+
+	@Transient
+	private String itemImagePresignedURL;
+
+	@Transient
+	private String crossSectionalImagePresignedURL;
 
 }

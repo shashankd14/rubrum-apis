@@ -16,11 +16,11 @@ public class MaterialMasterRequest extends BaseRequest {
 
 	private String itemCode;
 
-	private String itemGrade;
+	private Integer itemGradeId;
 
-	private String itemSubCategory;
+	private Integer subCategoryId;
 
-	private String itemMainCategory;
+	private Integer categoryId;
 
 	private String displayName;
 
