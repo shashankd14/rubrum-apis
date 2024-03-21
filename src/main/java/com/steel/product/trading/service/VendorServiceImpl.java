@@ -14,7 +14,6 @@ import java.util.Optional;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -31,12 +30,9 @@ public class VendorServiceImpl implements VendorService {
 	@Autowired
 	VendorRepository vendorRepository;
 	
-	@Value("${templateFilesPath}")
-	private String templateFilesPath;
-	
 	@Override
 	public ResponseEntity<Object> save(VendorRequest vendorRequest) {
-		log.info("In categorySave page ");
+		log.info("In vendorsave page ");
 		ResponseEntity<Object> response = null;
 		HttpHeaders header = new HttpHeaders();
 		header.set("Content-Type", "application/json");
@@ -86,7 +82,7 @@ public class VendorServiceImpl implements VendorService {
 
 	@Override
 	public Page<VendorEntity> getVendorList(SearchRequest searchListPageRequest) {
-		log.info("In getCategoryList page ");
+		log.info("In getVendorList page ");
 		Pageable pageable = PageRequest.of((searchListPageRequest.getPageNo() - 1), searchListPageRequest.getPageSize(), Sort.by("vendorId").descending());
 
 		if (searchListPageRequest.getSearchText() != null && searchListPageRequest.getSearchText().length() > 0) {
@@ -100,8 +96,8 @@ public class VendorServiceImpl implements VendorService {
 
 	@Override
 	public VendorEntity findByVendorId(Integer id) {
-		log.info("In findByCategoryId page ");
-		Optional<VendorEntity> kk = vendorRepository.findById(id);
+		log.info("In findByVendorId page ");
+		Optional<VendorEntity> kk = vendorRepository.findByVendorIdAndIsDeleted(id, false);
 		VendorEntity categoryEntity = null;
 		if (kk.isPresent()) {
 			categoryEntity = kk.get();
@@ -111,14 +107,14 @@ public class VendorServiceImpl implements VendorService {
 
 	@Override
 	public ResponseEntity<Object> vendorDelete(DeleteRequest deleteRequest) {
-		log.info("In materialDelete page ");
+		log.info("In vendorDelete page ");
 		ResponseEntity<Object> response = null;
 		HttpHeaders header = new HttpHeaders();
 		header.set("Content-Type", "application/json");
 		
 		try {
 			vendorRepository.deleteData(deleteRequest.getIds(), deleteRequest.getUserId());
-			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Selected category has been deleted successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
+			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Selected vendor has been deleted successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
 			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
 		}

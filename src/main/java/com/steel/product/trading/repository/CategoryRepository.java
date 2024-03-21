@@ -1,7 +1,10 @@
 package com.steel.product.trading.repository;
 
 import com.steel.product.trading.entity.CategoryEntity;
+import com.steel.product.trading.entity.MaterialMasterEntity;
+
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,5 +34,7 @@ public interface CategoryRepository extends JpaRepository<CategoryEntity, Intege
 	@Transactional
 	@Query("update CategoryEntity inw set inw.isDeleted = true, inw.updatedBy=:userId, inw.updatedOn=CURRENT_TIMESTAMP where inw.categoryId in :itemIds")
 	void deleteData(@Param("itemIds") List<Integer> itemIds, @Param("userId") Integer userId);
+	
+	Optional<CategoryEntity> findByCategoryIdAndIsDeleted(Integer categoryId, Boolean isDeleted);
 	
 }

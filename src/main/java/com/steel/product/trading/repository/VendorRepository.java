@@ -3,6 +3,7 @@ package com.steel.product.trading.repository;
 import com.steel.product.trading.entity.VendorEntity;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,7 +21,7 @@ public interface VendorRepository extends JpaRepository<VendorEntity, Integer> {
 	List<VendorEntity> findByVendorName(@Param("vendorName") String vendorName, @Param("vendorId") Integer vendorId);
 
 	@Query("select inw from VendorEntity inw where inw.isDeleted is false and inw.vendorName = :vendorName")
-	List<VendorEntity> findByVendorName(@Param("vendorName") String categoryName);
+	List<VendorEntity> findByVendorName(@Param("vendorName") String vendorName);
 
 	@Query("select inw from VendorEntity inw where inw.isDeleted is false and inw.vendorName like %:searchText%")
 	Page<VendorEntity> findAllWithSearchText(@Param("searchText") String searchText, Pageable pageable);
@@ -32,5 +33,8 @@ public interface VendorRepository extends JpaRepository<VendorEntity, Integer> {
 	@Transactional
 	@Query("update VendorEntity inw set inw.isDeleted = true, inw.updatedBy=:userId, inw.updatedOn=CURRENT_TIMESTAMP where inw.vendorId in :itemIds")
 	void deleteData(@Param("itemIds") List<Integer> itemIds, @Param("userId") Integer userId);
+	
+	Optional<VendorEntity> findByVendorIdAndIsDeleted(Integer vendorId, Boolean isDeleted);
+
 	
 }

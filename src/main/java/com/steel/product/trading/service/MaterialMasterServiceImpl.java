@@ -253,7 +253,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 	@Override
 	public CategoryEntity findByCategoryId(Integer id) {
 		log.info("In findByCategoryId page ");
-		Optional<CategoryEntity> kk = categoryRepository.findById(id);
+		Optional<CategoryEntity> kk = categoryRepository.findByCategoryIdAndIsDeleted(id, false);
 		CategoryEntity categoryEntity = null;
 		if (kk.isPresent()) {
 			categoryEntity = kk.get();
@@ -346,7 +346,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 	@Override
 	public SubCategoryEntity findBySubCategoryId(Integer id) {
 		log.info("In findBySubCategoryId page ");
-		Optional<SubCategoryEntity> kk = subCategoryRepository.findById(id);
+		Optional<SubCategoryEntity> kk = subCategoryRepository.findBySubcategoryIdAndIsDeleted(id, false);
 		SubCategoryEntity categoryEntity = null;
 		if (kk.isPresent()) {
 			categoryEntity = kk.get();

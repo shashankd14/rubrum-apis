@@ -3,6 +3,7 @@ package com.steel.product.trading.repository;
 import com.steel.product.trading.entity.SubCategoryEntity;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -33,4 +34,6 @@ public interface SubCategoryRepository extends JpaRepository<SubCategoryEntity, 
 	@Query("update SubCategoryEntity inw set inw.isDeleted = true, inw.updatedBy=:userId, inw.updatedOn=CURRENT_TIMESTAMP where inw.subcategoryId in :itemIds")
 	void deleteData(@Param("itemIds") List<Integer> itemIds, @Param("userId") Integer userId);
 	
+	Optional<SubCategoryEntity> findBySubcategoryIdAndIsDeleted(Integer subcategoryId, Boolean isDeleted);
+
 }
