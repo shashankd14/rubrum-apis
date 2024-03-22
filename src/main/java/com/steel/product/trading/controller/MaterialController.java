@@ -3,10 +3,12 @@ package com.steel.product.trading.controller;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.steel.product.trading.entity.CategoryEntity;
+import com.steel.product.trading.entity.ManufacturerEntity;
 import com.steel.product.trading.entity.MaterialMasterEntity;
 import com.steel.product.trading.entity.SubCategoryEntity;
 import com.steel.product.trading.request.CategoryRequest;
 import com.steel.product.trading.request.DeleteRequest;
+import com.steel.product.trading.request.ManufacturerRequest;
 import com.steel.product.trading.request.MaterialMasterRequest;
 import com.steel.product.trading.request.SearchRequest;
 import com.steel.product.trading.request.SubCategoryRequest;
@@ -163,5 +165,38 @@ public class MaterialController {
 		return materialMasterService.subcategoryDelete(deleteRequest);
 	}
 	
+
+	// Manufacturer Master APIs
 	
+	@PostMapping(value = "/manufacturer/save", produces = "application/json" )
+	public ResponseEntity<Object> manufacturerSave(@RequestBody ManufacturerRequest manufacturerRequest) {
+		return materialMasterService.manufacturerSave(manufacturerRequest);
+	}
+	
+	@PutMapping(value = "/manufacturer/update", produces = "application/json" )
+	public ResponseEntity<Object> manufacturerUpdate(@RequestBody ManufacturerRequest manufacturerRequest) {
+		return materialMasterService.manufacturerSave(manufacturerRequest);
+	}
+
+	@PostMapping({ "/manufacturer/list" })
+	public ResponseEntity<Object> getManufacturerList(@RequestBody SearchRequest searchPageRequest) {
+		Map<String, Object> response = new HashMap<>();
+
+		if (searchPageRequest.getId() != null && searchPageRequest.getId() > 0) {
+			ManufacturerEntity resp = materialMasterService.findByManufacturerId( searchPageRequest.getId());
+			return new ResponseEntity<Object>(resp, HttpStatus.OK);
+		} else {
+			Page<ManufacturerEntity> pageResult = materialMasterService.getManufacturerList(searchPageRequest);
+			response.put("content", pageResult.toList());
+			response.put("currentPage", pageResult.getNumber());
+			response.put("totalItems", pageResult.getTotalElements());
+			response.put("totalPages", pageResult.getTotalPages());
+			return new ResponseEntity<Object>(response, HttpStatus.OK);
+		}
+	}
+
+	@PostMapping(value = "/manufacturer/delete", produces = "application/json" )
+	public ResponseEntity<Object> manufacturerDelete(@RequestBody DeleteRequest deleteRequest) {
+		return materialMasterService.manufacturerDelete(deleteRequest);
+	}
 }

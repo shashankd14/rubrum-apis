@@ -96,7 +96,7 @@ public class CustomerServiceImpl implements CustomerService {
 
 	@Override
 	public CustomerEntity findByCustomerId(Integer id) {
-		log.info("In findByCategoryId page ");
+		log.info("In findByCustomerId page ");
 		Optional<CustomerEntity> kk = customerRepository.findByCustomerIdAndIsDeleted(id, false);
 		CustomerEntity categoryEntity = null;
 		if (kk.isPresent()) {

@@ -2,13 +2,16 @@ package com.steel.product.trading.service;
 
 import com.steel.product.application.service.AWSS3Service;
 import com.steel.product.trading.entity.CategoryEntity;
+import com.steel.product.trading.entity.ManufacturerEntity;
 import com.steel.product.trading.entity.MaterialMasterEntity;
 import com.steel.product.trading.entity.SubCategoryEntity;
 import com.steel.product.trading.repository.CategoryRepository;
+import com.steel.product.trading.repository.ManufacturerRepository;
 import com.steel.product.trading.repository.MaterialMasterRepository;
 import com.steel.product.trading.repository.SubCategoryRepository;
 import com.steel.product.trading.request.CategoryRequest;
 import com.steel.product.trading.request.DeleteRequest;
+import com.steel.product.trading.request.ManufacturerRequest;
 import com.steel.product.trading.request.MaterialMasterRequest;
 import com.steel.product.trading.request.SearchRequest;
 import com.steel.product.trading.request.SubCategoryRequest;
@@ -38,9 +41,12 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 
 	@Autowired
 	SubCategoryRepository subCategoryRepository;
-	
+
 	@Autowired
 	CategoryRepository categoryRepository;
+	
+	@Autowired
+	ManufacturerRepository manufacturerRepository;
 	
 	@Autowired
 	MaterialMasterRepository materialMasterRepository;
@@ -369,5 +375,99 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 		}
 		return response;
 	}
+	
+
+	// Manufacturer Master APIs
+	
+	@Override
+	public ResponseEntity<Object> manufacturerSave(ManufacturerRequest manufacturerRequest) {
+		log.info("In manufacturerSave page ");
+		ResponseEntity<Object> response = null;
+		HttpHeaders header = new HttpHeaders();
+		header.set("Content-Type", "application/json");
+		String message="Manufacturer details saved successfully..! ";
+		try {
+			ManufacturerEntity manufacturerEntity = new ManufacturerEntity();
+			BeanUtils.copyProperties(manufacturerRequest, manufacturerEntity);
+			manufacturerEntity.setIsDeleted(false);
+			if (manufacturerEntity.getManufacturerId() != null && manufacturerEntity.getManufacturerId() > 0) {
+				ManufacturerEntity oldEntity = null;
+
+				Optional<ManufacturerEntity> kk = manufacturerRepository.findById(manufacturerEntity.getManufacturerId());
+				if (kk.isPresent()) {
+					oldEntity = kk.get();
+				}
+				if(oldEntity!=null && oldEntity.getManufacturerId()>0) {
+					List<ManufacturerEntity> testItemName = manufacturerRepository.findByManufacturerName(manufacturerEntity.getManufacturerName(), oldEntity.getManufacturerId());
+					if(testItemName!=null && testItemName.size()>0) {
+						return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Manufacturer Name already used\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+					}
+					manufacturerEntity.setUpdatedBy( manufacturerRequest.getUserId());
+					manufacturerEntity.setUpdatedOn(new Date());
+					manufacturerEntity.setCreatedBy(oldEntity.getCreatedBy());
+					manufacturerEntity.setCreatedOn(oldEntity.getCreatedOn());
+					message="Manufacturer details updated successfully..! ";
+				} else {
+					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid data\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+				}
+			} else {
+				List<ManufacturerEntity> testItemName = manufacturerRepository.findByManufacturerName(manufacturerEntity.getManufacturerName());
+				if(testItemName!=null && testItemName.size()>0) {
+					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Manufacturer Name already used\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+				}
+				manufacturerEntity.setCreatedBy(manufacturerRequest.getUserId());
+				manufacturerEntity.setCreatedOn(new Date());
+			}
+			manufacturerRepository.save(manufacturerEntity);
+			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \""+message+" \"}",	new HttpHeaders(), HttpStatus.OK);
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.info("error is ==" + e.getMessage());
+			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return response;
+	}
+
+	@Override
+	public Page<ManufacturerEntity> getManufacturerList(SearchRequest searchListPageRequest) {
+		log.info("In getManufacturerList page ");
+		Pageable pageable = PageRequest.of((searchListPageRequest.getPageNo() - 1), searchListPageRequest.getPageSize(), Sort.by("manufacturerId").descending());
+
+		if (searchListPageRequest.getSearchText() != null && searchListPageRequest.getSearchText().length() > 0) {
+			Page<ManufacturerEntity> pageResult = manufacturerRepository.findAllWithSearchText(searchListPageRequest.getSearchText(), pageable);
+			return pageResult;
+		} else {
+			Page<ManufacturerEntity> pageResult = manufacturerRepository.findAll(pageable);
+			return pageResult;
+		}
+	}
+
+	@Override
+	public ManufacturerEntity findByManufacturerId(Integer id) {
+		log.info("In findByCategoryId page ");
+		Optional<ManufacturerEntity> kk = manufacturerRepository.findByManufacturerIdAndIsDeleted(id, false);
+		ManufacturerEntity categoryEntity = null;
+		if (kk.isPresent()) {
+			categoryEntity = kk.get();
+		}
+		return categoryEntity;
+	}
+
+	@Override
+	public ResponseEntity<Object> manufacturerDelete(DeleteRequest deleteRequest) {
+		log.info("In manufacturerDelete page ");
+		ResponseEntity<Object> response = null;
+		HttpHeaders header = new HttpHeaders();
+		header.set("Content-Type", "application/json");
+		
+		try {
+			manufacturerRepository.deleteData(deleteRequest.getIds(), deleteRequest.getUserId());
+			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Selected Manufacturer has been deleted successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
+		} catch (Exception e) {
+			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return response;
+	}
+	
 	
 }

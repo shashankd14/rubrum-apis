@@ -282,7 +282,6 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
                 throw new RuntimeException("No inward id or parent instruction id found in instruction with id " + ins.getInstructionId());
             }
             ins.setStatus(readyToDeliverStatus);
-            ins.setIsDeleted(true);
             Float inStockWeight = inwardEntry.getInStockWeight();
             inwardEntry.setInStockWeight(inStockWeight + ins.getActualWeight());
             LOGGER.info("adding instruction actual weight "+ins.getActualWeight()+" and setting inward inStock weight from "+inStockWeight+" to "+(inStockWeight + ins.getActualWeight()));
@@ -290,7 +289,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
                 LOGGER.info("setting inward " + inwardEntry.getInwardEntryId() + " status to ready to deliver");
                 inwardEntry.setStatus(readyToDeliverStatus);
             }
-           //deliveryDetails.removeInstruction(ins);
+            deliveryDetails.removeInstruction(ins);
         }
         //deliveryDetailsRepo.deleteById(deliveryId);
         deliveryDetails.setDeleted(true);

@@ -5,10 +5,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.steel.product.trading.entity.CategoryEntity;
+import com.steel.product.trading.entity.ManufacturerEntity;
 import com.steel.product.trading.entity.MaterialMasterEntity;
 import com.steel.product.trading.entity.SubCategoryEntity;
 import com.steel.product.trading.request.CategoryRequest;
 import com.steel.product.trading.request.DeleteRequest;
+import com.steel.product.trading.request.ManufacturerRequest;
 import com.steel.product.trading.request.MaterialMasterRequest;
 import com.steel.product.trading.request.SearchRequest;
 import com.steel.product.trading.request.SubCategoryRequest;
@@ -39,5 +41,13 @@ public interface MaterialMasterService {
 	SubCategoryEntity findBySubCategoryId(Integer id);
 
 	ResponseEntity<Object> subcategoryDelete(DeleteRequest deleteRequest);
+
+	ResponseEntity<Object> manufacturerSave(ManufacturerRequest categoryRequest);
+
+	Page<ManufacturerEntity> getManufacturerList(SearchRequest searchPageRequest);
+
+	ManufacturerEntity findByManufacturerId(Integer id);
+
+	ResponseEntity<Object> manufacturerDelete(DeleteRequest deleteRequest);
 
 }
