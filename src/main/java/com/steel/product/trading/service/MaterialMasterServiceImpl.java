@@ -1,16 +1,22 @@
 package com.steel.product.trading.service;
 
 import com.steel.product.application.service.AWSS3Service;
+import com.steel.product.trading.entity.BrandEntity;
 import com.steel.product.trading.entity.CategoryEntity;
+import com.steel.product.trading.entity.ItemgradeEntity;
 import com.steel.product.trading.entity.ManufacturerEntity;
 import com.steel.product.trading.entity.MaterialMasterEntity;
 import com.steel.product.trading.entity.SubCategoryEntity;
+import com.steel.product.trading.repository.BrandRepository;
 import com.steel.product.trading.repository.CategoryRepository;
+import com.steel.product.trading.repository.ItemgradeRepository;
 import com.steel.product.trading.repository.ManufacturerRepository;
 import com.steel.product.trading.repository.MaterialMasterRepository;
 import com.steel.product.trading.repository.SubCategoryRepository;
+import com.steel.product.trading.request.BrandRequest;
 import com.steel.product.trading.request.CategoryRequest;
 import com.steel.product.trading.request.DeleteRequest;
+import com.steel.product.trading.request.ItemgradeRequest;
 import com.steel.product.trading.request.ManufacturerRequest;
 import com.steel.product.trading.request.MaterialMasterRequest;
 import com.steel.product.trading.request.SearchRequest;
@@ -46,7 +52,13 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 	CategoryRepository categoryRepository;
 	
 	@Autowired
+	ItemgradeRepository itemgradeRepository;
+	
+	@Autowired
 	ManufacturerRepository manufacturerRepository;
+	
+	@Autowired
+	BrandRepository brandRepository;
 	
 	@Autowired
 	MaterialMasterRepository materialMasterRepository;
@@ -376,7 +388,6 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 		return response;
 	}
 	
-
 	// Manufacturer Master APIs
 	
 	@Override
@@ -444,7 +455,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 
 	@Override
 	public ManufacturerEntity findByManufacturerId(Integer id) {
-		log.info("In findByCategoryId page ");
+		log.info("In findByManufacturerId page ");
 		Optional<ManufacturerEntity> kk = manufacturerRepository.findByManufacturerIdAndIsDeleted(id, false);
 		ManufacturerEntity categoryEntity = null;
 		if (kk.isPresent()) {
@@ -468,6 +479,191 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 		}
 		return response;
 	}
+
+	// Brand Master APIs
+	
+	@Override
+	public ResponseEntity<Object> brandSave(BrandRequest brandRequest) {
+		log.info("In brandSave page ");
+		ResponseEntity<Object> response = null;
+		HttpHeaders header = new HttpHeaders();
+		header.set("Content-Type", "application/json");
+		String message="Brand details saved successfully..! ";
+		try {
+			BrandEntity brandEntity = new BrandEntity();
+			BeanUtils.copyProperties(brandRequest, brandEntity);
+			brandEntity.setIsDeleted(false);
+			if (brandEntity.getBrandId() != null && brandEntity.getBrandId() > 0) {
+				BrandEntity oldEntity = null;
+
+				Optional<BrandEntity> kk = brandRepository.findById(brandEntity.getBrandId());
+				if (kk.isPresent()) {
+					oldEntity = kk.get();
+				}
+				if(oldEntity!=null && oldEntity.getBrandId()>0) {
+					List<BrandEntity> testItemName = brandRepository.findByBrandName(brandEntity.getBrandName(), oldEntity.getBrandId());
+					if(testItemName!=null && testItemName.size()>0) {
+						return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Brand Name already used\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+					}
+					brandEntity.setUpdatedBy( brandRequest.getUserId());
+					brandEntity.setUpdatedOn(new Date());
+					brandEntity.setCreatedBy(oldEntity.getCreatedBy());
+					brandEntity.setCreatedOn(oldEntity.getCreatedOn());
+					message="Brand details updated successfully..! ";
+				} else {
+					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid data\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+				}
+			} else {
+				List<BrandEntity> testItemName = brandRepository.findByBrandName(brandEntity.getBrandName());
+				if(testItemName!=null && testItemName.size()>0) {
+					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Brand Name already used\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+				}
+				brandEntity.setCreatedBy(brandRequest.getUserId());
+				brandEntity.setCreatedOn(new Date());
+			}
+			brandRepository.save(brandEntity);
+			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \""+message+" \"}",	new HttpHeaders(), HttpStatus.OK);
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.info("error is ==" + e.getMessage());
+			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return response;
+	}
+
+	@Override
+	public Page<BrandEntity> getBrandList(SearchRequest searchListPageRequest) {
+		log.info("In getBrandList page ");
+		Pageable pageable = PageRequest.of((searchListPageRequest.getPageNo() - 1), searchListPageRequest.getPageSize(), Sort.by("brandId").descending());
+
+		if (searchListPageRequest.getSearchText() != null && searchListPageRequest.getSearchText().length() > 0) {
+			Page<BrandEntity> pageResult = brandRepository.findAllWithSearchText(searchListPageRequest.getSearchText(), pageable);
+			return pageResult;
+		} else {
+			Page<BrandEntity> pageResult = brandRepository.findAll(pageable);
+			return pageResult;
+		}
+	}
+
+	@Override
+	public BrandEntity findByBrandId(Integer id) {
+		log.info("In findByBrandId page ");
+		Optional<BrandEntity> kk = brandRepository.findByBrandIdAndIsDeleted(id, false);
+		BrandEntity brandEntity = null;
+		if (kk.isPresent()) {
+			brandEntity = kk.get();
+		}
+		return brandEntity;
+	}
+
+	@Override
+	public ResponseEntity<Object> brandDelete(DeleteRequest deleteRequest) {
+		log.info("In brandDelete page ");
+		ResponseEntity<Object> response = null;
+		HttpHeaders header = new HttpHeaders();
+		header.set("Content-Type", "application/json");
+		
+		try {
+			brandRepository.deleteData(deleteRequest.getIds(), deleteRequest.getUserId());
+			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Selected Brand has been deleted successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
+		} catch (Exception e) {
+			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return response;
+	}
 	
 	
+
+	// itemgrade Master APIs
+	
+	@Override
+	public ResponseEntity<Object> itemgradeSave(ItemgradeRequest itemgradeRequest) {
+		log.info("In itemgradeSave page ");
+		ResponseEntity<Object> response = null;
+		HttpHeaders header = new HttpHeaders();
+		header.set("Content-Type", "application/json");
+		String message="ItemGrade details saved successfully..! ";
+		try {
+			ItemgradeEntity itemgradeEntity = new ItemgradeEntity();
+			BeanUtils.copyProperties(itemgradeRequest, itemgradeEntity);
+			itemgradeEntity.setIsDeleted(false);
+			if (itemgradeEntity.getItemgradeId() != null && itemgradeEntity.getItemgradeId() > 0) {
+				ItemgradeEntity oldEntity = null;
+
+				Optional<ItemgradeEntity> kk = itemgradeRepository.findById(itemgradeEntity.getItemgradeId());
+				if (kk.isPresent()) {
+					oldEntity = kk.get();
+				}
+				if(oldEntity!=null && oldEntity.getItemgradeId()>0) {
+					List<ItemgradeEntity> testItemName = itemgradeRepository.findByItemgradeName(itemgradeEntity.getItemgradeName(), oldEntity.getItemgradeId());
+					if(testItemName!=null && testItemName.size()>0) {
+						return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered ItemGrade already used\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+					}
+					itemgradeEntity.setUpdatedBy( itemgradeRequest.getUserId());
+					itemgradeEntity.setUpdatedOn(new Date());
+					itemgradeEntity.setCreatedBy(oldEntity.getCreatedBy());
+					itemgradeEntity.setCreatedOn(oldEntity.getCreatedOn());
+					message="ItemGrade details updated successfully..! ";
+				} else {
+					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid data\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+				}
+			} else {
+				List<ItemgradeEntity> testItemName = itemgradeRepository.findByItemgradeName(itemgradeEntity.getItemgradeName());
+				if(testItemName!=null && testItemName.size()>0) {
+					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered ItemGrade already used\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+				}
+				itemgradeEntity.setCreatedBy(itemgradeRequest.getUserId());
+				itemgradeEntity.setCreatedOn(new Date());
+			}
+			itemgradeRepository.save(itemgradeEntity);
+			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \""+message+" \"}",	new HttpHeaders(), HttpStatus.OK);
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.info("error is ==" + e.getMessage());
+			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return response;
+	}
+
+	@Override
+	public Page<ItemgradeEntity> getItemgradeList(SearchRequest searchListPageRequest) {
+		log.info("In getItemgradeList page ");
+		Pageable pageable = PageRequest.of((searchListPageRequest.getPageNo() - 1), searchListPageRequest.getPageSize(), Sort.by("itemgradeId").descending());
+
+		if (searchListPageRequest.getSearchText() != null && searchListPageRequest.getSearchText().length() > 0) {
+			Page<ItemgradeEntity> pageResult = itemgradeRepository.findAllWithSearchText(searchListPageRequest.getSearchText(), pageable);
+			return pageResult;
+		} else {
+			Page<ItemgradeEntity> pageResult = itemgradeRepository.findAll(pageable);
+			return pageResult;
+		}
+	}
+
+	@Override
+	public ItemgradeEntity findByItemgradeId(Integer id) {
+		log.info("In findByBrandId page ");
+		Optional<ItemgradeEntity> kk = itemgradeRepository.findByItemgradeIdAndIsDeleted(id, false);
+		ItemgradeEntity brandEntity = null;
+		if (kk.isPresent()) {
+			brandEntity = kk.get();
+		}
+		return brandEntity;
+	}
+
+	@Override
+	public ResponseEntity<Object> itemgradeDelete(DeleteRequest deleteRequest) {
+		log.info("In itemgradeDelete page ");
+		ResponseEntity<Object> response = null;
+		HttpHeaders header = new HttpHeaders();
+		header.set("Content-Type", "application/json");
+		
+		try {
+			itemgradeRepository.deleteData(deleteRequest.getIds(), deleteRequest.getUserId());
+			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Selected ItemGrade has been deleted successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
+		} catch (Exception e) {
+			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return response;
+	}
+
 }

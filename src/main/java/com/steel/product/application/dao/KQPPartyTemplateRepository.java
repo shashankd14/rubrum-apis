@@ -1,7 +1,6 @@
 package com.steel.product.application.dao;
 
 import com.steel.product.application.entity.Instruction;
-import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.entity.KQPPartyTemplateEntity;
 
 import java.util.List;
@@ -105,13 +104,13 @@ public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTempla
 			+ " (select aa.`gradename` from `product_material_grades` aa where aa.`gradeid` = `inward`.`materialgradeid`) AS `material_grade`  " 
 			+ " FROM product_tbl_delivery_details deli, product_instruction ins, product_tblinwardentry inward "
 			+ " WHERE deli.deliveryid = ins.deliveryid and ins.inwardid = inward.inwardentryid and "
-			+ " case when :searchText is not null and LENGTH(:searchText) >0 then (inward.coilNumber like %:searchText% or inward.customerBatchId like %:searchText% or "
+			+ " case when :searchText is not null and LENGTH(:searchText) >0 then ( deli.deliveryid  like %:searchText% or inward.coilNumber like %:searchText% or inward.customerBatchId like %:searchText% or "
 			+ " inward.customerInvoiceNo like %:searchText%) else 1=1 end " 
 			+ " and case when :partyIds is not null and LENGTH(:partyIds) >0 then npartyid in :partyIds else 1=1 end "
-			+ " order by inward.inwardentryid desc", 
+			+ " order by deli.deliveryid desc", 
 			countQuery = "SELECT count(distinct coilnumber) FROM product_tbl_delivery_details deli, product_instruction ins, product_tblinwardentry inward " + 
 					" WHERE deli.deliveryid = ins.deliveryid and ins.inwardid = inward.inwardentryid and "+
-					" case when :searchText is not null and LENGTH(:searchText) >0 then (inward.coilNumber like %:searchText% or inward.customerBatchId like %:searchText% or " + 
+					" case when :searchText is not null and LENGTH(:searchText) >0 then ( deli.deliveryid  like %:searchText% or inward.coilNumber like %:searchText% or inward.customerBatchId like %:searchText% or " + 
 					" inward.customerInvoiceNo like %:searchText%) else 1=1 end " + 
 					" and case when :partyIds is not null and LENGTH(:partyIds) >0 then npartyid in :partyIds else 1=1 end ", 
 			nativeQuery = true)
@@ -127,13 +126,13 @@ public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTempla
 			+ " (select aa.`gradename` from `product_material_grades` aa where aa.`gradeid` = `inward`.`materialgradeid`) AS `material_grade`  " 
 			+ " FROM product_tbl_delivery_details deli, product_instruction ins, product_tblinwardentry inward "
 			+ " WHERE deli.deliveryid = ins.deliveryid and ins.inwardid = inward.inwardentryid and"
-			+ " case when :searchText is not null and LENGTH(:searchText) >0 then (inward.coilNumber like %:searchText% or inward.customerBatchId like %:searchText% or "
+			+ " case when :searchText is not null and LENGTH(:searchText) >0 then ( deli.deliveryid  like %:searchText% or inward.coilNumber like %:searchText% or inward.customerBatchId like %:searchText% or "
 			+" inward.customerInvoiceNo like %:searchText%) else 1=1 end " 
 			+" and case when :partyIds is not null and LENGTH(:partyIds) >0 then npartyid in :partyIds else 1=1 end "
-			+" order by inward.inwardentryid desc",
+			+" order by deli.deliveryid desc",
 			countQuery = "SELECT count(distinct coilnumber) FROM product_tbl_delivery_details deli, product_instruction ins, product_tblinwardentry inward " + 
 					" WHERE deli.deliveryid = ins.deliveryid and ins.inwardid = inward.inwardentryid and " + 
-					" case when :searchText is not null and LENGTH(:searchText) >0 then (inward.coilNumber like %:searchText% or inward.customerBatchId like %:searchText% or " + 
+					" case when :searchText is not null and LENGTH(:searchText) >0 then ( deli.deliveryid  like %:searchText% or inward.coilNumber like %:searchText% or inward.customerBatchId like %:searchText% or " + 
 					" inward.customerInvoiceNo like %:searchText%) else 1=1 end " + 
 					" and case when :partyIds is not null and LENGTH(:partyIds) >0 then npartyid in :partyIds else 1=1 end ", 
 			nativeQuery = true)

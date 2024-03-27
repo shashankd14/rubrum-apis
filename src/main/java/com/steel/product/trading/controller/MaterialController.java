@@ -2,12 +2,16 @@ package com.steel.product.trading.controller;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.steel.product.trading.entity.BrandEntity;
 import com.steel.product.trading.entity.CategoryEntity;
+import com.steel.product.trading.entity.ItemgradeEntity;
 import com.steel.product.trading.entity.ManufacturerEntity;
 import com.steel.product.trading.entity.MaterialMasterEntity;
 import com.steel.product.trading.entity.SubCategoryEntity;
+import com.steel.product.trading.request.BrandRequest;
 import com.steel.product.trading.request.CategoryRequest;
 import com.steel.product.trading.request.DeleteRequest;
+import com.steel.product.trading.request.ItemgradeRequest;
 import com.steel.product.trading.request.ManufacturerRequest;
 import com.steel.product.trading.request.MaterialMasterRequest;
 import com.steel.product.trading.request.SearchRequest;
@@ -165,7 +169,6 @@ public class MaterialController {
 		return materialMasterService.subcategoryDelete(deleteRequest);
 	}
 	
-
 	// Manufacturer Master APIs
 	
 	@PostMapping(value = "/manufacturer/save", produces = "application/json" )
@@ -199,4 +202,74 @@ public class MaterialController {
 	public ResponseEntity<Object> manufacturerDelete(@RequestBody DeleteRequest deleteRequest) {
 		return materialMasterService.manufacturerDelete(deleteRequest);
 	}
+
+	// Brand Master APIs
+	
+	@PostMapping(value = "/brand/save", produces = "application/json" )
+	public ResponseEntity<Object> brandSave(@RequestBody BrandRequest brandRequest) {
+		return materialMasterService.brandSave(brandRequest);
+	}
+	
+	@PutMapping(value = "/brand/update", produces = "application/json" )
+	public ResponseEntity<Object> manufacturerUpdate(@RequestBody BrandRequest brandRequest) {
+		return materialMasterService.brandSave(brandRequest);
+	}
+
+	@PostMapping({ "/brand/list" })
+	public ResponseEntity<Object> getBrandList(@RequestBody SearchRequest searchPageRequest) {
+		Map<String, Object> response = new HashMap<>();
+
+		if (searchPageRequest.getId() != null && searchPageRequest.getId() > 0) {
+			BrandEntity resp = materialMasterService.findByBrandId( searchPageRequest.getId());
+			return new ResponseEntity<Object>(resp, HttpStatus.OK);
+		} else {
+			Page<BrandEntity> pageResult = materialMasterService.getBrandList(searchPageRequest);
+			response.put("content", pageResult.toList());
+			response.put("currentPage", pageResult.getNumber());
+			response.put("totalItems", pageResult.getTotalElements());
+			response.put("totalPages", pageResult.getTotalPages());
+			return new ResponseEntity<Object>(response, HttpStatus.OK);
+		}
+	}
+
+	@PostMapping(value = "/brand/delete", produces = "application/json" )
+	public ResponseEntity<Object> brandDelete(@RequestBody DeleteRequest deleteRequest) {
+		return materialMasterService.brandDelete(deleteRequest);
+	}
+	
+	// ItemGrade Master APIs
+	
+	@PostMapping(value = "/itemgrade/save", produces = "application/json" )
+	public ResponseEntity<Object> itemgradeSave(@RequestBody ItemgradeRequest itemgradeRequest) {
+		return materialMasterService.itemgradeSave(itemgradeRequest);
+	}
+	
+	@PutMapping(value = "/itemgrade/update", produces = "application/json" )
+	public ResponseEntity<Object> itemgradeUpdate(@RequestBody ItemgradeRequest itemgradeRequest) {
+		return materialMasterService.itemgradeSave(itemgradeRequest);
+	}
+
+	@PostMapping({ "/itemgrade/list" })
+	public ResponseEntity<Object> getitemgradeList(@RequestBody SearchRequest searchPageRequest) {
+		Map<String, Object> response = new HashMap<>();
+
+		if (searchPageRequest.getId() != null && searchPageRequest.getId() > 0) {
+			ItemgradeEntity resp = materialMasterService.findByItemgradeId( searchPageRequest.getId());
+			return new ResponseEntity<Object>(resp, HttpStatus.OK);
+		} else {
+			Page<ItemgradeEntity> pageResult = materialMasterService.getItemgradeList(searchPageRequest);
+			response.put("content", pageResult.toList());
+			response.put("currentPage", pageResult.getNumber());
+			response.put("totalItems", pageResult.getTotalElements());
+			response.put("totalPages", pageResult.getTotalPages());
+			return new ResponseEntity<Object>(response, HttpStatus.OK);
+		}
+	}
+
+	@PostMapping(value = "/itemgrade/delete", produces = "application/json" )
+	public ResponseEntity<Object> itemgradeDelete(@RequestBody DeleteRequest deleteRequest) {
+		return materialMasterService.itemgradeDelete(deleteRequest);
+	}
+	
+	
 }

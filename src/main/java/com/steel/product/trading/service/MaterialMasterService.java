@@ -4,12 +4,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.steel.product.trading.entity.BrandEntity;
 import com.steel.product.trading.entity.CategoryEntity;
+import com.steel.product.trading.entity.ItemgradeEntity;
 import com.steel.product.trading.entity.ManufacturerEntity;
 import com.steel.product.trading.entity.MaterialMasterEntity;
 import com.steel.product.trading.entity.SubCategoryEntity;
+import com.steel.product.trading.request.BrandRequest;
 import com.steel.product.trading.request.CategoryRequest;
 import com.steel.product.trading.request.DeleteRequest;
+import com.steel.product.trading.request.ItemgradeRequest;
 import com.steel.product.trading.request.ManufacturerRequest;
 import com.steel.product.trading.request.MaterialMasterRequest;
 import com.steel.product.trading.request.SearchRequest;
@@ -49,5 +53,21 @@ public interface MaterialMasterService {
 	ManufacturerEntity findByManufacturerId(Integer id);
 
 	ResponseEntity<Object> manufacturerDelete(DeleteRequest deleteRequest);
+
+	ResponseEntity<Object> brandSave(BrandRequest brandRequest);
+
+	BrandEntity findByBrandId(Integer id);
+
+	Page<BrandEntity> getBrandList(SearchRequest searchPageRequest);
+
+	ResponseEntity<Object> brandDelete(DeleteRequest deleteRequest);
+
+	ResponseEntity<Object> itemgradeSave(ItemgradeRequest itemgradeRequest);
+
+	Page<ItemgradeEntity> getItemgradeList(SearchRequest searchPageRequest);
+
+	ItemgradeEntity findByItemgradeId(Integer id);
+
+	ResponseEntity<Object> itemgradeDelete(DeleteRequest deleteRequest);
 
 }
