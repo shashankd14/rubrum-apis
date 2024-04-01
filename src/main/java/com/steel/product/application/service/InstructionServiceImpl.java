@@ -712,7 +712,6 @@ public class InstructionServiceImpl implements InstructionService {
         for (Object[] obj : objects) {
             PartDetails partDetails = (PartDetails) obj[0];
             Instruction instruction = (Instruction) obj[1];
-            System.out.println("Hi Kanak == "+instruction.getInstructionId());
             instructions.add(Instruction.valueOfInstructionPdf(instruction, null));
             if (inwardId == null) {
                 try {
@@ -785,8 +784,8 @@ public class InstructionServiceImpl implements InstructionService {
     	try {
 			List<KQPPartyMappingResponse> kqpIdList = qualityService.getAllKQPMappings();
 			for (KQPPartyMappingResponse entity : kqpIdList) {
-				//System.out.println("getKqpId ================================= " + entity.getKqpId());
-				//System.out.println("inwardEntry.getMaterialGrade().getGradeId() = " + inwardEntry.getMaterialGrade().getGradeId());
+				System.out.println("getKqpId ================================= " + entity.getKqpId());
+				System.out.println("inwardEntry.getMaterialGrade().getGradeId() = " + inwardEntry.getMaterialGrade().getGradeId());
 				for (InstructionResponsePdfDto instruction : instructions) {
 					boolean widthFlag=false;
 					boolean lengthFlag=false;
@@ -818,7 +817,7 @@ public class InstructionServiceImpl implements InstructionService {
 						List<Integer> materialGradeList =new ArrayList<>();
 						String[] materialGradeListq =  entity.getMatGradeIdList().replace("[","").replace("]","").split(",");
 						for(String materialGradeId : materialGradeListq) {
-							if(materialGradeId!=null && materialGradeId!="null" && materialGradeId.trim().length()>0 ) {
+							if(materialGradeId!=null && (!"null".equals(materialGradeId)) && materialGradeId.trim().length()>0) {
 								materialGradeList.add(Integer.parseInt(materialGradeId.trim()));
 							}
 						}
@@ -880,9 +879,9 @@ public class InstructionServiceImpl implements InstructionService {
 						if(entity.getEndUserTagIdList()!=null && entity.getEndUserTagIdList().length()>0) {
 							endUserTagIdListStr = entity.getEndUserTagIdList().replace("[","").replace("]","").split(",");
 						}
-						for(String kkk : endUserTagIdListStr) {
-							if(kkk!=null && kkk.trim().length()>0 ) {
-								endUserTagIdList.add(Integer.parseInt(kkk.trim()));
+						for(String enduerstagId : endUserTagIdListStr) {
+							if(enduerstagId!=null && (!"null".equals(enduerstagId) ) && enduerstagId.trim().length()>0 ) {
+								endUserTagIdList.add(Integer.parseInt(enduerstagId.trim()));
 							}
 						}
 						if (instruction.getEndUserTagsEntity() != null
@@ -891,12 +890,12 @@ public class InstructionServiceImpl implements InstructionService {
 							endusertagFlag = true;
 						}
 					}
-					/*System.out.println("partyFlag " + partyFlag);
+					System.out.println("partyFlag " + partyFlag);
 					System.out.println("matgradeFlag " + matgradeFlag);
 					System.out.println("thicknessFlag " + thicknessFlag);
 					System.out.println("widthFlag " + widthFlag);
 					System.out.println("lengthFlag " + lengthFlag);
-					System.out.println("endusertagFlag " + endusertagFlag);*/
+					System.out.println("endusertagFlag " + endusertagFlag);
 					
 					if (partyFlag && matgradeFlag && thicknessFlag && widthFlag && lengthFlag && endusertagFlag) {
 						kk.put (entity.getKqpId(), entity.getKqpDesc() );
