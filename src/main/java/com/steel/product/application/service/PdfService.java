@@ -8,8 +8,8 @@ import com.steel.product.application.entity.CompanyDetails;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.log4j.Log4j2;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
@@ -26,9 +26,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@Log4j2
 public class PdfService {
-
-	private final static Logger logger = LoggerFactory.getLogger("PdfService");
 
     private InwardEntryService inwardEntryService;
     private CompanyDetailsService companyDetailsService;
@@ -79,7 +78,6 @@ public class PdfService {
             	deliverId = instruction.getDeliveryDetails().getDeliveryId();
             }
         }
-        
         return renderPdfInstruction(html, "delivery", ""+deliverId, "DC_PDF");
     }
 
@@ -192,10 +190,10 @@ public class PdfService {
 				fileUrl = awsS3Service.uploadPDFFileToS3Bucket(bucketName, file, "QRCODE_EDITFINISH_" + id);
 				inwardEntryService.updateQRCodeEditFinish(id, "QRCODE_EDITFINISH_" + id);
 			} 
-			System.out.println("fileUrl == "+fileUrl);
+			log.info("fileUrl == "+fileUrl);
 		} catch (Exception e) {
-			e.printStackTrace();
-			System.out.println("Error while uploading pdf - " + e.getMessage());
+			//e.printStackTrace();
+			log.info("Error while uploading pdf - " + e.getMessage());
 		}
         file.deleteOnExit();
         return file;
@@ -281,20 +279,20 @@ public class PdfService {
 			for (Instruction instruction : instructionsq) {
 				instructionsMap.put(instruction.getPartDetails().getPartDetailsId(), instruction);
 			}
-			logger.info("instructionsMap = " + instructionsMap);
+			log.info("instructionsMap = " + instructionsMap);
 			for (Map.Entry<String, Instruction> entry : instructionsMap.entrySet()) {
 				String partDetailsId = entry.getKey();
-				logger.info("partDetailsId = " + partDetailsId +", is Started ");
+				log.info("partDetailsId = " + partDetailsId +", is Started ");
 				labelFile = File.createTempFile("labelprintfg_" + partDetailsId, ".pdf");
 				LabelPrintDTO labelPrintDTO = new LabelPrintDTO();
 				labelPrintDTO.setPartDetailsId(partDetailsId);
 				labelPrintDTO.setProcess("fg");
 				labelFile = labelPrintPDFGenerator.renderFGLabelPrintPDF(labelPrintDTO, instructionFinishDto, labelFile);
-				logger.info("FG Label File Generated Successfully..!");
+				log.info("FG Label File Generated Successfully..!");
 				awsS3Service.uploadPDFFileToS3Bucket(bucketName, labelFile, "FGLabel_" + partDetailsId);
-				logger.info("FG Label File uploaded in S3 ");
+				log.info("FG Label File uploaded in S3 ");
 				instructionService.updateS3FGLabelPDF(partDetailsId, "FGLabel_" + partDetailsId);
-				logger.info("FG Label Print "+labelFile.getAbsolutePath()+" generated successfully..!");
+				log.info("FG Label Print "+labelFile.getAbsolutePath()+" generated successfully..!");
 			}
 
 		} catch (Exception e) {

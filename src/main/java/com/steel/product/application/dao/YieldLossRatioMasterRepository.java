@@ -21,18 +21,23 @@ public interface YieldLossRatioMasterRepository extends JpaRepository<YieldLossR
 	@Query("select pc from YieldLossRatioMasterEntity pc where pc.isDeleted is false and pc.partyId = :partyId and pc.processId = :processId and :rangeValue between pc.lossRatioPercentageFrom and pc.lossRatioPercentageTo and pc.ylrId not in :ylrId")
 	List<YieldLossRatioMasterEntity> validateRangeInUpdate(@Param("partyId") Integer partyId, @Param("processId") Integer processId, @Param("rangeValue") BigDecimal rangeValue, @Param("ylrId") Integer ylrId);
 
-	@Query(value = "SELECT ylr.ylr_id, ylr.party_id, ylr.process_id, ylr.loss_ratio_percentage_from,  ylr.loss_ratio_percentage_to,  ylr.comments, " + 
-			" party.partyname, proce.processname\r\n" + 
-			" FROM yield_loss_ratio_master ylr, product_tblpartydetails party, product_process proce \r\n" + 
-			" where is_deleted = 0 and party.npartyid =ylr.party_id and proce.processid =ylr.process_id "+
-			" and ylr.party_id = ifnull(:partyId, ylr.party_id) \r\n"+
-			" order by ylr.ylr_id desc", 
-			countQuery = "SELECT count( ylr.ylr_id)" + 
-			" FROM yield_loss_ratio_master ylr, product_tblpartydetails party, product_process proce \r\n" + 
-			" where is_deleted = 0 and party.npartyid =ylr.party_id and proce.processid =ylr.process_id"+ 
-			" and ylr.party_id = ifnull(:partyId, ylr.party_id) \r\n",
-			nativeQuery = true)
-	Page<Object[]> findAll( @Param("partyId") Integer partyId, Pageable pageable);
+	@Query(value = "SELECT ylr.ylr_id, ylr.party_id, ylr.process_id, ylr.loss_ratio_percentage_from,  ylr.loss_ratio_percentage_to,  ylr.comments, "
+			+ " party.partyname, proce.processname\r\n"
+			+ " FROM yield_loss_ratio_master ylr, product_tblpartydetails party, product_process proce \r\n"
+			+ " where is_deleted = 0 and party.npartyid =ylr.party_id and proce.processid =ylr.process_id "
+			+ " and ylr.party_id = ifnull(:partyId, ylr.party_id) \r\n"
+			+ " and ylr.process_id = ifnull(:processId, ylr.process_id) \r\n"
+			+ " and ylr.ylr_id = ifnull(:ylrId, ylr.ylr_id) \r\n"
+			+ " order by ylr.ylr_id desc", 
+		countQuery = "SELECT count( ylr.ylr_id)"
+			+ " FROM yield_loss_ratio_master ylr, product_tblpartydetails party, product_process proce \r\n"
+			+ " where is_deleted = 0 and party.npartyid =ylr.party_id and proce.processid =ylr.process_id"
+			+ " and ylr.process_id = ifnull(:processId, ylr.process_id) \r\n"
+			+ " and ylr.ylr_id = ifnull(:ylrId, ylr.ylr_id) \r\n"
+			+ " and ylr.party_id = ifnull(:partyId, ylr.party_id) \r\n", 
+		nativeQuery = true)
+	Page<Object[]> findAll(@Param("partyId") Integer partyId, @Param("processId") Integer processId,
+			@Param("ylrId") Integer ylrId, Pageable pageable);
 
 	@Modifying
 	@Transactional

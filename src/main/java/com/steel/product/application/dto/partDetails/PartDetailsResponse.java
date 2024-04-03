@@ -4,6 +4,7 @@ import com.steel.product.application.dto.instruction.InstructionResponseDto;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 
@@ -18,4 +19,8 @@ public class PartDetailsResponse {
     private Integer createdBy;
     private Integer updatedBy;
     private Set<InstructionResponseDto> instructions;
+    private BigDecimal plannedYieldLossRatio;
+    private BigDecimal actualYieldLossRatio;
+    
+
 }

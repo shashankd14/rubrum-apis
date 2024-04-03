@@ -1,6 +1,6 @@
 package com.steel.product.application.dto.instruction;
 
-import com.steel.product.application.dto.partDetails.partDetailsRequest;
+import com.steel.product.application.dto.partDetails.PartDetailsRequest;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,7 +10,7 @@ import java.util.List;
 @Setter
 public class InstructionSaveRequestDto {
 
-	private partDetailsRequest partDetailsRequest;
+	private PartDetailsRequest PartDetailsRequest;
 	
 	private List<InstructionRequestDto> instructionRequestDTOs;
 	

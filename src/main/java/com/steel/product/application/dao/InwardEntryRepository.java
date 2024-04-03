@@ -23,7 +23,7 @@ import static org.hibernate.jpa.QueryHints.HINT_PASS_DISTINCT_THROUGH;
 @Repository
 public interface InwardEntryRepository extends JpaRepository<InwardEntry, Integer> {
 
-    @Query(nativeQuery = true, value = "select * from aspen.product_tblinwardentry where nPartyId= :partyId order by dReceivedDate ")
+    @Query(nativeQuery = true, value = "select * from product_tblinwardentry where nPartyId= :partyId order by dReceivedDate ")
     List<InwardEntry> getInwardEntriesByPartyId(@Param("partyId") Integer paramInteger);
 
     @Query("select inw from InwardEntry inw where (inw.coilNumber like %:searchText% or "

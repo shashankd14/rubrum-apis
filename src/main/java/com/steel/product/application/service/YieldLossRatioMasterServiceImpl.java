@@ -138,7 +138,8 @@ public class YieldLossRatioMasterServiceImpl implements YieldLossRatioMasterServ
 	@Override
 	public Page<Object[]> getAll(YieldLossRatioSearchRequest request) {
 		Pageable pageable = PageRequest.of((request.getPageNo() - 1), request.getPageSize());
-		Page<Object[]> list = yieldLossRatioMasterRepository.findAll(request.getPartyId(), pageable);
+		Page<Object[]> list = yieldLossRatioMasterRepository.findAll(request.getPartyId(), request.getProcessId(),
+				request.getYlrId(), pageable);
 		return list;
 	}
 

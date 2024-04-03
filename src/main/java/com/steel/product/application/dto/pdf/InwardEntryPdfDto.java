@@ -4,6 +4,7 @@ import com.steel.product.application.entity.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -13,102 +14,103 @@ import java.util.Map;
 @Setter
 public class InwardEntryPdfDto {
 
-    private Integer inwardEntryId;
+	private Integer inwardEntryId;
 
-    private String partyName;
+	private String partyName;
 
-    private String partyCgst;
+	private String partyCgst;
 
-    private String coilNumber;
+	private String coilNumber;
 
-    private String batchNumber;
+	private String batchNumber;
 
-    private Date dReceivedDate;
+	private Date dReceivedDate;
 
-    private Date dBillDate;
+	private Date dBillDate;
 
-    private String vLorryNo;
+	private String vLorryNo;
 
-    private Date dInvoiceDate;
+	private Date dInvoiceDate;
 
-    private String customerCoilId;
+	private String customerCoilId;
 
-    private String customerInvoiceNo;
+	private String customerInvoiceNo;
 
-    private String customerBatchId;
+	private String customerBatchId;
 
-    private String purposeType;
+	private String purposeType;
 
-    private String testCertificateNumber;
+	private String testCertificateNumber;
 
-    private String testCertificateFileUrl;
+	private String testCertificateFileUrl;
 
-    private String vInvoiceNo;
+	private String vInvoiceNo;
 
-    private String matDescription;
+	private String matDescription;
 
-    private String materialGradeName;
+	private String materialGradeName;
 
-    private float fWidth;
+	private float fWidth;
 
-    private float fThickness;
+	private float fThickness;
 
-    private float fLength;
+	private float fLength;
 
-    private float fQuantity;
+	private float fQuantity;
 
-    private float grossWeight;
+	private float grossWeight;
 
-    private Status status;
+	private Status status;
 
-    private String vProcess;
+	private String vProcess;
 
-    private Float fpresent;
+	private Float fpresent;
 
-    private Float valueOfGoods;
+	private Float valueOfGoods;
 
-    private float billedWeight;
+	private float billedWeight;
 
-    private String parentCoilNumber;
+	private String parentCoilNumber;
 
-    private int vParentBundleNumber;
+	private int vParentBundleNumber;
 
-    private String remarks;
+	private String remarks;
 
-    private AdminUserEntity createdBy;
+	private AdminUserEntity createdBy;
 
-    private AdminUserEntity updatedBy;
+	private AdminUserEntity updatedBy;
 
-    private Date createdOn;
+	private Date createdOn;
 
-    private Date updatedOn;
+	private Date updatedOn;
 
-    private Boolean isDeleted;
+	private Boolean isDeleted;
 
-    private List<InwardDoc> docs;
+	private List<InwardDoc> docs;
 
-    private List<InstructionResponsePdfDto> instructions;
+	private List<InstructionResponsePdfDto> instructions;
 
-    private Map<Float, List<InstructionResponsePdfDto>> instructionsMap;
+	private Map<Float, List<InstructionResponsePdfDto>> instructionsMap;
 
-    private Map<Float, List<InstructionResponsePdfDto>> instructionsSlitMap;
+	private Map<Float, List<InstructionResponsePdfDto>> instructionsSlitMap;
 
-    private Map<Long, List<InstructionResponsePdfDto>> instructionsCutMap;
+	private Map<Long, List<InstructionResponsePdfDto>> instructionsCutMap;
 
-    private Map<PartDetailsPdfResponse, List<InstructionResponsePdfDto>> partDetailsSlitMap;
+	private Map<PartDetailsPdfResponse, List<InstructionResponsePdfDto>> partDetailsSlitMap;
 
-    private Map<PartDetailsPdfResponse, List<InstructionResponsePdfDto>> partDetailsCutMap;
+	private Map<PartDetailsPdfResponse, List<InstructionResponsePdfDto>> partDetailsCutMap;
 
-    private Float totalWeight;
+	private Float totalWeight;
 
-    private Float totalWeightSlit;
+	private Float totalWeightSlit;
 
-    private Float totalWeightCut;
+	private Float totalWeightCut;
 
-    private Float inStockWeight;
+	private Float inStockWeight;
 
-    private String partDetailsId;
-    
-    private Map<Integer, String> kqpParamsList = new HashMap<>();
+	private String partDetailsId;
 
+	private Map<Integer, String> kqpParamsList = new HashMap<>();
+
+	private String plannedYieldLossRatio;
 }

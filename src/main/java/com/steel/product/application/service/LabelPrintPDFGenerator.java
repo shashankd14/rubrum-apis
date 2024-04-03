@@ -7,8 +7,6 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -39,10 +37,11 @@ import com.steel.product.application.dto.qrcode.QRCodeResponse;
 import com.steel.product.application.mapper.InstructionMapper;
 import com.steel.product.application.mapper.PartDetailsMapper;
 
-@Service
-public class LabelPrintPDFGenerator {
+import lombok.extern.log4j.Log4j2;
 
-	private final static Logger logger = LoggerFactory.getLogger("LabelPrintPDFGenerator");
+@Service
+@Log4j2
+public class LabelPrintPDFGenerator {
 
     private static final DecimalFormat decfor = new DecimalFormat("0.00");  
 
@@ -55,7 +54,7 @@ public class LabelPrintPDFGenerator {
 	@Autowired InstructionMapper instructionMapper;
 
 	public File renderInwardLabelPrintPDF(LabelPrintDTO labelPrintDTO, QRCodeResponse resp, File labelFile) throws IOException, DocumentException {
-		logger.info("renderLabelPrintPDF ");
+		log.info("renderLabelPrintPDF ");
 		Document document = new Document();
 
 		int tableRowHeight = 20;
@@ -286,7 +285,7 @@ public class LabelPrintPDFGenerator {
 	}
 	
 	public File renderWIPLabelPrintPDF(LabelPrintDTO labelPrintDTO, File file) throws IOException, DocumentException {
-		logger.info("renderWIPLabelPrintPDF ");
+		log.info("renderWIPLabelPrintPDF ");
 		Document document = null;
 		int tableRowHeight = 20;
 		try {
@@ -508,7 +507,7 @@ public class LabelPrintPDFGenerator {
 				}
 				document.close();
 			}
-			logger.info("WIP Label Print generated successfully..!");
+			log.info("WIP Label Print generated successfully..!");
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			System.out.println(ex);
@@ -648,7 +647,7 @@ public class LabelPrintPDFGenerator {
 
 	public File renderFGLabelPrintPDF(LabelPrintDTO labelPrintDTO, InstructionFinishDto instructionFinishDto, File file)
 			throws IOException, DocumentException {
-		logger.info("renderFGLabelPrintPDF Started == ");
+		log.info("renderFGLabelPrintPDF Started == ");
 		Document document = null;
 		int tableRowHeight = 20;
 		try {
@@ -872,7 +871,7 @@ public class LabelPrintPDFGenerator {
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			logger.info("error == "+ex.getMessage());
+			log.info("error == "+ex.getMessage());
 		}
 		file.deleteOnExit();
 		return file;

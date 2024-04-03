@@ -6,9 +6,11 @@ import lombok.Data;
 @Data
 public class YieldLossRatioSearchRequest extends BaseRequest{
 
-	private Integer id;
+	private Integer ylrId;
 
 	private Integer partyId;
+
+	private Integer processId;
 
 	private Integer pageNo;
 

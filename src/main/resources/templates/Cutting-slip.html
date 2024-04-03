@@ -98,30 +98,33 @@
             <div class="inline-block w-50">
                 <table>
                     <tbody>
-                    <tr>
-                        <td>Document id:</td>
-                        <td id="doc-id" th:text="${inward?.partDetailsId}"></td>
-                    </tr>
-                    <tr>
-                        <td>Process Date:</td>
-                        <td id="process-date" th:text="${#dates.format(inward?.createdOn, 'dd/MM/yyyy')}"></td>
-                    </tr>
-                    <tr>
-                        <td>Customer Name:</td>
-                        <td id="customer-name" th:text="${inward?.partyName}"></td>
-                    </tr>
-                    <tr>
-                        <td>ASPEN Coil No:</td>
-                        <td id="coil-number" th:text="${inward?.coilNumber}"></td>
-                    </tr>
-                    <tr>
-                        <td>Customer Batch No:</td>
-                        <td th:text="${inward?.customerBatchId}"></td>
-                    </tr>
-                    <tr>
-                        <td>Machine No: -</td>
-                    </tr>
-
+	                    <tr>
+	                        <td>Document id:</td>
+	                        <td id="doc-id" th:text="${inward?.partDetailsId}"></td>
+	                    </tr>
+	                    <tr>
+	                        <td>Process Date:</td>
+	                        <td id="process-date" th:text="${#dates.format(inward?.createdOn, 'dd/MM/yyyy')}"></td>
+	                    </tr>
+	                    <tr>
+	                        <td>Customer Name:</td>
+	                        <td id="customer-name" th:text="${inward?.partyName}"></td>
+	                    </tr>
+	                    <tr>
+	                        <td>Internal Coil No:</td>
+	                        <td id="coil-number" th:text="${inward?.coilNumber}"></td>
+	                    </tr>
+	                    <tr>
+	                        <td>Customer Batch No:</td>
+	                        <td th:text="${inward?.customerBatchId}"></td>
+	                    </tr>
+	                    <tr>
+	                        <td>Machine No: -</td>
+	                    </tr>
+						<tr>
+		                    <td>Planned Yield Loss Ratio:</td>
+		                    <td th:text="${inward?.plannedYieldLossRatio)}"></td>
+		                </tr>
                     </tbody>
                 </table>
             </div>

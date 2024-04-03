@@ -3,9 +3,10 @@ package com.steel.product.application.service;
 import com.steel.product.application.dao.DeliveryDetailsRepository;
 import com.steel.product.application.dao.InstructionRepository;
 import com.steel.product.application.dao.InwardEntryRepository;
+import com.steel.product.application.dao.PartDetailsRepository;
 import com.steel.product.application.dto.instruction.*;
 import com.steel.product.application.dto.partDetails.PartDetailsResponse;
-import com.steel.product.application.dto.partDetails.partDetailsRequest;
+import com.steel.product.application.dto.partDetails.PartDetailsRequest;
 import com.steel.product.application.dto.pdf.InstructionResponsePdfDto;
 import com.steel.product.application.dto.pdf.InwardEntryPdfDto;
 import com.steel.product.application.dto.pdf.PartDetailsPdfResponse;
@@ -17,6 +18,9 @@ import com.steel.product.application.exception.MockException;
 import com.steel.product.application.mapper.InstructionMapper;
 import com.steel.product.application.mapper.PartDetailsMapper;
 import com.steel.product.application.mapper.TotalLengthAndWeight;
+
+import lombok.extern.log4j.Log4j2;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,11 +30,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@Log4j2
 public class InstructionServiceImpl implements InstructionService {
 
     Integer slitProcessId = 2;
@@ -47,6 +53,8 @@ public class InstructionServiceImpl implements InstructionService {
     private InwardEntryRepository inwardEntryRepository;
 
     private DeliveryDetailsRepository deliveryDetailsRepository;
+
+    private PartDetailsRepository partDetailsRepository;
 
     private QualityService qualityService;
     
@@ -330,7 +338,8 @@ public class InstructionServiceImpl implements InstructionService {
         Status readyToDeliverStatus = statusService.getStatusById(readyToDeliverStatusId);
         Status currentStatus;
         Float scrapWeight=0f;
-    	
+        Long partDetailsId = null;
+
         if("WIPtoFG".equalsIgnoreCase(instructionFinishDto.getTaskType())) {    // WIPtoFG
         	statusId = inProgressStatusId;
         	currentStatus= readyToDeliverStatus;
@@ -357,6 +366,7 @@ public class InstructionServiceImpl implements InstructionService {
 
         for (InstructionRequestDto ins : InstructionRequestDtos) {
             instruction = instructionsMap.get(ins.getInstructionId());
+            partDetailsId=instruction.getPartDetails().getId();
             if (instruction == null) {
                 continue;
             }
@@ -449,6 +459,9 @@ public class InstructionServiceImpl implements InstructionService {
             throw new RuntimeException("Invalid request");
         }
 
+		if (partDetailsId != null && partDetailsId > 0 && instructionFinishDto.getActualYieldLossRatio() != null) {
+			partDetailsRepository.updateActualYLR(partDetailsId, instructionFinishDto.getActualYieldLossRatio());
+		}
         updateCoilStatus(savedInstruction.getInwardId().getInwardEntryId());
         return new ResponseEntity<Object>(updatedInstructionList.stream().map(i -> Instruction.valueOf(i)), HttpStatus.OK);
     }
@@ -707,10 +720,12 @@ public class InstructionServiceImpl implements InstructionService {
         List<InstructionResponsePdfDto> instructions = new ArrayList<>();
         float totalWeightSlit = 0f;
         float totalWeightCut = 0f;
+        BigDecimal plannedYieldLossRatio = new BigDecimal("0.00");
         String cutPartDetailsId = null;
         Map<PartDetailsPdfResponse, List<InstructionResponsePdfDto>> partDetailsSlitMap = null, partDetailsCutMap = null;
         for (Object[] obj : objects) {
             PartDetails partDetails = (PartDetails) obj[0];
+            plannedYieldLossRatio = partDetails.getPlannedYieldLossRatio();
             Instruction instruction = (Instruction) obj[1];
             instructions.add(Instruction.valueOfInstructionPdf(instruction, null));
             if (inwardId == null) {
@@ -742,7 +757,6 @@ public class InstructionServiceImpl implements InstructionService {
             }
         }
         
-        
         InwardEntry inwardEntry;
         InwardEntryPdfDto inwardEntryPdfDto;
 
@@ -754,10 +768,11 @@ public class InstructionServiceImpl implements InstructionService {
         inwardEntryPdfDto.setTotalWeightCut(partDetailsSlitMap == null ? totalWeightCut : 0f);
         inwardEntryPdfDto.setTotalWeightSlit(totalWeightSlit);
         inwardEntryPdfDto.setPartDetailsId(partDetailsId != null ? partDetailsId : cutPartDetailsId);
+        inwardEntryPdfDto.setPlannedYieldLossRatio(""+plannedYieldLossRatio);
         inwardEntryPdfDto.setVProcess(String.valueOf(processId));
         
         Map<Integer, String> kqpParamsList = getKQPParams(partDetailsId, inwardEntry, partDetailsCutMap, partDetailsSlitMap);
-		System.out.println("kQPParamsList " + kqpParamsList);
+		log.info("kQPParamsList " + kqpParamsList);
         inwardEntryPdfDto.setKqpParamsList(kqpParamsList);
         return inwardEntryPdfDto;
     }
@@ -784,8 +799,8 @@ public class InstructionServiceImpl implements InstructionService {
     	try {
 			List<KQPPartyMappingResponse> kqpIdList = qualityService.getAllKQPMappings();
 			for (KQPPartyMappingResponse entity : kqpIdList) {
-				System.out.println("getKqpId ================================= " + entity.getKqpId());
-				System.out.println("inwardEntry.getMaterialGrade().getGradeId() = " + inwardEntry.getMaterialGrade().getGradeId());
+				//System.out.println("getKqpId ================================= " + entity.getKqpId());
+				//System.out.println("inwardEntry.getMaterialGrade().getGradeId() = " + inwardEntry.getMaterialGrade().getGradeId());
 				for (InstructionResponsePdfDto instruction : instructions) {
 					boolean widthFlag=false;
 					boolean lengthFlag=false;
@@ -890,12 +905,12 @@ public class InstructionServiceImpl implements InstructionService {
 							endusertagFlag = true;
 						}
 					}
-					System.out.println("partyFlag " + partyFlag);
+					/*System.out.println("partyFlag " + partyFlag);
 					System.out.println("matgradeFlag " + matgradeFlag);
 					System.out.println("thicknessFlag " + thicknessFlag);
 					System.out.println("widthFlag " + widthFlag);
 					System.out.println("lengthFlag " + lengthFlag);
-					System.out.println("endusertagFlag " + endusertagFlag);
+					System.out.println("endusertagFlag " + endusertagFlag);*/
 					
 					if (partyFlag && matgradeFlag && thicknessFlag && widthFlag && lengthFlag && endusertagFlag) {
 						kk.put (entity.getKqpId(), entity.getKqpDesc() );
@@ -1079,7 +1094,7 @@ public class InstructionServiceImpl implements InstructionService {
             LOGGER.info("no of requests " + instructionSaveRequestDtos.size());
             Map<PartDetails, List<InstructionRequestDto>> instructionPlanAndListMap = new HashMap<>();
             LOGGER.info("inside save instruction method");
-            partDetailsRequest partDetailsRequest;
+            PartDetailsRequest PartDetailsRequest;
             PartDetails slitPartDetails = null;
             InstructionRequestDto instructionRequestDto = instructionSaveRequestDtos.get(0).getInstructionRequestDTOs().get(0);
             Integer inwardId = instructionRequestDto.getInwardId();
@@ -1147,16 +1162,16 @@ public class InstructionServiceImpl implements InstructionService {
                 if(processId == 1 || processId == 3) {//for cut
                     incomingWeight += instructionSaveRequestDto.getInstructionRequestDTOs().stream().reduce(0f, (sum, dto) -> sum + dto.getPlannedWeight(), Float::sum);
                     incomingLength += instructionSaveRequestDto.getInstructionRequestDTOs().stream().reduce(0f, (sum, dto) -> sum + dto.getPlannedLength()*dto.getPlannedNoOfPieces(), Float::sum);
-                    partDetailsRequest = instructionSaveRequestDto.getPartDetailsRequest();
-                    PartDetails partDetails = partDetailsMapper.toEntityForCut(partDetailsRequest);
+                    PartDetailsRequest = instructionSaveRequestDto.getPartDetailsRequest();
+                    PartDetails partDetails = partDetailsMapper.toEntityForCut(PartDetailsRequest);
                     partDetails.setPartDetailsId(partDetailsId);
                     instructionPlanAndListMap.put(partDetails, instructionSaveRequestDto.getInstructionRequestDTOs());
 
                 }else {
                     incomingWeight += instructionSaveRequestDto.getInstructionRequestDTOs().stream().reduce(0f, (sum, dto) -> sum + dto.getPlannedWeight(), Float::sum);
                     incomingLength += instructionSaveRequestDto.getPartDetailsRequest().getLength();
-                    partDetailsRequest = instructionSaveRequestDto.getPartDetailsRequest();
-                    PartDetails partDetails = partDetailsMapper.toEntityForSlit(partDetailsRequest);
+                    PartDetailsRequest = instructionSaveRequestDto.getPartDetailsRequest();
+                    PartDetails partDetails = partDetailsMapper.toEntityForSlit(PartDetailsRequest);
                     partDetails.setPartDetailsId(partDetailsId);
                     instructionPlanAndListMap.put(partDetails, instructionSaveRequestDto.getInstructionRequestDTOs());
                 }
@@ -1223,7 +1238,7 @@ public class InstructionServiceImpl implements InstructionService {
                     .findAllByTagIdIn( endUserTagIds)
                     .stream().collect(Collectors.toMap(pc -> pc.getTagId(),pc -> pc));
                 
-                for (PartDetails pd : instructionPlanAndListMap.keySet()) {
+            for (PartDetails pd : instructionPlanAndListMap.keySet()) {
                 List<InstructionRequestDto> list = instructionPlanAndListMap.get(pd);
                 for (InstructionRequestDto requestDto : list) {
                     Instruction instruction = instructionMapper.toEntity(requestDto);

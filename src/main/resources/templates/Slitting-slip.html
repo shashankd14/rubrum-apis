@@ -112,7 +112,7 @@
                     <td id="customer-name" th:text="${inward?.partyName}"></td>
                 </tr>
                 <tr>
-                    <td>ASPEN Coil No:</td>
+                    <td>Internal Coil No:</td>
                     <td id="coil-number" th:text="${inward?.coilNumber}"></td>
                 </tr>
                 <tr>
@@ -125,6 +125,10 @@
                 <tr>
                     <td>Number of Parts:</td>
                     <td th:text="${#maps.size(inward?.partDetailsSlitMap)}"></td>
+                </tr>
+                <tr>
+                    <td>Planned Yield Loss Ratio:</td>
+                    <td th:text="${inward?.plannedYieldLossRatio}"></td>
                 </tr>
                 </tbody>
             </table>
@@ -167,6 +171,10 @@
                 <tr>
                     <td>Inward Weight:</td>
             		<td th:text="${inward?.fQuantity}"></td>
+                </tr>
+                <tr>
+                    <td></td>
+            		<td></td>
                 </tr>
                 </tbody>
             </table>

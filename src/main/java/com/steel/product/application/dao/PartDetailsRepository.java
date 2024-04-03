@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 import javax.transaction.Transactional;
 
@@ -25,16 +26,22 @@ public interface PartDetailsRepository extends JpaRepository<PartDetails, Long> 
 
 	@Query(value = "select coilnumber, customerbatchid, partyname, instructiondate, material_desc, "
 			+ "	material_grade, packet_id, fthickness, plannedwidth, plannedlength, plannedweight, actualwidth,"
-			+ "	actuallength, actualweight, enduser_tag_name, plannednoofpieces, parentcoilnumber, is_slit_and_cut, " 
-			+ "	processid, batchnumber, finishdate" 
+			+ "	actuallength, actualweight, enduser_tag_name, plannednoofpieces, parentcoilnumber, is_slit_and_cut, "
+			+ "	processid, batchnumber, finishdate"
 			+ " FROM label_print_vw where stts=:stts and part_details_id=:planId ", nativeQuery = true)
 	List<Object[]> wipLabelData(@Param("stts") Integer stts, @Param("planId") String planId);
-	
+
 	@Query(value = "select coilnumber, customerbatchid, partyname, instructiondate, material_desc, "
 			+ "	material_grade, packet_id, fthickness, plannedwidth, plannedlength, plannedweight, actualwidth,"
-			+ "	actuallength, actualweight, enduser_tag_name, actualnoofpieces, parentcoilnumber, is_slit_and_cut, " 
-			+ "	processid, batchnumber,finishdate " 
+			+ "	actuallength, actualweight, enduser_tag_name, actualnoofpieces, parentcoilnumber, is_slit_and_cut, "
+			+ "	processid, batchnumber,finishdate "
 			+ " FROM label_print_vw where CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END and stts=:stts and part_details_id=:planId ", nativeQuery = true)
 	List<Object[]> fgLabelData(@Param("stts") Integer stts, @Param("planId") String planId);
+
+	@Modifying
+	@Transactional
+	@Query("update PartDetails pd set pd.actualYieldLossRatio= :actualYieldLossRatio where pd.id =:partDetailsId ")
+	public void updateActualYLR(@Param("partDetailsId") Long partDetailsId,
+			@Param("actualYieldLossRatio") BigDecimal actualYieldLossRatio);
 
 }

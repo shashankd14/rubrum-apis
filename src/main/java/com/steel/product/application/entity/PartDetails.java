@@ -6,8 +6,9 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
+
+import java.math.BigDecimal;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -29,6 +30,12 @@ public class PartDetails {
 
     @Column(name = "length")
     private Float length;
+
+    @Column(name = "planned_yield_loss_ratio")
+    private BigDecimal plannedYieldLossRatio;
+
+    @Column(name = "actual_yield_loss_ratio")
+    private BigDecimal actualYieldLossRatio;
 
     @Column(name = "created_by")
     private Integer createdBy;
