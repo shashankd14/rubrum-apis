@@ -81,7 +81,7 @@ public class InstructionServiceImpl implements InstructionService {
 			PacketClassificationService packetClassificationService, EndUserTagsService endUserTagsService,
 			PartDetailsService partDetailsService, PartDetailsMapper partDetailsMapper,
 			InstructionMapper instructionMapper, DeliveryDetailsRepository deliveryDetailsRepository,
-			QualityService qualityService) {
+			QualityService qualityService, PartDetailsRepository partDetailsRepository) {
         this.instructionRepository = instructionRepository;
         this.inwardEntryRepository = inwardEntryRepository;
         this.deliveryDetailsRepository = deliveryDetailsRepository;
@@ -94,6 +94,7 @@ public class InstructionServiceImpl implements InstructionService {
         this.partDetailsMapper = partDetailsMapper;
         this.instructionMapper = instructionMapper;
         this.qualityService = qualityService;
+        this.partDetailsRepository =partDetailsRepository;
     }
 
     @Override

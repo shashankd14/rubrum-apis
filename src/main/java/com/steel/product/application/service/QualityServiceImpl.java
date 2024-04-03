@@ -25,6 +25,7 @@ import com.steel.product.application.dao.QualityPartyTemplateRepository;
 import com.steel.product.application.dao.QualityReportRepository;
 import com.steel.product.application.dao.QualityTemplateRepository;
 import com.steel.product.application.dto.instruction.InstructionResponseDto;
+import com.steel.product.application.dto.qrcode.QRCodeResponse;
 import com.steel.product.application.dto.quality.KQPPartyMappingRequest;
 import com.steel.product.application.dto.quality.KQPPartyMappingResponse;
 import com.steel.product.application.dto.quality.KQPRequest;
@@ -48,6 +49,7 @@ import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.entity.KQPEntity;
 import com.steel.product.application.entity.KQPPartyTemplateEntity;
+import com.steel.product.application.entity.PartDetails;
 import com.steel.product.application.entity.QualityInspectionReportEntity;
 import com.steel.product.application.entity.QualityPartyTemplateEntity;
 import com.steel.product.application.entity.QualityTemplateEntity;
@@ -59,6 +61,7 @@ import lombok.extern.log4j.Log4j2;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
@@ -1430,6 +1433,28 @@ public class QualityServiceImpl implements QualityService {
 			matGradeCellValue.setBorder(Rectangle.NO_BORDER);
 			coilDetailsTab.addCell(matGradeCellValue);
 			
+			if ("PROCESSING".equals(entity.getStageName())) {
+				BigDecimal parentActualWeight = new BigDecimal("0.00");
+				try {
+
+					for (Instruction instruction : inwardEntry.getInstructions()) {
+						if (instruction.getPartDetails().getPartDetailsId().equals(entity.getPlanId())) {
+							parentActualWeight = instruction.getPartDetails().getPlannedYieldLossRatio();
+						}
+					}
+				} catch (Exception e) {
+				}
+				PdfPCell ylrCell = new PdfPCell(new Phrase("Yield Loss Ratio : ", font11));
+				ylrCell.setHorizontalAlignment( Element.ALIGN_LEFT);
+				ylrCell.setFixedHeight(fixedHeight);
+				ylrCell.setBorder(Rectangle.NO_BORDER);
+				coilDetailsTab.addCell(ylrCell);			
+				PdfPCell ylrCellValue = new PdfPCell(new Phrase(""+parentActualWeight, font11));
+				ylrCellValue.setHorizontalAlignment( Element.ALIGN_LEFT);
+				ylrCellValue.setFixedHeight(fixedHeight);
+				ylrCellValue.setBorder(Rectangle.NO_BORDER);
+				coilDetailsTab.addCell(ylrCellValue);
+			}
 			PdfPCell customerNameCell = new PdfPCell(new Phrase("Customer Name : ", font11));
 			customerNameCell.setHorizontalAlignment( Element.ALIGN_LEFT);
 			customerNameCell.setFixedHeight(fixedHeight);
