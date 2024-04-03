@@ -27,14 +27,18 @@ public interface PartDetailsRepository extends JpaRepository<PartDetails, Long> 
 	@Query(value = "select coilnumber, customerbatchid, partyname, instructiondate, material_desc, "
 			+ "	material_grade, packet_id, fthickness, plannedwidth, plannedlength, plannedweight, actualwidth,"
 			+ "	actuallength, actualweight, enduser_tag_name, plannednoofpieces, parentcoilnumber, is_slit_and_cut, "
-			+ "	processid, batchnumber, finishdate"
+			+ "	processid, batchnumber, finishdate, "
+			+ "	(select company_name from product_company_details where id=1) compname , "
+			+ "	(select email from product_company_details where id=1) email "
 			+ " FROM label_print_vw where stts=:stts and part_details_id=:planId ", nativeQuery = true)
 	List<Object[]> wipLabelData(@Param("stts") Integer stts, @Param("planId") String planId);
 
 	@Query(value = "select coilnumber, customerbatchid, partyname, instructiondate, material_desc, "
 			+ "	material_grade, packet_id, fthickness, plannedwidth, plannedlength, plannedweight, actualwidth,"
 			+ "	actuallength, actualweight, enduser_tag_name, actualnoofpieces, parentcoilnumber, is_slit_and_cut, "
-			+ "	processid, batchnumber,finishdate "
+			+ "	processid, batchnumber,finishdate, "
+			+ "	(select company_name from product_company_details where id=1) compname, "
+			+ "	(select email from product_company_details where id=1) email "
 			+ " FROM label_print_vw where CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END and stts=:stts and part_details_id=:planId ", nativeQuery = true)
 	List<Object[]> fgLabelData(@Param("stts") Integer stts, @Param("planId") String planId);
 

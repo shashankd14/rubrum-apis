@@ -143,7 +143,9 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 			" ROUND(`fthickness`, 2) as `fthickness`, round(fquantity,2) as `net weight`, " +
 			" ROUND(`grossweight`, 2) as `grossweight`, ROUND(`fwidth`, 2) as `fwidth`,ROUND(`flength`, 2) as `flength`, " +
 			" DATE_FORMAT(dreceiveddate, '%d-%m-%Y') as dt, DATE_FORMAT(createdon, '%d-%m-%Y') as credt, parentcoilnumber, " +
-			" (select partyname from product_tblpartydetails part where part.npartyid = inward.npartyid) as partyname,batchnumber,customerinvoiceno " +
+			" (select partyname from product_tblpartydetails part where part.npartyid = inward.npartyid) as partyname,batchnumber,customerinvoiceno, " +
+			" (select company_name from product_company_details where id=1) compname, " +
+			" (select email from product_company_details where id=1) email " +
 			" FROM product_tblinwardentry inward WHERE inwardentryid=:inwardId ", nativeQuery = true)
 	List<Object[]> getQRCodeDetails(@Param("inwardId") Integer inwardId);
 

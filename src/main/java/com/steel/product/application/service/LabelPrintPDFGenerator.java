@@ -79,14 +79,14 @@ public class LabelPrintPDFGenerator {
 			coilDetailsTab.setWidthPercentage(100);
 			coilDetailsTab.setWidths(new int[] {40, 100, 70, 70});
 
-			PdfPCell companyNameCell = new PdfPCell(new Phrase("ASPEN STEEL PVT LTD", font11u));
+			PdfPCell companyNameCell = new PdfPCell(new Phrase(resp.getCompanyName(), font11u));
 			companyNameCell.setHorizontalAlignment( Element.ALIGN_CENTER );
 			//companyNameCell.setFixedHeight(17);
 			companyNameCell.setBorder(Rectangle.LEFT | Rectangle.RIGHT | Rectangle.TOP);
 			companyNameCell.setColspan(4);
 			coilDetailsTab.addCell(companyNameCell);	
 
-			PdfPCell addressCell2 = new PdfPCell(new Phrase("Email : aspen.bidadi@gmail.com", font5));
+			PdfPCell addressCell2 = new PdfPCell(new Phrase("Email : "+resp.getCompanyEmail(), font5));
 			addressCell2.setHorizontalAlignment( Element.ALIGN_CENTER);
 			addressCell2.setVerticalAlignment( Element.ALIGN_TOP);
 			addressCell2.setFixedHeight(9);
@@ -315,13 +315,13 @@ public class LabelPrintPDFGenerator {
 					coilDetailsTab.setWidthPercentage(100);
 					coilDetailsTab.setWidths(new int[] {40, 100, 70, 70});
 	
-					PdfPCell companyNameCell = new PdfPCell(new Phrase("ASPEN STEEL PVT LTD", font11u));
+					PdfPCell companyNameCell = new PdfPCell(new Phrase(response.getCompanyName(), font11u));
 					companyNameCell.setHorizontalAlignment( Element.ALIGN_CENTER );
 					companyNameCell.setBorder(Rectangle.LEFT | Rectangle.RIGHT | Rectangle.TOP);
 					companyNameCell.setColspan(4);
 					coilDetailsTab.addCell(companyNameCell);	
 	
-					PdfPCell addressCell2 = new PdfPCell(new Phrase("Email : aspen.bidadi@gmail.com", font5));
+					PdfPCell addressCell2 = new PdfPCell(new Phrase("Email : "+response.getCompanyEmail(), font5));
 					addressCell2.setHorizontalAlignment( Element.ALIGN_CENTER);
 					addressCell2.setVerticalAlignment( Element.ALIGN_TOP);
 					addressCell2.setFixedHeight(9);
@@ -640,6 +640,8 @@ public class LabelPrintPDFGenerator {
 			resp.setProcessId( result[18] != null ? (Integer) result[18] : 0);
 			resp.setCoilBatchNo( result[19] != null ? (String) result[19] : "");
 			resp.setFinishedDate( result[20] != null ? (String) result[20] : "");
+			resp.setCompanyName(result[21] != null ? (String) result[21] : "");
+			resp.setCompanyEmail(result[22] != null ? (String) result[22] : "");
 			qirList.add(resp);
 		}
 		return qirList;
@@ -677,13 +679,13 @@ public class LabelPrintPDFGenerator {
 					coilDetailsTab.setWidthPercentage(100);
 					coilDetailsTab.setWidths(new int[] {40, 100, 70, 70});
 	
-					PdfPCell companyNameCell = new PdfPCell(new Phrase("ASPEN STEEL PVT LTD", font11u));
+					PdfPCell companyNameCell = new PdfPCell(new Phrase(response.getCompanyName(), font11u));
 					companyNameCell.setHorizontalAlignment( Element.ALIGN_CENTER );
 					companyNameCell.setBorder(Rectangle.LEFT | Rectangle.RIGHT | Rectangle.TOP);
 					companyNameCell.setColspan(4);
 					coilDetailsTab.addCell(companyNameCell);	
 	
-					PdfPCell addressCell2 = new PdfPCell(new Phrase("Email : aspen.bidadi@gmail.com", font5));
+					PdfPCell addressCell2 = new PdfPCell(new Phrase("Email : "+response.getCompanyEmail(), font5));
 					addressCell2.setHorizontalAlignment( Element.ALIGN_CENTER);
 					addressCell2.setVerticalAlignment( Element.ALIGN_TOP);
 					addressCell2.setFixedHeight(9);
