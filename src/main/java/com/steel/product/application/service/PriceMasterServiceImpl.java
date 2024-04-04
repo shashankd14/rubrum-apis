@@ -511,7 +511,7 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 			for (PriceMasterResponse priceMasterResponse : basePriceList) {
 				if(processId==8 || processId==7) {
 					if (ins.getInwardId().getMaterialGrade().getGradeId() == priceMasterResponse.getMatGradeId()
-							&& ins.getInwardId().getParty().getnPartyId() == priceMasterResponse.getPartyId()
+							&& ins.getInwardId().getParty().getnPartyId().equals(priceMasterResponse.getPartyId())
 							&& processId == priceMasterResponse.getProcessId()) {
 
 						priceCalculateDTO.setBasePrice(priceMasterResponse.getPrice());
@@ -519,7 +519,7 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 					} 
 				} else {
 					if (ins.getInwardId().getMaterialGrade().getGradeId() == priceMasterResponse.getMatGradeId()
-							&& ins.getInwardId().getParty().getnPartyId() == priceMasterResponse.getPartyId()
+							&& ins.getInwardId().getParty().getnPartyId().equals(priceMasterResponse.getPartyId())
 							&& processId == priceMasterResponse.getProcessId()
 							&& BigDecimal.valueOf(ins.getInwardId().getfThickness()).compareTo(priceMasterResponse.getThicknessFrom()) >= 0
 							&& priceMasterResponse.getThicknessTo().compareTo(BigDecimal.valueOf(ins.getInwardId().getfThickness())) >= 0) {
