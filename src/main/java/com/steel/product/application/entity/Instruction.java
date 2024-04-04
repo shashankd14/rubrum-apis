@@ -187,6 +187,8 @@ public class Instruction {
         instructionResponseDto.setIsSlitAndCut(instruction.getIsSlitAndCut());
 		instructionResponseDto.setPartId(instruction.getPartDetails() != null ? instruction.getPartDetails().getId() : null);
 		instructionResponseDto.setPartDetailsId(instruction.getPartDetails() != null ? instruction.getPartDetails().getPartDetailsId(): null);
+		instructionResponseDto.setPlannedYieldLossRatio(instruction.getPartDetails() != null ? instruction.getPartDetails().getPlannedYieldLossRatio(): null);
+		instructionResponseDto.setActualYieldLossRatio(instruction.getPartDetails() != null ? instruction.getPartDetails().getActualYieldLossRatio(): null);
 		instructionResponseDto.setPdfS3Url(instruction.getPartDetails() != null ? instruction.getPartDetails().getPdfS3Url() : null);
         return instructionResponseDto;
     }
