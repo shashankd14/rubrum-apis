@@ -492,6 +492,8 @@ public class QualityMasterController {
 			resp.setFwidth(result[10] != null ? (Float) result[10] : null);
 			resp.setMaterialDesc(result[11] != null ? (String) result[11] : null);
 			resp.setInwardEntryId(result[12] != null ? (Integer) result[12] : null);
+			resp.setPlannedYieldLossRatio( result[13] != null ? (BigDecimal) result[13] : null);
+			resp.setActualYieldLossRatio( result[14] != null ? (BigDecimal) result[14] : null);
 			kk.put(resp.getPlanId(), resp);
 		}
 		

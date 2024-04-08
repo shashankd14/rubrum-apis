@@ -1,5 +1,6 @@
 package com.steel.product.application.dto.quality;
 
+import java.math.BigDecimal;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -32,5 +33,9 @@ public class QualityInspReportListPageResponse {
 	private int nPartyId;
 
 	private Integer qirId;
-	
+
+    private BigDecimal plannedYieldLossRatio;
+
+    private BigDecimal actualYieldLossRatio;
+    
 }

@@ -72,7 +72,7 @@ public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTempla
 			" (SELECT rpt.qir_id FROM quality_inspection_report rpt where rpt.plan_id=part.part_details_id and stage_name = 'PROCESSING'limit 1) qirid, " +
 			" (SELECT aaa.partyname from product_tblpartydetails aaa where aaa.npartyid=inward.npartyid) partyname, fwidth, "  +
 			" (select matdes.`material_code` from `product_tblmatdescription` matdes where matdes.`nmatid` = `inward`.`nmatid`) AS `material_code`, " + 
-			" inward.inwardentryid " + 
+			" inward.inwardentryid, part.planned_yield_loss_ratio, part.actual_yield_loss_ratio " + 
 			" FROM product_part_details part" + 
 			" INNER JOIN product_instruction ins ON part.id = ins.part_details_id" + 
 			" INNER JOIN product_tblinwardentry inward ON ins.inwardid = inward.inwardentryid" + 
