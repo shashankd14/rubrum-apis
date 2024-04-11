@@ -9,22 +9,22 @@ import lombok.Data;
 import javax.persistence.*;
 import java.util.Date;
 
-@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Entity
-@Table(name = "trading_customer_master")
+@Table(name = "trading_vendor_master")
 @Data
-public class CustomerEntity {
+public class InwardTradingEntityEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "customer_id")
-	private Integer customerId;
+	@Column(name = "vendor_id")
+	private Integer vendorId;
 
-	@Column(name = "customer_name")
-	private String customerName;
+	@Column(name = "vendor_name")
+	private String vendorName;
 
-	@Column(name = "customer_nickname")
-	private String customerNickName;
+	@Column(name = "vendor_nickname")
+	private String vendorNickName;
 
 	@Column(name = "phone_no")
 	private String phoneNo;
@@ -46,53 +46,47 @@ public class CustomerEntity {
 
 	@Column(name = "gst_number")
 	private String gstNumber;
-
+	
 	@Column(name = "process_tags")
 	private String processTags;
 
-	// Address
-
+	//Address
+	
 	@Column(name = "address1")
 	private String address1;
-
+	
 	@Column(name = "address2")
 	private String address2;
-
+	
 	@Column(name = "city")
 	private String city;
-
+	
 	@Column(name = "state")
 	private String state;
-
+	
 	@Column(name = "pincode")
 	private Integer pincode;
-
-	// Alternate Address
-
+	
+	//Alternate Address
+	
 	@Column(name = "alternate_address1")
 	private String alternateAddress1;
-
+	
 	@Column(name = "alternate_address2")
 	private String alternateAddress2;
-
+	
 	@Column(name = "alternate_city")
 	private String alternateCity;
-
+	
 	@Column(name = "alternate_state")
 	private String alternateState;
-
+	
 	@Column(name = "alternate_pincode")
 	private Integer alternatePincode;
 
 	@Column(name = "is_deleted", columnDefinition = "BIT")
 	private Boolean isDeleted;
-
-	@Column(name = "include_ratesin_dc")
-	private String includeRatesinDc;
-
-	@Column(name = "purchase_report")
-	private String purchaseReport;
-
+	
 	@Column(name = "created_by")
 	private Integer createdBy;
 

@@ -2,14 +2,21 @@ package com.steel.product.trading.service;
 
 import com.steel.product.trading.entity.LocationEntity;
 import com.steel.product.trading.repository.LocationRepository;
+import com.steel.product.trading.request.BaseRequest;
 import com.steel.product.trading.request.DeleteRequest;
 import com.steel.product.trading.request.LocationRequest;
 import com.steel.product.trading.request.SearchRequest;
-import lombok.extern.log4j.Log4j2;
+import com.steel.product.trading.request.StatesDTO;
 
+import lombok.extern.log4j.Log4j2;
+import net.minidev.json.JSONArray;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.TreeMap;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -118,6 +125,47 @@ public class LocationServiceImpl implements LocationService {
 			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		return response;
+	}
+
+	@Override
+	public ResponseEntity<Object> statesList(BaseRequest baseRequest) {
+		 
+		   
+		ArrayList<StatesDTO> statesList1= new ArrayList<StatesDTO>();
+		
+		statesList1.add(new StatesDTO( "Andhra Pradesh"));
+		
+        TreeMap<String, String> statesList = new TreeMap< >();
+		statesList1.add(new StatesDTO("Andhra Pradesh"));
+		statesList1.add(new StatesDTO("Arunachal Pradesh" ));
+		statesList1.add(new StatesDTO("Assam"));
+		statesList1.add(new StatesDTO("Bihar"));
+		statesList1.add(new StatesDTO("Chhattisgarh"));
+		statesList1.add(new StatesDTO("Goa"));
+		statesList1.add(new StatesDTO("Gujarat"));
+		statesList1.add(new StatesDTO("Haryana"));
+		statesList1.add(new StatesDTO("Himachal Pradesh"));
+		statesList1.add(new StatesDTO("Jharkhand"));
+		statesList1.add(new StatesDTO("Karnataka"));
+		statesList1.add(new StatesDTO("Kerala"));
+		statesList1.add(new StatesDTO("Madhya Pradesh"));
+		statesList1.add(new StatesDTO("Maharashtra"));
+		statesList1.add(new StatesDTO("Manipur"));
+		statesList1.add(new StatesDTO("Meghalaya"));
+		statesList1.add(new StatesDTO("Mizoram"));
+		statesList1.add(new StatesDTO("Nagaland"));
+		statesList1.add(new StatesDTO("Odisha"));
+		statesList1.add(new StatesDTO("Punjab"));
+		statesList1.add(new StatesDTO("Rajasthan"));
+		statesList1.add(new StatesDTO("Sikkim"));
+		statesList1.add(new StatesDTO("Tamil Nadu"));
+		statesList1.add(new StatesDTO("Telangana"));
+        statesList1.add(new StatesDTO("Tripura"));
+        statesList1.add(new StatesDTO("Uttar Pradesh"));
+        statesList1.add(new StatesDTO("Uttarakhand"));
+        statesList1.add(new StatesDTO("West Bengal"));
+
+		return new ResponseEntity<Object>(statesList1, HttpStatus.OK);
 	}
 	
 }

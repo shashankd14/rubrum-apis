@@ -1,6 +1,7 @@
 package com.steel.product.trading.controller;
 
 import com.steel.product.trading.entity.LocationEntity;
+import com.steel.product.trading.request.BaseRequest;
 import com.steel.product.trading.request.DeleteRequest;
 import com.steel.product.trading.request.LocationRequest;
 import com.steel.product.trading.request.SearchRequest;
@@ -56,6 +57,11 @@ public class LocationController {
 	@PostMapping(value = "/location/delete", produces = "application/json" )
 	public ResponseEntity<Object> delete(@RequestBody DeleteRequest deleteRequest) {
 		return locationService.locationDelete( deleteRequest);
+	}
+
+	@PostMapping(value = "/stateslist", produces = "application/json" )
+	public ResponseEntity<Object> statesList(@RequestBody BaseRequest baseRequest) {
+		return locationService.statesList( baseRequest);
 	}
 	
 }

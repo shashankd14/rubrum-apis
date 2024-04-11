@@ -5,13 +5,13 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class CustomerRequest extends BaseRequest {
+public class InwardTradingRequest extends BaseRequest {
 
-	private Integer customerId;
+	private Integer vendorId;
 
-	private String customerName;
+	private String vendorName;
 
-	private String customerNickName;
+	private String vendorNickName;
 
 	private String phoneNo;
 
@@ -52,10 +52,6 @@ public class CustomerRequest extends BaseRequest {
 	private String alternateState;
 
 	private Integer alternatePincode;
-	
-	private String includeRatesinDc;
-
-	private String purchaseReport;
 
 	private Boolean isDeleted;
 
