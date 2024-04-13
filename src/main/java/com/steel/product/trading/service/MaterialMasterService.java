@@ -40,7 +40,7 @@ public interface MaterialMasterService {
 
 	ResponseEntity<Object> subcategorySave(SubCategoryRequest categoryRequest);
 
-	Page<SubCategoryEntity> getSubCategoryList(SearchRequest searchListPageRequest);
+	Page<Object[]> getSubCategoryList(SearchRequest searchListPageRequest);
 
 	SubCategoryEntity findBySubCategoryId(Integer id);
 

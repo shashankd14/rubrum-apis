@@ -10,16 +10,16 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @CrossOrigin
-@Tag(name = "Inward Trading Entry", description = "Inward Trading Entry")
-@RequestMapping({ "/inwardtrading" })
+@Tag(name = "Inward Trading", description = "Inward Trading")
+@RequestMapping({ "/trading" })
 public class InwardTradingController {
 
 	@Autowired
 	private InwardTradingService inwardTradingService;
 
-	@PostMapping(value = "/save", produces = "application/json")
+	@PostMapping(value = "/inward/save", produces = "application/json")
 	public ResponseEntity<Object> save(@RequestBody InwardTradingRequest inwardTradingRequest) {
 		return inwardTradingService.save(inwardTradingRequest);
 	}
-
+	
 }

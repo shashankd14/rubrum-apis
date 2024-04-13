@@ -2,6 +2,7 @@ package com.steel.product.trading.controller;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.steel.product.trading.dto.SubCategoryResponse;
 import com.steel.product.trading.entity.BrandEntity;
 import com.steel.product.trading.entity.CategoryEntity;
 import com.steel.product.trading.entity.ItemgradeEntity;
@@ -19,7 +20,9 @@ import com.steel.product.trading.request.SubCategoryRequest;
 import com.steel.product.trading.service.MaterialMasterService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -155,8 +158,18 @@ public class MaterialController {
 			SubCategoryEntity resp = materialMasterService.findBySubCategoryId( searchPageRequest.getId());
 			return new ResponseEntity<Object>(resp, HttpStatus.OK);
 		} else {
-			Page<SubCategoryEntity> pageResult = materialMasterService.getSubCategoryList(searchPageRequest);
-			response.put("content", pageResult.toList());
+			Page<Object[]> pageResult = materialMasterService.getSubCategoryList(searchPageRequest);
+			List<SubCategoryResponse> list = new ArrayList<>();
+			for (Object[] result : pageResult) {
+				SubCategoryResponse subCategoryResponse= new SubCategoryResponse();
+				subCategoryResponse.setSubcategoryId(result[0] != null ? (Integer) result[0] : null);
+				subCategoryResponse.setSubcategoryName(result[1] != null ? (String) result[1] : null);
+				subCategoryResponse.setSubcategoryHsnCode(result[2] != null ? (String) result[2] : null);
+				subCategoryResponse.setCategoryId(result[3] != null ? (Integer) result[3] : null);
+				subCategoryResponse.setCategoryName(result[4] != null ? (String) result[4] : null);
+				list.add(subCategoryResponse);
+			}
+			response.put("content", list);
 			response.put("currentPage", pageResult.getNumber());
 			response.put("totalItems", pageResult.getTotalElements());
 			response.put("totalPages", pageResult.getTotalPages());

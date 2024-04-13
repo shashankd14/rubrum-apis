@@ -348,17 +348,11 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 	}
 
 	@Override
-	public Page<SubCategoryEntity> getSubCategoryList(SearchRequest searchListPageRequest) {
+	public Page<Object[]> getSubCategoryList(SearchRequest searchListPageRequest) {
 		log.info("In getSubCategoryList page ");
-		Pageable pageable = PageRequest.of((searchListPageRequest.getPageNo() - 1), searchListPageRequest.getPageSize(), Sort.by("subcategoryId").descending());
-
-		if (searchListPageRequest.getSearchText() != null && searchListPageRequest.getSearchText().length() > 0) {
-			Page<SubCategoryEntity> pageResult = subCategoryRepository.findAllWithSearchText(searchListPageRequest.getSearchText(), pageable);
-			return pageResult;
-		} else {
-			Page<SubCategoryEntity> pageResult = subCategoryRepository.findAll(pageable);
-			return pageResult;
-		}
+		Pageable pageable = PageRequest.of((searchListPageRequest.getPageNo() - 1), searchListPageRequest.getPageSize());
+		Page<Object[]> pageResult = subCategoryRepository.findAllWithSearchText(searchListPageRequest.getSearchText(), pageable);
+		return pageResult;
 	}
 
 	@Override

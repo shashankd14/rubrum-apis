@@ -23,11 +23,16 @@ public interface SubCategoryRepository extends JpaRepository<SubCategoryEntity, 
 	@Query("select inw from SubCategoryEntity inw where inw.isDeleted is false and inw.subcategoryName = :subcategoryName and inw.categoryId = :categoryId")
 	List<SubCategoryEntity> findBySubCategoryNameforInsert(@Param("subcategoryName") String subcategoryName, @Param("categoryId") Integer categoryId);
 
-	@Query("select inw from SubCategoryEntity inw where inw.isDeleted is false and inw.subcategoryName like %:searchText%")
-	Page<SubCategoryEntity> findAllWithSearchText(@Param("searchText") String searchText, Pageable pageable);
-
-	@Query("select inw from SubCategoryEntity inw where inw.isDeleted is false")
-	Page<SubCategoryEntity> findAll(Pageable pageable);
+	@Query(value = "SELECT sub.subcategory_id, sub.subcategory_name, sub.subcategory_hsn_code, sub.category_id, cat.category_name"
+			+ " FROM trading_subcategory_master sub, trading_category_master cat \r\n"
+			+ " where sub.is_deleted = 0 and case when :searchText is not null and LENGTH(:searchText) >0 then (sub.subcategory_name like %:searchText% or cat.category_name like %:searchText% ) else 1=1 end " 
+			+ " and sub.category_id = cat.category_id order by sub.subcategory_id desc ",
+	countQuery = "SELECT count(sub.subcategory_id) "
+			+ " FROM trading_subcategory_master sub, trading_category_master cat \r\n"
+			+ " where sub.is_deleted = 0 and case when :searchText is not null and LENGTH(:searchText) >0 then (sub.subcategory_name like %:searchText% or cat.category_name like %:searchText% ) else 1=1 end " 
+			+ " and sub.category_id = cat.category_id",
+	nativeQuery = true)
+	Page<Object[]> findAllWithSearchText(@Param("searchText") String searchText, Pageable pageable);
 	
 	@Modifying
 	@Transactional

@@ -1,5 +1,7 @@
 package com.steel.product.trading.request;
 
+import java.math.BigDecimal;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -7,52 +9,60 @@ import lombok.Setter;
 @Setter
 public class InwardTradingRequest extends BaseRequest {
 
+	private Integer inwardId;
+
+	private String inwardNumber;
+	
+	private String purposeType;
+
 	private Integer vendorId;
 
-	private String vendorName;
+	private String transporterName;
 
-	private String vendorNickName;
+	private String transporterPhoneNo;
 
-	private String phoneNo;
+	private List<InwardTradingItemRequest> itemsList;
 
-	private String contactName;
+	private String vendorBatchNo;
 
-	private String contactNo;
+	private Integer consignmentId;
 
-	private String emailId;
+	private Integer locationId;
 
-	private String panNumber;
+	private String vehicleNo;
 
-	private String tanNumber;
+	private String documentNo;
 
-	private String gstNumber;
+	private String documentType;
 
-	private String processTags;
+	private String documentDate;
 
-	// Address
+	private String ewayBillNo;
 
-	private String address1;
+	private String ewayBillDate;
 
-	private String address2;
+	private BigDecimal valueOfGoods;
 
-	private String city;
+	private String extraChargesOption;
 
-	private String state;
+	private BigDecimal freightCharges;
 
-	private Integer pincode;
+	private BigDecimal insuranceAmount;
 
-	// Alternate Address
+	private BigDecimal loadingCharges;
 
-	private String alternateAddress1;
+	private BigDecimal weightmenCharges;
 
-	private String alternateAddress2;
+	private BigDecimal cgst;
 
-	private String alternateCity;
+	private BigDecimal sgst;
 
-	private String alternateState;
+	private BigDecimal igst;
 
-	private Integer alternatePincode;
+	private Integer totalInwardVolume;
 
-	private Boolean isDeleted;
+	private BigDecimal totalWeight;
+
+	private Integer totalVolume;
 
 }

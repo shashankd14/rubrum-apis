@@ -7,17 +7,11 @@ import com.steel.product.trading.request.DeleteRequest;
 import com.steel.product.trading.request.LocationRequest;
 import com.steel.product.trading.request.SearchRequest;
 import com.steel.product.trading.request.StatesDTO;
-
 import lombok.extern.log4j.Log4j2;
-import net.minidev.json.JSONArray;
-
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.TreeMap;
-
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -129,15 +123,9 @@ public class LocationServiceImpl implements LocationService {
 
 	@Override
 	public ResponseEntity<Object> statesList(BaseRequest baseRequest) {
-		 
-		   
-		ArrayList<StatesDTO> statesList1= new ArrayList<StatesDTO>();
-		
-		statesList1.add(new StatesDTO( "Andhra Pradesh"));
-		
-        TreeMap<String, String> statesList = new TreeMap< >();
+		ArrayList<StatesDTO> statesList1 = new ArrayList<StatesDTO>();
 		statesList1.add(new StatesDTO("Andhra Pradesh"));
-		statesList1.add(new StatesDTO("Arunachal Pradesh" ));
+		statesList1.add(new StatesDTO("Arunachal Pradesh"));
 		statesList1.add(new StatesDTO("Assam"));
 		statesList1.add(new StatesDTO("Bihar"));
 		statesList1.add(new StatesDTO("Chhattisgarh"));
@@ -160,12 +148,11 @@ public class LocationServiceImpl implements LocationService {
 		statesList1.add(new StatesDTO("Sikkim"));
 		statesList1.add(new StatesDTO("Tamil Nadu"));
 		statesList1.add(new StatesDTO("Telangana"));
-        statesList1.add(new StatesDTO("Tripura"));
-        statesList1.add(new StatesDTO("Uttar Pradesh"));
-        statesList1.add(new StatesDTO("Uttarakhand"));
-        statesList1.add(new StatesDTO("West Bengal"));
-
+		statesList1.add(new StatesDTO("Tripura"));
+		statesList1.add(new StatesDTO("Uttar Pradesh"));
+		statesList1.add(new StatesDTO("Uttarakhand"));
+		statesList1.add(new StatesDTO("West Bengal"));
 		return new ResponseEntity<Object>(statesList1, HttpStatus.OK);
 	}
-	
+
 }
