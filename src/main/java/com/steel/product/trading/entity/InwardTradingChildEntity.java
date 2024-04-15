@@ -1,8 +1,6 @@
 package com.steel.product.trading.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.steel.product.trading.service.InwardTradingServiceImpl;
-
 import lombok.Data;
 import javax.persistence.*;
 import java.math.BigDecimal;

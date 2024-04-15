@@ -50,7 +50,7 @@ public class WeighbridgeServiceImpl implements WeighbridgeService {
 					
 					List<WeighbridgeEntity> testItemName = weighbridgeRepository.findByWeighbridgeName( weighbridgeEntity.getWeighbridgeName() , oldEntity.getWeighbridgeId());
 					if(testItemName!=null && testItemName.size()>0) {
-						return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Location Name already used.\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+						return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Weighbridge already used.\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
 					}
 					weighbridgeEntity.setUpdatedBy( vendorRequest.getUserId());
 					weighbridgeEntity.setUpdatedOn(new Date());
@@ -63,7 +63,7 @@ public class WeighbridgeServiceImpl implements WeighbridgeService {
 			} else {
 				List<WeighbridgeEntity> testItemName = weighbridgeRepository.findByWeighbridgeName(weighbridgeEntity.getWeighbridgeName());
 				if(testItemName!=null && testItemName.size()>0) {
-					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Location Name already used\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Weighbridge already used\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
 				}
 				weighbridgeEntity.setCreatedBy(vendorRequest.getUserId());
 				weighbridgeEntity.setCreatedOn(new Date());
@@ -105,14 +105,14 @@ public class WeighbridgeServiceImpl implements WeighbridgeService {
 
 	@Override
 	public ResponseEntity<Object>  weighbridgeDelete(DeleteRequest deleteRequest) {
-		log.info("In vendorDelete page ");
+		log.info("In weighbridgeDelete page ");
 		ResponseEntity<Object> response = null;
 		HttpHeaders header = new HttpHeaders();
 		header.set("Content-Type", "application/json");
 		
 		try {
 			weighbridgeRepository.deleteData(deleteRequest.getIds(), deleteRequest.getUserId());
-			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Selected Location has been deleted successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
+			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Selected Weighbridge has been deleted successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
 			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
 		}

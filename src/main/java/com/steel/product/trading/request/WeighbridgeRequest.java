@@ -20,4 +20,6 @@ public class WeighbridgeRequest extends BaseRequest {
 	private String state;
 
 	private Integer pincode;
+
+	private String contactNo;
 }

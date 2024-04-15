@@ -38,6 +38,9 @@ public class WeighbridgeEntity {
 
 	@Column(name = "pincode")
 	private Integer pincode;
+	
+	@Column(name = "contact_no")
+	private String contactNo;
 
 	@Column(name = "is_deleted", columnDefinition = "BIT")
 	private Boolean isDeleted;
