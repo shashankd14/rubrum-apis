@@ -21,11 +21,11 @@ public class InwardTradingEntity {
 	@Column(name = "inward_id")
 	private Integer inwardId;
 
-	@Column(name = "inward_number")
-	private String inwardNumber;
-	
 	@Column(name = "purpose_type")
 	private String purposeType;
+
+	@Column(name = "consignment_id")
+	private String consignmentId;
 
 	@Column(name = "vendor_id")
 	private Integer vendorId;
@@ -41,9 +41,6 @@ public class InwardTradingEntity {
 	
 	@Column(name = "vendor_batch_no")
 	private String vendorBatchNo;
-
-	@Column(name = "consignment_id")
-	private Integer consignmentId;
 
 	@Column(name = "location_id")
 	private Integer locationId;
@@ -135,14 +132,6 @@ public class InwardTradingEntity {
 		this.inwardId = inwardId;
 	}
 
-	public String getInwardNumber() {
-		return inwardNumber;
-	}
-
-	public void setInwardNumber(String inwardNumber) {
-		this.inwardNumber = inwardNumber;
-	}
-
 	public String getPurposeType() {
 		return purposeType;
 	}
@@ -191,11 +180,11 @@ public class InwardTradingEntity {
 		this.vendorBatchNo = vendorBatchNo;
 	}
 
-	public Integer getConsignmentId() {
+	public String getConsignmentId() {
 		return consignmentId;
 	}
 
-	public void setConsignmentId(Integer consignmentId) {
+	public void setConsignmentId(String consignmentId) {
 		this.consignmentId = consignmentId;
 	}
 

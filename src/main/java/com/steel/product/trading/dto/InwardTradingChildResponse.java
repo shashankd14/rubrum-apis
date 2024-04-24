@@ -10,6 +10,8 @@ public class InwardTradingChildResponse {
 	private Integer itemchildId;
 
 	private Integer itemId;
+	
+	private String inwardItemId;
 
 	private String itemName;
 

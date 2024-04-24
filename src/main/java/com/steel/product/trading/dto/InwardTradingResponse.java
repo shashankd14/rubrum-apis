@@ -10,9 +10,9 @@ public class InwardTradingResponse {
 
 	private Integer inwardId;
 
-	private String inwardNumber;
-
 	private String purposeType;
+
+	private String consignmentId;
 
 	private Integer vendorId;
 
@@ -23,8 +23,6 @@ public class InwardTradingResponse {
 	private String transporterPhoneNo;
 
 	private String vendorBatchNo;
-
-	private Integer consignmentId;
 
 	private Integer locationId;
 

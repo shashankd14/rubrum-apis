@@ -9,9 +9,11 @@ import lombok.Setter;
 public class InwardTradingItemRequest {
 
 	private Integer itemchildId;
-	
+
 	private Integer itemId;
 	
+	private String inwardItemId;
+
 	private Integer inwardId;
 
 	private String unit;
@@ -31,7 +33,5 @@ public class InwardTradingItemRequest {
 	private BigDecimal weightVariance;
 
 	private Integer theoreticalNoofPieces;
-	
-	
 
 }

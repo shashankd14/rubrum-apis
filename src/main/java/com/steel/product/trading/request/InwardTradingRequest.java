@@ -1,6 +1,7 @@
 package com.steel.product.trading.request;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,9 +12,9 @@ public class InwardTradingRequest extends BaseRequest {
 
 	private Integer inwardId;
 
-	private String inwardNumber;
-	
 	private String purposeType;
+
+	private String consignmentId;
 
 	private Integer vendorId;
 
@@ -25,8 +26,6 @@ public class InwardTradingRequest extends BaseRequest {
 
 	private String vendorBatchNo;
 
-	private Integer consignmentId;
-
 	private Integer locationId;
 
 	private String vehicleNo;
@@ -35,11 +34,11 @@ public class InwardTradingRequest extends BaseRequest {
 
 	private String documentType;
 
-	private String documentDate;
+	private Date documentDate;
 
 	private String ewayBillNo;
 
-	private String ewayBillDate;
+	private Date ewayBillDate;
 
 	private BigDecimal valueOfGoods;
 

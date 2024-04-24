@@ -3,7 +3,12 @@ package com.steel.product.trading.entity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import javax.persistence.*;
+
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import java.math.BigDecimal;
+import java.util.Date;
 
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 @Entity
@@ -19,6 +24,9 @@ public class InwardTradingChildEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "inwardid")
 	private InwardTradingEntity inwardId;
+
+	@Column(name = "inward_item_id")
+	private String inwardItemId;
 
 	@Column(name = "item_id")
 	private Integer itemId;
@@ -49,5 +57,22 @@ public class InwardTradingChildEntity {
 
 	@Column(name = "theoretical_noof_pieces")
 	private Integer theoreticalNoofPieces;
+	
+	@Column(name = "is_deleted", columnDefinition = "BIT")
+	private Boolean isDeleted;
+	
+	@Column(name = "created_by")
+	private Integer createdBy;
+
+	@Column(name = "updated_by")
+	private Integer updatedBy;
+
+	@Column(name = "created_on", updatable = false)
+	@CreationTimestamp
+	private Date createdOn;
+
+	@Column(name = "updated_on")
+	@UpdateTimestamp
+	private Date updatedOn;
 
 }
