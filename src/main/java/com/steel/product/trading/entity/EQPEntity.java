@@ -54,6 +54,9 @@ public class EQPEntity {
 
 	@OneToMany(mappedBy = "enquiryId", cascade = { CascadeType.PERSIST, CascadeType.MERGE }, orphanRemoval = true)
 	private Set<EQPChildEntity> itemsList;
+	
+	@OneToMany(mappedBy = "enquiryId", cascade = { CascadeType.PERSIST, CascadeType.MERGE }, orphanRemoval = true)
+	private Set<EQPTermsEntity> terms;
 
 	@Column(name = "is_deleted", columnDefinition = "BIT")
 	private Boolean isDeleted;
@@ -72,12 +75,34 @@ public class EQPEntity {
 	@UpdateTimestamp
 	private Date updatedOn;
 
+	@Column(name = "quote_created_by")
+	private Integer quoteCreatedBy;
+
+	@Column(name = "quote_updated_by")
+	private Integer quoteUpdatedBy;
+
+	@Column(name = "quote_created_on", updatable = false)
+	@CreationTimestamp
+	private Date quoteCreatedOn;
+
+	@Column(name = "quote_updated_on")
+	@UpdateTimestamp
+	private Date quoteUpdatedOn;
+
 	public void addItem(EQPChildEntity item) {
 		if (this.itemsList == null) {
 			this.itemsList = new LinkedHashSet<>();
 		}
 		this.itemsList.add(item);
 		item.setEnquiryId(this);
+	}
+	
+	public void addTerms(EQPTermsEntity eqpTermsEntity) {
+		if (this.terms == null) {
+			this.terms = new LinkedHashSet<>();
+		}
+		this.terms.add(eqpTermsEntity);
+		eqpTermsEntity.setEnquiryId(this);
 	}
 
 	public Integer getEnquiryId() {
@@ -182,6 +207,88 @@ public class EQPEntity {
 
 	public void setUpdatedOn(Date updatedOn) {
 		this.updatedOn = updatedOn;
+	}
+
+	public Integer getQuoteCustomerId() {
+		return quoteCustomerId;
+	}
+
+	public void setQuoteCustomerId(Integer quoteCustomerId) {
+		this.quoteCustomerId = quoteCustomerId;
+	}
+
+	public String getQuoteEnquiryFrom() {
+		return quoteEnquiryFrom;
+	}
+
+	public void setQuoteEnquiryFrom(String quoteEnquiryFrom) {
+		this.quoteEnquiryFrom = quoteEnquiryFrom;
+	}
+
+	public Date getQuoteEnquiryDate() {
+		return quoteEnquiryDate;
+	}
+
+	public void setQuoteEnquiryDate(Date quoteEnquiryDate) {
+		this.quoteEnquiryDate = quoteEnquiryDate;
+	}
+
+	public Integer getQuoteQty() {
+		return quoteQty;
+	}
+
+	public void setQuoteQty(Integer quoteQty) {
+		this.quoteQty = quoteQty;
+	}
+
+	public BigDecimal getQuoteValue() {
+		return quoteValue;
+	}
+
+	public void setQuoteValue(BigDecimal quoteValue) {
+		this.quoteValue = quoteValue;
+	}
+
+	public Integer getQuoteCreatedBy() {
+		return quoteCreatedBy;
+	}
+
+	public void setQuoteCreatedBy(Integer quoteCreatedBy) {
+		this.quoteCreatedBy = quoteCreatedBy;
+	}
+
+	public Integer getQuoteUpdatedBy() {
+		return quoteUpdatedBy;
+	}
+
+	public void setQuoteUpdatedBy(Integer quoteUpdatedBy) {
+		this.quoteUpdatedBy = quoteUpdatedBy;
+	}
+
+	public Date getQuoteCreatedOn() {
+		return quoteCreatedOn;
+	}
+
+	public void setQuoteCreatedOn(Date quoteCreatedOn) {
+		this.quoteCreatedOn = quoteCreatedOn;
+	}
+
+	public Date getQuoteUpdatedOn() {
+		return quoteUpdatedOn;
+	}
+
+	public void setQuoteUpdatedOn(Date quoteUpdatedOn) {
+		this.quoteUpdatedOn = quoteUpdatedOn;
+	}
+
+
+	public Set<EQPTermsEntity> getTerms() {
+		return terms;
+	}
+
+
+	public void setTerms(Set<EQPTermsEntity> terms) {
+		this.terms = terms;
 	}
 
 }

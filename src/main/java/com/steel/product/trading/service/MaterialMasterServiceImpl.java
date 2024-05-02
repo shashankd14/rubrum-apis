@@ -375,7 +375,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 		
 		try {
 			subCategoryRepository.deleteData(deleteRequest.getIds(), deleteRequest.getUserId());
-			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Selected category has been deleted successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
+			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Selected Sub-category has been deleted successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
 			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
 		}

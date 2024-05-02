@@ -1,5 +1,6 @@
 package com.steel.product.trading.controller;
 
+import com.steel.product.trading.request.DeleteRequest;
 import com.steel.product.trading.request.EQPRequest;
 import com.steel.product.trading.request.EQPSearchRequest;
 import com.steel.product.trading.service.EQPService;
@@ -31,9 +32,30 @@ public class EQPController {
 		return eqpService.save(eqpRequest);
 	}
 
+	@PostMapping(value = "/enquiry/delete", produces = "application/json")
+	public ResponseEntity<Object> enquiryDelete(@RequestBody DeleteRequest deleteRequest) {
+		return eqpService.enquiryDelete(deleteRequest);
+	}
+
 	@PostMapping({ "/enquiry/list" })
 	public ResponseEntity<Object> getEQPList(@RequestBody EQPSearchRequest searchPageRequest) {
 		Map<String, Object> response = eqpService.getEQPList(searchPageRequest);
 		return new ResponseEntity<Object>(response, HttpStatus.OK);
 	}
+
+	@PostMapping(value = "/quote/save", produces = "application/json")
+	public ResponseEntity<Object> quoteSave(@RequestBody EQPRequest eqpRequest) {
+		return eqpService.quoteSave(eqpRequest);
+	}
+
+	@PostMapping(value = "/quote/update", produces = "application/json")
+	public ResponseEntity<Object> quoteUpdate(@RequestBody EQPRequest eqpRequest) {
+		return eqpService.quoteSave(eqpRequest);
+	}
+
+	@PostMapping(value = "/quote/delete", produces = "application/json")
+	public ResponseEntity<Object> quoteDelete(@RequestBody DeleteRequest deleteRequest) {
+		return eqpService.quoteDelete(deleteRequest);
+	}
+
 }

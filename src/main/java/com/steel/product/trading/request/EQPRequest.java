@@ -3,6 +3,9 @@ package com.steel.product.trading.request;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+
+import com.steel.product.trading.entity.EQPTermsEntity;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -35,5 +38,7 @@ public class EQPRequest extends BaseRequest {
 	private String status;
 
 	private List<EQPChildRequest> itemsList;
+	
+	private EQPTermsEntity terms;
 
 }

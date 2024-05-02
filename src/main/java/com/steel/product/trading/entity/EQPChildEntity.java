@@ -2,6 +2,8 @@ package com.steel.product.trading.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
+
+import java.math.BigDecimal;
 import java.util.Date;
 import javax.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -48,6 +50,15 @@ public class EQPChildEntity {
 
 	@Column(name = "unit2")
 	private String unit2;
+	
+	@Column(name = "rate")
+	private BigDecimal rate;
+
+	@Column(name = "chargeable_unit")
+	private String chargeableUnit;
+	
+	@Column(name = "amount")
+	private BigDecimal amount;
 
 	@Column(name = "estimate_delivery_date")
 	private String estimateDeliveryDate;
@@ -74,5 +85,19 @@ public class EQPChildEntity {
 	@Column(name = "updated_on")
 	@UpdateTimestamp
 	private Date updatedOn;
+
+	@Column(name = "quote_created_by")
+	private Integer quoteCreatedBy;
+
+	@Column(name = "quote_updated_by")
+	private Integer quoteUpdatedBy;
+
+	@Column(name = "quote_created_on", updatable = false)
+	@CreationTimestamp
+	private Date quoteCreatedOn;
+
+	@Column(name = "quote_updated_on")
+	@UpdateTimestamp
+	private Date quoteUpdatedOn;
 
 }

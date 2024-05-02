@@ -20,6 +20,15 @@ public interface PriceMasterRepository extends JpaRepository<PriceMasterEntity, 
 	List<PriceMasterEntity> validateRange(@Param("partyId") Integer partyId, @Param("processId") Integer processId,
 			@Param("matGradeId") Integer matGradeId, @Param("rangeValue") BigDecimal rangeValue);
 
+	@Query("select pc from PriceMasterEntity pc where pc.party.nPartyId = :partyId and "
+			+ " pc.process.processId = :processId and "
+			+ " pc.matGrade.gradeId = :matGradeId and "
+			+ " pc.id != :priceId and "
+			+ " :rangeValue between pc.thicknessFrom and pc.thicknessTo")
+	List<PriceMasterEntity> validateRangeUpdate(@Param("partyId") Integer partyId,
+			@Param("processId") Integer processId, @Param("matGradeId") Integer matGradeId,
+			@Param("rangeValue") BigDecimal rangeValue, @Param("priceId") Integer priceId);
+
 	@Query("select id, pc.party.nPartyId, pc.process.processId, pc.matGrade.gradeId, thicknessFrom, thicknessTo, price, createdBy, updatedBy, createdOn, updatedOn, "
             + " (SELECT partyName from Party party where party.nPartyId=pc.party.nPartyId) as partyName, "
             + " (SELECT processName from Process process where process.processId=pc.process.processId) as processName, "

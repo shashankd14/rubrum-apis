@@ -91,8 +91,17 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 		
 		for (PriceMasterEntity entity : list) {
 			
-			List<PriceMasterEntity> fromList = priceMasterRepository.validateRange(entity.getParty().getnPartyId(),
-					entity.getProcess().getProcessId(), entity.getMatGrade().getGradeId(), entity.getThicknessFrom());
+			List<PriceMasterEntity> fromList = null;
+			
+			if (entity.getId() != null && entity.getId() > 0) {
+				fromList = priceMasterRepository.validateRangeUpdate(entity.getParty().getnPartyId(),
+						entity.getProcess().getProcessId(), entity.getMatGrade().getGradeId(),
+						entity.getThicknessFrom(), entity.getId());
+			} else {
+				fromList = priceMasterRepository.validateRange(entity.getParty().getnPartyId(),
+						entity.getProcess().getProcessId(), entity.getMatGrade().getGradeId(),
+						entity.getThicknessFrom());
+			}
 			
 			if(fromList!=null && fromList.size()>0) {
 				if(fromList.size()==1) {
@@ -104,8 +113,19 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered From Range Already Exists.\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 				}
 			} 
-			List<PriceMasterEntity> toList = priceMasterRepository.validateRange(entity.getParty().getnPartyId(),
-					entity.getProcess().getProcessId(), entity.getMatGrade().getGradeId(), entity.getThicknessTo());
+			
+			List<PriceMasterEntity> toList = null;
+		
+			if (entity.getId() != null && entity.getId() > 0) {
+				toList = priceMasterRepository.validateRangeUpdate(entity.getParty().getnPartyId(),
+						entity.getProcess().getProcessId(), entity.getMatGrade().getGradeId(), entity.getThicknessTo(),
+						entity.getId());
+
+			} else {
+				toList = priceMasterRepository.validateRange(entity.getParty().getnPartyId(),
+						entity.getProcess().getProcessId(), entity.getMatGrade().getGradeId(), entity.getThicknessTo());
+
+			}
 			if(toList!=null && toList.size()>0) {
 				if(toList.size()==1) {
 					PriceMasterEntity duplicateEntity=toList.get(0);

@@ -3,6 +3,9 @@ package com.steel.product.trading.dto;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+
+import com.steel.product.trading.entity.EQPTermsEntity;
+
 import lombok.Data;
 
 @Data
@@ -37,5 +40,7 @@ public class EQPResponse {
 	private String status;
 
 	private List<EQPChildResponse> itemsList;
+
+	private EQPTermsEntity terms = new EQPTermsEntity();
 
 }
