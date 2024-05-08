@@ -48,15 +48,24 @@ public class EQPEntity {
 
 	@Column(name = "quote_value")
 	private BigDecimal quoteValue;
-	
-	@Column(name = "status")
-	private String status;
+
+	@Column(name = "enq_status")
+	private String enqStatus;
+
+	@Column(name = "quote_status")
+	private String quoteStatus;
+
+	@Column(name = "proforma_status")
+	private String proformaStatus;
+
+	@Column(name = "current_status")
+	private String currentStatus;
 
 	@OneToMany(mappedBy = "enquiryId", cascade = { CascadeType.PERSIST, CascadeType.MERGE }, orphanRemoval = true)
 	private Set<EQPChildEntity> itemsList;
 	
-	@OneToMany(mappedBy = "enquiryId", cascade = { CascadeType.PERSIST, CascadeType.MERGE }, orphanRemoval = true)
-	private Set<EQPTermsEntity> terms;
+	@OneToOne(mappedBy = "enquiryId", cascade = { CascadeType.PERSIST, CascadeType.MERGE }, orphanRemoval = true)
+	private EQPTermsEntity terms = new EQPTermsEntity();
 
 	@Column(name = "is_deleted", columnDefinition = "BIT")
 	private Boolean isDeleted;
@@ -97,14 +106,6 @@ public class EQPEntity {
 		item.setEnquiryId(this);
 	}
 	
-	public void addTerms(EQPTermsEntity eqpTermsEntity) {
-		if (this.terms == null) {
-			this.terms = new LinkedHashSet<>();
-		}
-		this.terms.add(eqpTermsEntity);
-		eqpTermsEntity.setEnquiryId(this);
-	}
-
 	public Integer getEnquiryId() {
 		return enquiryId;
 	}
@@ -153,12 +154,36 @@ public class EQPEntity {
 		this.enqValue = enqValue;
 	}
 
-	public String getStatus() {
-		return status;
+	public String getEnqStatus() {
+		return enqStatus;
 	}
 
-	public void setStatus(String status) {
-		this.status = status;
+	public void setEnqStatus(String enqStatus) {
+		this.enqStatus = enqStatus;
+	}
+
+	public String getQuoteStatus() {
+		return quoteStatus;
+	}
+
+	public void setQuoteStatus(String quoteStatus) {
+		this.quoteStatus = quoteStatus;
+	}
+
+	public String getProformaStatus() {
+		return proformaStatus;
+	}
+
+	public void setProformaStatus(String proformaStatus) {
+		this.proformaStatus = proformaStatus;
+	}
+
+	public String getCurrentStatus() {
+		return currentStatus;
+	}
+
+	public void setCurrentStatus(String currentStatus) {
+		this.currentStatus = currentStatus;
 	}
 
 	public Set<EQPChildEntity> getItemsList() {
@@ -281,14 +306,13 @@ public class EQPEntity {
 		this.quoteUpdatedOn = quoteUpdatedOn;
 	}
 
-
-	public Set<EQPTermsEntity> getTerms() {
+	public EQPTermsEntity getTerms() {
 		return terms;
 	}
 
-
-	public void setTerms(Set<EQPTermsEntity> terms) {
+	public void setTerms(EQPTermsEntity terms) {
 		this.terms = terms;
 	}
 
+ 
 }

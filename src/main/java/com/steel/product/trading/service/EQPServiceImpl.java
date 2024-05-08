@@ -54,7 +54,8 @@ public class EQPServiceImpl implements EQPService {
 			EQPEntity eqpEntity = new EQPEntity();
 			BeanUtils.copyProperties(request, eqpEntity);
 			eqpEntity.setIsDeleted( false);
-			
+			eqpEntity.setEnqStatus( request.getStatus());
+
 			Map<Integer, Integer> oldChildIdsMap = new HashMap<>();
 			List<Integer> missedChildIds = new ArrayList<>();
 			
@@ -75,7 +76,7 @@ public class EQPServiceImpl implements EQPService {
 					eqpEntity.setUpdatedOn(new Date());
 					eqpEntity.setCreatedBy(oldEntity.getCreatedBy());
 					eqpEntity.setCreatedOn(oldEntity.getCreatedOn());
-					eqpEntity.setStatus(request.getStatus());
+					eqpEntity.setCurrentStatus(request.getStatus());
 					message = "Enquiry Details updated successfully..! ";
 				} else {
 					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid data\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -108,7 +109,7 @@ public class EQPServiceImpl implements EQPService {
 			} else {
 				eqpEntity.setQuoteCreatedBy(request.getUserId());
 				eqpEntity.setQuoteCreatedOn(new Date());
-				eqpEntity.setStatus(request.getStatus());
+				eqpEntity.setCurrentStatus(request.getStatus());
 				
 				System.out.println("request.getItemsList.size ==  " + request.getItemsList().size());
 				for (EQPChildRequest childReq : request.getItemsList()) {
@@ -204,10 +205,11 @@ public class EQPServiceImpl implements EQPService {
 			dto.getTerms().setTaxableAmount(result[37] != null ? (BigDecimal) result[37] : null);
 			dto.getTerms().setLoadinge200PerTon(result[38] != null ? (BigDecimal) result[38] : null);
 			dto.getTerms().setTransportCharges(result[39] != null ? (BigDecimal) result[39] : null);
-			dto.getTerms().setTotalTaxableAmount(result[40] != null ? (BigDecimal) result[40] : null);
-			dto.getTerms().setGst(result[41] != null ? (BigDecimal) result[41] : null);
-			dto.getTerms().setTotalEstimate(result[42] != null ? (BigDecimal) result[42] : null);
-			dto.getTerms().setRAndO( result[43] != null ? (BigDecimal) result[43] : null);
+			dto.getTerms().setOtherCharges(result[40] != null ? (BigDecimal) result[40] : null);
+			dto.getTerms().setTotalTaxableAmount(result[41] != null ? (BigDecimal) result[41] : null);
+			dto.getTerms().setGst(result[42] != null ? (BigDecimal) result[42] : null);
+			dto.getTerms().setTotalEstimate(result[43] != null ? (BigDecimal) result[43] : null);
+			dto.getTerms().setRAndO( result[44] != null ? (BigDecimal) result[44] : null);
 			
 			if (map.get(dto.getEnquiryId() ) != null) {
 				List<EQPChildResponse> dummyList = map.get(dto.getEnquiryId());
@@ -253,14 +255,16 @@ public class EQPServiceImpl implements EQPService {
 			} else {
 				return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid data\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
 			}
+			
 			eqpEntity.setQuoteCustomerId(request.getQuoteCustomerId() );
 			eqpEntity.setQuoteEnquiryFrom(request.getQuoteEnquiryFrom() );
 			eqpEntity.setQuoteEnquiryDate(request.getQuoteEnquiryDate());
 			eqpEntity.setQuoteQty(request.getQuoteQty() );
 			eqpEntity.setQuoteValue(request.getQuoteValue() );
 			eqpEntity.setIsDeleted( false);
-			
-			if (oldEntity.getEnquiryId() != null && oldEntity.getEnquiryId() > 0 && "QUOTE".equals(oldEntity.getStatus())) {
+			eqpEntity.setQuoteStatus( request.getStatus());
+
+			if (oldEntity.getEnquiryId() != null && oldEntity.getEnquiryId() > 0 && "QUOTE".equals(oldEntity.getCurrentStatus())) {
 				for (EQPChildEntity childEntity : oldEntity.getItemsList()) {
 					if("QUOTE".equals(childEntity.getStatus())) {
 						oldChildIdsMap.put(childEntity.getEnquiryChildId(), childEntity.getEnquiryChildId());
@@ -269,11 +273,22 @@ public class EQPServiceImpl implements EQPService {
 				eqpEntity.setItemsList(oldEntity.getItemsList());
 				eqpEntity.setQuoteUpdatedBy(request.getUserId());
 				eqpEntity.setQuoteUpdatedOn(new Date());
-				eqpEntity.setQuoteCreatedBy(oldEntity.getCreatedBy());
-				eqpEntity.setQuoteCreatedOn(oldEntity.getCreatedOn());
-				eqpEntity.setStatus(request.getStatus());
+				//eqpEntity.setQuoteCreatedBy(oldEntity.getCreatedBy());
+				//eqpEntity.setQuoteCreatedOn(oldEntity.getCreatedOn());
+				eqpEntity.setCurrentStatus(request.getStatus());
 				message = "Quote Details updated successfully..! ";
 
+				EQPTermsEntity termsEntity = request.getTerms();
+				termsEntity.setTermsId(eqpEntity.getTerms().getTermsId() );
+				termsEntity.setIsDeleted(false);
+				termsEntity.setEnquiryId(eqpEntity);
+				//termsEntity.setQuoteCreatedBy(request.getUserId());
+				termsEntity.setQuoteUpdatedBy(request.getUserId());
+				termsEntity.setQuoteUpdatedOn(new Date());
+				//termsEntity.setQuoteCreatedOn(new Date());
+				termsEntity.setStatus(request.getStatus());
+				eqpEntity.setTerms( termsEntity);
+				
 				// QUOTE UPDATE LOGIC
 				eqpRepository.save(eqpEntity);
 				List<EQPChildEntity> itemsList = new ArrayList<>();
@@ -301,7 +316,7 @@ public class EQPServiceImpl implements EQPService {
 			} else {
 				eqpEntity.setCreatedBy(request.getUserId());
 				eqpEntity.setCreatedOn(new Date());
-				eqpEntity.setStatus(request.getStatus());
+				eqpEntity.setCurrentStatus(request.getStatus());
 				System.out.println("request.getItemsList.size ==  " + request.getItemsList().size());
 				for (EQPChildRequest childReq : request.getItemsList()) {
 					EQPChildEntity childEntity = new EQPChildEntity();
@@ -320,8 +335,7 @@ public class EQPServiceImpl implements EQPService {
 				termsEntity.setQuoteCreatedBy(request.getUserId());
 				termsEntity.setQuoteCreatedOn(new Date());
 				termsEntity.setStatus(request.getStatus());
-				eqpEntity.addTerms(termsEntity);
-				System.out.println("eqpEntity.addTerms ==  " + eqpEntity.getTerms().size());
+				eqpEntity.setTerms( termsEntity);
 				eqpRepository.save(eqpEntity);
 			}
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \""+message+" \"}",	new HttpHeaders(), HttpStatus.OK);
@@ -362,6 +376,135 @@ public class EQPServiceImpl implements EQPService {
 			eqpRepository.deleteQuoteMainData(deleteRequest.getIds(), deleteRequest.getUserId());
 			childRepository.deleteQuoteChildData(deleteRequest.getIds(), deleteRequest.getUserId());
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Selected Quote details has been deleted successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
+		} catch (Exception e) {
+			e.printStackTrace();
+			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return response;
+	}
+	
+	@Override
+	public ResponseEntity<Object> proformaSave(EQPRequest request) {
+		log.info("In EQPServiceImpl.save page ");
+		ResponseEntity<Object> response = null;
+		HttpHeaders header = new HttpHeaders();
+		header.set("Content-Type", "application/json");
+		String message = "Proforma Details saved successfully..! ";
+		try {
+			EQPEntity eqpEntity = new EQPEntity();
+			Map<Integer, Integer> oldChildIdsMap = new HashMap<>();
+			List<Integer> missedChildIds = new ArrayList<>();
+			Optional<EQPEntity> kk = eqpRepository.findById(request.getEnquiryId());
+			EQPEntity oldEntity = null;
+			if (kk.isPresent()) {
+				oldEntity = kk.get();
+				eqpEntity = kk.get();
+			} else {
+				return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid data\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+			
+			eqpEntity.setQuoteCustomerId(request.getQuoteCustomerId() );
+			eqpEntity.setQuoteEnquiryFrom(request.getQuoteEnquiryFrom() );
+			eqpEntity.setQuoteEnquiryDate(request.getQuoteEnquiryDate());
+			eqpEntity.setQuoteQty(request.getQuoteQty() );
+			eqpEntity.setQuoteValue(request.getQuoteValue() );
+			eqpEntity.setIsDeleted( false);
+			eqpEntity.setProformaStatus( request.getStatus());
+
+			if (oldEntity.getEnquiryId() != null && oldEntity.getEnquiryId() > 0 && "QUOTE".equals(oldEntity.getCurrentStatus())) {
+				for (EQPChildEntity childEntity : oldEntity.getItemsList()) {
+					if("QUOTE".equals(childEntity.getStatus())) {
+						oldChildIdsMap.put(childEntity.getEnquiryChildId(), childEntity.getEnquiryChildId());
+					}
+				}
+				eqpEntity.setItemsList(oldEntity.getItemsList());
+				eqpEntity.setQuoteUpdatedBy(request.getUserId());
+				eqpEntity.setQuoteUpdatedOn(new Date());
+				//eqpEntity.setQuoteCreatedBy(oldEntity.getCreatedBy());
+				//eqpEntity.setQuoteCreatedOn(oldEntity.getCreatedOn());
+				eqpEntity.setCurrentStatus(request.getStatus());
+				message = "Proforma Details updated successfully..! ";
+
+				EQPTermsEntity termsEntity = request.getTerms();
+				termsEntity.setTermsId(eqpEntity.getTerms().getTermsId() );
+				termsEntity.setIsDeleted(false);
+				termsEntity.setEnquiryId(eqpEntity);
+				//termsEntity.setQuoteCreatedBy(request.getUserId());
+				termsEntity.setQuoteUpdatedBy(request.getUserId());
+				termsEntity.setQuoteUpdatedOn(new Date());
+				//termsEntity.setQuoteCreatedOn(new Date());
+				termsEntity.setStatus(request.getStatus());
+				eqpEntity.setTerms(termsEntity);
+
+				// QUOTE UPDATE LOGIC
+				eqpRepository.save(eqpEntity);
+				List<EQPChildEntity> itemsList = new ArrayList<>();
+				for (EQPChildRequest childReq : request.getItemsList()) {
+					EQPChildEntity childEntity = new EQPChildEntity();
+					BeanUtils.copyProperties(childReq, childEntity);
+					childEntity.setIsDeleted(false);
+					childEntity.setEnquiryId(eqpEntity);
+					childEntity.setQuoteUpdatedBy(request.getUserId());
+					childEntity.setQuoteUpdatedOn(new Date());
+					childEntity.setQuoteCreatedBy(request.getUserId());
+					childEntity.setQuoteCreatedOn(new Date());
+					childEntity.setStatus(request.getStatus());
+					itemsList.add(childEntity);
+					if (childReq.getEnquiryChildId() != null && childReq.getEnquiryChildId() > 0) {
+						oldChildIdsMap.remove(childReq.getEnquiryChildId());
+					}
+				}
+
+				if (oldChildIdsMap != null && oldChildIdsMap.size() > 0) {
+					missedChildIds = new ArrayList<Integer>(oldChildIdsMap.values());
+				}
+				childRepository.saveAll(itemsList);
+				childRepository.deleteData(missedChildIds, request.getUserId());
+			} else {
+				eqpEntity.setCreatedBy(request.getUserId());
+				eqpEntity.setCreatedOn(new Date());
+				eqpEntity.setCurrentStatus(request.getStatus());
+				System.out.println("request.getItemsList.size ==  " + request.getItemsList().size());
+				for (EQPChildRequest childReq : request.getItemsList()) {
+					EQPChildEntity childEntity = new EQPChildEntity();
+					BeanUtils.copyProperties(childReq, childEntity);
+					childEntity.setIsDeleted(false);
+					childEntity.setEnquiryId(eqpEntity);
+					childEntity.setQuoteCreatedBy(request.getUserId());
+					childEntity.setQuoteCreatedOn(new Date());
+					childEntity.setStatus(request.getStatus());
+					eqpEntity.addItem(childEntity);
+				}
+				System.out.println("eqpEntity.getItemsList ==  " + eqpEntity.getItemsList().size());
+				EQPTermsEntity termsEntity = request.getTerms();
+				termsEntity.setIsDeleted(false);
+				termsEntity.setEnquiryId(eqpEntity);
+				termsEntity.setQuoteCreatedBy(request.getUserId());
+				termsEntity.setQuoteCreatedOn(new Date());
+				termsEntity.setStatus(request.getStatus());
+				eqpEntity.setTerms( termsEntity);
+				eqpRepository.save(eqpEntity);
+			}
+			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \""+message+" \"}",	new HttpHeaders(), HttpStatus.OK);
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.info("error is ==" + e.getMessage());
+			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return response;
+	}
+
+	@Override
+	public ResponseEntity<Object> proformaDelete(DeleteRequest deleteRequest) {
+		log.info("In proformaDelete page ");
+		ResponseEntity<Object> response = null;
+		HttpHeaders header = new HttpHeaders();
+		header.set("Content-Type", "application/json");
+		
+		try {
+			eqpRepository.deleteEnquiryMainData(deleteRequest.getIds(), deleteRequest.getUserId());
+			childRepository.deleteEnquiryChildData(deleteRequest.getIds(), deleteRequest.getUserId());
+			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Selected proforma details has been deleted successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
 			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);

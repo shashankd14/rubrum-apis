@@ -43,6 +43,7 @@ public class EQPController {
 		return new ResponseEntity<Object>(response, HttpStatus.OK);
 	}
 
+	// quote
 	@PostMapping(value = "/quote/save", produces = "application/json")
 	public ResponseEntity<Object> quoteSave(@RequestBody EQPRequest eqpRequest) {
 		return eqpService.quoteSave(eqpRequest);
@@ -56,6 +57,22 @@ public class EQPController {
 	@PostMapping(value = "/quote/delete", produces = "application/json")
 	public ResponseEntity<Object> quoteDelete(@RequestBody DeleteRequest deleteRequest) {
 		return eqpService.quoteDelete(deleteRequest);
+	}
+
+	// proforma
+	@PostMapping(value = "/proforma/save", produces = "application/json")
+	public ResponseEntity<Object> proformaSave(@RequestBody EQPRequest eqpRequest) {
+		return eqpService.proformaSave(eqpRequest);
+	}
+
+	@PostMapping(value = "/proforma/update", produces = "application/json")
+	public ResponseEntity<Object> proformaUpdate(@RequestBody EQPRequest eqpRequest) {
+		return eqpService.proformaSave(eqpRequest);
+	}
+
+	@PostMapping(value = "/proforma/delete", produces = "application/json")
+	public ResponseEntity<Object> proformaDelete(@RequestBody DeleteRequest deleteRequest) {
+		return eqpService.proformaDelete(deleteRequest);
 	}
 
 }

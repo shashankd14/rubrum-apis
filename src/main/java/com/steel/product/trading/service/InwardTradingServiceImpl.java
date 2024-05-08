@@ -2,11 +2,14 @@ package com.steel.product.trading.service;
 
 import com.steel.product.trading.dto.InwardTradingChildResponse;
 import com.steel.product.trading.dto.InwardTradingResponse;
+import com.steel.product.trading.entity.DocumentTypeStaticEntity;
 import com.steel.product.trading.entity.InwardTradingChildEntity;
 import com.steel.product.trading.entity.InwardTradingEntity;
+import com.steel.product.trading.repository.DocumentTypeStaticRepository;
 import com.steel.product.trading.repository.InwardTradingChildRepository;
 import com.steel.product.trading.repository.InwardTradingRepository;
 import com.steel.product.trading.repository.SeqGeneratorRepository;
+import com.steel.product.trading.request.BaseRequest;
 import com.steel.product.trading.request.DeleteRequest;
 import com.steel.product.trading.request.InwardSearchRequest;
 import com.steel.product.trading.request.InwardTradingItemRequest;
@@ -44,6 +47,9 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 
 	@Autowired
 	InwardTradingChildRepository childRepository;
+
+	@Autowired
+	DocumentTypeStaticRepository documentTypeStaticRepository;
 
 	@Autowired
 	SeqGeneratorRepository seqGeneratorRepository;
@@ -299,6 +305,12 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"\"}", header,	HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		return response;
+	}
+
+	@Override
+	public ResponseEntity<Object> getDocumentList(BaseRequest req) {
+		List<DocumentTypeStaticEntity> response = documentTypeStaticRepository.findAll();
+		return new ResponseEntity<Object>(response, HttpStatus.OK);
 	}
 
 }

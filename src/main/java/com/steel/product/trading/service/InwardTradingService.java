@@ -3,6 +3,8 @@ package com.steel.product.trading.service;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
+
+import com.steel.product.trading.request.BaseRequest;
 import com.steel.product.trading.request.DeleteRequest;
 import com.steel.product.trading.request.InwardSearchRequest;
 import com.steel.product.trading.request.InwardTradingRequest;
@@ -19,5 +21,7 @@ public interface InwardTradingService {
 	ResponseEntity<Object> generateSeq(SeqGeneratorRequest seqGeneratorRequest);
 
 	ResponseEntity<Object> updateSeq(SeqGeneratorRequest seqGeneratorRequest);
+
+	ResponseEntity<Object> getDocumentList(BaseRequest req);
 
 }

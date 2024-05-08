@@ -20,4 +20,8 @@ public interface EQPService {
 
 	ResponseEntity<Object> quoteDelete(DeleteRequest deleteRequest);
 
+	ResponseEntity<Object> proformaSave(EQPRequest eqpRequest);
+
+	ResponseEntity<Object> proformaDelete(DeleteRequest deleteRequest);
+
 }
