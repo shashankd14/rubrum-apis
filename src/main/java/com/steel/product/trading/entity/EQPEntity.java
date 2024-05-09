@@ -97,6 +97,20 @@ public class EQPEntity {
 	@Column(name = "quote_updated_on")
 	@UpdateTimestamp
 	private Date quoteUpdatedOn;
+	
+	@Column(name = "proforma_created_by")
+	private Integer proformaCreatedBy;
+
+	@Column(name = "proforma_updated_by")
+	private Integer proformaUpdatedBy;
+
+	@Column(name = "proforma_created_on", updatable = false)
+	@CreationTimestamp
+	private Date proformaCreatedOn;
+
+	@Column(name = "proforma_updated_on")
+	@UpdateTimestamp
+	private Date proformaUpdatedOn;
 
 	public void addItem(EQPChildEntity item) {
 		if (this.itemsList == null) {
@@ -312,6 +326,38 @@ public class EQPEntity {
 
 	public void setTerms(EQPTermsEntity terms) {
 		this.terms = terms;
+	}
+
+	public Integer getProformaCreatedBy() {
+		return proformaCreatedBy;
+	}
+
+	public void setProformaCreatedBy(Integer proformaCreatedBy) {
+		this.proformaCreatedBy = proformaCreatedBy;
+	}
+
+	public Integer getProformaUpdatedBy() {
+		return proformaUpdatedBy;
+	}
+
+	public void setProformaUpdatedBy(Integer proformaUpdatedBy) {
+		this.proformaUpdatedBy = proformaUpdatedBy;
+	}
+
+	public Date getProformaCreatedOn() {
+		return proformaCreatedOn;
+	}
+
+	public void setProformaCreatedOn(Date proformaCreatedOn) {
+		this.proformaCreatedOn = proformaCreatedOn;
+	}
+
+	public Date getProformaUpdatedOn() {
+		return proformaUpdatedOn;
+	}
+
+	public void setProformaUpdatedOn(Date proformaUpdatedOn) {
+		this.proformaUpdatedOn = proformaUpdatedOn;
 	}
 
  

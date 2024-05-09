@@ -20,12 +20,17 @@ public interface EQPChildRepository extends JpaRepository<EQPChildEntity, Intege
 
 	@Modifying
 	@Transactional
-	@Query("update EQPChildEntity inward set  inward.isDeleted = true, inward.updatedBy=:userId, inward.updatedOn=CURRENT_TIMESTAMP where inward.enquiryId.enquiryId in :enquiryIds and inward.status='ENQUIRY'")
+	@Query("update EQPChildEntity inward set inward.isDeleted = true, inward.updatedBy=:userId, inward.updatedOn=CURRENT_TIMESTAMP where inward.enquiryId.enquiryId in :enquiryIds and inward.status='ENQUIRY'")
 	void deleteEnquiryChildData(@Param("enquiryIds") List<Integer> enquiryIds, @Param("userId") Integer userId);
 
 	@Modifying
 	@Transactional
-	@Query("update EQPChildEntity inward set  inward.quoteCreatedBy=null, inward.quoteUpdatedBy=null, inward.quoteCreatedOn=null, inward.quoteUpdatedOn=null, inward.updatedBy=:userId, inward.updatedOn=CURRENT_TIMESTAMP where inward.enquiryId.enquiryId in :enquiryIds and inward.status='QUOTE'")
+	@Query("update EQPChildEntity inward set inward.quoteCreatedBy=null, inward.quoteUpdatedBy=null, inward.quoteCreatedOn=null, inward.quoteUpdatedOn=null, inward.updatedBy=:userId, inward.updatedOn=CURRENT_TIMESTAMP where inward.enquiryId.enquiryId in :enquiryIds and inward.status='QUOTE'")
 	void deleteQuoteChildData(@Param("enquiryIds") List<Integer> enquiryIds, @Param("userId") Integer userId);
+
+	@Modifying
+	@Transactional
+	@Query("update EQPChildEntity inward set inward.proformaCreatedBy=null, inward.proformaUpdatedBy=null, inward.proformaCreatedOn=null, inward.proformaUpdatedOn=null, inward.updatedBy=:userId, inward.updatedOn=CURRENT_TIMESTAMP where inward.enquiryId.enquiryId in :enquiryIds and inward.status='PROFORMA'")
+	void deleteProformaChildData(@Param("enquiryIds") List<Integer> enquiryIds, @Param("userId") Integer userId);
 
 }

@@ -99,5 +99,19 @@ public class EQPChildEntity {
 	@Column(name = "quote_updated_on")
 	@UpdateTimestamp
 	private Date quoteUpdatedOn;
+	
+	@Column(name = "proforma_created_by")
+	private Integer proformaCreatedBy;
+
+	@Column(name = "proforma_updated_by")
+	private Integer proformaUpdatedBy;
+
+	@Column(name = "proforma_created_on", updatable = false)
+	@CreationTimestamp
+	private Date proformaCreatedOn;
+
+	@Column(name = "proforma_updated_on")
+	@UpdateTimestamp
+	private Date proformaUpdatedOn;
 
 }

@@ -411,15 +411,15 @@ public class EQPServiceImpl implements EQPService {
 			eqpEntity.setIsDeleted( false);
 			eqpEntity.setProformaStatus( request.getStatus());
 
-			if (oldEntity.getEnquiryId() != null && oldEntity.getEnquiryId() > 0 && "QUOTE".equals(oldEntity.getCurrentStatus())) {
+			if (oldEntity.getEnquiryId() != null && oldEntity.getEnquiryId() > 0 && "PROFORMA".equals(oldEntity.getCurrentStatus())) {
 				for (EQPChildEntity childEntity : oldEntity.getItemsList()) {
-					if("QUOTE".equals(childEntity.getStatus())) {
+					if("PROFORMA".equals(childEntity.getStatus())) {
 						oldChildIdsMap.put(childEntity.getEnquiryChildId(), childEntity.getEnquiryChildId());
 					}
 				}
 				eqpEntity.setItemsList(oldEntity.getItemsList());
-				eqpEntity.setQuoteUpdatedBy(request.getUserId());
-				eqpEntity.setQuoteUpdatedOn(new Date());
+				eqpEntity.setProformaUpdatedBy(request.getUserId());
+				eqpEntity.setProformaUpdatedOn(new Date());
 				//eqpEntity.setQuoteCreatedBy(oldEntity.getCreatedBy());
 				//eqpEntity.setQuoteCreatedOn(oldEntity.getCreatedOn());
 				eqpEntity.setCurrentStatus(request.getStatus());
@@ -430,8 +430,8 @@ public class EQPServiceImpl implements EQPService {
 				termsEntity.setIsDeleted(false);
 				termsEntity.setEnquiryId(eqpEntity);
 				//termsEntity.setQuoteCreatedBy(request.getUserId());
-				termsEntity.setQuoteUpdatedBy(request.getUserId());
-				termsEntity.setQuoteUpdatedOn(new Date());
+				termsEntity.setProformaUpdatedBy(request.getUserId());
+				termsEntity.setProformaUpdatedOn(new Date());
 				//termsEntity.setQuoteCreatedOn(new Date());
 				termsEntity.setStatus(request.getStatus());
 				eqpEntity.setTerms(termsEntity);
@@ -444,10 +444,10 @@ public class EQPServiceImpl implements EQPService {
 					BeanUtils.copyProperties(childReq, childEntity);
 					childEntity.setIsDeleted(false);
 					childEntity.setEnquiryId(eqpEntity);
-					childEntity.setQuoteUpdatedBy(request.getUserId());
-					childEntity.setQuoteUpdatedOn(new Date());
-					childEntity.setQuoteCreatedBy(request.getUserId());
-					childEntity.setQuoteCreatedOn(new Date());
+					childEntity.setProformaUpdatedBy(request.getUserId());
+					childEntity.setProformaUpdatedOn(new Date());
+					childEntity.setProformaCreatedBy(request.getUserId());
+					childEntity.setProformaCreatedOn(new Date());
 					childEntity.setStatus(request.getStatus());
 					itemsList.add(childEntity);
 					if (childReq.getEnquiryChildId() != null && childReq.getEnquiryChildId() > 0) {
@@ -470,8 +470,8 @@ public class EQPServiceImpl implements EQPService {
 					BeanUtils.copyProperties(childReq, childEntity);
 					childEntity.setIsDeleted(false);
 					childEntity.setEnquiryId(eqpEntity);
-					childEntity.setQuoteCreatedBy(request.getUserId());
-					childEntity.setQuoteCreatedOn(new Date());
+					childEntity.setProformaCreatedBy(request.getUserId());
+					childEntity.setProformaCreatedOn(new Date());
 					childEntity.setStatus(request.getStatus());
 					eqpEntity.addItem(childEntity);
 				}
@@ -479,8 +479,8 @@ public class EQPServiceImpl implements EQPService {
 				EQPTermsEntity termsEntity = request.getTerms();
 				termsEntity.setIsDeleted(false);
 				termsEntity.setEnquiryId(eqpEntity);
-				termsEntity.setQuoteCreatedBy(request.getUserId());
-				termsEntity.setQuoteCreatedOn(new Date());
+				termsEntity.setProformaCreatedBy(request.getUserId());
+				termsEntity.setProformaCreatedOn(new Date());
 				termsEntity.setStatus(request.getStatus());
 				eqpEntity.setTerms( termsEntity);
 				eqpRepository.save(eqpEntity);
@@ -502,8 +502,8 @@ public class EQPServiceImpl implements EQPService {
 		header.set("Content-Type", "application/json");
 		
 		try {
-			eqpRepository.deleteEnquiryMainData(deleteRequest.getIds(), deleteRequest.getUserId());
-			childRepository.deleteEnquiryChildData(deleteRequest.getIds(), deleteRequest.getUserId());
+			eqpRepository.deleteProformaMainData(deleteRequest.getIds(), deleteRequest.getUserId());
+			childRepository.deleteProformaChildData(deleteRequest.getIds(), deleteRequest.getUserId());
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Selected proforma details has been deleted successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
