@@ -79,7 +79,7 @@ public class EQPServiceImpl implements EQPService {
 					eqpEntity.setCurrentStatus(request.getStatus());
 					message = "Enquiry Details updated successfully..! ";
 				} else {
-					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid data\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid enquiry data\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
 				}
 
 				// ENQUIRY UPDATE LOGIC
@@ -152,6 +152,7 @@ public class EQPServiceImpl implements EQPService {
 		List<Integer> inwardIdsList = new ArrayList<>();
 		for (Object[] result : pageResult) {
 			inwardIdsList.add(result[0] != null ? (Integer) result[0] : null);
+			System.out.println("result == "+result[0] != null ? (Integer) result[0] : null);
 		}
 		System.out.println("getEQPList == "+inwardIdsList.size());
 
@@ -253,7 +254,7 @@ public class EQPServiceImpl implements EQPService {
 				oldEntity = kk.get();
 				eqpEntity = kk.get();
 			} else {
-				return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid data\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+				return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid enquiry data\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
 			}
 			
 			eqpEntity.setQuoteCustomerId(request.getQuoteCustomerId() );

@@ -61,6 +61,12 @@ public class EQPEntity {
 	@Column(name = "current_status")
 	private String currentStatus;
 
+	@Column(name = "do_status")
+	private String dOStatus;
+
+	@Column(name = "dc_status")
+	private String dCStatus;
+
 	@OneToMany(mappedBy = "enquiryId", cascade = { CascadeType.PERSIST, CascadeType.MERGE }, orphanRemoval = true)
 	private Set<EQPChildEntity> itemsList;
 	
@@ -358,6 +364,22 @@ public class EQPEntity {
 
 	public void setProformaUpdatedOn(Date proformaUpdatedOn) {
 		this.proformaUpdatedOn = proformaUpdatedOn;
+	}
+
+	public String getdOStatus() {
+		return dOStatus;
+	}
+
+	public void setdOStatus(String dOStatus) {
+		this.dOStatus = dOStatus;
+	}
+
+	public String getdCStatus() {
+		return dCStatus;
+	}
+
+	public void setdCStatus(String dCStatus) {
+		this.dCStatus = dCStatus;
 	}
 
  
