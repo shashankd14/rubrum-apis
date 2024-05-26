@@ -24,9 +24,9 @@ public class MaterialMasterRequest extends BaseRequest {
 
 	private String displayName;
 
-	private String brandName;
+	private Integer brandId;
 
-	private String manufacturerName;
+	private Integer manufacturerId;
 
 	private String additionalParams;
 

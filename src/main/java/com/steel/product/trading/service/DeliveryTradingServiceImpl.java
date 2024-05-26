@@ -1,11 +1,14 @@
 package com.steel.product.trading.service;
 
+import com.steel.product.trading.entity.DCEntity;
 import com.steel.product.trading.entity.DOEntity;
 import com.steel.product.trading.entity.EQPEntity;
+import com.steel.product.trading.repository.DCRepository;
 import com.steel.product.trading.repository.DORepository;
 import com.steel.product.trading.repository.EQPChildRepository;
 import com.steel.product.trading.repository.EQPRepository;
 import com.steel.product.trading.request.DeleteRequest;
+import com.steel.product.trading.request.DeliveryChalanRequest;
 import com.steel.product.trading.request.DeliveryOrderRequest;
 import lombok.extern.log4j.Log4j2;
 
@@ -27,6 +30,9 @@ public class DeliveryTradingServiceImpl implements DeliveryTradingService {
 
 	@Autowired
 	DORepository doRepository;
+	
+	@Autowired
+	DCRepository dcRepository;
 
 	@Autowired
 	EQPRepository eqpRepository;
@@ -96,10 +102,9 @@ public class DeliveryTradingServiceImpl implements DeliveryTradingService {
 		return response;
 	}
 
-	
 	@Override
 	public ResponseEntity<Object> doDelete(DeleteRequest deleteRequest) {
-		log.info("In quoteDelete page ");
+		log.info("In doDelete page ");
 		ResponseEntity<Object> response = null;
 		HttpHeaders header = new HttpHeaders();
 		header.set("Content-Type", "application/json");
@@ -114,4 +119,67 @@ public class DeliveryTradingServiceImpl implements DeliveryTradingService {
 		}
 		return response;
 	}
+
+	@Override
+	public ResponseEntity<Object> dcSave(DeliveryChalanRequest request) {
+		log.info("In DeliveryTradingServiceImpl.dcSave page ");
+		ResponseEntity<Object> response = null;
+		HttpHeaders header = new HttpHeaders();
+		header.set("Content-Type", "application/json");
+		String message = "Delivery Chalan Details saved successfully..!";
+		try {
+
+			EQPEntity eqpEntity = new EQPEntity();
+			Optional<EQPEntity> kk1 = eqpRepository.findById(request.getEnquiryId());
+			if (kk1.isPresent()) {
+				eqpEntity = kk1.get();
+			} else {
+				return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid enquiry data\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+			
+			DCEntity dummydoEntity = new DCEntity();
+			List<DCEntity> oldDOEntity = dcRepository.findAllEnqIds(request.getEnquiryId());
+			if (oldDOEntity!= null && oldDOEntity.size()> 0 ) {
+				dummydoEntity = oldDOEntity.get(0);
+			}
+
+			DCEntity doEntity = new DCEntity();
+			BeanUtils.copyProperties(request, doEntity);
+			doEntity.setIsDeleted(false);
+
+			if (dummydoEntity.getDcId() != null && dummydoEntity.getDcId() > 0) {
+				doEntity.setDcId( dummydoEntity.getDcId());
+
+				if (dummydoEntity != null && dummydoEntity.getDcId() > 0) {
+					doEntity.setUpdatedBy(request.getUserId());
+					doEntity.setUpdatedOn(new Date());
+					doEntity.setCreatedBy(dummydoEntity.getCreatedBy());
+					doEntity.setCreatedOn(dummydoEntity.getCreatedOn());
+					doEntity.setEnquiryId(eqpEntity);
+					message = "Delivery Chalan details updated successfully..! ";
+				} else {
+					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid data\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+				}
+			} else {
+				if (eqpEntity.getCurrentStatus() == null || (!"DO".equals(eqpEntity.getCurrentStatus()))) {
+					return new ResponseEntity<>( "{\"status\": \"fail\", \"message\": \"Please enter valid enquiry data\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+				}
+				doEntity.setCreatedBy(request.getUserId());
+				doEntity.setCreatedOn(new Date());
+				doEntity.setEnquiryId(eqpEntity);
+			}
+			dcRepository.save(doEntity);
+			List<Integer> ids = new ArrayList<>();
+			ids.add(eqpEntity.getEnquiryId());
+			eqpRepository.updateDCStatus(ids, request.getUserId());
+			childRepository.updateChildDCStatus(eqpEntity.getEnquiryId(), request.getUserId());
+			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"" + message + " \"}", new HttpHeaders(), HttpStatus.OK);
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.info("error is ==" + e.getMessage());
+			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return response;
+	}
+
 }

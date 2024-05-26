@@ -43,4 +43,14 @@ public interface EQPChildRepository extends JpaRepository<EQPChildEntity, Intege
 	@Query(value = "update trading_eqp_items childinward set childinward.status='PROFORMA', childinward.updated_by=:userId, childinward.updated_on=CURRENT_TIMESTAMP where childinward.enquiryid = :enquiryIds and childinward.status='DO'", nativeQuery = true)
 	void deleteDOChildData(@Param("enquiryIds") List<Integer> enquiryIds, @Param("userId") Integer userId);
 
+	@Modifying
+	@Transactional
+	@Query(value = "update trading_eqp_items childinward set childinward.status='DC', childinward.updated_by=:userId, childinward.updated_on=CURRENT_TIMESTAMP where childinward.enquiryid = :enquiryIds and childinward.status='DO'", nativeQuery = true)
+	void updateChildDCStatus(@Param("enquiryIds") Integer enquiryIds, @Param("userId") Integer userId);
+
+	@Modifying
+	@Transactional
+	@Query(value = "update trading_eqp_items childinward set childinward.status='DO', childinward.updated_by=:userId, childinward.updated_on=CURRENT_TIMESTAMP where childinward.enquiryid = :enquiryIds and childinward.status='DC'", nativeQuery = true)
+	void deleteDCChildData(@Param("enquiryIds") List<Integer> enquiryIds, @Param("userId") Integer userId);
+
 }

@@ -1,6 +1,7 @@
 package com.steel.product.trading.controller;
 
 import com.steel.product.trading.request.DeleteRequest;
+import com.steel.product.trading.request.DeliveryChalanRequest;
 import com.steel.product.trading.request.DeliveryOrderRequest;
 import com.steel.product.trading.service.DeliveryTradingService;
 
@@ -31,6 +32,22 @@ public class DeliveryTradingController {
 
 	@PostMapping(value = "/do/delete", produces = "application/json")
 	public ResponseEntity<Object> doDelete(@RequestBody DeleteRequest deleteRequest) {
+		return deliveryTradingService.doDelete(deleteRequest);
+	}
+	
+	// Delivery Chalan
+	@PostMapping(value = "/dc/save", produces = "application/json")
+	public ResponseEntity<Object> dcSave(@RequestBody DeliveryChalanRequest eqpRequest) {
+		return deliveryTradingService.dcSave(eqpRequest);
+	}
+
+	@PostMapping(value = "/dc/update", produces = "application/json")
+	public ResponseEntity<Object> dcUpdate(@RequestBody DeliveryChalanRequest eqpRequest) {
+		return deliveryTradingService.dcSave(eqpRequest);
+	}
+
+	@PostMapping(value = "/dc/delete", produces = "application/json")
+	public ResponseEntity<Object> dcDelete(@RequestBody DeleteRequest deleteRequest) {
 		return deliveryTradingService.doDelete(deleteRequest);
 	}
 }

@@ -85,4 +85,14 @@ public interface EQPRepository extends JpaRepository<EQPEntity, Integer> {
 	@Query("update EQPEntity inward set inward.updatedBy=:userId, inward.updatedOn=CURRENT_TIMESTAMP, currentStatus='PROFORMA' where inward.enquiryId in :enquiryIds and inward.currentStatus='DO'")
 	void deleteDOMainData(@Param("enquiryIds") List<Integer> enquiryIds, @Param("userId") Integer userId);
 
+	@Modifying
+	@Transactional
+	@Query("update EQPEntity inward set inward.currentStatus='DC', inward.updatedBy=:userId, inward.updatedOn=CURRENT_TIMESTAMP, dOStatus='DO' where inward.enquiryId in :enquiryIds and inward.currentStatus='DO'")
+	void updateDCStatus(@Param("enquiryIds") List<Integer> enquiryIds, @Param("userId") Integer userId);
+
+	@Modifying
+	@Transactional
+	@Query("update EQPEntity inward set inward.updatedBy=:userId, inward.updatedOn=CURRENT_TIMESTAMP, currentStatus='DO' where inward.enquiryId in :enquiryIds and inward.currentStatus='DC'")
+	void deleteDCMainData(@Param("enquiryIds") List<Integer> enquiryIds, @Param("userId") Integer userId);
+
 }

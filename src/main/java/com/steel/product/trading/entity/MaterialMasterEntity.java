@@ -44,11 +44,11 @@ public class MaterialMasterEntity {
 	@Column(name = "display_name")
 	private String displayName;
 
-	@Column(name = "brand_name")
-	private String brandName;
+	@Column(name = "brand_id")
+	private Integer brandId;
 
-	@Column(name = "manufacturer_name")
-	private String manufacturerName;
+	@Column(name = "manufacturer_id")
+	private Integer manufacturerId;
 
 	@Column(name = "additional_params")
 	private String additionalParams;
