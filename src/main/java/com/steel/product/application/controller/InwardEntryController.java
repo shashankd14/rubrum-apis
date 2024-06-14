@@ -1,6 +1,7 @@
 package com.steel.product.application.controller;
 
 import com.steel.product.application.dto.delivery.DeliveryPDFRequestDTO;
+import com.steel.product.application.dto.inward.EndUserTagWisePacketsDTO;
 import com.steel.product.application.dto.inward.InwardDto;
 import com.steel.product.application.dto.inward.InwardEntryResponseDto;
 import com.steel.product.application.dto.inward.SearchListPageRequest;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -237,13 +239,41 @@ public class InwardEntryController {
 	@PostMapping({ "/partywiselist" })
 	public ResponseEntity<Object> partywiselist(@RequestBody SearchListPageRequest searchListPageRequest) {
 		Map<String, Object> response = new HashMap<>();
-		Page<InwardEntry> pageResult = inwdEntrySvc.partywiselist(searchListPageRequest);
-		List<Object> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponse(inw)).collect(Collectors.toList());
-		response.put("content", inwardList);
-		response.put("currentPage", pageResult.getNumber());
-		response.put("totalItems", pageResult.getTotalElements());
-		response.put("totalPages", pageResult.getTotalPages());
-		return new ResponseEntity<Object>(response, HttpStatus.OK);
+
+		if ("ENDUSER".equals(searchListPageRequest.getLoginType())) {
+			Page<Object[]> pageResult = inwdEntrySvc.partywiselistEndUserTagWise(searchListPageRequest);
+			List<EndUserTagWisePacketsDTO> responseList = new ArrayList<>();
+			for (Object[] result : pageResult) {
+				EndUserTagWisePacketsDTO dto = new EndUserTagWisePacketsDTO();
+				dto.setCoilNumber(result[0] != null ? (String) result[0] : null);
+				dto.setCustomerBatchId(result[1] != null ? (String) result[1] : null);
+				dto.setMaterialDesc(result[2] != null ? (String) result[2] : null);
+				dto.setMaterialGrade( result[3] != null ? (String) result[3] : null);
+				dto.setThickness(result[4] != null ? (Float) result[4] : null);
+				dto.setWidth(result[5] != null ? (Float) result[5] : null);
+				dto.setLength(result[6] != null ? (Float) result[6] : null);
+				dto.setClassificationTag(result[7] != null ? (String) result[7] : null);
+				dto.setEndUserTagName( result[8] != null ? (String) result[8] : null);
+				dto.setInwardStatus(result[9] != null ? (String) result[9] : null);
+				dto.setPacketStatus(result[10] != null ? (String) result[10] : null);
+				responseList.add(dto);
+			}
+			response.put("content", responseList);
+			response.put("currentPage", pageResult.getNumber());
+			response.put("totalItems", pageResult.getTotalElements());
+			response.put("totalPages", pageResult.getTotalPages());
+			return new ResponseEntity<Object>(response, HttpStatus.OK);
+		} else {
+			Page<InwardEntry> pageResult = inwdEntrySvc.partywiselist(searchListPageRequest);
+			List<Object> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponse(inw)).collect(Collectors.toList());
+			response.put("content", inwardList);
+			response.put("currentPage", pageResult.getNumber());
+			response.put("totalItems", pageResult.getTotalElements());
+			response.put("totalPages", pageResult.getTotalPages());
+			return new ResponseEntity<Object>(response, HttpStatus.OK);
+		}
+
+		
 	}
 	
 	@GetMapping({ "/list/{pageNo}/{pageSize}" })

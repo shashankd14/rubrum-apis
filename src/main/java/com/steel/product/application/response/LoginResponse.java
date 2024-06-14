@@ -38,12 +38,13 @@ public class LoginResponse {
 	private String access_token;
 
 	private String refresh_token;
-	
+
 	private String token_type;
-	
+
+	//private String loginType;
+
 	private long expires_in;
-	
+
 	private List<AdminMenuDto> menusList = new ArrayList<>();
-	
 
 }

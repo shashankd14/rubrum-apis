@@ -3,7 +3,6 @@ package com.steel.product.application.oauth.service;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
@@ -188,18 +187,24 @@ public class UserInfoService
 
 			userDetailsRepository.save(user);
 			List<AdminMenuDto> menusList = adminMenuRepository.findMenus(user.getUserId());
-
+			
+			/*String loginType="NORMAL";
+			for (AdminMenuDto dto : menusList) {
+				if("ENDUSER_TAG_WISE_PACKETS".equals(dto.getPermission())) {
+					loginType="ENDUSER";
+				}
+			}*/
+			
 			response = LoginResponse.builder().userId(user.getUserId())
 					.userName(user.getUserName())
 					.lastLoginTime(user.getLastLoginTime())
 					.access_token(oauthResp.getAccessToken())
 					.refresh_token(oauthResp.getRefreshToken())
 					.token_type(oauthResp.getTokenType())
+					//.loginType(loginType)
 					.expires_in(oauthResp.getExpiresIn())
 					.menusList(menusList)
 					.build();
-			
-
 			
 		} else {
 			

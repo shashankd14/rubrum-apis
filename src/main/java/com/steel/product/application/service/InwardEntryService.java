@@ -1,6 +1,7 @@
 package com.steel.product.application.service;
 
 import com.steel.product.application.dto.delivery.DeliveryPDFRequestDTO;
+import com.steel.product.application.dto.inward.EndUserTagWisePacketsDTO;
 import com.steel.product.application.dto.inward.InwardEntryResponseDto;
 import com.steel.product.application.dto.inward.SearchListPageRequest;
 import com.steel.product.application.dto.qrcode.QRCodeResponse;
@@ -13,7 +14,7 @@ import java.util.List;
 import java.util.Set;
 
 public interface InwardEntryService {
-	
+
 	InwardEntry saveEntry(InwardEntry paramInwardEntry);
 
 	List<InwardEntry> getAllEntries();
@@ -42,12 +43,12 @@ public interface InwardEntryService {
 
 	List<InwardEntryResponseDto> findAllInwards();
 
-	Page<InwardEntry> inwardList( SearchListPageRequest searchListPageRequest);
+	Page<InwardEntry> inwardList(SearchListPageRequest searchListPageRequest);
 
 	List<InwardEntry> findInwardByPartyId(Integer partyId);
 
 	JSONObject getPlanPDFs(int inwardEntryId);
-	
+
 	Page<InwardEntry> findAllWIPlistWithPagination(int pageNo, int pageSize, String searchText, String partyId);
 
 	QRCodeResponse getInwardQRCodeDetails(int inwardEntryId);
@@ -62,6 +63,8 @@ public interface InwardEntryService {
 
 	JSONObject getLabels(int inwardEntryId, String processType);
 
-	public Page<InwardEntry> partywiselist( SearchListPageRequest searchListPageRequest);
+	public Page<InwardEntry> partywiselist(SearchListPageRequest searchListPageRequest);
+
+	public Page<Object[]> partywiselistEndUserTagWise(SearchListPageRequest searchListPageRequest);
 
 }

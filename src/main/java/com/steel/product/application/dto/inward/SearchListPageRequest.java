@@ -11,6 +11,8 @@ public class SearchListPageRequest {
 
 	private String partyId;
 
+	private String loginType;
+
 	private String searchText;
 
 	private String sortColumn;

@@ -166,5 +166,23 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 
 	@Query(value = "SELECT DISTINCT part.part_details_id, part.labelpdf_wip_s3_url, part.labelpdf_fg_s3_url, label_updated_time FROM product_part_details part INNER JOIN product_instruction ins ON part.id = ins.part_details_id INNER JOIN product_tblinwardentry inward ON ins.inwardid = inward.inwardentryid WHERE ins.inwardid = :inwardId", nativeQuery = true)
 	public List<Object[]> getLabels(@Param("inwardId") Integer inwardId);
+	
+	@Query(value = "select coilnumber,\r\n" + "	customerbatchid, \r\n"
+			+ "	(select vdescription from product_tblmatdescription mate where mate.nmatid=inward.nmatid) as  material_desc,\r\n"
+			+ "	(select gradename from product_material_grades where gradeid=inward.materialgradeid) as  material_grade,\r\n"
+			+ "	fthickness,fwidth,flength,\r\n"
+			+ "	(select classification_name from product_packet_classification where classification_id=instr.packet_classification_id) as classification_tag,\r\n"
+			+ "	(select tag_name from product_enduser_tags where tag_id=instr.enduser_tag_id) as enduser_tag_name,\r\n"
+			+ "	(select statusname from product_status where statusid=inward.vstatus) as inward_status,\r\n"
+			+ "	(select statusname from product_status where statusid=instr.status) as packet_status\r\n"
+			+ "	 from product_tblinwardentry inward, product_instruction instr\r\n"
+			+ "	 where inward.inwardentryid=instr.inwardid  \r\n"
+			+ "	 and instr.enduser_tag_id = :endUserTagId order by inwardentryid desc", 
+		countQuery = "select count(instructionid) "
+			+ "	 from product_tblinwardentry inward, product_instruction instr\r\n"
+			+ "	 where inward.inwardentryid=instr.inwardid  \r\n"
+			+ "	 and instr.enduser_tag_id = :endUserTagId order by inwardentryid desc", 
+		nativeQuery = true)
+	Page<Object[]> findAllEndUserTagWiseData(@Param("endUserTagId") Integer endUserTagId, Pageable pageable);
 
 }

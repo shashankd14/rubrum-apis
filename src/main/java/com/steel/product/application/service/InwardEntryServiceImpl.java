@@ -1,6 +1,7 @@
 package com.steel.product.application.service;
 
 import com.steel.product.application.dao.InwardEntryRepository;
+import com.steel.product.application.dao.UserRepository;
 import com.steel.product.application.dto.delivery.DeliveryPDFRequestDTO;
 import com.steel.product.application.dto.inward.InwardEntryResponseDto;
 import com.steel.product.application.dto.inward.SearchListPageRequest;
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
 public class InwardEntryServiceImpl implements InwardEntryService {
 
 	private final static Logger LOGGER = LoggerFactory.getLogger("InwardEntryServiceImpl");
+	private final UserRepository userRepository;
 	private final InwardEntryRepository inwdEntryRepo;
 	private AWSS3Service awsS3Service;
 	private CommonUtil commonUtil;
@@ -40,10 +42,11 @@ public class InwardEntryServiceImpl implements InwardEntryService {
     
 	@Autowired
 	public InwardEntryServiceImpl(InwardEntryRepository theInwdEntryRepo, AWSS3Service awsS3Service,
-			CommonUtil commonUtil) {
+			CommonUtil commonUtil,	UserRepository userRepository) {
 		this.inwdEntryRepo = theInwdEntryRepo;
 		this.awsS3Service = awsS3Service;
 		this.commonUtil = commonUtil;
+		this.userRepository = userRepository;
 	}
 
 	public InwardEntry saveEntry(InwardEntry entry) {
@@ -203,6 +206,21 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 				}
 			}
 		}
+	}
+	
+	@Override
+	public Page<Object[]> partywiselistEndUserTagWise(SearchListPageRequest searchListPageRequest) {
+		LOGGER.info("In partywiselistEndUserTagWise page ");
+		Pageable pageable = PageRequest.of((searchListPageRequest.getPageNo() - 1), searchListPageRequest.getPageSize());
+		int userId = commonUtil.getUserId();
+		Integer endUserTagId = 0;
+
+		List<Object[]> kk = userRepository.getEndUserDetails(userId);
+		for (Object[] result : kk) {
+			endUserTagId = result[0] != null ? (Integer) result[0] : 0 ;
+		}
+		Page<Object[]> pageResult = inwdEntryRepo.findAllEndUserTagWiseData(endUserTagId, pageable);
+		return pageResult;
 	}
 	
 	@Override
@@ -438,5 +456,5 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 	public void updateS3InwardLabelPDF(Integer inwardId, String url) {
 		inwdEntryRepo.updateS3InwardLabelPDF(inwardId, url);
 	}
-	
+
 }
