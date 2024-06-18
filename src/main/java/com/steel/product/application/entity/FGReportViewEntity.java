@@ -28,11 +28,20 @@ public class FGReportViewEntity {
 	@Column(name = "finishing_date")
 	private String finishingDate;
 
+	@Column(name = "currentdate")
+	private String currentdate;
+
+	@Column(name = "coilage")
+	private String coilage;
+
 	@Column(name = "material_desc")
 	private String materialDesc;
 
 	@Column(name = "material_grade")
 	private String materialGrade;
+
+	@Column(name = "remarks")
+	private String remarks;
 
 	@Column(name = "packet_id")
 	private String packetId;

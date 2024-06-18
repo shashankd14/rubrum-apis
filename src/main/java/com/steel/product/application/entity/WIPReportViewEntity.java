@@ -25,6 +25,15 @@ public class WIPReportViewEntity {
 	@Column(name = "customerbatchid")
 	private String customerBatchId;
 
+	@Column(name = "processing_plan_date")
+	private String processingPlanDate;
+
+	@Column(name = "currentdate")
+	private String currentdate;
+
+	@Column(name = "coilage")
+	private String coilage;
+
 	@Column(name = "material_desc")
 	private String materialDesc;
 
@@ -48,6 +57,9 @@ public class WIPReportViewEntity {
 
 	@Column(name = "wip_weight")
 	private String wipWeight;
+
+	@Column(name = "remarks")
+	private String remarks;
 
 	@Column(name = "packet_id")
 	private String packetId;

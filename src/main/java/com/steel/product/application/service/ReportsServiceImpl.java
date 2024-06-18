@@ -304,18 +304,20 @@ public class ReportsServiceImpl implements ReportsService {
 		try {
 
 			acctStatementMap.put("1",
-					new Object[] { "CoilNumber", "CustomerBatchId", "Finishing Date","MaterialDesc", "MaterialGrade","Packet Id",
-							"Thickness", "Actual Width", "Actual Length", "Actual Weight", "Classification Tag", "End User Tag" });
+					new Object[] { "CoilNumber", "CustomerBatchId", "Finishing Date","Current Date","Coil Age(No'of Days)",
+							"MaterialDesc", "MaterialGrade","Remarks", "Packet Id", "Thickness", "Actual Width",
+							"Actual Length", "Actual Weight", "Classification Tag", "End User Tag" });
 
 			int cnt = 1;
 			for (FGReportViewEntity kk : partyList) {
-				if("FG".equals(kk.getClassificationTag())) {
+				if ("FG".equals(kk.getClassificationTag())) {
 					cnt++;
 					acctStatementMap.put("" + cnt,
-					new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getFinishingDate(), kk.getMaterialDesc(),
-					kk.getMaterialGrade(),kk.getPacketId(),
-					kk.getThickness(), kk.getActualwidth(), kk.getActuallength(), kk.getActualweight(),
-					kk.getClassificationTag(), ( (kk.getEnduserTagName() != null && kk.getEnduserTagName().length()>0 ) ? kk.getEnduserTagName() : "" ) });
+					new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getFinishingDate(),
+					kk.getCurrentdate(), kk.getCoilage(), kk.getMaterialDesc(), kk.getMaterialGrade(),
+					kk.getRemarks(), kk.getPacketId(), kk.getThickness(), kk.getActualwidth(),
+					kk.getActuallength(), kk.getActualweight(), kk.getClassificationTag(),
+					((kk.getEnduserTagName() != null && kk.getEnduserTagName().length() > 0) ? kk.getEnduserTagName() : "") });
 				}
 			}
 		} catch (Exception e) {
@@ -331,18 +333,19 @@ public class ReportsServiceImpl implements ReportsService {
 		try {
 
 			acctStatementMap.put("1",
-					new Object[] { "CoilNumber", "CustomerBatchId", "Finishing Date","MaterialDesc", "MaterialGrade","Packet Id",
-							"Thickness", "Actual Width", "Actual Length", "Actual Weight", "Classification Tag", "End User Tag" });
+					new Object[] { "CoilNumber", "CustomerBatchId", "Finishing Date","Current Date","Coil Age(No'of Days)",
+							"MaterialDesc", "MaterialGrade","Remarks","Packet Id", "Thickness", "Actual Width", 
+							"Actual Length", "Actual Weight", "Classification Tag", "End User Tag" });
 
 			int cnt = 1;
 			for (FGReportViewEntity kk : partyList) {
-				if(!("FG".equals(kk.getClassificationTag()))) {
+				if (!("FG".equals(kk.getClassificationTag()))) {
 					cnt++;
-					acctStatementMap.put("" + cnt,
-					new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getFinishingDate(), kk.getMaterialDesc(),
-					kk.getMaterialGrade(),kk.getPacketId(),
-					kk.getThickness(), kk.getActualwidth(), kk.getActuallength(), kk.getActualweight(),
-					kk.getClassificationTag(), ( (kk.getEnduserTagName() != null && kk.getEnduserTagName().length()>0 ) ? kk.getEnduserTagName() : "" ) });
+					acctStatementMap.put("" + cnt, new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(),
+					kk.getFinishingDate(), kk.getFinishingDate(), kk.getCurrentdate(), kk.getCoilage(),
+					kk.getMaterialGrade(), kk.getRemarks(), kk.getPacketId(), kk.getThickness(),
+					kk.getActualwidth(), kk.getActuallength(), kk.getActualweight(), kk.getClassificationTag(),
+					((kk.getEnduserTagName() != null && kk.getEnduserTagName().length() > 0) ? kk.getEnduserTagName() : "") });
 				}
 			}
 		} catch (Exception e) {
@@ -388,7 +391,6 @@ public class ReportsServiceImpl implements ReportsService {
 				    cell.setCellStyle(borderStyle);
 					cell.setCellValue(""+obj);
 				}
-			
 			}
 			
             String baseDirectory = env.getProperty("email.folderpath")+File.separator;
@@ -424,19 +426,21 @@ public class ReportsServiceImpl implements ReportsService {
 			List<WIPReportViewEntity> partyList = wipReportViewRepository.findByPartyId(partyId);
 
 			acctStatementMap.put("1",
-					new Object[] { "CoilNumber", "CustomerBatchId", "MaterialDesc", "MaterialGrade", "Thickness",
-							"Width", "Length", "Net Weight", "In Stock Weight", "WIP Weight", "Packet id","Thickness",
+					new Object[] { "CoilNumber", "CustomerBatchId", 
+							"Processing Plan Date","Current Date","Coil Age(No'of Days)",
+							"MaterialDesc", "MaterialGrade", "Thickness",
+							"Width", "Length", "Net Weight", "In Stock Weight", "WIP Weight", "Remarks", "Packet id","Thickness",
 							"Planned Width", "Planned Length", "Planned Weight", "Inward Status", "Classification Tag",
 							"End User Tag" });
 
 			int cnt = 1;
 			for (WIPReportViewEntity kk : partyList) {
 				cnt++;
-
 				acctStatementMap.put("" + cnt, new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(),
+						kk.getProcessingPlanDate(), kk.getCurrentdate(), kk.getCoilage(),
 						kk.getMaterialDesc(), kk.getMaterialGrade(), kk.getFthickness(), kk.getFwidth(),
-						kk.getFlength(), kk.getNetWeight(), kk.getInStockWeight(), kk.getWipWeight(), kk.getPacketId(), 
-						kk.getThickness(), kk.getPlannedWidth(), kk.getPlannedLength(), kk.getPlannedWeight(), 
+						kk.getFlength(), kk.getNetWeight(), kk.getInStockWeight(), kk.getWipWeight(), kk.getRemarks(),
+						kk.getPacketId(), kk.getThickness(), kk.getPlannedWidth(), kk.getPlannedLength(), kk.getPlannedWeight(), 
 						kk.getInwardStatus(), kk.getClassificationTag(), kk.getEnduserTagName() });
 			}
 		} catch (Exception e) {
@@ -615,18 +619,19 @@ public class ReportsServiceImpl implements ReportsService {
 			List<RMReportViewEntity> partyList = rmReportViewRepository.findByPartyId(partyId);
 
 			acctStatementMap.put("1",
-					new Object[] { "CoilNumber", "CustomerBatchId", "Received Date","MaterialDesc", "MaterialGrade", "Thickness",
-							"Width", "Length", "Net Weight", "Customer Invoice Number", "Customer Invoice Date", "Status", "Created On" });
+					new Object[] { "CoilNumber", "CustomerBatchId", "Received Date","Current Date","Coil Age(No'of Days)",
+							"MaterialDesc", "MaterialGrade", "Thickness", "Width", "Length", "Net Weight", 
+							"Customer Invoice Number", "Customer Invoice Date", "Status", "Created On", "Remarks" });
 
 			int cnt = 1;
 			for (RMReportViewEntity kk : partyList) {
 				cnt++;
-
 				acctStatementMap.put("" + cnt,
-						new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getReceivedDate(),
-								kk.getDescription(), kk.getMaterialGrade(), kk.getFthickness(), kk.getFwidth(),
-								kk.getFlength(), kk.getNetWeight(), kk.getCustInvNo(), kk.getCustInvDate(),
-								kk.getInwardStatus(), kk.getCreatedOn() });
+				new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getReceivedDate(),
+						kk.getCurrentdate(), kk.getCoilage(), kk.getDescription(), kk.getMaterialGrade(),
+						kk.getFthickness(), kk.getFwidth(), kk.getFlength(), kk.getNetWeight(),
+						kk.getCustInvNo(), kk.getCustInvDate(), kk.getInwardStatus(), kk.getCreatedOn(),
+						kk.getRemarks() });
 			}
 		} catch (Exception e) {
 			LOGGER.error("Error at getWIPReportDetails " + e.getMessage());

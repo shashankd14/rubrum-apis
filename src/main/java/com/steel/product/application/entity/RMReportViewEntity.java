@@ -28,6 +28,12 @@ public class RMReportViewEntity {
 	@Column(name = "received_date")
 	private String receivedDate;
 
+	@Column(name = "currentdate")
+	private String currentdate;
+
+	@Column(name = "coilage")
+	private String coilage;
+
 	@Column(name = "description")
 	private String description;
 
@@ -55,6 +61,9 @@ public class RMReportViewEntity {
 	@Column(name = "inward_status")
 	private String inwardStatus;
 
+	@Column(name = "remarks")
+	private String remarks;
+	
 	@Column(name = "created_on")
 	private String createdOn;
 	
