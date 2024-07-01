@@ -54,6 +54,9 @@ public class StockReportViewEntity {
 	
 	@Column(name = "mnth")
 	private Integer mnth;
+	
+	@Column(name = "remarks")
+	private String remarks;
 
 	@Column(name = "partyId")
 	private int partyId;

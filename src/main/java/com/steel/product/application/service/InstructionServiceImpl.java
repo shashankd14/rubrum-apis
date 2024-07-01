@@ -1409,4 +1409,16 @@ public class InstructionServiceImpl implements InstructionService {
 		return resp;
 	}
 
+	@Override
+	public ResponseEntity<Object> updateClassification(UpdateClassificationDTO dto) {
+		ResponseEntity<Object> response = null;
+		try {
+			instructionRepository.updateClassification(dto.getInstructionId(), dto.getInwardId(), dto.getPacketClassificationId());
+			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Classification updated successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
+		} catch (Exception e) {
+			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Failed to updated Classification. Please enter valid data..! \"}", new HttpHeaders(), HttpStatus.OK);
+		}
+		return response;
+	}
+
 }

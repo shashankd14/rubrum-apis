@@ -81,6 +81,9 @@ public class StockSummaryReportViewEntity {
 
 	@Column(name = "inwardstatus")
 	private String inwardstatus;
+	
+	@Column(name = "remarks")
+	private String remarks;
 
 	@Column(name = "partyid")
 	private int partyId;

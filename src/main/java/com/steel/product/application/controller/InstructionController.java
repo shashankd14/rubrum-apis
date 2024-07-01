@@ -122,6 +122,12 @@ public class InstructionController {
 	public ResponseEntity<Object> deleteSlit(@RequestBody SlitInstructionDeleteRequest slitInstructionDeleteRequest) {
 		return instructionService.deleteSlit(slitInstructionDeleteRequest);
 	}
+	
+	@PostMapping(value ="/update/classification", produces = "application/json" )
+	public ResponseEntity<Object> updateClassification(@RequestBody UpdateClassificationDTO updateClassificationDTO) {
+		return instructionService.updateClassification(updateClassificationDTO);
+	}
+	
 	/*
 	@PostMapping({ "/qrcode/plan" })
 	public ResponseEntity<PdfResponseDto> qrcode(@RequestBody PartDto partDto) {

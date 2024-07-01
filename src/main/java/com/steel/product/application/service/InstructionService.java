@@ -96,5 +96,7 @@ public interface InstructionService {
 	public void updateS3PlanLabelPDF(String string, String fileUrl);
 
 	public void updateS3FGLabelPDF(String partDetailsId, String string);
+
+	public ResponseEntity<Object> updateClassification(UpdateClassificationDTO updateClassificationDTO);
 }
 

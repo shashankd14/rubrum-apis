@@ -160,4 +160,10 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
 	@Query("update PartDetails set labelpdfFgS3Url=:url, labelUpdatedTime=CURRENT_TIMESTAMP where partDetailsId= :partDetailsId ")
 	public void updateS3FGLabelPDF(@Param("partDetailsId") String partDetailsId, @Param("url") String url);
 
+	@Modifying
+	@Transactional
+	@Query(value = "update product_instruction set packet_classification_id= :classificationId where inwardid= :inwardId and instructionid= :instructionId", nativeQuery = true)
+	public void updateClassification(@Param("instructionId") Integer instructionId, @Param("inwardId") Integer inwardId,
+			@Param("classificationId") Integer classificationId);
+
 }

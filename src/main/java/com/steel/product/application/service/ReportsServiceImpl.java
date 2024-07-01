@@ -189,7 +189,10 @@ public class ReportsServiceImpl implements ReportsService {
 		try {
 			List<StockReportViewEntity> partyList = stockReportViewRepository.findByPartyId(partyId);
 
-			acctStatementMap.put("1", new Object[] { "CoilNumber", "CustomerBatchId", "MaterialDesc", "MaterialGrade", "Thickness", "Width", "Length", "NetWeight", "UnprocessedWeight", "InStockWeight", "InwardStatus" });
+			acctStatementMap.put("1",
+					new Object[] { "CoilNumber", "CustomerBatchId", "MaterialDesc", "MaterialGrade", "Thickness",
+							"Width", "Length", "NetWeight", "UnprocessedWeight", "InStockWeight", "Remarks",
+							"InwardStatus" });
 
 			int cnt = 1;
 			for (StockReportViewEntity kk : partyList) {
@@ -198,7 +201,8 @@ public class ReportsServiceImpl implements ReportsService {
 				acctStatementMap.put("" + cnt,
 						new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getMaterialDesc(),
 								kk.getMaterialGrade(), kk.getFthickness(), kk.getFwidth(), kk.getFlength(),
-								kk.getNetWeight(), kk.getUnProcessedWeight(), kk.getInStockWeight(),kk.getInwardStatus()});
+								kk.getNetWeight(), kk.getUnProcessedWeight(), kk.getInStockWeight(), kk.getRemarks(),
+								kk.getInwardStatus() });
 			}
 		} catch (Exception e) {
 			LOGGER.error("Error at getStockReportDetails " + e.getMessage());
@@ -526,7 +530,7 @@ public class ReportsServiceImpl implements ReportsService {
 							"Length", "NetWeight", "InStockWeight", "FG Qty", "FG_Classification",
 							"CUT-ENDS_Classification", "EDGE-TRIM_Classification", "OTHERS_Classification",
 							"WIP_Classification", "BLANK_Classification", "Quality Defects", "UnprocessedWeight", "WIP Qty",
-							"Dispatched Qty", "InwardStatus" });
+							"Dispatched Qty","Remarks", "InwardStatus" });
 
 			int cnt = 1;
 			for (StockSummaryReportViewEntity kk : partyList) {
@@ -539,7 +543,7 @@ public class ReportsServiceImpl implements ReportsService {
 								kk.getCutendsclassification(), kk.getEdgetrimclassification(),
 								kk.getOthersclassification(), kk.getWipclassification(), kk.getBlankclassification(),
 								kk.getQualitydefects(), kk.getUnprocessedweight(), kk.getWipqty(),
-								kk.getDispatchedweight(), kk.getInwardstatus() });
+								kk.getDispatchedweight(), kk.getRemarks(), kk.getInwardstatus() });
 			}
 		} catch (Exception e) {
 			LOGGER.error("Error at createStockSummaryReport " + e.getMessage());
