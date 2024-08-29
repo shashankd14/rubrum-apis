@@ -1,5 +1,6 @@
 package com.steel.product.application.service;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -61,6 +62,20 @@ public class MailSender {
 		try {
 			logger.info("Party name is : "+party.getPartyName()+", DailyReportsList == "+party.getDailyReportsList());
 
+			Map<Integer, String> monthNames =new HashMap<>();
+			monthNames.put(1, "January");
+			monthNames.put(2, "February");
+			monthNames.put(3, "March");
+			monthNames.put(4, "April");
+			monthNames.put(5, "May");
+			monthNames.put(6, "June");
+			monthNames.put(7, "July");
+			monthNames.put(8, "August");
+			monthNames.put(9, "September");
+			monthNames.put(10, "October");
+			monthNames.put(11, "November");
+			monthNames.put(12, "December");
+			
 			MimeMessage message = javaMailSender.createMimeMessage();
 			MimeMessageHelper helper = new MimeMessageHelper(message, true);
 			
@@ -84,6 +99,21 @@ public class MailSender {
 			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0	&& party.getDailyReportsList().contains("RMREPORT")) {
 				mailStts = true;
 				reportsService.createRMReport(party.getnPartyId(), strDate, helper);
+			}
+			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0	&& party.getDailyReportsList().contains("MONTHWISE_PLAN_TRACKER")) {
+				mailStts = true;
+				
+				LocalDate currentDate = LocalDate.now();
+				Integer currentMonth = currentDate.getMonthValue();
+				Integer previousMonth = ( currentMonth-1);
+				Integer currentYear = currentDate.getYear();
+				Integer currentDay = currentDate.getDayOfMonth();
+				logger.info("currentYear  == " + currentYear);
+				logger.info("previousMonth  == " + previousMonth);
+				logger.info("currentMonth  == " + currentMonth);
+				logger.info("currentDay  == " + currentDay);
+				
+				reportsService.createMonthwisePlanTrackerReport( party.getnPartyId(), strDate, helper, currentMonth, monthNames, currentYear);
 			}
 			helper.setFrom(fromMailId);			
 			if (party.getEmail1() != null && party.getEmail1().length() > 0) {

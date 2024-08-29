@@ -2,6 +2,7 @@ package com.steel.product.application.service;
 
 import com.steel.product.application.dao.FGReportViewRepository;
 import com.steel.product.application.dao.InwardReportViewRepository;
+import com.steel.product.application.dao.MonthwisePlanTrackerViewRepository;
 import com.steel.product.application.dao.OutwardReportViewRepository;
 import com.steel.product.application.dao.ProcessingReportViewRepository;
 import com.steel.product.application.dao.RMReportViewRepository;
@@ -12,6 +13,7 @@ import com.steel.product.application.dto.report.StockReportRequest;
 import com.steel.product.application.entity.FGReportViewEntity;
 import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.entity.InwardReportViewEntity;
+import com.steel.product.application.entity.MonthwisePlanTrackerViewEntity;
 import com.steel.product.application.entity.OutwardReportViewEntity;
 import com.steel.product.application.entity.ProcessingReportViewEntity;
 import com.steel.product.application.entity.RMReportViewEntity;
@@ -20,7 +22,6 @@ import com.steel.product.application.entity.StockSummaryReportViewEntity;
 import com.steel.product.application.entity.WIPReportViewEntity;
 import com.steel.product.application.util.CSVUtil;
 import com.steel.product.application.util.EmailUtil;
-
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -61,9 +62,12 @@ public class ReportsServiceImpl implements ReportsService {
 
 	@Autowired
 	StockReportViewRepository stockReportViewRepository;
-	
+
 	@Autowired
 	FGReportViewRepository fgReportViewRepository;
+	
+	@Autowired
+	MonthwisePlanTrackerViewRepository monthwisePlanTrackerViewRepository;
 	
 	@Autowired
 	WIPReportViewRepository wipReportViewRepository;
@@ -1245,5 +1249,128 @@ public class ReportsServiceImpl implements ReportsService {
 		}
 		return acctStatementMap;
 	}
+
+	@Override
+	public boolean createMonthwisePlanTrackerReport(int partyId, String strDate, MimeMessageHelper helper, Integer month,
+			Map<Integer, String> monthNames, Integer year) {
+
+		boolean attachmentRequired = false;
+		try {
+			// Create blank workbook
+			XSSFWorkbook workbook = new XSSFWorkbook();
+			
+			CellStyle borderStyle = workbook.createCellStyle();
+			borderStyle.setBorderBottom(BorderStyle.THIN);
+		    borderStyle.setBorderLeft(BorderStyle.THIN);
+			borderStyle.setBorderRight(BorderStyle.THIN);
+			borderStyle.setBorderTop(BorderStyle.THIN);
+			borderStyle.setAlignment(HorizontalAlignment.CENTER);
+			
+			// Create a blank sheet
+			XSSFSheet currentMonthSpreadsheet = workbook.createSheet(monthNames.get(month)+"_Month_PlanTracker");
+			//XSSFSheet previuosMonthSpreadsheet = workbook.createSheet("Previous_Month_PlanTracker");
+
+			// Create row object
+			XSSFRow row;
+			
+			List<MonthwisePlanTrackerViewEntity> monthwisePlanDetails =getMonthwisePlanTrackerDetails(partyId, month, year);
+			Map<String, Object[]> monthwisePlanTrackerMap = getMonthwisePlanTrackerDetails(monthwisePlanDetails);
+			Map<String, Object[]> othersActStatementMap = null;//getOthersCassificationDetails( fgReportDetailsList);
+
+			// Iterate over data and write to sheet
+			Set<String> keyid = monthwisePlanTrackerMap.keySet();
+			int rowid = 0;
+
+			for (String key : keyid) {
+				row = currentMonthSpreadsheet.createRow(rowid++);
+				Object[] objectArr = monthwisePlanTrackerMap.get(key);
+				int cellid = 0;
+				for (Object obj : objectArr) {
+					Cell cell = row.createCell(cellid++);
+				    cell.setCellStyle(borderStyle);
+				    if(obj!=null ) {
+						cell.setCellValue(""+obj);
+				    } else {
+						cell.setCellValue("");
+				    }
+				}
+			}
+			/*
+			// Iterate over data and write to sheet
+			Set<String> keyid1 = othersActStatementMap.keySet();
+			rowid = 0;
+
+			for (String key : keyid1) {
+				row = previuosMonthSpreadsheet.createRow(rowid++);
+				Object[] objectArr = othersActStatementMap.get(key);
+				int cellid = 0;
+				for (Object obj : objectArr) {
+					Cell cell = row.createCell(cellid++);
+				    cell.setCellStyle(borderStyle);
+					cell.setCellValue(""+obj);
+				}
+			}
+			*/
+            String baseDirectory = env.getProperty("email.folderpath")+File.separator;
+            
+			File outputPojoDirectory = new File(baseDirectory);
+			outputPojoDirectory.mkdirs();
+			
+			File fullPath = new File(baseDirectory +File.separator+"Monthly_PlanTracker_"+strDate+".xlsx");
+			
+			FileOutputStream out = new FileOutputStream(fullPath);
+			workbook.write(out);
+			
+			FileSystemResource file = new FileSystemResource(fullPath);
+			if(monthwisePlanTrackerMap!=null && monthwisePlanTrackerMap.size()>1) {
+				attachmentRequired=true;
+				helper.addAttachment("Monthly_PlanTracker_" + strDate + ".xlsx", file);
+			}
+			if(othersActStatementMap!=null && othersActStatementMap.size()>1) {
+				attachmentRequired=true;
+				helper.addAttachment("Monthly_PlanTracker_" + strDate + ".xlsx", file);
+			}
+			
+			out.close();
+			fullPath.deleteOnExit();
+			//System.out.println("File Created At -- " + baseDirectory);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return attachmentRequired;
+	}
+
+	public List<MonthwisePlanTrackerViewEntity> getMonthwisePlanTrackerDetails(int partyId, int month, int year) {
+
+		List<MonthwisePlanTrackerViewEntity> partyList = monthwisePlanTrackerViewRepository.findByPartyidAndMnthAndYer(partyId, month, year);
+		return partyList;
+	}
+
+	public Map<String, Object[]> getMonthwisePlanTrackerDetails(List<MonthwisePlanTrackerViewEntity> partyList) {
+
+		Map<String, Object[]> acctStatementMap = new LinkedHashMap<>();
+
+		try {
+
+			acctStatementMap.put("1",
+					new Object[] { "Plan pdf No", "Plan Date", "Mother Coil No", "Plan pdf qty", "Batch No",
+							"Aspen Coil No", "Material Type", "Material Grade", "Inward Coil Weight", "Packet Id",
+							"Thickness", "Width", "Length", "Quality Status", "Quality Remarks", "Packet Qty",
+							"Packet Status (wip/FG/defective)", "End User" });
+			int cnt = 1;
+			for (MonthwisePlanTrackerViewEntity kk : partyList) {
+				cnt++;
+				acctStatementMap.put("" + cnt, new Object[] { kk.getPartdetailsid(), kk.getPlandate(),
+						kk.getMothercoilno(), kk.getPlanPdfQty(), kk.getCustomerbatchid(), kk.getAspencoilno(),
+						kk.getMaterialdesc(), kk.getMaterialgrade(), kk.getFquantity(), kk.getPacketid(),
+						kk.getFthickness(), kk.getPlannedwidth(), kk.getPlannedlength(), kk.getQualitystatus(),
+						kk.getQualityremarks(), kk.getPlannedweight(), kk.getPacketstatus(), kk.getEndusertagname() });
+			}
+		} catch (Exception e) {
+			LOGGER.error("Error at getMonthwisePlanTrackerDetails " + e.getMessage());
+		}
+		return acctStatementMap;
+	}
+	
 	
 }
