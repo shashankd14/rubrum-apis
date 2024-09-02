@@ -13,6 +13,8 @@ public interface ReportsService {
 	String generateAndMailStockReport(StockReportRequest stockReportRequest);
 
 	boolean createStockReport(int partyId, String strDate, MimeMessageHelper helper);
+	
+	boolean createStockDetailsReport(int partyId, String strDate, MimeMessageHelper helper);
 
 	boolean createFGReport(int partyId, String strDate, MimeMessageHelper helper);
 
@@ -41,7 +43,6 @@ public interface ReportsService {
 
 	boolean createEndUserTagWiseFGReport(Integer getnPartyId, String strDate, MimeMessageHelper helper);
 
-	boolean createMonthwisePlanTrackerReport(int partyId, String strDate, MimeMessageHelper helper, Integer month,
-			Map<Integer, String> months, Integer year);
+	boolean createMonthwisePlanTrackerReport(int partyId, String strDate, MimeMessageHelper helper);
 
 }
