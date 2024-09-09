@@ -59,6 +59,8 @@ public class InwardEntryResponseDto {
 
     private String vProcess;
 
+    private String tdcNo;
+
     private Float fpresent;
 
     private Float valueOfGoods;
@@ -409,6 +411,14 @@ public class InwardEntryResponseDto {
 
 	public void setScrapWeight(Float scrapWeight) {
 		this.scrapWeight = scrapWeight;
+	}
+
+	public String getTdcNo() {
+		return tdcNo;
+	}
+
+	public void setTdcNo(String tdcNo) {
+		this.tdcNo = tdcNo;
 	}
     
     

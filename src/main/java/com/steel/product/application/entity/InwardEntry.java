@@ -91,6 +91,9 @@ public class InwardEntry {
 	@Column(name = "vprocess")
 	private String vProcess;
 
+	@Column(name = "tdc_no")
+	private String tdcNo;
+
 	@Column(name = "fpresent")
 	private Float fpresent;
 
@@ -514,6 +517,14 @@ public class InwardEntry {
 		this.labelpdfS3Url = labelpdfS3Url;
 	}
 
+	public String getTdcNo() {
+		return tdcNo;
+	}
+
+	public void setTdcNo(String tdcNo) {
+		this.tdcNo = tdcNo;
+	}
+
 	public static InwardEntryPdfDto valueOf(InwardEntry inwardEntry, List<InstructionResponsePdfDto> instructionResponsePdfDtos){
         InwardEntryPdfDto inwardEntryPdfDto = new InwardEntryPdfDto();
         inwardEntryPdfDto.setInwardEntryId(inwardEntry.getInwardEntryId());
@@ -597,6 +608,7 @@ public class InwardEntry {
 		inwardEntryResponseDto.setInwardEntryId(inwardEntry.getInwardEntryId());
 		inwardEntryResponseDto.setParty(inwardEntry.getParty() != null ? Party.valueOf(inwardEntry.getParty()) : null);
 		inwardEntryResponseDto.setCoilNumber(inwardEntry.getCoilNumber());
+		inwardEntryResponseDto.setTdcNo( inwardEntry.getTdcNo() );
 		inwardEntryResponseDto.setBatchNumber(inwardEntry.getBatchNumber());
 		inwardEntryResponseDto.setCustomerBatchId(inwardEntry.getCustomerBatchId());
 		inwardEntryResponseDto.setfQuantity(inwardEntry.getfQuantity());

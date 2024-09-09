@@ -48,6 +48,8 @@ public class InwardDto {
 
 	private String process;
 
+	private String tdcNo;
+
 	private float presentWeight;
 
 	private float valueOfGoods;
@@ -286,4 +288,14 @@ public class InwardDto {
 	public void setParentCoilNumber(String parentCoilNumber) {
 		this.parentCoilNumber = parentCoilNumber;
 	}
+
+	public String getTdcNo() {
+		return tdcNo;
+	}
+
+	public void setTdcNo(String tdcNo) {
+		this.tdcNo = tdcNo;
+	}
+	
+	
 }

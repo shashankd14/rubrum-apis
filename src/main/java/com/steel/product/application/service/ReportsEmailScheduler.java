@@ -69,8 +69,8 @@ public class ReportsEmailScheduler {
 			if(month==12) {
 				 currentYear = currentYear-1;
 			}
-			logger.info("currentYear  == " + currentYear);
-			logger.info("month  == " + month);
+			//logger.info("currentYear  == " + currentYear);
+			//logger.info("month  == " + month);
 			List<Party> partyList = partyRepo.findAll();
 			for (Party party : partyList) {
 				if (party.getEmail1() != null && party.getEmail1().length() > 0 && party.getMonthlyReportsList() != null && party.getMonthlyReportsList().length() > 0) {

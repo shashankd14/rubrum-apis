@@ -109,6 +109,7 @@ public class InwardEntryController {
 			inwardEntry.setStatus(this.statusService.getStatusById(1));
 
 			inwardEntry.setvProcess(inward.getProcess());
+			inwardEntry.setTdcNo(inward.getTdcNo());
 			inwardEntry.setFpresent(inward.getPresentWeight());
 			inwardEntry.setValueOfGoods(inward.getValueOfGoods());
 
@@ -133,18 +134,14 @@ public class InwardEntryController {
 			InwardEntry savedInwardEntry = inwdEntrySvc.saveEntry(inwardEntry);
 
 			if (inward.getInwardFiles() != null) {
-
 				for (MultipartFile file : inward.getInwardFiles()) {
-
 					InwardDoc inwardDoc = new InwardDoc();
 					inwardDoc.setInwardEntry(inwardEntry);
 					String str = awsS3Service.uploadFile(file);
 					inwardDoc.setDocUrl(str);
-
 					inwardDocService.save(inwardDoc);
 				}
 			}
-
 			return new ResponseEntity<Object>(InwardEntry.valueOfResponse(inwardEntry), HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();

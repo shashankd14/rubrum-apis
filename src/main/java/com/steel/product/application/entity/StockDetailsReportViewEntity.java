@@ -43,8 +43,8 @@ public class StockDetailsReportViewEntity {
 	@Column(name = "classification_tag")
 	private String classificationTag;
 
-	@Column(name = "partyname")
-	private String partyname;
+	@Column(name = "endusertagname")
+	private String endusertagname;
 
 	@Column(name = "materialdesc")
 	private String materialdesc;
@@ -63,6 +63,9 @@ public class StockDetailsReportViewEntity {
 
 	@Column(name = "fthickness")
 	private String fthickness;
+
+	@Column(name = "tdc_no")
+	private String tdcNo;
 
 	@Column(name = "actualwidth")
 	private String actualwidth;

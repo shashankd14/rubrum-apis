@@ -175,6 +175,9 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 				&& "DESC".equalsIgnoreCase(searchListPageRequest.getSortOrder())) {
 			pageable = PageRequest.of((searchListPageRequest.getPageNo()-1), searchListPageRequest.getPageSize(), Sort.by(searchListPageRequest.getSortColumn()).descending());
 		} else {
+			if(searchListPageRequest.getPageNo() == null ) {
+				searchListPageRequest.setPageNo(1);
+			}
 			pageable = PageRequest.of((searchListPageRequest.getPageNo()-1), searchListPageRequest.getPageSize(), Sort.by("inwardEntryId").descending());
 		}
 		

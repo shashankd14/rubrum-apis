@@ -166,7 +166,11 @@ public class ReportsServiceImpl implements ReportsService {
 				for (Object obj : objectArr) {
 					Cell cell = row.createCell(cellid++);
 				    cell.setCellStyle(borderStyle);
-					cell.setCellValue(""+obj);
+				    if (obj != null) {
+						cell.setCellValue("" + obj);
+					} else {
+						cell.setCellValue("");
+					}
 				}
 			}
 			
@@ -261,7 +265,11 @@ public class ReportsServiceImpl implements ReportsService {
 				for (Object obj : objectArr) {
 					Cell cell = row.createCell(cellid++);
 				    cell.setCellStyle(borderStyle);
-					cell.setCellValue(""+obj);
+				    if (obj != null) {
+						cell.setCellValue("" + obj);
+					} else {
+						cell.setCellValue("");
+					}
 				}
 			}
 
@@ -276,7 +284,11 @@ public class ReportsServiceImpl implements ReportsService {
 				for (Object obj : objectArr) {
 					Cell cell = row.createCell(cellid++);
 				    cell.setCellStyle(borderStyle);
-					cell.setCellValue(""+obj);
+				    if (obj != null) {
+						cell.setCellValue("" + obj);
+					} else {
+						cell.setCellValue("");
+					}
 				}
 			}
 			
@@ -407,7 +419,11 @@ public class ReportsServiceImpl implements ReportsService {
 				for (Object obj : objectArr) {
 					Cell cell = row.createCell(cellid++);
 				    cell.setCellStyle(borderStyle);
-					cell.setCellValue(""+obj);
+				    if (obj != null) {
+						cell.setCellValue("" + obj);
+					} else {
+						cell.setCellValue("");
+					}
 				}
 			}
 			
@@ -502,9 +518,12 @@ public class ReportsServiceImpl implements ReportsService {
 				for (Object obj : objectArr) {
 					Cell cell = row.createCell(cellid++);
 				    cell.setCellStyle(borderStyle);
-					cell.setCellValue(""+obj);
+				    if (obj != null) {
+						cell.setCellValue("" + obj);
+					} else {
+						cell.setCellValue("");
+					}
 				}
-			
 			}
 			
             String baseDirectory = env.getProperty("email.folderpath")+File.separator;
@@ -600,7 +619,11 @@ public class ReportsServiceImpl implements ReportsService {
 				for (Object obj : objectArr) {
 					Cell cell = row.createCell(cellid++);
 				    cell.setCellStyle(borderStyle);
-					cell.setCellValue(""+obj);
+				    if (obj != null) {
+						cell.setCellValue("" + obj);
+					} else {
+						cell.setCellValue("");
+					}
 				}
 			
 			}
@@ -698,7 +721,11 @@ public class ReportsServiceImpl implements ReportsService {
 				for (Object obj : objectArr) {
 					Cell cell = row.createCell(cellid++);
 				    cell.setCellStyle(borderStyle);
-					cell.setCellValue(""+obj);
+				    if (obj != null) {
+						cell.setCellValue("" + obj);
+					} else {
+						cell.setCellValue("");
+					}
 				}
 			
 			}
@@ -765,7 +792,11 @@ public class ReportsServiceImpl implements ReportsService {
 				for (Object obj : objectArr) {
 					Cell cell = row.createCell(cellid++);
 				    cell.setCellStyle(borderStyle);
-					cell.setCellValue(""+obj);
+				    if (obj != null) {
+						cell.setCellValue("" + obj);
+					} else {
+						cell.setCellValue("");
+					}
 				}
 			}
 			
@@ -831,7 +862,11 @@ public class ReportsServiceImpl implements ReportsService {
 				for (Object obj : objectArr) {
 					Cell cell = row.createCell(cellid++);
 				    cell.setCellStyle(borderStyle);
-					cell.setCellValue(""+obj);
+				    if (obj != null) {
+						cell.setCellValue("" + obj);
+					} else {
+						cell.setCellValue("");
+					}
 				}
 			
 			}
@@ -976,7 +1011,11 @@ public class ReportsServiceImpl implements ReportsService {
 				for (Object obj : objectArr) {
 					Cell cell = row.createCell(cellid++);
 				    cell.setCellStyle(borderStyle);
-					cell.setCellValue(""+obj);
+				    if (obj != null) {
+						cell.setCellValue("" + obj);
+					} else {
+						cell.setCellValue("");
+					}
 				}
 			}
 			
@@ -1070,7 +1109,11 @@ public class ReportsServiceImpl implements ReportsService {
 				for (Object obj : objectArr) {
 					Cell cell = row.createCell(cellid++);
 				    cell.setCellStyle(borderStyle);
-					cell.setCellValue(""+obj);
+				    if (obj != null) {
+						cell.setCellValue("" + obj);
+					} else {
+						cell.setCellValue("");
+					}
 				}
 			}
 			
@@ -1172,7 +1215,12 @@ public class ReportsServiceImpl implements ReportsService {
 					for (Object obj : objectArr) {
 						Cell cell = row.createCell(cellid++);
 					    cell.setCellStyle(borderStyle);
-						cell.setCellValue(""+obj);
+						if (obj != null) {
+							cell.setCellValue("" + obj);
+						} else {
+							cell.setCellValue("");
+						}
+						
 					}
 				}
 			}
@@ -1190,7 +1238,11 @@ public class ReportsServiceImpl implements ReportsService {
 				for (Object obj : objectArr) {
 					Cell cell = row.createCell(cellid++);
 				    cell.setCellStyle(borderStyle);
-					cell.setCellValue(""+obj);
+				    if (obj != null) {
+						cell.setCellValue("" + obj);
+					} else {
+						cell.setCellValue("");
+					}
 				}
 			}
 			
@@ -1491,7 +1543,11 @@ public class ReportsServiceImpl implements ReportsService {
 				for (Object obj : objectArr) {
 					Cell cell = row.createCell(cellid++);
 				    cell.setCellStyle(borderStyle);
-					cell.setCellValue(""+obj);
+				    if (obj != null) {
+						cell.setCellValue("" + obj);
+					} else {
+						cell.setCellValue("");
+					}
 				}
 			}
 			
@@ -1530,19 +1586,19 @@ public class ReportsServiceImpl implements ReportsService {
 
 			acctStatementMap.put("1",
 					new Object[] { "Current Date", "Finishing Date", "EPA Name", "EPA location", "Mtrl. Age(Days)",
-							"Classification Tag", "Customer Name", "Material Desc", "Parent Batch (TSL)",
+							"Classification Tag", "Customer Name", "Material Desc", "Parent Batch (TSL)","TDC No",
 							"EPA Input Batch", "Child Packet Id", "MaterialGrade", "Thickness", "Actual Width",
-							"Actual Length", "Quality", "Net Wt (Mt)", "Quality Remarks", "Clubbed bundle No" });
+							"Actual Length", "Quality", "Net Wt (Mt)"});
 
 			int cnt = 1;
 			for (StockDetailsReportViewEntity kk : partyList) {
 				cnt++;
 				acctStatementMap.put("" + cnt,
 				new Object[] { kk.getCurrentdate(), kk.getFinishingdate(), kk.getEpaname(), kk.getEpalocation(),
-				kk.getCoilage(), kk.getClassificationTag(), kk.getPartyname(), kk.getMaterialdesc(),
-				kk.getParentbatch(), kk.getEpainputbatch(), kk.getPartyId(), kk.getMaterialgrade(),
-				kk.getFthickness(), kk.getActualwidth(), kk.getActuallength(), kk.getQuality(),
-				kk.getNetweight(), kk.getQualityremarks(), kk.getClubbedbundleno() });
+				kk.getCoilage(), kk.getClassificationTag(), kk.getEndusertagname(),
+				kk.getMaterialdesc(), kk.getParentbatch(), kk.getTdcNo(), kk.getEpainputbatch(),
+				kk.getPacketId(), kk.getMaterialgrade(), kk.getFthickness(), kk.getActualwidth(),
+				kk.getActuallength(), kk.getQuality(), kk.getNetweight() });
 			}
 		} catch (Exception e) {
 			LOGGER.error("Error at getStockDetailsReportDetails " + e.getMessage());
