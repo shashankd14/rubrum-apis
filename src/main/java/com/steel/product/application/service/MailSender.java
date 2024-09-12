@@ -77,6 +77,7 @@ public class MailSender {
 			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0	&& party.getDailyReportsList().contains("WIPREPORT")) {
 				mailStts = true;
 				reportsService.createWIPReport(party.getnPartyId(), strDate, helper);
+				reportsService.createWIPReportEndusertagwise(party.getnPartyId(), strDate, helper);
 			}
 			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0 && party.getDailyReportsList().contains("STOCKSUMMARYREPORT")) {
 				mailStts = true;

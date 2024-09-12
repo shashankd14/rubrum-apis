@@ -45,4 +45,6 @@ public interface ReportsService {
 
 	boolean createMonthwisePlanTrackerReport(int partyId, String strDate, MimeMessageHelper helper);
 
+	boolean createWIPReportEndusertagwise(Integer getnPartyId, String strDate, MimeMessageHelper helper);
+
 }

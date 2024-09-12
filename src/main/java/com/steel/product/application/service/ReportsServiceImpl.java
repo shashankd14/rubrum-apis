@@ -401,7 +401,7 @@ public class ReportsServiceImpl implements ReportsService {
 			
 			// Create a blank sheet
 			XSSFSheet spreadsheet = workbook.createSheet("WIP_Report");
-
+			
 			// Create row object
 			XSSFRow row;
 
@@ -451,7 +451,7 @@ public class ReportsServiceImpl implements ReportsService {
 		}
 		return attachmentRequired;
 	}
-
+	
 	public Map<String, Object[]> getWIPReportDetails(int partyId) {
 
 		Map<String, Object[]> acctStatementMap = new LinkedHashMap<>();
@@ -483,6 +483,130 @@ public class ReportsServiceImpl implements ReportsService {
 		return acctStatementMap;
 	}
 
+	@Override
+	public boolean createWIPReportEndusertagwise(Integer partyId, String strDate, MimeMessageHelper helper) {
+
+		boolean attachmentRequired = false;
+		try {
+			// Create blank workbook
+			XSSFWorkbook workbook = new XSSFWorkbook();
+			
+			CellStyle borderStyle = workbook.createCellStyle();
+			borderStyle.setBorderBottom(BorderStyle.THIN);
+		    borderStyle.setBorderLeft(BorderStyle.THIN);
+			borderStyle.setBorderRight(BorderStyle.THIN);
+			borderStyle.setBorderTop(BorderStyle.THIN);
+			borderStyle.setAlignment(HorizontalAlignment.CENTER);
+			
+			List<WIPReportViewEntity> wipReportDetailsList = getWIPReportDetails1(partyId);
+			
+			Map<String, String> listOfEndUserTags =  getListOfWIPEndUserTags(wipReportDetailsList);
+			for (Map.Entry<String, String> entry : listOfEndUserTags.entrySet()) {
+				// Create a blank sheet
+				XSSFSheet fgSpreadsheet = workbook.createSheet(entry.getKey()+"_EndUserTag");
+
+				// Create row object
+				XSSFRow row;
+				
+				Map<String, Object[]> fgAcctStatementMap = getEndUserWiseWIPDetails(wipReportDetailsList, entry.getKey());
+				// Iterate over data and write to sheet
+				Set<String> keyid = fgAcctStatementMap.keySet();
+				int rowid = 0;
+
+				for (String key : keyid) {
+					row = fgSpreadsheet.createRow(rowid++);
+					Object[] objectArr = fgAcctStatementMap.get(key);
+					int cellid = 0;
+					for (Object obj : objectArr) {
+						Cell cell = row.createCell(cellid++);
+					    cell.setCellStyle(borderStyle);
+						if (obj != null) {
+							cell.setCellValue("" + obj);
+						} else {
+							cell.setCellValue("");
+						}
+						
+					}
+				}
+			}
+			
+            String baseDirectory = env.getProperty("email.folderpath")+File.separator;
+            
+			File outputPojoDirectory = new File(baseDirectory);
+			outputPojoDirectory.mkdirs();
+			
+			File fullPath = new File(baseDirectory +File.separator+"WIP_EndUserTagwise_"+strDate+".xlsx");
+			
+			FileOutputStream out = new FileOutputStream(fullPath);
+			workbook.write(out);
+			
+			FileSystemResource file = new FileSystemResource(fullPath);
+			helper.addAttachment("WIP_EndUserTagwise_" + strDate + ".xlsx", file);
+			
+			out.close();
+			fullPath.deleteOnExit();
+			//System.out.println("File Created At -- " + baseDirectory);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return attachmentRequired;
+	}
+	
+	public Map<String, String> getListOfWIPEndUserTags(List<WIPReportViewEntity> partyList) {
+		Map<String, String> listOfEndUserTags = new LinkedHashMap<>();
+		try {
+			for (WIPReportViewEntity kk : partyList) {
+				if (kk.getEnduserTagName() != null && kk.getEnduserTagName().length() > 0) {
+					listOfEndUserTags.put(kk.getEnduserTagName(), kk.getEnduserTagName());
+				} else {
+					listOfEndUserTags.put("NO_ENDUSERTAG", "NO_ENDUSERTAG");
+				}
+			}
+		} catch (Exception e) {
+			LOGGER.error("Error at getListOfWIPEndUserTags " + e.getMessage());
+		}
+		return listOfEndUserTags;
+	}
+	
+	public List<WIPReportViewEntity> getWIPReportDetails1(int partyId) {
+
+		List<WIPReportViewEntity> partyList = wipReportViewRepository.findByPartyId(partyId);
+		return partyList;
+	}
+
+	public Map<String, Object[]> getEndUserWiseWIPDetails(List<WIPReportViewEntity> partyList, String endUserTagName) {
+		Map<String, Object[]> acctStatementMap = new LinkedHashMap<>();
+		try {
+
+			acctStatementMap.put("1", new Object[] { "CoilNumber", "CustomerBatchId", "Processing Plan Date", "Current Date",
+				"Coil Age(No'of Days)", "MaterialDesc", "MaterialGrade", "Thickness", "Width", "Length",
+				"Net Weight", "In Stock Weight", "WIP Weight", "Remarks", "Packet id", "Thickness",
+				"Planned Width", "Planned Length", "Planned Weight", "Inward Status", "Classification Tag", "End User Tag"});
+
+			int cnt = 1;
+			for (WIPReportViewEntity kk : partyList) {
+				if (kk.getEnduserTagName() == null || "".equals(kk.getEnduserTagName())) {
+					kk.setEnduserTagName("NO_ENDUSERTAG");
+				}
+				if (endUserTagName.equals(kk.getEnduserTagName())) {
+					cnt++;
+					acctStatementMap.put("" + cnt,
+					new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getProcessingPlanDate(),
+					kk.getCurrentdate(), kk.getCoilage(), kk.getMaterialDesc(), kk.getMaterialGrade(),
+					kk.getFthickness(), kk.getFwidth(), kk.getFlength(), kk.getNetWeight(),
+					kk.getInStockWeight(), kk.getWipWeight(), kk.getRemarks(), kk.getPacketId(),
+					kk.getThickness(), kk.getPlannedWidth(), kk.getPlannedLength(),
+					kk.getPlannedWeight(), kk.getInwardStatus(), kk.getClassificationTag(), 
+					kk.getEnduserTagName()});
+				}
+			}
+
+		} catch (Exception e) {
+			LOGGER.error("Error at getEndUserWiseWIPDetails " + e.getMessage());
+		}
+		return acctStatementMap;
+	}
+	
 	@Override
 	public boolean createStockSummaryReport(int partyId, String strDate, MimeMessageHelper helper) {
 
@@ -1251,13 +1375,13 @@ public class ReportsServiceImpl implements ReportsService {
 			File outputPojoDirectory = new File(baseDirectory);
 			outputPojoDirectory.mkdirs();
 			
-			File fullPath = new File(baseDirectory +File.separator+"EndUserTagwiseFGReport_"+strDate+".xlsx");
+			File fullPath = new File(baseDirectory +File.separator+"FG_EndUserTagWise_"+strDate+".xlsx");
 			
 			FileOutputStream out = new FileOutputStream(fullPath);
 			workbook.write(out);
 			
 			FileSystemResource file = new FileSystemResource(fullPath);
-			helper.addAttachment("EndUserTagwiseFGReport_" + strDate + ".xlsx", file);
+			helper.addAttachment("FG_EndUserTagWise_" + strDate + ".xlsx", file);
 			
 			out.close();
 			fullPath.deleteOnExit();

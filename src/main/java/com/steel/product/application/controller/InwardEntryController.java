@@ -182,6 +182,7 @@ public class InwardEntryController {
 
 			inwardEntry.setStatus(this.statusService.getStatusById(inward.getStatusId()));
 			inwardEntry.setvProcess(inward.getProcess());
+			inwardEntry.setTdcNo(inward.getTdcNo());
 			inwardEntry.setFpresent(inward.getPresentWeight());
 
 			inwardEntry.setBilledweight(0);
