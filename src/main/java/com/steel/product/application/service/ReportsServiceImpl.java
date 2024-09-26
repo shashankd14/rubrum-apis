@@ -1511,22 +1511,23 @@ public class ReportsServiceImpl implements ReportsService {
 				    }
 				}
 			}
-
-			// Iterate over data and write to sheet
-			Set<String> keyid1 = previuosMonthMap.keySet();
-			rowid = 0;
-
-			for (String key : keyid1) {
-				row = previuosMonthSpreadsheet.createRow(rowid++);
-				Object[] objectArr = previuosMonthMap.get(key);
-				int cellid = 0;
-				for (Object obj : objectArr) {
-					Cell cell = row.createCell(cellid++);
-					cell.setCellStyle(borderStyle);
-					if (obj != null) {
-						cell.setCellValue("" + obj);
-					} else {
-						cell.setCellValue("");
+			if(previuosMonthMap!=null && previuosMonthMap.size()>1) {
+				// Iterate over data and write to sheet
+				Set<String> keyid1 = previuosMonthMap.keySet();
+				rowid = 0;
+	
+				for (String key : keyid1) {
+					row = previuosMonthSpreadsheet.createRow(rowid++);
+					Object[] objectArr = previuosMonthMap.get(key);
+					int cellid = 0;
+					for (Object obj : objectArr) {
+						Cell cell = row.createCell(cellid++);
+						cell.setCellStyle(borderStyle);
+						if (obj != null) {
+							cell.setCellValue("" + obj);
+						} else {
+							cell.setCellValue("");
+						}
 					}
 				}
 			}
@@ -1710,8 +1711,8 @@ public class ReportsServiceImpl implements ReportsService {
 
 			acctStatementMap.put("1",
 					new Object[] { "Current Date", "Finishing Date", "EPA Name", "EPA location", "Mtrl. Age(Days)",
-							"Classification Tag", "Customer Name", "Material Desc", "Parent Batch (TSL)","TDC No",
-							"EPA Input Batch", "Child Packet Id", "MaterialGrade", "Thickness", "Actual Width",
+							"Classification Tag", "Customer Name", "Material Desc", "Parent Batch (TSL)",
+							"EPA Input Batch", "Child Packet Id", "MaterialGrade", "TDC No", "Thickness", "Actual Width",
 							"Actual Length", "Quality", "Net Wt (Mt)"});
 
 			int cnt = 1;
@@ -1720,8 +1721,8 @@ public class ReportsServiceImpl implements ReportsService {
 				acctStatementMap.put("" + cnt,
 				new Object[] { kk.getCurrentdate(), kk.getFinishingdate(), kk.getEpaname(), kk.getEpalocation(),
 				kk.getCoilage(), kk.getClassificationTag(), kk.getEndusertagname(),
-				kk.getMaterialdesc(), kk.getParentbatch(), kk.getTdcNo(), kk.getEpainputbatch(),
-				kk.getPacketId(), kk.getMaterialgrade(), kk.getFthickness(), kk.getActualwidth(),
+				kk.getMaterialdesc(), kk.getParentbatch(), kk.getEpainputbatch(),
+				kk.getPacketId(), kk.getMaterialgrade(), kk.getTdcNo(), kk.getFthickness(), kk.getActualwidth(),
 				kk.getActuallength(), kk.getQuality(), kk.getNetweight() });
 			}
 		} catch (Exception e) {
