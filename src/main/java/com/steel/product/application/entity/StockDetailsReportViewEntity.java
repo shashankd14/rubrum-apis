@@ -79,9 +79,6 @@ public class StockDetailsReportViewEntity {
 	@Column(name = "netweight")
 	private String netweight;
 
-	@Column(name = "qualityremarks")
-	private String qualityremarks;
-
 	@Column(name = "clubbedbundleno")
 	private String clubbedbundleno;
 

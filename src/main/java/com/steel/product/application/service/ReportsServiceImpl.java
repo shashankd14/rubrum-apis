@@ -1713,7 +1713,7 @@ public class ReportsServiceImpl implements ReportsService {
 					new Object[] { "Current Date", "Finishing Date", "EPA Name", "EPA location", "Mtrl. Age(Days)",
 							"Classification Tag", "Customer Name", "Material Desc", "Parent Batch (TSL)",
 							"EPA Input Batch", "Child Packet Id", "MaterialGrade", "TDC No", "Thickness", "Actual Width",
-							"Actual Length", "Quality", "Net Wt (Mt)"});
+							"Actual Length", "Quality Remarks (For Deviation)", "Net Wt (Mt)"});
 
 			int cnt = 1;
 			for (StockDetailsReportViewEntity kk : partyList) {
