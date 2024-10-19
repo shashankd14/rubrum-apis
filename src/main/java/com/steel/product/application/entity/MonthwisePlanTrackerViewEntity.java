@@ -31,6 +31,9 @@ public class MonthwisePlanTrackerViewEntity {
 	@Column(name = "plandate")
 	private String plandate;
 
+	@Column(name = "finishingdate")
+	private String finishingdate;
+
 	@Column(name = "mothercoilno")
 	private String mothercoilno;
 

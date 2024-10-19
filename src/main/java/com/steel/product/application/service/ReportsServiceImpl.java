@@ -1589,7 +1589,7 @@ public class ReportsServiceImpl implements ReportsService {
 					.findByPartyidAndMnthAndYer(partyId, month, year);
 
 			acctStatementMap.put("1",
-					new Object[] { "Plan pdf No", "Plan Date", "Mother Coil No", "Plan pdf qty", "Batch No",
+					new Object[] { "Plan pdf No", "Plan Date", "Finishing Date", "Mother Coil No", "Plan pdf qty", "Batch No",
 							"Aspen Coil No", "Material Type", "Material Grade", "Inward Coil Weight", "Packet Id",
 							"Thickness", "Width", "Length", "Quality Status", "Packet Qty",
 							"Packet Status", "End User" });
@@ -1597,7 +1597,7 @@ public class ReportsServiceImpl implements ReportsService {
 			for (MonthwisePlanTrackerViewEntity kk : partyList) {
 				cnt++;
 				acctStatementMap.put("" + cnt,
-						new Object[] { kk.getPartdetailsid(), kk.getPlandate(), kk.getMothercoilno(),
+						new Object[] { kk.getPartdetailsid(), kk.getPlandate(), kk.getFinishingdate(), kk.getMothercoilno(),
 								kk.getPlanPdfQty(), kk.getCustomerbatchid(), kk.getAspencoilno(), kk.getMaterialdesc(),
 								kk.getMaterialgrade(), kk.getFquantity(), kk.getPacketid(), kk.getFthickness(),
 								kk.getPlannedwidth(), kk.getPlannedlength(), kk.getQualitystatus(),

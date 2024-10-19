@@ -10,11 +10,11 @@ import lombok.Setter;
 public class QualityInspDispatchListResponse {
 
 	private String deliveryDate;
-	
+
 	private Integer deliveryChalanNo;
-	
+
 	private String customerBatchNo;
-	
+
 	private BigDecimal qtyDelivered;
 
 	private String coilNo;
@@ -26,13 +26,13 @@ public class QualityInspDispatchListResponse {
 	private String customerInvoiceNo;
 
 	private String partyName;
-	
+
 	private String customerInvoiceDate;
 
 	private int nPartyId;
 
 	private Integer qirId;
-	
+
 	private String materialGrade;
 
 	private String materialDesc;
@@ -40,8 +40,7 @@ public class QualityInspDispatchListResponse {
 	private Float fthickness;
 
 	private Float fwidth;
-	
-	
-	
-	
+
+	private String deliveryRemarks;
+
 }

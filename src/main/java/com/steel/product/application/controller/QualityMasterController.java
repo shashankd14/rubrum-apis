@@ -545,6 +545,7 @@ public class QualityMasterController {
 			resp.setFwidth(result[12] != null ? (Float) result[12] : null);
 			resp.setMaterialDesc(result[13] != null ? (String) result[13] : null);
 			resp.setMaterialGrade( result[14] != null ? (String) result[14] : null);
+			resp.setDeliveryRemarks(result[15] != null ? (String) result[15] : null);
 			qirList.add(resp);
 		}
 		response.put("content", qirList);
@@ -582,6 +583,7 @@ public class QualityMasterController {
 			resp.setFwidth(result[12] != null ? (Float) result[12] : null);
 			resp.setMaterialDesc(result[13] != null ? (String) result[13] : null);
 			resp.setMaterialGrade( result[14] != null ? (String) result[14] : null);
+			resp.setDeliveryRemarks(result[15] != null ? (String) result[15] : null);
 			qirList.add(resp);
 		}
 		response.put("content", qirList);
