@@ -831,7 +831,10 @@ public class InstructionServiceImpl implements InstructionService {
 						matgradeFlag=true;
 					} else {
 						List<Integer> materialGradeList =new ArrayList<>();
-						String[] materialGradeListq =  entity.getMatGradeIdList().replace("[","").replace("]","").split(",");
+						String[] materialGradeListq = {};
+						if(entity.getMatGradeIdList()!=null && entity.getMatGradeIdList().length() > 0 ) {
+							materialGradeListq =  entity.getMatGradeIdList().replace("[","").replace("]","").split(",");
+						}
 						for(String materialGradeId : materialGradeListq) {
 							if(materialGradeId!=null && (!"null".equals(materialGradeId)) && materialGradeId.trim().length()>0) {
 								materialGradeList.add(Integer.parseInt(materialGradeId.trim()));
@@ -845,7 +848,10 @@ public class InstructionServiceImpl implements InstructionService {
 						thicknessFlag=true;
 					} else {
 						List<Float> thicknessList =new ArrayList<>();
-						String[] thicknessListStr =  entity.getThicknessList().replace("[","").replace("]","").split(",");
+						String[] thicknessListStr = {};
+						if(entity.getThicknessList()!=null && entity.getThicknessList().length() > 0 ) {
+							thicknessListStr =  entity.getThicknessList().replace("[","").replace("]","").split(",");
+						}
 						for(String kkk : thicknessListStr) {
 							if(kkk!=null && kkk.trim().length()>0 ) {
 								thicknessList.add(new Float(kkk.trim()));
@@ -877,7 +883,11 @@ public class InstructionServiceImpl implements InstructionService {
 						widthFlag = true;
 					} else {
 						List<Float> widthList =new ArrayList<>();
-						String[] widthListStr =  entity.getWidthList().replace("[","").replace("]","").split(",");
+						String[] widthListStr = {};
+						if(entity.getWidthList()!=null && entity.getWidthList().length() > 0 ) {
+							widthListStr =  entity.getWidthList().replace("[","").replace("]","").split(",");
+						}
+						
 						for(String kkk : widthListStr) {
 							if(kkk!=null && kkk.trim().length()>0 ) {
 								widthList.add(new Float(kkk.trim()));
