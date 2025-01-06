@@ -21,6 +21,12 @@ public class PacketClassification {
     @Column(name = "classification_name")
     private String classificationName;
 
+	@Column(name = "createdby")
+	private Integer createdby;
+
+	@Column(name = "updatedby")
+	private Integer updatedby;
+
     @JsonIgnore
     @ManyToMany(mappedBy = "packetClassificationTags",fetch = FetchType.LAZY)
     private Set<Party> parties = new HashSet<>();
@@ -84,5 +90,21 @@ public class PacketClassification {
     public void setParties(Set<Party> parties) {
         this.parties = parties;
     }
+
+	public Integer getCreatedby() {
+		return createdby;
+	}
+
+	public void setCreatedby(Integer createdby) {
+		this.createdby = createdby;
+	}
+
+	public Integer getUpdatedby() {
+		return updatedby;
+	}
+
+	public void setUpdatedby(Integer updatedby) {
+		this.updatedby = updatedby;
+	}
 
 }

@@ -12,12 +12,17 @@ import java.util.Set;
 @Repository
 public interface PacketClassificationRepository extends JpaRepository<PacketClassification, Integer> {
 
-	List<PacketClassification> findAllByClassificationIdIn(List<Integer> packetClassificationIds);
+	public List<PacketClassification> findAllByClassificationIdIn(List<Integer> packetClassificationIds);
 
-	Set<PacketClassification> findAllByClassificationNameIn(List<String> classificationNames);
+	public Set<PacketClassification> findAllByClassificationNameIn(List<String> classificationNames);
 
-	PacketClassification findByClassificationName(String classificationName);
+	public PacketClassification findByClassificationName(String classificationName);
 
+	PacketClassification findByClassificationId(Integer classificationId);
+	
 	@Query("select pc from PacketClassification pc left join fetch pc.parties p where p.nPartyId = :partyId")
-	List<PacketClassification> findByPartyId(@Param("partyId") Integer partyId);
+	public List<PacketClassification> findByPartyId(@Param("partyId") Integer partyId);
+	
+	@Query("select mat from PacketClassification mat where mat.createdby in :userIds order by mat.classificationId desc")
+	public List<PacketClassification> findAllClassificationTags(@Param("userIds") List<Integer> userIds);
 }

@@ -1,17 +1,22 @@
 package com.steel.product.application.controller;
 
+import com.steel.product.application.dto.endusertags.EndUserTagsRequest;
 import com.steel.product.application.dto.packetClassification.PacketClassificationRequest;
 import com.steel.product.application.dto.packetClassification.PacketClassificationResponse;
 import com.steel.product.application.entity.PacketClassification;
 import com.steel.product.application.service.PacketClassificationService;
+import com.steel.product.application.util.CommonUtil;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -22,6 +27,9 @@ public class PacketClassificationController {
 
     @Resource
     private PacketClassificationService packetClassificationService;
+
+	@Autowired
+	private CommonUtil commonUtil;
 
     @GetMapping({"/list"})
     public ResponseEntity<Object> getAllTags() {
@@ -48,10 +56,17 @@ public class PacketClassificationController {
         return packetClassificationService.getAllPacketClassificationByPartyId(partyId);
     }
 
-    @PostMapping("/save")
-    public String savePacketClassification(@RequestBody List<PacketClassificationRequest> packetClassificationRequests){
-        return packetClassificationService.savePacketClassifications(packetClassificationRequests);
-    }
+	@PostMapping("/save")
+	public String savePacketClassification(@RequestBody List<PacketClassificationRequest> packetClassificationRequests) {
+
+		int userId = commonUtil.getUserId();
+		List<PacketClassificationRequest> endUserTagsRequestsNew = new ArrayList<>();
+		for (PacketClassificationRequest req : packetClassificationRequests) {
+			req.setCreatedby(userId);
+			endUserTagsRequestsNew.add(req);
+		}
+		return packetClassificationService.savePacketClassifications(packetClassificationRequests);
+	}
 
 	@DeleteMapping("/delete/{classificationId}")
 	public ResponseEntity<Object> deleteEndUserTags(@PathVariable("classificationId") int tagId) {

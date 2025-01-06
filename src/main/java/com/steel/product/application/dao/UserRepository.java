@@ -38,6 +38,11 @@ public interface UserRepository extends CrudRepository< AdminUserEntity, Integer
 	@Transactional
 	@Query("delete from UserRoleMap where userId = :userId")
 	public void deleteRoleMapByUserId(@Param("userId") Integer userId );
+
+    @Modifying
+	@Transactional
+	@Query("delete from UserLocationMappingEntity where userId = :userId")
+	public void deleteLocationMapByUserId(@Param("userId") Integer userId );
     
     @Query(value = "SELECT enduser_tag_id, user_id FROM admin_user_enduser_mapping where user_id= :userId ", nativeQuery = true)
 	public List<Object[]> getEndUserDetails(@Param("userId") Integer userId );

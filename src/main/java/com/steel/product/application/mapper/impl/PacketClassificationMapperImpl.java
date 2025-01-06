@@ -67,18 +67,16 @@ public class PacketClassificationMapperImpl implements PacketClassificationMappe
     }
 
     @Override
-    public PacketClassification toEntity(PacketClassificationRequest PacketClassificationRequest) {
-        if ( PacketClassificationRequest == null ) {
-            return null;
-        }
-
-        PacketClassification packetClassification = new PacketClassification();
-
-        packetClassification.setClassificationId( PacketClassificationRequest.getClassificationId() );
-        packetClassification.setClassificationName( PacketClassificationRequest.getClassificationName() );
-
-        return packetClassification;
-    }
+	public PacketClassification toEntity(PacketClassificationRequest packetClassificationRequest) {
+		if (packetClassificationRequest == null) {
+			return null;
+		}
+		PacketClassification packetClassification = new PacketClassification();
+		packetClassification.setClassificationId(packetClassificationRequest.getClassificationId());
+		packetClassification.setClassificationName(packetClassificationRequest.getClassificationName());
+		packetClassification.setCreatedby(packetClassificationRequest.getCreatedby());
+		return packetClassification;
+	}
 
     @Override
     public List<PacketClassification> requestToEntity(List<PacketClassificationRequest> packetClassificationRequest) {

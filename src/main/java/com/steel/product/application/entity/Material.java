@@ -162,6 +162,7 @@ public class Material {
 		materialResponseDetailsDto.setMaterialCode(material.getMaterialCode());
 		materialResponseDetailsDto.setDeleted(material.getIsDeleted());
 		materialResponseDetailsDto.setCreatedOn(material.getCreatedOn());
+		materialResponseDetailsDto.setCreatedBy(material.getCreatedBy());
 		return materialResponseDetailsDto;
 	}
 

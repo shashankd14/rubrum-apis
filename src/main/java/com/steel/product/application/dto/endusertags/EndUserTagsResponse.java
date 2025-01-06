@@ -14,4 +14,7 @@ public class EndUserTagsResponse {
 	private String createdOn;
 
 	private String updatedOn;
+
+	private Integer createdby;
+
 }

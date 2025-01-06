@@ -23,6 +23,8 @@ public class CreateUserRequest {
 	private String emailId;
 
 	private String userDataVisible;
+	
+	private String superAdminFlag;
 
 	private short enabled;
 
@@ -31,5 +33,7 @@ public class CreateUserRequest {
 	private List<Integer> roleList = new ArrayList<>();
 
 	private List<Integer> partyList = new ArrayList<>();
+
+	private List<Integer> locationsList = new ArrayList<>();
 
 }

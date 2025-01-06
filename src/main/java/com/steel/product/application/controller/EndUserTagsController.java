@@ -4,13 +4,18 @@ import com.steel.product.application.dto.endusertags.EndUserTagsRequest;
 import com.steel.product.application.dto.endusertags.EndUserTagsResponse;
 import com.steel.product.application.entity.EndUserTagsEntity;
 import com.steel.product.application.service.EndUserTagsService;
+import com.steel.product.application.util.CommonUtil;
+
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -21,6 +26,9 @@ public class EndUserTagsController {
 
 	@Resource
 	private EndUserTagsService endUserTagsService;
+	
+	@Autowired
+	private CommonUtil commonUtil;
 
 	@GetMapping({ "/list" })
 	public ResponseEntity<Object> getAllTags() {
@@ -49,11 +57,19 @@ public class EndUserTagsController {
 
 	@PostMapping("/save")
 	public String saveEndUserTags(@RequestBody List<EndUserTagsRequest> endUserTagsRequests) {
-		return endUserTagsService.saveEndUserTags(endUserTagsRequests);
+		int userId = commonUtil.getUserId();
+		List<EndUserTagsRequest> endUserTagsRequestsNew = new ArrayList<>();
+		for (EndUserTagsRequest req : endUserTagsRequests) {
+			req.setCreatedby(userId);
+			endUserTagsRequestsNew.add(req);
+		}
+		return endUserTagsService.saveEndUserTags(endUserTagsRequestsNew);
 	}
 
 	@PutMapping("/update")
 	public String updateEndUserTags(@RequestBody EndUserTagsRequest endUserTagsRequests) {
+		int userId = commonUtil.getUserId();
+		endUserTagsRequests.setCreatedby(userId);
 		return endUserTagsService.updateEndUserTags(endUserTagsRequests);
 	}
 

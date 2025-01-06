@@ -18,6 +18,11 @@ public interface EndUserTagsRepository extends JpaRepository<EndUserTagsEntity, 
 
 	EndUserTagsEntity findByTagName(String tagName);
 
+	EndUserTagsEntity findByTagId(Integer tagId);
+
 	@Query("select pc from EndUserTagsEntity pc left join fetch pc.parties p where p.nPartyId = :partyId")
 	List<EndUserTagsEntity> findByPartyId(@Param("partyId") Integer partyId);
+
+	@Query("select mat from EndUserTagsEntity mat where mat.createdby in :userIds order by mat.tagId desc")
+	public List<EndUserTagsEntity> findAllEndUserTags(@Param("userIds") List<Integer> userIds);
 }

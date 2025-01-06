@@ -21,6 +21,12 @@ public class EndUserTagsEntity {
 	@Column(name = "tag_name")
 	private String tagName;
 
+	@Column(name = "createdby")
+	private Integer createdby;
+
+	@Column(name = "updatedby")
+	private Integer updatedby;
+
 	@JsonIgnore
 	@ManyToMany(mappedBy = "endUserTags", fetch = FetchType.LAZY)
 	private Set<Party> parties = new LinkedHashSet<>();
@@ -83,6 +89,22 @@ public class EndUserTagsEntity {
 
 	public void setParties(Set<Party> parties) {
 		this.parties = parties;
+	}
+
+	public Integer getCreatedby() {
+		return createdby;
+	}
+
+	public void setCreatedby(Integer createdby) {
+		this.createdby = createdby;
+	}
+
+	public Integer getUpdatedby() {
+		return updatedby;
+	}
+
+	public void setUpdatedby(Integer updatedby) {
+		this.updatedby = updatedby;
 	}
 
 }

@@ -52,6 +52,9 @@ public class AdminUserEntity {
 	@Column(name = "user_data_visible")
 	private String userDataVisible;
 
+	@Column(name = "super_admin_flag")
+	private String superAdminFlag;
+
 	@Column(name = "fail_lgn_counter")
 	private int failLgnCounter;
 
@@ -66,5 +69,8 @@ public class AdminUserEntity {
 
 	@OneToMany(mappedBy = "userEntityid", cascade = CascadeType.ALL)
 	private List<UserPartyMap> userPartyMap = new ArrayList<>();
+
+	@OneToMany(mappedBy = "userEntityid", cascade = CascadeType.ALL)
+	private List<UserLocationMappingEntity> userLocationMap = new ArrayList<>();
 
 }

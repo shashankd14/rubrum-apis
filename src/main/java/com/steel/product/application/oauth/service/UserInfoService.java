@@ -24,6 +24,7 @@ import com.steel.product.application.dto.LoginRequest;
 import com.steel.product.application.dto.admin.AdminMenuDto;
 import com.steel.product.application.dto.admin.CreateUserRequest;
 import com.steel.product.application.entity.AdminUserEntity;
+import com.steel.product.application.entity.UserLocationMappingEntity;
 import com.steel.product.application.entity.UserPartyMap;
 import com.steel.product.application.entity.UserRoleMap;
 import com.steel.product.application.exception.MockException;
@@ -106,17 +107,25 @@ public class UserInfoService
 		adminUserEntity.setFailLgnCounter(0);
 		adminUserEntity.setEnabled((short) 1);
 		adminUserEntity.setUserDataVisible(userInfo.getUserDataVisible());
+		adminUserEntity.setSuperAdminFlag( userInfo.getSuperAdminFlag());
 		adminUserEntity.setRawPassword(userInfo.getPassword());
 		adminUserEntity.setPassword(new BCryptPasswordEncoder().encode(userInfo.getPassword()));
-		if(userInfo.getUserId()>0) {
+		if (userInfo.getUserId() > 0) {
 			userDetailsRepository.deletePartyMapByUserId(userInfo.getUserId());
 			userDetailsRepository.deleteRoleMapByUserId(userInfo.getUserId());
+			userDetailsRepository.deleteLocationMapByUserId(userInfo.getUserId());
 		}
 		for (Integer partyId : userInfo.getPartyList()) {
 			UserPartyMap userPartyMap = new UserPartyMap();
 			userPartyMap.setPartyId(partyId);
 			userPartyMap.setUserEntityid(adminUserEntity);
 			adminUserEntity.getUserPartyMap().add(userPartyMap);
+		}
+		for (Integer locationId : userInfo.getLocationsList()) {
+			UserLocationMappingEntity locationMappingEntity = new UserLocationMappingEntity();
+			locationMappingEntity.setLocationId(locationId);
+			locationMappingEntity.setUserEntityid(adminUserEntity);
+			adminUserEntity.getUserLocationMap().add(locationMappingEntity);
 		}
 		for (Integer roleId : userInfo.getRoleList()) {
 			UserRoleMap userRoleMap = new UserRoleMap();
@@ -143,7 +152,7 @@ public class UserInfoService
     public AdminUserEntity updateRole( Integer id, AdminUserEntity userRecord )
     {
     	AdminUserEntity userInfo = userDetailsRepository.findByUserId( id );
-       // userInfo.setRoleId( userRecord.getRoleId() );
+    	//userInfo.setRoleId( userRecord.getRoleId() );
         return userDetailsRepository.save( userInfo );
     }
     
@@ -262,9 +271,6 @@ public class UserInfoService
 					.token_type(oauthResp.getTokenType())
 					.expires_in(oauthResp.getExpiresIn())
 					.build();
-			
-
-			
 		} else {
 			
 			List<String> errors = new ArrayList<>();

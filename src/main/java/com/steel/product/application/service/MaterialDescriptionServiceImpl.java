@@ -6,6 +6,10 @@ import com.steel.product.application.dto.material.MaterialRequestDto;
 import com.steel.product.application.dto.material.MaterialResponseDetailsDto;
 import com.steel.product.application.entity.Material;
 import com.steel.product.application.entity.MaterialGrade;
+import com.steel.product.application.util.CommonUtil;
+
+import lombok.extern.log4j.Log4j2;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,17 +19,21 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@Log4j2
 public class MaterialDescriptionServiceImpl implements MaterialDescriptionService {
 
 	private MaterialDescriptionRepository matDescRepo;
 
 	private MaterialGradeRepository materialGradeRepository;
 
+	private CommonUtil commonUtil;
+
 	@Autowired
 	public MaterialDescriptionServiceImpl(MaterialDescriptionRepository matDescRepo,
-			MaterialGradeRepository materialGradeRepository) {
+			MaterialGradeRepository materialGradeRepository, CommonUtil commonUtil) {
 		this.matDescRepo = matDescRepo;
 		this.materialGradeRepository = materialGradeRepository;
+		this.commonUtil = commonUtil;
 	}
 
 	@Override
@@ -36,12 +44,13 @@ public class MaterialDescriptionServiceImpl implements MaterialDescriptionServic
 		Material savedMaterial = new Material();
 		if (materialRequestDto.getMatId() != 0) {
 			material = getMatById(materialRequestDto.getMatId());
+			material.setUpdatedBy(userId);
+			material.setUpdatedOn(timestamp);
+		} else {
+			material.setCreatedBy(userId);
+			material.setCreatedOn(timestamp);
 		}
 		material.setDescription(materialRequestDto.getMaterial());
-		material.setCreatedBy(userId);
-		material.setUpdatedBy(userId);
-		material.setCreatedOn(timestamp);
-		material.setUpdatedOn(timestamp);
 		material.setIsDeleted(false);
 		material.setHsnCode(materialRequestDto.getHsnCode());
 		material.setMaterialCode(materialRequestDto.getMaterialCode());
@@ -78,8 +87,8 @@ public class MaterialDescriptionServiceImpl implements MaterialDescriptionServic
 
 	}
 
-	public List<MaterialResponseDetailsDto> getAllMatDesc() {
-		List<Material> materials = matDescRepo.findAll();
+	public List<MaterialResponseDetailsDto> getAllMatDesc(int userId) {
+		List<Material> materials = matDescRepo.findAllMaterials(commonUtil.getLocationWiseMappedUserIds());
 		return materials.stream().map(m -> Material.valueOfMat(m)).collect(Collectors.toList());
 	}
 

@@ -5,6 +5,8 @@ import com.steel.product.application.dto.packetClassification.PacketClassificati
 import com.steel.product.application.dto.packetClassification.PacketClassificationResponse;
 import com.steel.product.application.entity.PacketClassification;
 import com.steel.product.application.mapper.PacketClassificationMapper;
+import com.steel.product.application.util.CommonUtil;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,17 +21,21 @@ public class PacketClassificationServiceImpl implements PacketClassificationServ
 
     private PacketClassificationRepository packetClassificationRepository;
 
-    private PacketClassificationMapper packetClassificationMapper;
+	private PacketClassificationMapper packetClassificationMapper;
 
-    @Autowired
-    public PacketClassificationServiceImpl(PacketClassificationRepository packetClassificationRepository, PacketClassificationMapper packetClassificationMapper) {
-        this.packetClassificationRepository = packetClassificationRepository;
-        this.packetClassificationMapper = packetClassificationMapper;
-    }
+	private CommonUtil commonUtil;
 
-    @Override
+	@Autowired
+	public PacketClassificationServiceImpl(PacketClassificationRepository packetClassificationRepository,
+			PacketClassificationMapper packetClassificationMapper, CommonUtil commonUtil) {
+		this.packetClassificationRepository = packetClassificationRepository;
+		this.packetClassificationMapper = packetClassificationMapper;
+		this.commonUtil = commonUtil;
+	}
+
+	@Override
     public List<PacketClassificationResponse> getAllPacketClassification() {
-        List<PacketClassification> list = packetClassificationRepository.findAll();
+		List<PacketClassification> list = packetClassificationRepository.findAllClassificationTags(commonUtil.getLocationWiseMappedUserIds());
         return packetClassificationMapper.toList(list);
     }
 
@@ -94,9 +100,10 @@ public class PacketClassificationServiceImpl implements PacketClassificationServ
 				 && packetClassificationRequest.getClassificationId() != oldPacketClassificationEntity.getClassificationId()) {
 			return "Entered End user TagName already exists";
 		}
-		
-		PacketClassification endUserTagsEntity = packetClassificationMapper.toEntity(packetClassificationRequest);
-		packetClassificationRepository.save(endUserTagsEntity);
+		PacketClassification packetClassification = packetClassificationRepository.findByClassificationId(packetClassificationRequest.getClassificationId());
+		packetClassification.setUpdatedby( packetClassificationRequest.getCreatedby());
+		packetClassification.setClassificationName(packetClassificationRequest.getClassificationName() );
+		packetClassificationRepository.save(packetClassification);
 		return "Udated Successfully..!";
 	}
 	

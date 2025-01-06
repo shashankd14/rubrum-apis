@@ -24,18 +24,21 @@ public class EndUserTagsMapperImpl implements EndUserTagsMapper {
             return null;
         }
 
-        EndUserTagsResponse endUserTagsResponse = new EndUserTagsResponse();
+		EndUserTagsResponse endUserTagsResponse = new EndUserTagsResponse();
 
-        if ( endUserTagsEntity.getCreatedOn() != null ) {
-            endUserTagsResponse.setCreatedOn( new SimpleDateFormat( "dd-MM-yyyy HH:mm:ss" ).format( endUserTagsEntity.getCreatedOn() ) );
-        }
-        if ( endUserTagsEntity.getUpdatedOn() != null ) {
-            endUserTagsResponse.setUpdatedOn( new SimpleDateFormat( "dd-MM-yyyy HH:mm:ss" ).format( endUserTagsEntity.getUpdatedOn() ) );
-        }
-        endUserTagsResponse.setTagId( endUserTagsEntity.getTagId() );
-        endUserTagsResponse.setTagName( endUserTagsEntity.getTagName() );
+		if (endUserTagsEntity.getCreatedOn() != null) {
+			endUserTagsResponse
+					.setCreatedOn(new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(endUserTagsEntity.getCreatedOn()));
+		}
+		if (endUserTagsEntity.getUpdatedOn() != null) {
+			endUserTagsResponse
+					.setUpdatedOn(new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(endUserTagsEntity.getUpdatedOn()));
+		}
+		endUserTagsResponse.setTagId(endUserTagsEntity.getTagId());
+		endUserTagsResponse.setTagName(endUserTagsEntity.getTagName());
+		endUserTagsResponse.setCreatedby(endUserTagsEntity.getCreatedby());
 
-        return endUserTagsResponse;
+		return endUserTagsResponse;
     }
 
     @Override
@@ -67,18 +70,16 @@ public class EndUserTagsMapperImpl implements EndUserTagsMapper {
     }
 
     @Override
-    public EndUserTagsEntity toEntity(EndUserTagsRequest packetClassification) {
-        if ( packetClassification == null ) {
-            return null;
-        }
-
-        EndUserTagsEntity endUserTagsEntity = new EndUserTagsEntity();
-
-        endUserTagsEntity.setTagId( packetClassification.getTagId() );
-        endUserTagsEntity.setTagName( packetClassification.getTagName() );
-
-        return endUserTagsEntity;
-    }
+	public EndUserTagsEntity toEntity(EndUserTagsRequest packetClassification) {
+		if (packetClassification == null) {
+			return null;
+		}
+		EndUserTagsEntity endUserTagsEntity = new EndUserTagsEntity();
+		endUserTagsEntity.setTagId(packetClassification.getTagId());
+		endUserTagsEntity.setTagName(packetClassification.getTagName());
+		endUserTagsEntity.setCreatedby(packetClassification.getCreatedby());
+		return endUserTagsEntity;
+	}
 
     @Override
     public List<EndUserTagsEntity> requestToEntity(List<EndUserTagsRequest> endUserTagsRequest) {

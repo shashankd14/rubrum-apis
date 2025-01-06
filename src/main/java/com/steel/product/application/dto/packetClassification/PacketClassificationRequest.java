@@ -13,4 +13,7 @@ public class PacketClassificationRequest {
 
 	@JsonProperty("tagName")
     private String classificationName;
+	
+	@JsonProperty("createdby")
+    private Integer createdby;
 }

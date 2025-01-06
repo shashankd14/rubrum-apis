@@ -9,7 +9,7 @@ public interface MaterialDescriptionService {
 	
 	Material saveMatDesc(MaterialRequestDto materialRequestDto, int userId);
 
-	List<MaterialResponseDetailsDto> getAllMatDesc();
+	List<MaterialResponseDetailsDto> getAllMatDesc(int userId);
 
 	Material getMatById(int paramInt);
 

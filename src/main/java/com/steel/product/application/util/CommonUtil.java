@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -16,8 +18,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.steel.product.application.dao.UserLocationMappingRepository;
 import com.steel.product.application.dao.UserRepository;
 import com.steel.product.application.entity.AdminUserEntity;
+import com.steel.product.application.entity.UserLocationMappingEntity;
 import com.steel.product.application.service.AWSS3Service;
 
 @Service
@@ -32,7 +36,10 @@ public class CommonUtil {
 
     @Autowired
     private UserRepository userDetailsRepository;
-	
+
+    @Autowired
+    private UserLocationMappingRepository locationMappingRepository;
+    
 	public String persistFiles(String applicationJarPath, String stageName, String templateName,
 			MultipartFile file) throws IOException {
 		String path = applicationJarPath + File.separator + stageName + File.separator+ templateName;
@@ -58,14 +65,41 @@ public class CommonUtil {
 	public int getUserId() {
 		int userId = 0;
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
 		UserDetails userDetail = (UserDetails) authentication.getPrincipal();
 		Optional<AdminUserEntity> userEntity = userDetailsRepository.findByUserName(userDetail.getUsername());
 		if (userEntity.isPresent()) {
 			userId = userEntity.get().getUserId();
 		}
-
 		return userId;
+	}
+
+	public List<Integer> getLocationWiseMappedUserIds() {
+		List<Integer> userIds = new ArrayList<>();
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		UserDetails userDetail = (UserDetails) authentication.getPrincipal();
+		Optional<AdminUserEntity> userEntity = userDetailsRepository.findByUserName(userDetail.getUsername());
+		if (userEntity.isPresent()) {
+			for (UserLocationMappingEntity obj : userEntity.get().getUserLocationMap()) {
+				List<UserLocationMappingEntity> mm = locationMappingRepository.findByLocationId(obj.getLocationId());
+				for (UserLocationMappingEntity obj1 : mm) {
+					userIds.add(obj1.getUserId());
+				}
+			}
+		}
+		return userIds;
+	}
+
+	public List<Integer> getLoginWiseMappedUserIds() {
+		List<Integer> userIds = new ArrayList<>();
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		UserDetails userDetail = (UserDetails) authentication.getPrincipal();
+		Optional<AdminUserEntity> userEntity = userDetailsRepository.findByUserName(userDetail.getUsername());
+		if (userEntity.isPresent()) {
+			for (UserLocationMappingEntity obj : userEntity.get().getUserLocationMap()) {
+				userIds.add(obj.getUserId());
+			}
+		}
+		return userIds;
 	}
 
 	public AdminUserEntity getUserDetails() {

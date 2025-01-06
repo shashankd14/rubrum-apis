@@ -4,6 +4,7 @@ import com.steel.product.application.dto.material.MaterialRequestDto;
 import com.steel.product.application.dto.material.MaterialResponseDetailsDto;
 import com.steel.product.application.entity.Material;
 import com.steel.product.application.service.MaterialDescriptionService;
+import com.steel.product.application.util.CommonUtil;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -27,11 +28,13 @@ public class MaterialDescriptionController {
 	@Autowired
 	private MaterialDescriptionService matDescSvc;
 
+	@Autowired
+	private CommonUtil commonUtil;
+
 	@PostMapping({ "/save" })
 	public ResponseEntity<Object> saveMatDesc(@RequestBody MaterialRequestDto materialRequestDto, HttpServletRequest request) {
 		try {
-			int userId = (request.getHeader("userId")==null ? 1: Integer.parseInt(request.getHeader("userId")));
-
+			int userId = commonUtil.getUserId();
 			Material material = matDescSvc.findByDesc(materialRequestDto.getMaterial());
 			if(material!=null && material.getDescription().equalsIgnoreCase(materialRequestDto.getMaterial())) {
 				return new ResponseEntity<>("Material Desc Already exists.", HttpStatus.BAD_REQUEST);
@@ -47,8 +50,7 @@ public class MaterialDescriptionController {
 	@PutMapping({ "/update" })
 	public ResponseEntity<Object> updateMaterial(@RequestBody MaterialRequestDto materialRequestDto, HttpServletRequest request) {
 		try {
-			int userId = (request.getHeader("userId")==null ? 1: Integer.parseInt(request.getHeader("userId")));
-
+			int userId = commonUtil.getUserId();
 			Material material = matDescSvc.findByDesc(materialRequestDto.getMaterial());
 			if(material!=null && materialRequestDto.getMaterial().equalsIgnoreCase(material.getDescription())  
 					 && material.getMatId() != materialRequestDto.getMatId() ) {
@@ -65,7 +67,8 @@ public class MaterialDescriptionController {
 
 	@GetMapping({ "/list" })
 	public List<MaterialResponseDetailsDto> getAllMatDesc() {
-		return this.matDescSvc.getAllMatDesc();
+		int userId = commonUtil.getUserId();
+		return this.matDescSvc.getAllMatDesc(userId);
 	}
 
 	@GetMapping({ "/getById/{matId}" })
