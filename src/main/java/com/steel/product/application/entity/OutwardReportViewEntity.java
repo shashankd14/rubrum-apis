@@ -18,51 +18,48 @@ public class OutwardReportViewEntity {
 	@Id
 	@Column(name = "id")
 	private Integer id;
-	
+
 	@Column(name = "mnth")
 	private Integer mnth;
-	
+
 	@Column(name = "yer")
 	private Integer yer;
-	
-	@Column(name = "customer_name")
-	private String customerName;
 
-	@Column(name = "coilnumber")
-	private String coilnumber;
+	@Column(name = "customername")
+	private String customername;
 
-	@Column(name = "customerbatchid")
-	private String customerbatchid;
-	
-	@Column(name = "material_desc")
+	@Column(name = "aspendcno")
+	private String aspendcno;
+
+	@Column(name = "sapinvoiceno")
+	private String sapinvoiceno;
+
+	@Column(name = "sapinvoicedate")
+	private String sapinvoicedate;
+
+	@Column(name = "materialdesc")
 	private String materialdesc;
 
-	@Column(name = "material_grade")
-	private String materialGrade;
+	@Column(name = "processname")
+	private String processname;
 
-	@Column(name = "fthickness")
-	private String fthickness;
+	@Column(name = "qty")
+	private String qty;
 
-	@Column(name = "fwidth")
-	private String fwidth;
+	@Column(name = "rate")
+	private String rate;
 
-	@Column(name = "flength")
-	private String flength;
+	@Column(name = "totalprice")
+	private String totalprice;
 
-	@Column(name = "delivery_weight")
-	private String deliveryWeight;
+	@Column(name = "cgst")
+	private String cgst;
 
-	@Column(name = "deliveryid")
-	private String deliveryid;
+	@Column(name = "sgst")
+	private String sgst;
 
-	@Column(name = "createdon")
-	private String createdon;
-
-	@Column(name = "vehicleno")
-	private String vehicleno;
-
-	@Column(name = "endusertagname")
-	private String endusertagname;
+	@Column(name = "grosstotal")
+	private String grosstotal;
 
 	@Column(name = "party_id")
 	private int partyId;

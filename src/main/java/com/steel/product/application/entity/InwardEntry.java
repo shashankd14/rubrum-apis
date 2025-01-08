@@ -555,12 +555,12 @@ public class InwardEntry {
         inwardEntryPdfDto.setTestCertificateNumber(inwardEntry.getTestCertificateNumber());
         inwardEntryPdfDto.setRemarks(inwardEntry.getRemarks());
         inwardEntryPdfDto.setDInvoiceDate(inwardEntry.getdInvoiceDate());
-        inwardEntryPdfDto.setValueOfGoods(inwardEntry.getValueOfGoods());
-        inwardEntryPdfDto.setPartyCgst(inwardEntry.getParty().getGstNumber());
-        inwardEntryPdfDto.setCustomerInvoiceNo(inwardEntry.getCustomerInvoiceNo());
-        inwardEntryPdfDto.setBilledWeight(inwardEntry.getBilledweight());
-        inwardEntryPdfDto.setFLength(inwardEntry.getfLength());
-
+		inwardEntryPdfDto.setValueOfGoods(inwardEntry.getValueOfGoods());
+		inwardEntryPdfDto.setPartyCgst(inwardEntry.getParty().getGstNumber());
+		inwardEntryPdfDto.setCustomerInvoiceNo(inwardEntry.getCustomerInvoiceNo());
+		inwardEntryPdfDto.setBilledWeight(inwardEntry.getBilledweight());
+		inwardEntryPdfDto.setFLength(inwardEntry.getfLength());
+		inwardEntryPdfDto.setTdcNo(inwardEntry.getTdcNo());
         return inwardEntryPdfDto;
     }
 

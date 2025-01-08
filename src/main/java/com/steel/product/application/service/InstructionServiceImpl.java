@@ -769,7 +769,11 @@ public class InstructionServiceImpl implements InstructionService {
         inwardEntryPdfDto.setTotalWeightCut(partDetailsSlitMap == null ? totalWeightCut : 0f);
         inwardEntryPdfDto.setTotalWeightSlit(totalWeightSlit);
         inwardEntryPdfDto.setPartDetailsId(partDetailsId != null ? partDetailsId : cutPartDetailsId);
-        inwardEntryPdfDto.setPlannedYieldLossRatio(""+plannedYieldLossRatio);
+        if(plannedYieldLossRatio!=null) {
+            inwardEntryPdfDto.setPlannedYieldLossRatio(""+plannedYieldLossRatio);
+        } else {
+            inwardEntryPdfDto.setPlannedYieldLossRatio("0.00");
+        }
         inwardEntryPdfDto.setVProcess(String.valueOf(processId));
         
         Map<Integer, String> kqpParamsList = getKQPParams(partDetailsId, inwardEntry, partDetailsCutMap, partDetailsSlitMap);

@@ -113,4 +113,6 @@ public class InwardEntryPdfDto {
 	private Map<Integer, String> kqpParamsList = new HashMap<>();
 
 	private String plannedYieldLossRatio;
+
+	private String tdcNo;
 }

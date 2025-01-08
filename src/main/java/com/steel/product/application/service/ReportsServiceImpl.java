@@ -1057,17 +1057,17 @@ public class ReportsServiceImpl implements ReportsService {
 			List<OutwardReportViewEntity> partyList = outwardReportViewRepository.findByPartyIdAndMnthAndYer(partyId, month, year);
 
 			acctStatementMap.put("1",
-					new Object[] { "CoilNumber", "CustomerBatchId", "CustomerName", "MaterialDesc", "MaterialGrade",
-							"Thickness", "Width", "Length", "Delivery Weight", "DC No", "End User Tag", "DC Date",
-							"Vehicle No" });
+					new Object[] { "ASPEN DC NUMBER", "Customer name", "SAP Invoice No", "SAP INVOICE DATE",
+							"Material Description", "PROCESS", "Qty ", "Rate/per MT", "Subtotal", "Total Amount",
+							"CGST 6%", "SGST 6%", "Gross Total" });
 			int cnt = 1;
 			for (OutwardReportViewEntity kk : partyList) {
 				cnt++;
 				acctStatementMap.put("" + cnt,
-				new Object[] { kk.getCoilnumber(), kk.getCustomerbatchid(), kk.getCustomerName(),
-						kk.getMaterialdesc(), kk.getMaterialGrade(), kk.getFthickness(), kk.getFwidth(),
-						kk.getFlength(), kk.getDeliveryWeight(), kk.getDeliveryid(), kk.getEndusertagname(),
-						kk.getCreatedon(), kk.getVehicleno() });
+						new Object[] { kk.getAspendcno(), kk.getCustomername(), kk.getSapinvoiceno(),
+								kk.getSapinvoicedate(), kk.getMaterialdesc(), kk.getProcessname(), kk.getQty(),
+								kk.getRate(), kk.getTotalprice(), kk.getTotalprice(), kk.getCgst(), kk.getSgst(),
+								kk.getGrosstotal() });
 			}
 		} catch (Exception e) {
 			LOGGER.error("Error at getMonthlyOutwardReportDetails " + e.getMessage());
