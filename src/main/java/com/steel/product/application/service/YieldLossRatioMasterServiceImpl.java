@@ -4,6 +4,7 @@ import com.steel.product.application.dao.YieldLossRatioMasterRepository;
 import com.steel.product.application.dto.yieldlossratio.YieldLossRatioRequest;
 import com.steel.product.application.dto.yieldlossratio.YieldLossRatioSearchRequest;
 import com.steel.product.application.entity.YieldLossRatioMasterEntity;
+import com.steel.product.application.util.CommonUtil;
 import com.steel.product.trading.request.DeleteRequest;
 
 import lombok.extern.log4j.Log4j2;
@@ -30,15 +31,19 @@ public class YieldLossRatioMasterServiceImpl implements YieldLossRatioMasterServ
 
 	@Autowired
 	PartyDetailsService partyDetailsService;
-	
+
 	@Autowired
 	ProcessService processService;
-
+	
+	@Autowired
+	CommonUtil commonUtil;
+	
 	@Override
 	public ResponseEntity<Object> save(List<YieldLossRatioRequest> mainRequestList) {
 		log.info("inside YieldLossRatioMasterServiceImpl -insert");
 		ResponseEntity<Object> response = null;
 		List<YieldLossRatioMasterEntity> list = new ArrayList<>();
+		List<YieldLossRatioMasterEntity> listNew = new ArrayList<>();
 
 		for (YieldLossRatioRequest mainRequest : mainRequestList) {
 			for (Integer partyIdRequest : mainRequest.getPartyIdList()) {
@@ -49,15 +54,15 @@ public class YieldLossRatioMasterServiceImpl implements YieldLossRatioMasterServ
 						ylrEntity.setProcessId(processIdRequest);
 						if (mainRequest.getYlrId() != null && mainRequest.getYlrId() > 0) {
 							ylrEntity.setYlrId(mainRequest.getYlrId());
+							ylrEntity.setUpdatedBy(mainRequest.getUserId());
+							ylrEntity.setUpdatedOn(new Date());
 						}
 						ylrEntity.setLossRatioPercentageFrom(childRequest.getLossRatioPercentageFrom());
 						ylrEntity.setLossRatioPercentageTo(childRequest.getLossRatioPercentageTo());
 						ylrEntity.setComments(childRequest.getComments());
-						ylrEntity.setIsDeleted(false);
 						ylrEntity.setCreatedBy(mainRequest.getUserId());
-						ylrEntity.setUpdatedBy(null);
 						ylrEntity.setCreatedOn(new Date());
-						ylrEntity.setUpdatedOn(null);
+						ylrEntity.setIsDeleted(false);
 						list.add(ylrEntity);
 					}
 				}
@@ -75,17 +80,15 @@ public class YieldLossRatioMasterServiceImpl implements YieldLossRatioMasterServ
 				if (kk.isPresent()) {
 					oldEntity = kk.get();
 				}
-				
 				if(oldEntity!=null && oldEntity.getYlrId()>0) {
 					fromList = yieldLossRatioMasterRepository.validateRangeInUpdate(entity.getPartyId(), entity.getProcessId(), entity.getLossRatioPercentageFrom(), entity.getYlrId());
 					toList   = yieldLossRatioMasterRepository.validateRangeInUpdate(entity.getPartyId(), entity.getProcessId(), entity.getLossRatioPercentageTo(), entity.getYlrId());
+					entity.setUpdatedBy(entity.getCreatedBy());
+					entity.setUpdatedOn(new Date());
+					entity.setCreatedBy(oldEntity.getCreatedBy() );
+					entity.setCreatedOn(oldEntity.getCreatedOn() );
 				} 
-				
-				entity.setUpdatedBy( entity.getCreatedBy());
-				entity.setUpdatedOn(new Date());
-				entity.setCreatedBy(oldEntity.getCreatedBy());
-				entity.setCreatedOn(oldEntity.getCreatedOn());
-			} else {
+			} else {				
 				fromList = yieldLossRatioMasterRepository.validateRange(entity.getPartyId(), entity.getProcessId(), entity.getLossRatioPercentageFrom());
 				toList   = yieldLossRatioMasterRepository.validateRange(entity.getPartyId(), entity.getProcessId(), entity.getLossRatioPercentageTo());
 			}
@@ -111,13 +114,14 @@ public class YieldLossRatioMasterServiceImpl implements YieldLossRatioMasterServ
 					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered To Range Already Exists.\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 				}
 			}
+			listNew.add(entity);
+			
 		}
 				
-		yieldLossRatioMasterRepository.saveAll(list);
+		yieldLossRatioMasterRepository.saveAll(listNew);
 		response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Yield Loss Ratio details saved successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
 		return response;
 	}
-
 
 	@Override
 	public ResponseEntity<Object> delete(DeleteRequest deleteRequest) {
@@ -134,12 +138,12 @@ public class YieldLossRatioMasterServiceImpl implements YieldLossRatioMasterServ
 		}
 		return response;
 	}
-	
+
 	@Override
 	public Page<Object[]> getAll(YieldLossRatioSearchRequest request) {
 		Pageable pageable = PageRequest.of((request.getPageNo() - 1), request.getPageSize());
 		Page<Object[]> list = yieldLossRatioMasterRepository.findAll(request.getPartyId(), request.getProcessId(),
-				request.getYlrId(), pageable);
+				request.getYlrId(), commonUtil.getLocationWiseMappedUserIds(), pageable);
 		return list;
 	}
 

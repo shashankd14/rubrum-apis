@@ -28,16 +28,18 @@ public interface YieldLossRatioMasterRepository extends JpaRepository<YieldLossR
 			+ " and ylr.party_id = ifnull(:partyId, ylr.party_id) \r\n"
 			+ " and ylr.process_id = ifnull(:processId, ylr.process_id) \r\n"
 			+ " and ylr.ylr_id = ifnull(:ylrId, ylr.ylr_id) \r\n"
+			+ " and ylr.created_by in ( :userIds) \r\n"			
 			+ " order by ylr.ylr_id desc", 
 		countQuery = "SELECT count( ylr.ylr_id)"
 			+ " FROM yield_loss_ratio_master ylr, product_tblpartydetails party, product_process proce \r\n"
 			+ " where is_deleted = 0 and party.npartyid =ylr.party_id and proce.processid =ylr.process_id"
 			+ " and ylr.process_id = ifnull(:processId, ylr.process_id) \r\n"
 			+ " and ylr.ylr_id = ifnull(:ylrId, ylr.ylr_id) \r\n"
+			+ " and ylr.created_by in ( :userIds) \r\n"			
 			+ " and ylr.party_id = ifnull(:partyId, ylr.party_id) \r\n", 
 		nativeQuery = true)
 	Page<Object[]> findAll(@Param("partyId") Integer partyId, @Param("processId") Integer processId,
-			@Param("ylrId") Integer ylrId, Pageable pageable);
+			@Param("ylrId") Integer ylrId, @Param("userIds") List<Integer> userIds, Pageable pageable);
 
 	@Modifying
 	@Transactional

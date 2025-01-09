@@ -4,6 +4,7 @@ import com.steel.product.application.dto.yieldlossratio.YieldLossRatioRequest;
 import com.steel.product.application.dto.yieldlossratio.YieldLossRatioResponse;
 import com.steel.product.application.dto.yieldlossratio.YieldLossRatioSearchRequest;
 import com.steel.product.application.service.YieldLossRatioMasterService;
+import com.steel.product.application.util.CommonUtil;
 import com.steel.product.trading.request.DeleteRequest;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,18 +29,34 @@ public class YieldLossRatioMasterController {
 	@Autowired
 	private YieldLossRatioMasterService yieldLossRatioMasterService;
 
-	@PostMapping(value = "/save", produces = "application/json" )
+	@Autowired
+	private CommonUtil commonUtil;
+
+	@PostMapping(value = "/save", produces = "application/json")
 	public ResponseEntity<Object> save(@RequestBody List<YieldLossRatioRequest> yieldLossRatioRequest) {
-		return yieldLossRatioMasterService.save(yieldLossRatioRequest);
+		int userId = commonUtil.getUserId();
+		List<YieldLossRatioRequest> endUserTagsRequestsNew = new ArrayList<>();
+		for (YieldLossRatioRequest req : yieldLossRatioRequest) {
+			req.setUserId(userId);
+			endUserTagsRequestsNew.add(req);
+		}
+		return yieldLossRatioMasterService.save(endUserTagsRequestsNew);
 	}
-	
+
 	@PutMapping(value = "/update", produces = "application/json")
-	public ResponseEntity<Object> update(@RequestBody List<YieldLossRatioRequest> priceMasterRequestList) {
-		return yieldLossRatioMasterService.save(priceMasterRequestList);
+	public ResponseEntity<Object> update(@RequestBody List<YieldLossRatioRequest> yieldLossRatioRequest) {
+		int userId = commonUtil.getUserId();
+		List<YieldLossRatioRequest> endUserTagsRequestsNew = new ArrayList<>();
+		for (YieldLossRatioRequest req : yieldLossRatioRequest) {
+			req.setUserId(userId);
+			endUserTagsRequestsNew.add(req);
+		}
+		return yieldLossRatioMasterService.save(endUserTagsRequestsNew);
 	}
-	
-	@PostMapping(value = "/delete", produces = "application/json" )
+
+	@PostMapping(value = "/delete", produces = "application/json")
 	public ResponseEntity<Object> delete(@RequestBody DeleteRequest deleteRequest) {
+		deleteRequest.setUserId(commonUtil.getUserId());
 		return yieldLossRatioMasterService.delete(deleteRequest);
 	}
 
@@ -47,6 +64,7 @@ public class YieldLossRatioMasterController {
 	public ResponseEntity<Object> getAll(@RequestBody YieldLossRatioSearchRequest request) {
 		Map<String, Object> response = new HashMap<>();
 		try {
+			request.setUserId(commonUtil.getUserId());
 			Page<Object[]> pageResult = yieldLossRatioMasterService.getAll(request);
 			List<YieldLossRatioResponse> list = new ArrayList<>();
 			for (Object[] result : pageResult) {
