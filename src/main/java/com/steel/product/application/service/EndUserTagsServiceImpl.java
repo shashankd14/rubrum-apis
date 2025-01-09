@@ -4,7 +4,6 @@ import com.steel.product.application.dao.EndUserTagsRepository;
 import com.steel.product.application.dto.endusertags.EndUserTagsRequest;
 import com.steel.product.application.dto.endusertags.EndUserTagsResponse;
 import com.steel.product.application.entity.EndUserTagsEntity;
-import com.steel.product.application.entity.Material;
 import com.steel.product.application.mapper.EndUserTagsMapper;
 import com.steel.product.application.util.CommonUtil;
 
@@ -15,7 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;

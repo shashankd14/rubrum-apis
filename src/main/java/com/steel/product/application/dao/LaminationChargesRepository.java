@@ -34,7 +34,8 @@ public interface LaminationChargesRepository extends JpaRepository<LaminationCha
 			+ " party.partyName, lami.laminationDetailsDesc, lamcharges.createdBy, lamcharges.updatedBy,"
 			+ " lamcharges.createdOn, lamcharges.updatedOn "
 			+ " from LaminationChargesEntity lamcharges, Party party, LaminationStaticDataEntity lami"
-			+ " where lamcharges.partyId = party.nPartyId and lami.laminationDetailsId = lamcharges.laminationDetailsId")
-	List<Object[]> findAll1();
+			+ " where lamcharges.createdBy in :userIds and lamcharges.partyId = party.nPartyId and "
+			+ " lami.laminationDetailsId = lamcharges.laminationDetailsId ")
+	List<Object[]> findAll1(@Param("userIds") List<Integer> userIds);
 
 }

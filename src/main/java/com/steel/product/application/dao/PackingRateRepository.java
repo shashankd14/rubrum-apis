@@ -16,4 +16,8 @@ public interface PackingRateRepository extends JpaRepository<PackingRateEntity, 
 	@Query("select ins from PackingRateEntity ins where ins.party.nPartyId =:partyId ")
 	List<PackingRateEntity> findByPartyId(@Param("partyId") Integer partyId);
 
+	PackingRateEntity findByPackingRateId(Integer packingRateId);
+
+	@Query("select mat from PackingRateEntity mat where mat.createdBy in :userIds order by mat.packingRateId desc")
+	public List<PackingRateEntity> findAllRatesList(@Param("userIds") List<Integer> userIds);
 }

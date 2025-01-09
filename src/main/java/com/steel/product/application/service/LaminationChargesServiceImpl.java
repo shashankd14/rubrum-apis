@@ -6,6 +6,8 @@ import com.steel.product.application.dto.lamination.LaminationChargesRequest;
 import com.steel.product.application.dto.lamination.LaminationChargesResponse;
 import com.steel.product.application.entity.LaminationChargesEntity;
 import com.steel.product.application.entity.LaminationStaticDataEntity;
+import com.steel.product.application.util.CommonUtil;
+
 import lombok.extern.log4j.Log4j2;
 
 import java.math.BigDecimal;
@@ -28,8 +30,11 @@ public class LaminationChargesServiceImpl implements LaminationChargesService {
 	@Autowired
 	LaminationStaticDataRepository laminationStaticDataRepository;
 
+	@Autowired
+	CommonUtil commonUtil;
+
 	@Override
-	public ResponseEntity<Object> save(List<LaminationChargesRequest> laminationRequestList, int userId) {
+	public ResponseEntity<Object> save(List<LaminationChargesRequest> laminationRequestList) {
 
 		ResponseEntity<Object> response = null;
 		List<LaminationChargesEntity> dataList=new ArrayList<>();
@@ -39,21 +44,24 @@ public class LaminationChargesServiceImpl implements LaminationChargesService {
 			if (laminationRequest.getLaminationId() != null && laminationRequest.getLaminationId() > 0) {
 				packingItemEntity.setLaminationId(laminationRequest.getLaminationId());
 			}
-			
+
 			List<LaminationChargesEntity> list = laminationRepository.findByPartyIdAndLaminationDetailsId(laminationRequest.getPartyId(), laminationRequest.getLaminationDetailsId());
 			LaminationChargesEntity checkLaminationEntity = null;
-	
+
 			if (list != null && list.size() > 0) {
 				checkLaminationEntity = list.get(0);
 				packingItemEntity.setLaminationId(checkLaminationEntity.getLaminationId());
-			} 
+				packingItemEntity.setUpdatedBy(laminationRequest.getUserId());
+				packingItemEntity.setUpdatedOn(new Date());
+				packingItemEntity.setCreatedBy(checkLaminationEntity.getCreatedBy());
+				packingItemEntity.setCreatedOn(checkLaminationEntity.getCreatedOn());
+			} else {
+				packingItemEntity.setCreatedBy(laminationRequest.getUserId());
+				packingItemEntity.setCreatedOn(new Date());
+			}
 			packingItemEntity.setLaminationDetailsId(laminationRequest.getLaminationDetailsId());
 			packingItemEntity.setCharges(laminationRequest.getCharges());
 			packingItemEntity.setPartyId(laminationRequest.getPartyId());
-			packingItemEntity.setCreatedBy(userId);
-			packingItemEntity.setUpdatedBy(userId);
-			packingItemEntity.setCreatedOn(new Date());
-			packingItemEntity.setUpdatedOn(new Date());
 			dataList.add(packingItemEntity);
 		}
 		laminationRepository.saveAll(dataList);
@@ -90,14 +98,14 @@ public class LaminationChargesServiceImpl implements LaminationChargesService {
 		List<Object[]> list = laminationRepository.findByPartyId(partyId);
 		return prepareDataList(list);
 	}
-	
-	@Override
-	public List<LaminationChargesResponse> getAllLaminationDetails( ) {
 
-		List<Object[]> list = laminationRepository.findAll1();
+	@Override
+	public List<LaminationChargesResponse> getAllLaminationDetails() {
+
+		List<Object[]> list = laminationRepository.findAll1(commonUtil.getLocationWiseMappedUserIds());
 		return prepareDataList(list);
 	}
-	
+
 	private List<LaminationChargesResponse> prepareDataList(List<Object[]> results) {
 		List<LaminationChargesResponse> list = new ArrayList<>();
 		try {

@@ -7,6 +7,8 @@ import com.steel.product.application.dto.packingmaster.PackingItemResponse;
 import com.steel.product.application.dto.packingmaster.PackingRateMasterRequest;
 import com.steel.product.application.dto.packingmaster.PackingRateMasterResponse;
 import com.steel.product.application.service.PackingMasterService;
+import com.steel.product.application.util.CommonUtil;
+
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.List;
@@ -27,17 +29,19 @@ public class PackingMasterController {
 	@Autowired
 	private PackingMasterService packingMasterService;
 
+	@Autowired
+	private CommonUtil commonUtil;
+	
 	@PostMapping(value = "/item/save", produces = "application/json" )
 	public ResponseEntity<Object> save(@RequestBody PackingItemRequest packingItemRequest, HttpServletRequest request) {
-		int userId = (request.getHeader("userId")==null ? 1: Integer.parseInt(request.getHeader("userId")));
-
-		return packingMasterService.save(packingItemRequest, userId);
+		packingItemRequest.setUserId(commonUtil.getUserId());
+		return packingMasterService.save(packingItemRequest);
 	}
 	
 	@PutMapping(value = "/item/update", produces = "application/json")
 	public ResponseEntity<Object> update(@RequestBody PackingItemRequest packingItemRequest, HttpServletRequest request) {
-		int userId = (request.getHeader("userId")==null ? 1: Integer.parseInt(request.getHeader("userId")));
-		return packingMasterService.save(packingItemRequest, userId);
+		packingItemRequest.setUserId(commonUtil.getUserId());
+		return packingMasterService.save(packingItemRequest);
 	}
 	
 	@DeleteMapping(value = "/item/{id}", produces = "application/json" )
@@ -59,16 +63,14 @@ public class PackingMasterController {
 	
 	@PostMapping(value = "/bucket/save", produces = "application/json")
 	public ResponseEntity<Object> save(@RequestBody PackingBucketRequest packingItemRequest, HttpServletRequest request) {
-		int userId = (request.getHeader("userId") == null ? 1 : Integer.parseInt(request.getHeader("userId")));
-
-		return packingMasterService.saveBucket(packingItemRequest, userId);
+		packingItemRequest.setUserId(commonUtil.getUserId());
+		return packingMasterService.saveBucket(packingItemRequest);
 	}
 	
 	@PutMapping(value = "/bucket/update", produces = "application/json")
 	public ResponseEntity<Object> update(@RequestBody PackingBucketRequest packingItemRequest, HttpServletRequest request) {
-		int userId = (request.getHeader("userId") == null ? 1 : Integer.parseInt(request.getHeader("userId")));
-
-		return packingMasterService.saveBucket(packingItemRequest, userId);
+		packingItemRequest.setUserId(commonUtil.getUserId());
+		return packingMasterService.saveBucket(packingItemRequest);
 	}
 	
 	@GetMapping(value = "/bucket/{id}", produces = "application/json")
@@ -90,16 +92,14 @@ public class PackingMasterController {
 	
 	@PostMapping(value = "/rate/save", produces = "application/json")
 	public ResponseEntity<Object> save(@RequestBody PackingRateMasterRequest packingRateMasterRequest, HttpServletRequest request) {
-		int userId = (request.getHeader("userId") == null ? 1 : Integer.parseInt(request.getHeader("userId")));
-
-		return packingMasterService.save(packingRateMasterRequest, userId);
+		packingRateMasterRequest.setUserId(commonUtil.getUserId());
+		return packingMasterService.save(packingRateMasterRequest);
 	}
 	
 	@PutMapping(value = "/rate/update", produces = "application/json")
 	public ResponseEntity<Object> update(@RequestBody PackingRateMasterRequest packingRateMasterRequest, HttpServletRequest request) {
-		int userId = (request.getHeader("userId") == null ? 1 : Integer.parseInt(request.getHeader("userId")));
-
-		return packingMasterService.save(packingRateMasterRequest, userId);
+		packingRateMasterRequest.setUserId(commonUtil.getUserId());
+		return packingMasterService.save(packingRateMasterRequest);
 	}
 	
 	@DeleteMapping(value = "/rate/{id}", produces = "application/json" )

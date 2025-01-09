@@ -5,18 +5,15 @@ import com.steel.product.application.dto.party.PartyResponse;
 import com.steel.product.application.entity.Party;
 import com.steel.product.application.mapper.PartyMapper;
 import com.steel.product.application.service.PartyDetailsService;
-
+import com.steel.product.application.util.CommonUtil;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.servlet.http.HttpServletRequest;
 
 @RestController
@@ -29,16 +26,18 @@ public class PartyController {
 
 	private PartyMapper partyMapper;
 
-	public PartyController(PartyDetailsService thePartySvc, PartyMapper partyMapper) {
+	private CommonUtil commonUtil;
+
+	public PartyController(PartyDetailsService thePartySvc, PartyMapper partyMapper, CommonUtil commonUtil) {
 		this.partySvc = thePartySvc;
 		this.partyMapper = partyMapper;
+		this.commonUtil = commonUtil;
 	}
 
 	@PostMapping({ "/save" })
 	public ResponseEntity<Object> saveParty(@RequestBody PartyDto partyDto, HttpServletRequest request) {
 		try {
-			int userId = (request.getHeader("userId")==null ? 1: Integer.parseInt(request.getHeader("userId")));
-
+			int userId = commonUtil.getUserId();
 			boolean stts = partySvc.checkPartyName(partyDto);
 			if(stts) {
 				Party party = partySvc.saveParty(partyDto, userId);
@@ -55,7 +54,7 @@ public class PartyController {
 	@PutMapping({ "/update" })
 	public ResponseEntity<Object> updateParty(@RequestBody PartyDto partyDto, HttpServletRequest request) {
 		try {
-			int userId = (request.getHeader("userId")==null ? 1: Integer.parseInt(request.getHeader("userId")));
+			int userId = commonUtil.getUserId();
 			boolean stts = partySvc.checkPartyName(partyDto);
 			if(stts) {
 				Party party = partySvc.saveParty(partyDto, userId);

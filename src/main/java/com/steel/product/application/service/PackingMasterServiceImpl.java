@@ -13,6 +13,7 @@ import com.steel.product.application.entity.PackingBucketChildEntity;
 import com.steel.product.application.entity.PackingBucketEntity;
 import com.steel.product.application.entity.PackingItemEntity;
 import com.steel.product.application.entity.PackingRateEntity;
+import com.steel.product.application.util.CommonUtil;
 
 import lombok.extern.log4j.Log4j2;
 import java.util.Date;
@@ -41,9 +42,12 @@ public class PackingMasterServiceImpl implements PackingMasterService {
 	
 	@Autowired
 	AdditionalPriceMasterService additionalPriceMasterService;
+	
+	@Autowired
+	CommonUtil commonUtil;
 
 	@Override
-	public ResponseEntity<Object> save(PackingItemRequest packingItemRequest, int userId) {
+	public ResponseEntity<Object> save(PackingItemRequest packingItemRequest ) {
 
 		ResponseEntity<Object> response = null;
 
@@ -53,14 +57,24 @@ public class PackingMasterServiceImpl implements PackingMasterService {
 		PackingItemEntity packingItemEntity = new PackingItemEntity();
 		if (packingItemRequest.getId() != null && packingItemRequest.getId() > 0) {
 			packingItemEntity.setItemId(packingItemRequest.getId());
+			packingItemEntity.setUpdatedBy(packingItemRequest.getUserId());
+			packingItemEntity.setUpdatedOn(new Date());
 			
-			if(list!=null && list.size()>0) {
+			PackingItemEntity oldpackingItemEntity = packingItemRepository.findByItemId(packingItemRequest.getId());
+
+			if (oldpackingItemEntity != null && oldpackingItemEntity.getItemId() > 0) {
+				packingItemEntity.setCreatedBy(oldpackingItemEntity.getCreatedBy());
+				packingItemEntity.setCreatedOn(oldpackingItemEntity.getCreatedOn());
+			}
+			if (list != null && list.size() > 0) {
 				checkpackingItemEntity=list.get(0);
 				if(checkpackingItemEntity!=null && packingItemRequest.getId() != checkpackingItemEntity.getItemId() ) {
 					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Packing Item already exists..! \"}", new HttpHeaders(), HttpStatus.BAD_REQUEST);
 				}
 			}
 		} else {
+			packingItemEntity.setCreatedBy(packingItemRequest.getUserId());
+			packingItemEntity.setCreatedOn(new Date());
 			if(list!=null && list.size()>0) {
 				return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Packing Item already exists..! \"}", new HttpHeaders(), HttpStatus.BAD_REQUEST);
 			}
@@ -68,10 +82,6 @@ public class PackingMasterServiceImpl implements PackingMasterService {
 		packingItemEntity.setPackingItemId(packingItemRequest.getPackingItemId());
 		packingItemEntity.setDescription(packingItemRequest.getDescription() );
 		packingItemEntity.setUnit(packingItemRequest.getUnit());
-		packingItemEntity.setCreatedBy(userId);
-		packingItemEntity.setUpdatedBy(userId);
-		packingItemEntity.setCreatedOn(new Date());
-		packingItemEntity.setUpdatedOn(new Date());
 		packingItemRepository.save (packingItemEntity);
 		if (packingItemRequest.getId() != null && packingItemRequest.getId() > 0) {
 			log.info("Packing Item details updated successfully");
@@ -107,15 +117,13 @@ public class PackingMasterServiceImpl implements PackingMasterService {
 
 	@Override
 	public List<PackingItemResponse> getAllItemDetails() {
-
-		List<PackingItemResponse> instructionList = packingItemRepository.findAll().stream()
-				.map(i -> PackingItemEntity.valueOf(i)).collect(Collectors.toList());
-
+		List<PackingItemEntity> list = packingItemRepository.findAllItems(commonUtil.getLocationWiseMappedUserIds());
+		List<PackingItemResponse> instructionList = list.stream().map(i -> PackingItemEntity.valueOf(i)).collect(Collectors.toList());
 		return instructionList;
 	}
 
 	@Override
-	public ResponseEntity<Object> saveBucket(PackingBucketRequest packingBucketRequest, int userId) {
+	public ResponseEntity<Object> saveBucket(PackingBucketRequest packingBucketRequest ) {
 
 		ResponseEntity<Object> response = null;
 		PackingBucketEntity packingBucketEntity = new PackingBucketEntity();
@@ -125,6 +133,14 @@ public class PackingMasterServiceImpl implements PackingMasterService {
 		
 		if (packingBucketRequest.getBucketId() != null && packingBucketRequest.getBucketId() > 0) {
 			packingBucketEntity.setBucketId(packingBucketRequest.getBucketId());
+			packingBucketEntity.setUpdatedBy(packingBucketRequest.getUserId());
+			packingBucketEntity.setUpdatedOn(new Date());
+
+			PackingBucketEntity oldEntity = packingBucketRepository.findByBucketId(packingBucketRequest.getBucketId());
+			if (oldEntity != null && oldEntity.getBucketId() > 0) {
+				packingBucketEntity.setCreatedBy(oldEntity.getCreatedBy());
+				packingBucketEntity.setCreatedOn(oldEntity.getCreatedOn());
+			}
 			
 			if(list!=null && list.size()>0) {
 				checkPackingBucketEntity=list.get(0);
@@ -134,6 +150,8 @@ public class PackingMasterServiceImpl implements PackingMasterService {
 			}
 			packingBucketRepository.deleteByBucketId(packingBucketRequest.getBucketId());
 		} else {
+			packingBucketEntity.setCreatedBy(packingBucketRequest.getUserId());
+			packingBucketEntity.setCreatedOn(new Date());
 			if(list!=null && list.size()>0) {
 				return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Packing Bucket already exists..! \"}", new HttpHeaders(), HttpStatus.BAD_REQUEST);
 			}
@@ -146,12 +164,8 @@ public class PackingMasterServiceImpl implements PackingMasterService {
 			childEntity.getItemEntity().setItemId(itemId);
 			packingBucketEntity.getItemList().add(childEntity);
 		}
-		packingBucketEntity.setQty( packingBucketRequest.getQty() );
-		packingBucketEntity.setCreatedBy(userId);
-		packingBucketEntity.setUpdatedBy(userId);
-		packingBucketEntity.setCreatedOn(new Date());
-		packingBucketEntity.setUpdatedOn(new Date());
-		packingBucketRepository.save (packingBucketEntity);
+		packingBucketEntity.setQty(packingBucketRequest.getQty());
+		packingBucketRepository.save(packingBucketEntity);
 		if (packingBucketRequest.getBucketId() != null && packingBucketRequest.getBucketId() > 0) {
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Packing Bucket details updated successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
 		} else {
@@ -186,14 +200,14 @@ public class PackingMasterServiceImpl implements PackingMasterService {
 	@Override
 	public List<PackingBucketResponse> getAllBucketList() {
 
-		List<PackingBucketResponse> instructionList = packingBucketRepository.findAll().stream()
+		List<PackingBucketResponse> instructionList = packingBucketRepository.findAllBuckets(commonUtil.getLocationWiseMappedUserIds()).stream()
 				.map(i -> PackingBucketEntity.valueOf(i)).collect(Collectors.toList());
 
 		return instructionList;
 	}
 
 	@Override
-	public ResponseEntity<Object> save(PackingRateMasterRequest packingRateMasterRequest, int userId) {
+	public ResponseEntity<Object> save(PackingRateMasterRequest packingRateMasterRequest) {
 
 		ResponseEntity<Object> response = null;
 
@@ -203,6 +217,14 @@ public class PackingMasterServiceImpl implements PackingMasterService {
 		PackingRateEntity packingRateEntity = new PackingRateEntity();
 		if (packingRateMasterRequest.getPackingRateId() != null && packingRateMasterRequest.getPackingRateId() > 0) {
 			packingRateEntity.setPackingRateId(packingRateMasterRequest.getPackingRateId());
+			packingRateEntity.setUpdatedBy(packingRateMasterRequest.getUserId());
+			packingRateEntity.setUpdatedOn(new Date());
+			
+			PackingRateEntity oldEntity = packingRateRepository.findByPackingRateId(packingRateMasterRequest.getPackingRateId());
+			if (oldEntity != null && oldEntity.getPackingRateId() > 0) {
+				packingRateEntity.setCreatedBy(oldEntity.getCreatedBy());
+				packingRateEntity.setCreatedOn(oldEntity.getCreatedOn());
+			}
 			
 			if(list!=null && list.size()>0) {
 				checkpackingItemEntity=list.get(0);
@@ -214,20 +236,19 @@ public class PackingMasterServiceImpl implements PackingMasterService {
 				}
 			}
 		} else {
+			packingRateEntity.setCreatedBy(packingRateMasterRequest.getUserId());
+			packingRateEntity.setCreatedOn(new Date());
 			if(list!=null && list.size()>0) {
 				return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Packing Rate already exists..! \"}", new HttpHeaders(), HttpStatus.BAD_REQUEST);
 			}
 		}
 		packingRateEntity.getBucketEntity().setBucketId(packingRateMasterRequest.getPackingBucketId());
-		packingRateEntity.setPackingRate( packingRateMasterRequest.getPackingRate() );
-		packingRateEntity.setPackingRateDesc( packingRateMasterRequest.getPackingRateDesc());
-		packingRateEntity.getParty().setnPartyId( packingRateMasterRequest.getPartyId() );
-		packingRateEntity.setCreatedBy(userId);
-		packingRateEntity.setUpdatedBy(userId);
-		packingRateEntity.setCreatedOn(new Date());
-		packingRateEntity.setUpdatedOn(new Date());
-		if( packingRateMasterRequest.getPackingRate() !=null) {
-			packingRateRepository.save (packingRateEntity);
+		packingRateEntity.setPackingRate(packingRateMasterRequest.getPackingRate());
+		packingRateEntity.setPackingRateDesc(packingRateMasterRequest.getPackingRateDesc());
+		packingRateEntity.getParty().setnPartyId(packingRateMasterRequest.getPartyId());
+
+		if (packingRateMasterRequest.getPackingRate() != null) {
+			packingRateRepository.save(packingRateEntity);
 		}
 		if (packingRateMasterRequest.getPackingRateId() != null && packingRateMasterRequest.getPackingRateId() > 0) {
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Packing Rate details updated successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
@@ -263,7 +284,7 @@ public class PackingMasterServiceImpl implements PackingMasterService {
 	@Override
 	public List<PackingRateMasterResponse> getAllRateList() {
 
-		List<PackingRateMasterResponse> instructionList = packingRateRepository.findAll().stream()
+		List<PackingRateMasterResponse> instructionList = packingRateRepository.findAllRatesList(commonUtil.getLocationWiseMappedUserIds()).stream()
 				.map(i -> PackingRateEntity.valueOf(i)).collect(Collectors.toList());
 
 		return instructionList;

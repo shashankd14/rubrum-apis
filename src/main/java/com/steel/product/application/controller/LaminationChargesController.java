@@ -4,12 +4,12 @@ import com.steel.product.application.dto.lamination.LaminationChargesRequest;
 import com.steel.product.application.dto.lamination.LaminationChargesResponse;
 import com.steel.product.application.entity.LaminationStaticDataEntity;
 import com.steel.product.application.service.LaminationChargesService;
+import com.steel.product.application.util.CommonUtil;
+
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,19 +23,30 @@ public class LaminationChargesController {
 
 	@Autowired
 	private LaminationChargesService laminationChargesService;
+	
+	@Autowired
+	private CommonUtil commonUtil;
 
 	@PostMapping(value = "/save", produces = "application/json")
-	public ResponseEntity<Object> save(@RequestBody List<LaminationChargesRequest> laminationChargesRequest, HttpServletRequest request) {
-		int userId = (request.getHeader("userId") == null ? 1 : Integer.parseInt(request.getHeader("userId")));
-
-		return laminationChargesService.save(laminationChargesRequest, userId);
+	public ResponseEntity<Object> save(@RequestBody List<LaminationChargesRequest> laminationChargesRequest) {
+		int userId = commonUtil.getUserId();
+		List<LaminationChargesRequest> endUserTagsRequestsNew = new ArrayList<>();
+		for (LaminationChargesRequest req : laminationChargesRequest) {
+			req.setUserId(userId);
+			endUserTagsRequestsNew.add(req);
+		}
+		return laminationChargesService.save(endUserTagsRequestsNew);
 	}
 
 	@PutMapping(value = "/update", produces = "application/json")
-	public ResponseEntity<Object> update(@RequestBody List<LaminationChargesRequest> laminationChargesRequest,
-			HttpServletRequest request) {
-		int userId = (request.getHeader("userId") == null ? 1 : Integer.parseInt(request.getHeader("userId")));
-		return laminationChargesService.save(laminationChargesRequest, userId);
+	public ResponseEntity<Object> update(@RequestBody List<LaminationChargesRequest> laminationChargesRequest) {
+		int userId = commonUtil.getUserId();
+		List<LaminationChargesRequest> endUserTagsRequestsNew = new ArrayList<>();
+		for (LaminationChargesRequest req : laminationChargesRequest) {
+			req.setUserId(userId);
+			endUserTagsRequestsNew.add(req);
+		}
+		return laminationChargesService.save(endUserTagsRequestsNew);
 	}
 
 	@DeleteMapping(value = "/{id}", produces = "application/json")

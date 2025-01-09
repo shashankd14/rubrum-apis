@@ -13,7 +13,7 @@ import com.steel.product.application.dto.packingmaster.PackingRateMasterResponse
 
 public interface PackingMasterService {
 
-	ResponseEntity<Object> save(PackingItemRequest packingItemRequest, int userId);
+	ResponseEntity<Object> save(PackingItemRequest packingItemRequest);
 
 	ResponseEntity<Object> delete(int id);
 
@@ -21,7 +21,7 @@ public interface PackingMasterService {
 
 	List<PackingItemResponse> getAllItemDetails();
 
-	ResponseEntity<Object> saveBucket(PackingBucketRequest packingItemRequest, int userId);
+	ResponseEntity<Object> saveBucket(PackingBucketRequest packingItemRequest);
 
 	PackingBucketResponse getByBucketId(int id);
 
@@ -29,7 +29,7 @@ public interface PackingMasterService {
 
 	List<PackingBucketResponse> getAllBucketList();
 
-	ResponseEntity<Object> save(PackingRateMasterRequest packingRateMasterRequest, int userId);
+	ResponseEntity<Object> save(PackingRateMasterRequest packingRateMasterRequest);
 
 	ResponseEntity<Object> deleteRate(int id);
 

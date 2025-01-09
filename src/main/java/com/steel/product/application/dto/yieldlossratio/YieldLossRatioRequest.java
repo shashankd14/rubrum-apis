@@ -9,7 +9,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class YieldLossRatioRequest extends BaseRequest {
+public class YieldLossRatioRequest extends BaseRequest{
 
 	private Integer ylrId;
 

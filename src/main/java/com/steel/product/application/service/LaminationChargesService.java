@@ -6,12 +6,11 @@ import org.springframework.http.ResponseEntity;
 
 import com.steel.product.application.dto.lamination.LaminationChargesRequest;
 import com.steel.product.application.dto.lamination.LaminationChargesResponse;
-import com.steel.product.application.dto.pricemaster.PriceMasterResponse;
 import com.steel.product.application.entity.LaminationStaticDataEntity;
 
 public interface LaminationChargesService {
 
-	ResponseEntity<Object> save(List<LaminationChargesRequest> packingItemRequest, int userId);
+	ResponseEntity<Object> save(List<LaminationChargesRequest> packingItemRequest);
 
 	ResponseEntity<Object> delete(int id);
 

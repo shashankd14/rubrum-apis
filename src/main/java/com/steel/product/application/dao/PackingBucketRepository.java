@@ -2,7 +2,6 @@ package com.steel.product.application.dao;
 
 import com.steel.product.application.entity.PackingBucketEntity;
 import java.util.List;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -15,9 +14,14 @@ public interface PackingBucketRepository extends JpaRepository<PackingBucketEnti
 
 	List<PackingBucketEntity> findByPackingBucketId(String packingBucketId);
 
+	PackingBucketEntity findByBucketId(Integer bucketId);
+
 	@Modifying
 	@Transactional
 	@Query("delete from PackingBucketChildEntity where bucketId = :bucketId")
 	void deleteByBucketId(@Param("bucketId") Integer partyId);
+
+	@Query("select mat from PackingBucketEntity mat where mat.createdBy in :userIds order by mat.bucketId desc")
+	public List<PackingBucketEntity> findAllBuckets(@Param("userIds") List<Integer> userIds);
 
 }
