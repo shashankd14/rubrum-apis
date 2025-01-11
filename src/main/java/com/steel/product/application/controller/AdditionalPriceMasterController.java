@@ -3,11 +3,12 @@ package com.steel.product.application.controller;
 import com.steel.product.application.dto.additionalpricemaster.AdditionalPriceMasterRequest;
 import com.steel.product.application.dto.additionalpricemaster.AdditionalPriceMasterResponse;
 import com.steel.product.application.service.AdditionalPriceMasterService;
+import com.steel.product.application.util.CommonUtil;
+
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,22 +24,34 @@ public class AdditionalPriceMasterController {
 	@Autowired
 	private AdditionalPriceMasterService additionalPriceMasterService;
 
+	@Autowired
+	private CommonUtil commonUtil;
+	
 	@GetMapping(value = "/pocess/{id}", produces = "application/json")
 	public ResponseEntity<Object> getByPocessId(@PathVariable("id") int id) {
 		return new ResponseEntity<Object>(additionalPriceMasterService.additionalPriceStaticDetails(id), HttpStatus.OK);
 	}
 	
 	@PostMapping(value = "/save", produces = "application/json")
-	public ResponseEntity<Object> save(@RequestBody List<AdditionalPriceMasterRequest> priceMasterRequest, HttpServletRequest request) {
-		int userId = (request.getHeader("userId")==null ? 1: Integer.parseInt(request.getHeader("userId")));
-
-		return additionalPriceMasterService.save(priceMasterRequest, userId);
+	public ResponseEntity<Object> save(@RequestBody List<AdditionalPriceMasterRequest> priceMasterRequest) {
+		int userId = commonUtil.getUserId();
+		List<AdditionalPriceMasterRequest> priceMasterRequestNew = new ArrayList<>();
+		for (AdditionalPriceMasterRequest req : priceMasterRequest) {
+			req.setUserId(userId);
+			priceMasterRequestNew.add(req);
+		}
+		return additionalPriceMasterService.save(priceMasterRequestNew);
 	}
 	
 	@PutMapping(value = "/update", produces = "application/json")
-	public ResponseEntity<Object> update(@RequestBody List<AdditionalPriceMasterRequest> priceMasterRequest, HttpServletRequest request) {
-		int userId = (request.getHeader("userId")==null ? 1: Integer.parseInt(request.getHeader("userId")));
-		return additionalPriceMasterService.save(priceMasterRequest, userId);
+	public ResponseEntity<Object> update(@RequestBody List<AdditionalPriceMasterRequest> priceMasterRequest) {
+		int userId = commonUtil.getUserId();
+		List<AdditionalPriceMasterRequest> priceMasterRequestNew = new ArrayList<>();
+		for (AdditionalPriceMasterRequest req : priceMasterRequest) {
+			req.setUserId(userId);
+			priceMasterRequestNew.add(req);
+		}
+		return additionalPriceMasterService.save(priceMasterRequestNew);
 	}
 	
 	@DeleteMapping(value = "/{id}", produces = "application/json" )

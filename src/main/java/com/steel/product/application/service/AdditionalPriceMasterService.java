@@ -9,7 +9,7 @@ import com.steel.product.application.entity.AdditionalPriceStaticEntity;
 
 public interface AdditionalPriceMasterService {
 
-	ResponseEntity<Object> save(List<AdditionalPriceMasterRequest> priceMasterRequestList, int userId);
+	ResponseEntity<Object> save(List<AdditionalPriceMasterRequest> priceMasterRequestList);
 
 	ResponseEntity<Object> delete(int id);
 

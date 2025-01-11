@@ -12,6 +12,8 @@ import com.steel.product.application.dto.pricemaster.PriceMasterRequest;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.entity.PriceMasterEntity;
+import com.steel.product.application.util.CommonUtil;
+
 import lombok.extern.log4j.Log4j2;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -20,6 +22,8 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -57,32 +61,43 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 	@Autowired
 	ProcessService processService;
 
+	@Autowired
+	CommonUtil commonUtil;
+	
 	@Override
-	public ResponseEntity<Object> save(List<PriceMasterRequest> priceMasterRequestList, int userId) {
+	public ResponseEntity<Object> save(List<PriceMasterRequest> priceMasterRequestList) {
 
 		ResponseEntity<Object> response = null;
 		List<PriceMasterEntity> list=new ArrayList<>();
 		
 		for (PriceMasterRequest priceMasterRequest : priceMasterRequestList) {
-
 			for (Integer partyId : priceMasterRequest.getPartyId()) {
-
 				for (Integer matGradeId : priceMasterRequest.getMatGradeId()) {
 					PriceMasterEntity priceMasterEntity = new PriceMasterEntity();
 					if (priceMasterRequest.getId() != null && priceMasterRequest.getId() > 0) {
 						priceMasterEntity.setId(priceMasterRequest.getId());
+						priceMasterEntity.setUpdatedBy(priceMasterRequest.getUserId());
+						priceMasterEntity.setUpdatedOn(new Date());
+
+						PriceMasterEntity oldEntity = new PriceMasterEntity();
+						Optional<PriceMasterEntity> kk = priceMasterRepository.findById(priceMasterRequest.getId());
+						if (kk.isPresent()) {
+							oldEntity = kk.get();
+							priceMasterEntity.setCreatedBy(oldEntity.getCreatedBy());
+							priceMasterEntity.setCreatedOn(oldEntity.getCreatedOn());
+						}
+					} else {
+						priceMasterEntity.setCreatedBy(priceMasterRequest.getUserId());
+						priceMasterEntity.setCreatedOn(new Date());
 					}
 					priceMasterEntity.setParty(partyDetailsService.getPartyById(partyId));
-					priceMasterEntity.setMatGrade( materialGradeService.getById(matGradeId));
-					priceMasterEntity.setProcess( processService.getById(priceMasterRequest.getProcessId()));
+					priceMasterEntity.setMatGrade(materialGradeService.getById(matGradeId));
+					priceMasterEntity.setProcess(processService.getById(priceMasterRequest.getProcessId()));
 					priceMasterEntity.setPrice(priceMasterRequest.getPrice());
 					priceMasterEntity.setThicknessFrom(priceMasterRequest.getThicknessFrom());
 					priceMasterEntity.setThicknessTo(priceMasterRequest.getThicknessTo());
-					priceMasterEntity.setCreatedBy(userId);
-					priceMasterEntity.setUpdatedBy(userId);
-					priceMasterEntity.setCreatedOn(new Date());
-					priceMasterEntity.setUpdatedOn(new Date());
-					if(priceMasterRequest.getPrice()!=null) {
+
+					if (priceMasterRequest.getPrice() != null) {
 						list.add(priceMasterEntity);
 					}
 				}
@@ -655,7 +670,7 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 	public Page<PriceMasterEntity> findAllWithPagination(PriceMasterListPageRequest request) {
 		Pageable pageable = PageRequest.of((request.getPageNo() - 1), request.getPageSize());
 		Page<PriceMasterEntity> pageResult = priceMasterRepository.findAll(request.getSearchText(),
-				request.getThicknessRange(), pageable);
+				request.getThicknessRange(), commonUtil.getLocationWiseMappedUserIds(), pageable);
 		return pageResult;
 	}
 

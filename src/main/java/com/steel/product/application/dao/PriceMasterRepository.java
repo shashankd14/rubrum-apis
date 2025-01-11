@@ -4,6 +4,7 @@ import com.steel.product.application.entity.PriceMasterEntity;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,7 +20,9 @@ public interface PriceMasterRepository extends JpaRepository<PriceMasterEntity, 
 			+ " pc.matGrade.gradeId = :matGradeId and :rangeValue between pc.thicknessFrom and pc.thicknessTo")
 	List<PriceMasterEntity> validateRange(@Param("partyId") Integer partyId, @Param("processId") Integer processId,
 			@Param("matGradeId") Integer matGradeId, @Param("rangeValue") BigDecimal rangeValue);
-
+	
+	Optional<PriceMasterEntity> findById(Integer id);
+	
 	@Query("select pc from PriceMasterEntity pc where pc.party.nPartyId = :partyId and "
 			+ " pc.process.processId = :processId and "
 			+ " pc.matGrade.gradeId = :matGradeId and "
@@ -69,12 +72,13 @@ public interface PriceMasterRepository extends JpaRepository<PriceMasterEntity, 
 	
 	@Query("select pc from PriceMasterEntity pc where "
 			+ " ( pc.thicknessFrom = CASE WHEN :thicknesRange IS NOT NULL THEN :thicknesRange ELSE pc.thicknessFrom END or "
-			+ " pc.thicknessTo = CASE WHEN :thicknesRange IS NOT NULL THEN :thicknesRange ELSE pc.thicknessTo END ) and "
+			+ " pc.thicknessTo = CASE WHEN :thicknesRange IS NOT NULL THEN :thicknesRange ELSE pc.thicknessTo END )  "
+			+ " and pc.createdBy in ( :userIds) and \r\n"			
 			+ " ( pc.party.partyName like %:searchText% or "
 			+ " pc.process.processName like %:searchText% or "
 			+ " pc.matGrade.gradeName like %:searchText% or "
-			+ " pc.matGrade.parentMaterial.description like %:searchText% ) ")
+			+ " pc.matGrade.parentMaterial.description like %:searchText% ) order by id desc ")
 	Page<PriceMasterEntity> findAll(@Param("searchText") String searchText, 
-			@Param("thicknesRange") BigDecimal thicknesRange, Pageable pageable);
+			@Param("thicknesRange") BigDecimal thicknesRange, @Param("userIds") List<Integer> userIds, Pageable pageable);
 
 }

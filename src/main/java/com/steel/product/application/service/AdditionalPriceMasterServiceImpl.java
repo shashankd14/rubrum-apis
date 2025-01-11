@@ -6,12 +6,15 @@ import com.steel.product.application.dto.additionalpricemaster.AdditionalPriceMa
 import com.steel.product.application.dto.additionalpricemaster.AdditionalPriceMasterResponse;
 import com.steel.product.application.entity.AdditionalPriceMasterEntity;
 import com.steel.product.application.entity.AdditionalPriceStaticEntity;
+import com.steel.product.application.util.CommonUtil;
+
 import lombok.extern.log4j.Log4j2;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +33,9 @@ public class AdditionalPriceMasterServiceImpl implements AdditionalPriceMasterSe
 	@Autowired
 	AdditionalPriceStaticRepository additionalPriceStaticRepository;
 
+	@Autowired
+    CommonUtil commonUtil;
+
 	@Override
 	public List<AdditionalPriceStaticEntity> additionalPriceStaticDetails(Integer id) {
 
@@ -38,7 +44,7 @@ public class AdditionalPriceMasterServiceImpl implements AdditionalPriceMasterSe
 	}
 	
 	@Override
-	public ResponseEntity<Object> save(List<AdditionalPriceMasterRequest> addiPriceMasterRequestList, int userId) {
+	public ResponseEntity<Object> save(List<AdditionalPriceMasterRequest> addiPriceMasterRequestList) {
 
 		ResponseEntity<Object> response = null;
 		List<AdditionalPriceMasterEntity> list=new ArrayList<>();
@@ -50,6 +56,19 @@ public class AdditionalPriceMasterServiceImpl implements AdditionalPriceMasterSe
 				AdditionalPriceMasterEntity priceMasterEntity = new AdditionalPriceMasterEntity();
 				if (additionalPriceMasterRequest.getId() != null && additionalPriceMasterRequest.getId() > 0) {
 					priceMasterEntity.setId(additionalPriceMasterRequest.getId());
+					priceMasterEntity.setUpdatedBy(additionalPriceMasterRequest.getUserId());
+					priceMasterEntity.setUpdatedOn(new Date());
+					
+					AdditionalPriceMasterEntity oldEntity = new AdditionalPriceMasterEntity();
+					Optional<AdditionalPriceMasterEntity> kk = additionalPriceMasterRepository.findById(additionalPriceMasterRequest.getId());
+					if (kk.isPresent()) {
+						oldEntity = kk.get();
+						priceMasterEntity.setCreatedBy(oldEntity.getCreatedBy());
+						priceMasterEntity.setCreatedOn(oldEntity.getCreatedOn());
+					}
+				} else {
+					priceMasterEntity.setCreatedBy(additionalPriceMasterRequest.getUserId());
+					priceMasterEntity.setCreatedOn(new Date());
 				}
 				priceMasterEntity.setPartyId(partyId);
 				priceMasterEntity.setProcessId(additionalPriceMasterRequest.getProcessId());
@@ -57,10 +76,7 @@ public class AdditionalPriceMasterServiceImpl implements AdditionalPriceMasterSe
 				priceMasterEntity.setPrice(additionalPriceMasterRequest.getPrice());
 				priceMasterEntity.setRangeFrom(additionalPriceMasterRequest.getRangeFrom());
 				priceMasterEntity.setRangeTo(additionalPriceMasterRequest.getRangeTo());
-				priceMasterEntity.setCreatedBy(userId);
-				priceMasterEntity.setUpdatedBy(userId);
-				priceMasterEntity.setCreatedOn(new Date());
-				priceMasterEntity.setUpdatedOn(new Date());
+
 				list.add(priceMasterEntity);
 			}
 		}
@@ -122,7 +138,7 @@ public class AdditionalPriceMasterServiceImpl implements AdditionalPriceMasterSe
 
 	@Override
 	public List<AdditionalPriceMasterResponse> getAllPriceDetails() {
-		List<Object[]> list = additionalPriceMasterRepository.findAll1();
+		List<Object[]> list = additionalPriceMasterRepository.findAll1(commonUtil.getLocationWiseMappedUserIds());
 		return prepareDataList(list);
 	}
 		

@@ -16,7 +16,7 @@ import com.steel.product.application.dto.pricemaster.PriceMasterRequest;
 
 public interface PriceMasterService {
 
-	ResponseEntity<Object> save(List<PriceMasterRequest> priceMasterRequestList, int userId);
+	ResponseEntity<Object> save(List<PriceMasterRequest> priceMasterRequestList);
 
 	ResponseEntity<Object> delete(int id);
 
