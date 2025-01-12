@@ -40,6 +40,9 @@ public class OutwardReportViewEntity {
 	@Column(name = "materialdesc")
 	private String materialdesc;
 
+	@Column(name = "materialgrade")
+	private String materialgrade;
+
 	@Column(name = "processname")
 	private String processname;
 

@@ -25,6 +25,9 @@ public class RMReportViewEntity {
 	@Column(name = "customer_batch_id")
 	private String customerBatchId;
 
+	@Column(name = "parentcoilnumber")
+	private String parentcoilnumber;
+
 	@Column(name = "received_date")
 	private String receivedDate;
 

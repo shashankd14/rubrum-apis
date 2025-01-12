@@ -784,7 +784,7 @@ public class ReportsServiceImpl implements ReportsService {
 			List<RMReportViewEntity> partyList = rmReportViewRepository.findByPartyId(partyId);
 
 			acctStatementMap.put("1",
-					new Object[] { "CoilNumber", "CustomerBatchId", "Received Date","Current Date","Coil Age(No'of Days)",
+					new Object[] { "CoilNumber", "CustomerBatchId", "Mother Coil No", "Received Date","Current Date","Coil Age(No'of Days)",
 							"MaterialDesc", "MaterialGrade", "Thickness", "Width", "Length", "Net Weight", 
 							"Customer Invoice Number", "Customer Invoice Date", "Status", "Created On", "Remarks" });
 
@@ -792,7 +792,7 @@ public class ReportsServiceImpl implements ReportsService {
 			for (RMReportViewEntity kk : partyList) {
 				cnt++;
 				acctStatementMap.put("" + cnt,
-				new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getReceivedDate(),
+				new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getParentcoilnumber(), kk.getReceivedDate(),
 						kk.getCurrentdate(), kk.getCoilage(), kk.getDescription(), kk.getMaterialGrade(),
 						kk.getFthickness(), kk.getFwidth(), kk.getFlength(), kk.getNetWeight(),
 						kk.getCustInvNo(), kk.getCustInvDate(), kk.getInwardStatus(), kk.getCreatedOn(),
@@ -1058,14 +1058,14 @@ public class ReportsServiceImpl implements ReportsService {
 
 			acctStatementMap.put("1",
 					new Object[] { "ASPEN DC NUMBER", "Customer name", "SAP Invoice No", "SAP INVOICE DATE",
-							"Material Description", "PROCESS", "Qty ", "Rate/per MT", "Subtotal", "Total Amount",
+							"Material Description", "Material Grade", "PROCESS", "Qty ", "Rate/per MT", "Subtotal", "Total Amount",
 							"CGST 6%", "SGST 6%", "Gross Total" });
 			int cnt = 1;
 			for (OutwardReportViewEntity kk : partyList) {
 				cnt++;
 				acctStatementMap.put("" + cnt,
 						new Object[] { kk.getAspendcno(), kk.getCustomername(), kk.getSapinvoiceno(),
-								kk.getSapinvoicedate(), kk.getMaterialdesc(), kk.getProcessname(), kk.getQty(),
+								kk.getSapinvoicedate(), kk.getMaterialdesc(), kk.getMaterialgrade(), kk.getProcessname(), kk.getQty(),
 								kk.getRate(), kk.getTotalprice(), kk.getTotalprice(), kk.getCgst(), kk.getSgst(),
 								kk.getGrosstotal() });
 			}
