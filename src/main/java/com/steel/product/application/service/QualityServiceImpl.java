@@ -807,23 +807,26 @@ public class QualityServiceImpl implements QualityService {
 	@Override
 	public Page<Object[]> qirInwardListPage(ListPageSearchRequest listPageSearchRequest) {
 		Pageable pageable = PageRequest.of((listPageSearchRequest.getPageNo() - 1), listPageSearchRequest.getPageSize());
-		
+		boolean partyIdsFlag=false;
 		List<Integer> partyIds = new ArrayList<>();
 		if (listPageSearchRequest.getPartyId() != null && listPageSearchRequest.getPartyId() > 0) {
 			partyIds.add(listPageSearchRequest.getPartyId());
+			partyIdsFlag=true;
 		} else {
 			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
 			if(adminUserEntity.getUserPartyMap()!=null && adminUserEntity.getUserPartyMap().size()>0) {
 				partyIds=new ArrayList<>();
 				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
 					partyIds.add(userPartyMap.getPartyId());
-					log.info("In partyIds === "+partyIds);
+					partyIdsFlag=true;
 				}
+				log.info("In partyIds === "+partyIds);
 			} else {
+				partyIdsFlag=false;
 				partyIds = new ArrayList<>();
 			}
 		}
-		Page<Object[]> pageResult = kqpPartyTemplateRepository.qirInwardListPage(listPageSearchRequest.getSearchText(), partyIds, pageable);
+		Page<Object[]> pageResult = kqpPartyTemplateRepository.qirInwardListPage(listPageSearchRequest.getSearchText(), partyIds, partyIdsFlag, pageable);
 		return pageResult;
 	}
 
@@ -831,22 +834,26 @@ public class QualityServiceImpl implements QualityService {
 	public Page<Object[]> qirPreProcessingListPage(ListPageSearchRequest listPageSearchRequest) {
 		Pageable pageable = PageRequest.of((listPageSearchRequest.getPageNo() - 1), listPageSearchRequest.getPageSize());
 		List<Integer> partyIds = new ArrayList<>();
+		boolean partyIdsFlag=false;
 		if (listPageSearchRequest.getPartyId() != null && listPageSearchRequest.getPartyId() > 0) {
 			partyIds.add(listPageSearchRequest.getPartyId());
+			partyIdsFlag=true;
 		} else {
 			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
 			if(adminUserEntity.getUserPartyMap()!=null && adminUserEntity.getUserPartyMap().size()>0) {
 				partyIds=new ArrayList<>();
 				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
 					partyIds.add(userPartyMap.getPartyId());
-					log.info("In partyIds === "+partyIds);
+					partyIdsFlag=true;
 				}
+				log.info("In partyIds === "+partyIds);
 			} else {
+				partyIdsFlag=false;
 				partyIds = new ArrayList<>();
 			}
 		}
 		
-		Page<Object[]> packetsList = kqpPartyTemplateRepository.qirPreProcessingListPage(listPageSearchRequest.getSearchText(), partyIds, pageable);
+		Page<Object[]> packetsList = kqpPartyTemplateRepository.qirPreProcessingListPage(listPageSearchRequest.getSearchText(), partyIds, partyIdsFlag, pageable);
 		return packetsList;
 	}
 
@@ -854,21 +861,25 @@ public class QualityServiceImpl implements QualityService {
 	public Page<Object[]> qirProcessingListPage(ListPageSearchRequest listPageSearchRequest) {
 		Pageable pageable = PageRequest.of((listPageSearchRequest.getPageNo() - 1), listPageSearchRequest.getPageSize());
 		List<Integer> partyIds = new ArrayList<>();
+		boolean partyIdsFlag=false;
 		if (listPageSearchRequest.getPartyId() != null && listPageSearchRequest.getPartyId() > 0) {
 			partyIds.add(listPageSearchRequest.getPartyId());
+			partyIdsFlag=true;
 		} else {
 			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
 			if(adminUserEntity.getUserPartyMap()!=null && adminUserEntity.getUserPartyMap().size()>0) {
 				partyIds=new ArrayList<>();
 				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
 					partyIds.add(userPartyMap.getPartyId());
+					partyIdsFlag=true;
 					log.info("In partyIds === "+partyIds);
 				}
 			} else {
+				partyIdsFlag=false;
 				partyIds = new ArrayList<>();
 			}
 		}
-		Page<Object[]> packetsList = kqpPartyTemplateRepository.qirProcessingListPage(listPageSearchRequest.getSearchText(), partyIds, pageable);
+		Page<Object[]> packetsList = kqpPartyTemplateRepository.qirProcessingListPage(listPageSearchRequest.getSearchText(), partyIds, partyIdsFlag, pageable);
 		return packetsList;
 	}
 
@@ -876,21 +887,25 @@ public class QualityServiceImpl implements QualityService {
 	public Page<Object[]> qirPreDispatchList(ListPageSearchRequest listPageSearchRequest) {
 		Pageable pageable = PageRequest.of((listPageSearchRequest.getPageNo() - 1), listPageSearchRequest.getPageSize());
 		List<Integer> partyIds = new ArrayList<>();
+		boolean partyIdsFlag=false;
 		if (listPageSearchRequest.getPartyId() != null && listPageSearchRequest.getPartyId() > 0) {
 			partyIds.add(listPageSearchRequest.getPartyId());
+			partyIdsFlag=true;
 		} else {
 			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
 			if(adminUserEntity.getUserPartyMap()!=null && adminUserEntity.getUserPartyMap().size()>0) {
 				partyIds=new ArrayList<>();
 				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
 					partyIds.add(userPartyMap.getPartyId());
-					log.info("In partyIds === "+partyIds);
+					partyIdsFlag=true;
 				}
+				log.info("In partyIds === "+partyIds);
 			} else {
+				partyIdsFlag=false;
 				partyIds = new ArrayList<>();
 			}
 		}
-		Page<Object[]> packetsList = kqpPartyTemplateRepository.qirPreDispatchList(listPageSearchRequest.getSearchText(), partyIds, pageable);
+		Page<Object[]> packetsList = kqpPartyTemplateRepository.qirPreDispatchList(listPageSearchRequest.getSearchText(), partyIds, partyIdsFlag, pageable);
 		return packetsList;
 	}
 
@@ -898,21 +913,24 @@ public class QualityServiceImpl implements QualityService {
 	public Page<Object[]> qirPostDispatchList(ListPageSearchRequest listPageSearchRequest) {
 		Pageable pageable = PageRequest.of((listPageSearchRequest.getPageNo() - 1), listPageSearchRequest.getPageSize());
 		List<Integer> partyIds = new ArrayList<>();
+		boolean partyIdsFlag=false;
 		if (listPageSearchRequest.getPartyId() != null && listPageSearchRequest.getPartyId() > 0) {
 			partyIds.add(listPageSearchRequest.getPartyId());
+			partyIdsFlag=true;
 		} else {
 			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
 			if(adminUserEntity.getUserPartyMap()!=null && adminUserEntity.getUserPartyMap().size()>0) {
 				partyIds=new ArrayList<>();
 				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
 					partyIds.add(userPartyMap.getPartyId());
-					log.info("In partyIds === "+partyIds);
+					partyIdsFlag=true;
 				}
+				log.info("In partyIds === "+partyIds);
 			} else {
 				partyIds = new ArrayList<>();
 			}
 		}
-		Page<Object[]> packetsList = kqpPartyTemplateRepository.qirPostDispatchList(listPageSearchRequest.getSearchText(), partyIds, pageable);
+		Page<Object[]> packetsList = kqpPartyTemplateRepository.qirPostDispatchList(listPageSearchRequest.getSearchText(), partyIds, partyIdsFlag, pageable);
 		return packetsList;
 	}
 
