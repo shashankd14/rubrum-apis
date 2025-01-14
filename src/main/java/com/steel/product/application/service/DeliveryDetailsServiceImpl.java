@@ -308,7 +308,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
     	Pageable pageable = PageRequest.of((pageNo-1), pageSize);
     	
 		if(partyId!=null && partyId.length()>0) {
-	    	Page<DeliveryDetails> deliveryList = deliveryDetailsRepo.findAllDeliveries(searchText, Integer.parseInt(partyId), pageable);
+	    	Page<DeliveryDetails> deliveryList = deliveryDetailsRepo.findAllDeliveries(searchText, Integer.parseInt(partyId), commonUtil.getLoginWiseMappedUserIds(), pageable);
 	        LOGGER.info("Delivery details list size "+deliveryList.getSize());
 	        return deliveryList;
 		} else {
@@ -317,12 +317,12 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 				List<Integer> partyIds=new ArrayList<>();
 				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
 					partyIds.add(userPartyMap.getPartyId());
-					LOGGER.info("In partyIds === "+partyIds);
 				}
-				Page<DeliveryDetails> deliveryList = deliveryDetailsRepo.findAllDeliveries(searchText, partyIds, pageable);
+				LOGGER.info("In partyIds === "+partyIds);
+				Page<DeliveryDetails> deliveryList = deliveryDetailsRepo.findAllDeliveries(searchText, partyIds, commonUtil.getLoginWiseMappedUserIds(), pageable);
 				return deliveryList;
 			} else {
-				Page<DeliveryDetails> deliveryList = deliveryDetailsRepo.findAllDeliveries(searchText, pageable);
+				Page<DeliveryDetails> deliveryList = deliveryDetailsRepo.findAllDeliveries(searchText,  commonUtil.getLoginWiseMappedUserIds(), pageable);
 		        LOGGER.info("Delivery details list size "+deliveryList.getSize());
 		        return deliveryList;
 			}

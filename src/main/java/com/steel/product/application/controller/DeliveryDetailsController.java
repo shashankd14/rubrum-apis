@@ -4,9 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import javax.servlet.http.HttpServletRequest;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
@@ -29,6 +26,7 @@ import com.steel.product.application.dto.pricemaster.PriceCalculateResponseDTO;
 import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.service.DeliveryDetailsService;
+import com.steel.product.application.util.CommonUtil;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -40,6 +38,9 @@ public class DeliveryDetailsController {
 
     @Autowired
     private DeliveryDetailsService deliveryDetailsService;
+    
+    @Autowired
+	private CommonUtil commonUtil;
 
 	@GetMapping({ "/list/{pageNo}/{pageSize}" })
 	public ResponseEntity<Object> findAllWithPagination(@PathVariable int pageNo, @PathVariable int pageSize,
@@ -79,12 +80,12 @@ public class DeliveryDetailsController {
 	}
 
     @PostMapping("/validatePriceMapping")
-	public ResponseEntity<Object> validatePriceMapping(@RequestBody DeliveryDto deliveryDto, HttpServletRequest request) {
+	public ResponseEntity<Object> validatePriceMapping(@RequestBody DeliveryDto deliveryDto) {
 		ResponseEntity<Object> result = null;
 		HttpHeaders headers = new HttpHeaders();
 		headers.set("Content-Type", "application/json");
 		try {
-			int userId = (request.getHeader("userId") == null ? 1 : Integer.parseInt(request.getHeader("userId")));
+			int userId = commonUtil.getUserId();			
 			if(!(deliveryDto.getPackingRateId() !=null && deliveryDto.getPackingRateId() > 0 )) {
 				deliveryDto.setPackingRateId(0);
 			}		
@@ -105,12 +106,12 @@ public class DeliveryDetailsController {
 	}
 
     @PostMapping("/validatePriceMappingFullHandling")
-	public ResponseEntity<Object> validatePriceMappingFullHandling(@RequestBody ValidatePriceMappingDTO validatePriceMappingDTO, HttpServletRequest request) {
+	public ResponseEntity<Object> validatePriceMappingFullHandling(@RequestBody ValidatePriceMappingDTO validatePriceMappingDTO) {
 		ResponseEntity<Object> result = null;
 		HttpHeaders headers = new HttpHeaders();
 		headers.set("Content-Type", "application/json");
 		try {
-			int userId = (request.getHeader("userId") == null ? 1 : Integer.parseInt(request.getHeader("userId")));
+			int userId = commonUtil.getUserId();	
 			if(!(validatePriceMappingDTO.getPackingRateId() !=null && validatePriceMappingDTO.getPackingRateId() > 0 )) {
 				validatePriceMappingDTO.setPackingRateId(0);
 			}		
@@ -131,11 +132,11 @@ public class DeliveryDetailsController {
 	}
     
     @PostMapping("/save")
-	public ResponseEntity<Object> save(@RequestBody DeliveryDto deliveryDto, HttpServletRequest request) {
+	public ResponseEntity<Object> save(@RequestBody DeliveryDto deliveryDto) {
 		ResponseEntity<Object> result = null;
 
 		try {
-			int userId = (request.getHeader("userId")==null ? 1: Integer.parseInt(request.getHeader("userId")));
+			int userId = commonUtil.getUserId();	
 			if(!(deliveryDto.getPackingRateId() !=null && deliveryDto.getPackingRateId() > 0 )) {
 				deliveryDto.setPackingRateId(0);
 			}		
