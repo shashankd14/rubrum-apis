@@ -7,6 +7,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class QualityInspReportListPageResponse {
+
+	private Integer instructionId;
 	
 	private Integer inwardEntryId;
 
