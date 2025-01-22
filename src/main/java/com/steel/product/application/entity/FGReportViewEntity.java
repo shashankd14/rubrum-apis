@@ -64,7 +64,10 @@ public class FGReportViewEntity {
 	@Column(name = "enduser_tag_name")
 	private String enduserTagName;
 
+	@Column(name = "noofpieces")
+	private Integer noofpieces;
+	
 	@Column(name = "partyId")
-	private int partyId;
+	private Integer partyId;
 
 }

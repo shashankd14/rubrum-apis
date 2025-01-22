@@ -49,36 +49,14 @@ public class ReportsEmailScheduler {
 
 			List<Party> partyList = partyRepo.findAll();
 			for (Party party : partyList) {
-				if (party.getEmail1() != null && party.getEmail1().length() > 0 && party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0) {
+				if (party.getnPartyId()==36 && party.getEmail1() != null && party.getEmail1().length() > 0 && party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0) {
+					party.setEmail1("kanakadri32@gmail.com");
+					party.setEmail2("");
 					mailSender.sendMail(party, strDate);
 					Thread.sleep(200);
 				}
 			}
 		}
 	}
-
-	@Scheduled(cron = "${email.reportsMonthlyScheduleTime}")
-	public void sendMonthlyNotifications() throws InterruptedException {
-		if (apiAlertRequired) {
-			logger.info("sendMonthlyNotifications apiAlertRequired == " + apiAlertRequired);
-			LocalDate currentDate = LocalDate.now();
-			LocalDate previousMonth = currentDate.minusMonths(1);
-			Integer currentYear = currentDate.getYear();
-			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM");
-			Integer month = Integer.parseInt(previousMonth.format(formatter));
-			if(month==12) {
-				 currentYear = currentYear-1;
-			}
-			//logger.info("currentYear  == " + currentYear);
-			//logger.info("month  == " + month);
-			List<Party> partyList = partyRepo.findAll();
-			for (Party party : partyList) {
-				if (party.getEmail1() != null && party.getEmail1().length() > 0 && party.getMonthlyReportsList() != null && party.getMonthlyReportsList().length() > 0) {
-					mailSender.sendMonthlyReportsMail(party, month, currentYear);
-					Thread.sleep(200);
-				}
-			}
-		}
-	}
-
+ 
 }

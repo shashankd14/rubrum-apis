@@ -82,7 +82,10 @@ public class StockDetailsReportViewEntity {
 	@Column(name = "clubbedbundleno")
 	private String clubbedbundleno;
 
+	@Column(name = "noofpieces")
+	private Integer noofpieces;
+
 	@Column(name = "party_id")
-	private int partyId;
+	private Integer partyId;
 
 }

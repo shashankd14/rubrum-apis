@@ -381,7 +381,8 @@ public class InstructionServiceImpl implements InstructionService {
             instruction.setActualNoOfPieces(ins.getActualNoOfPieces());
             if(ins.getPacketClassificationId()!=null && ins.getPacketClassificationId() >0 ) {
                 PacketClassification packetClassificationEntity=packetClassificationMap.get(ins.getPacketClassificationId());
-                if("WIP".equals(packetClassificationEntity.getClassificationName())) {
+                if("WIP".equals(packetClassificationEntity.getClassificationName()) ||
+                	"WIP (SFCP)".equals(packetClassificationEntity.getClassificationName()) ) {
                 	currentStatus = inProgressStatus;
                 }
                 instruction.setPacketClassification(packetClassificationMap.get(ins.getPacketClassificationId()));
