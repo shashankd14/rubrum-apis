@@ -27,7 +27,7 @@ public class SalesOrderListDTO {
 
 	private Float flenghth;
 
-	private Float fweighth;
+	private Float fweight;
 
 	private Integer partyId;
 
