@@ -19,6 +19,8 @@ public class SalesOrderListDTO {
 
 	private String materialGrade;
 
+	private String packetStatus;
+
 	private String materialDesc;
 
 	private Float fthickness;
@@ -30,5 +32,7 @@ public class SalesOrderListDTO {
 	private Float fweight;
 
 	private Integer partyId;
+	
+	
 
 }

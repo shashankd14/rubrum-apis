@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import com.steel.product.application.dto.quality.ListPageSearchRequest;
 import com.steel.product.application.dto.salesorder.SalesOrderCreateDTO;
 import com.steel.product.application.dto.salesorder.SalesOrderListDTO;
+import com.steel.product.application.dto.salesorder.SalesOrderListResponse;
 import com.steel.product.application.service.SalesOrderService;
 import com.steel.product.application.util.CommonUtil;
 
@@ -50,12 +51,25 @@ public class SalesOrderController {
 			resp.setMaterialGrade(result[4] != null ? (String) result[4] : null);
 			resp.setMaterialDesc(result[5] != null ? (String) result[5] : null);
 			resp.setFthickness(result[6] != null ? (Float) result[6] : null);
-			Float dweight = (result[7] != null ? (Float) result[7] : null);
-			Float dwidth = (result[10] != null ? (Float) result[10] : null);
-			Float dlength = (result[11] != null ? (Float) result[11] : null);
-			resp.setFwidth(dwidth.floatValue());
-			resp.setFweight(dweight.floatValue());
-			resp.setFlenghth(dlength.floatValue());
+			
+			Float dweight;
+			Float dwidth;
+			Float dlength;
+			try {
+				dweight = (result[7] != null ? (Float) result[7] : null);
+				dwidth = (result[10] != null ? (Float) result[10] : null);
+				dlength = (result[11] != null ? (Float) result[11] : null);
+				resp.setFwidth(dwidth.floatValue());
+				resp.setFweight(dweight.floatValue());
+				resp.setFlenghth(dlength.floatValue());
+			} catch (ClassCastException e) {
+				Double dweight1 = (result[7] != null ? (Double) result[7] : null);
+				Double dwidth1 = (result[10] != null ? (Double) result[10] : null);
+				Double dlength1 = (result[11] != null ? (Double) result[11] : null);
+				resp.setFwidth(dwidth1.floatValue());
+				resp.setFweight(dweight1.floatValue());
+				resp.setFlenghth(dlength1.floatValue());
+			}
 			resp.setPartyId(result[8] != null ? Integer.parseInt(result[8].toString()) : null);
 			resp.setPartyName(result[9] != null ? (String) result[9] : null);
 			kk.put(resp.getInstructionId(), resp);
@@ -79,35 +93,71 @@ public class SalesOrderController {
 		}
 		return salesOrderService.save(salesOrderPacketsListNew);
 	}
+	
+	@PutMapping(value = "/update", produces = "application/json")
+	public ResponseEntity<Object> update(@RequestBody List<SalesOrderCreateDTO> salesOrderPacketsList) {
+		int userId = commonUtil.getUserId();
+		List<SalesOrderCreateDTO> salesOrderPacketsListNew = new ArrayList<>();
+		for (SalesOrderCreateDTO req : salesOrderPacketsList) {
+			req.setUserId(userId);
+			salesOrderPacketsListNew.add(req);
+		}
+		return salesOrderService.save(salesOrderPacketsListNew);
+	}
 
 	@PostMapping(value = "/list", produces = "application/json")
 	public ResponseEntity<Object> listAllSOs(@RequestBody ListPageSearchRequest listPageSearchRequest) {
 		Map<String, Object> response = new HashMap<>();
 		Page<Object[]> packetsList = salesOrderService.listAllSOs(listPageSearchRequest);
-
-		Map<Integer, SalesOrderListDTO> kk = new LinkedHashMap<>();
+		Map<Integer, SalesOrderListResponse> soMap = new LinkedHashMap<>();
 		for (Object[] result : packetsList) {
-			SalesOrderListDTO resp = new SalesOrderListDTO();
-			resp.setInstructionId(result[0] != null ? (Integer) result[0] : null);
-			resp.setInwardEntryId(result[1] != null ? (Integer) result[1] : null);
-			resp.setCoilNo(result[2] != null ? (String) result[2] : null);
-			resp.setCustomerBatchNo(result[3] != null ? (String) result[3] : null);
-			resp.setMaterialGrade(result[4] != null ? (String) result[4] : null);
-			resp.setMaterialDesc(result[5] != null ? (String) result[5] : null);
-			resp.setFthickness(result[6] != null ? (Float) result[6] : null);
-			Float dweight = (result[7] != null ? (Float) result[7] : null);
-			Float dwidth = (result[10] != null ? (Float) result[10] : null);
-			Float dlength = (result[11] != null ? (Float) result[11] : null);
-			resp.setFwidth(dwidth.floatValue());
-			resp.setFweight(dweight.floatValue());
-			resp.setFlenghth(dlength.floatValue());
+			SalesOrderListResponse resp = new SalesOrderListResponse();
+			SalesOrderListDTO child = new SalesOrderListDTO();
+			
 			resp.setPartyId(result[8] != null ? Integer.parseInt(result[8].toString()) : null);
 			resp.setPartyName(result[9] != null ? (String) result[9] : null);
-			kk.put(resp.getInstructionId(), resp);
-		}
-		List<SalesOrderListDTO> qirList = new ArrayList<SalesOrderListDTO>(kk.values());
-
-		response.put("content", qirList);
+			resp.setSoStatus( result[12] != null ? (String) result[12] : null);
+			resp.setSoNumber(result[14] != null ? (String) result[14] : null);
+			resp.setSoId(result[15] != null ? Integer.parseInt(result[15].toString()) : null);
+			
+			child.setInstructionId(result[0] != null ? (Integer) result[0] : null);
+			child.setInwardEntryId(result[1] != null ? (Integer) result[1] : null);
+			child.setCoilNo(result[2] != null ? (String) result[2] : null);
+			child.setCustomerBatchNo(result[3] != null ? (String) result[3] : null);
+			child.setMaterialGrade(result[4] != null ? (String) result[4] : null);
+			child.setMaterialDesc(result[5] != null ? (String) result[5] : null);
+			child.setFthickness(result[6] != null ? (Float) result[6] : null);
+			try {
+				Float dweight;
+				Float dwidth;
+				Float dlength;
+				dweight = (result[7] != null ? (Float) result[7] : null);
+				dwidth = (result[10] != null ? (Float) result[10] : null);
+				dlength = (result[11] != null ? (Float) result[11] : null);
+				child.setFwidth(dwidth.floatValue());
+				child.setFweight(dweight.floatValue());
+				child.setFlenghth(dlength.floatValue());
+			} catch (ClassCastException e) {
+				Double dweight1 = (result[7] != null ? (Double) result[7] : null);
+				Double dwidth1 = (result[10] != null ? (Double) result[10] : null);
+				Double dlength1 = (result[11] != null ? (Double) result[11] : null);
+				child.setFwidth(dwidth1.floatValue());
+				child.setFweight(dweight1.floatValue());
+				child.setFlenghth(dlength1.floatValue());
+			}
+			child.setPacketStatus( result[13] != null ? (String) result[13] : null);
+			resp.getChildListResp().add(child);
+			
+			if (soMap != null && soMap.get(resp.getSoId()) != null) {
+				SalesOrderListResponse addEntity = soMap.get(resp.getSoId());
+				addEntity.getChildListResp().add(child);
+				soMap.put(resp.getSoId(), addEntity);
+			} else {
+				soMap.put(resp.getSoId(), resp);
+			}
+		}		
+		List<SalesOrderListResponse> list = new ArrayList<>(soMap.values());
+		response.put("content", list);
 		response.put("currentPage", packetsList.getNumber());
 		response.put("totalItems", packetsList.getTotalElements());
 		response.put("totalPages", packetsList.getTotalPages());
