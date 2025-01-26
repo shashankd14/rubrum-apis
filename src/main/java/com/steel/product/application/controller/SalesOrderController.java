@@ -19,6 +19,7 @@ import com.steel.product.application.dto.salesorder.SalesOrderListDTO;
 import com.steel.product.application.dto.salesorder.SalesOrderListResponse;
 import com.steel.product.application.service.SalesOrderService;
 import com.steel.product.application.util.CommonUtil;
+import com.steel.product.trading.request.DeleteRequest;
 
 @RestController
 @CrossOrigin
@@ -162,6 +163,18 @@ public class SalesOrderController {
 		response.put("totalItems", packetsList.getTotalElements());
 		response.put("totalPages", packetsList.getTotalPages());
 		return new ResponseEntity<Object>(response, HttpStatus.OK);
+	}
+
+	@PostMapping(value = "/delete", produces = "application/json")
+	public ResponseEntity<Object> delete(@RequestBody DeleteRequest deleteRequest) {
+		deleteRequest.setUserId(commonUtil.getUserId());
+		return salesOrderService.delete(deleteRequest);
+	}
+
+	@PostMapping(value = "/deletepacket", produces = "application/json")
+	public ResponseEntity<Object> deletepacket(@RequestBody DeleteRequest deleteRequest) {
+		deleteRequest.setUserId(commonUtil.getUserId());
+		return salesOrderService.deletePackets(deleteRequest);
 	}
 
 

@@ -9,6 +9,10 @@ import lombok.Setter;
 @Setter
 public class SalesOrderCreateDTO {
 
+	private Integer soId;
+
+	private Integer soChildId;
+
 	private Integer instructionId;
 
 	private Integer inwardEntryId;
