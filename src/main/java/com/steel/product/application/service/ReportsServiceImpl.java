@@ -1053,17 +1053,17 @@ public class ReportsServiceImpl implements ReportsService {
 
 		try {
 			List<OutwardReportViewEntity> partyList = outwardReportViewRepository.findByPartyIdAndMnthAndYer(partyId, month, year);
-
 			acctStatementMap.put("1",
-					new Object[] { "ASPEN DC NUMBER", "Customer name", "SAP Invoice No", "SAP INVOICE DATE",
+					new Object[] { "ASPEN DC NUMBER", "customerbatchid", "coilnumber", "vehicleno", "Customer name", "SAP Invoice No", "SAP INVOICE DATE",
 							"Material Description", "Material Grade", "PROCESS", "Qty ", "Rate/per MT", "Subtotal", "Total Amount",
 							"CGST 6%", "SGST 6%", "Gross Total" });
 			int cnt = 1;
 			for (OutwardReportViewEntity kk : partyList) {
 				cnt++;
 				acctStatementMap.put("" + cnt,
-						new Object[] { kk.getAspendcno(), kk.getCustomername(), kk.getSapinvoiceno(),
-								kk.getSapinvoicedate(), kk.getMaterialdesc(), kk.getMaterialgrade(), kk.getProcessname(), kk.getQty(),
+						new Object[] { kk.getAspendcno(), kk.getCustomerbatchid(), kk.getCoilnumber(),
+								kk.getVehicleno(), kk.getCustomername(), kk.getSapinvoiceno(), kk.getSapinvoicedate(),
+								kk.getMaterialdesc(), kk.getMaterialgrade(), kk.getProcessname(), kk.getQty(),
 								kk.getRate(), kk.getTotalprice(), kk.getTotalprice(), kk.getCgst(), kk.getSgst(),
 								kk.getGrosstotal() });
 			}

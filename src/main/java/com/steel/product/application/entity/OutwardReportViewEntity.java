@@ -24,6 +24,15 @@ public class OutwardReportViewEntity {
 
 	@Column(name = "yer")
 	private Integer yer;
+	
+	@Column(name = "customerbatchid")
+	private String customerbatchid;
+
+	@Column(name = "coilnumber")
+	private String coilnumber;
+
+	@Column(name = "vehicleno")
+	private String vehicleno;
 
 	@Column(name = "customername")
 	private String customername;
