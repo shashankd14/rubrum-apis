@@ -52,6 +52,7 @@ public class SalesOrderController {
 			resp.setMaterialGrade(result[4] != null ? (String) result[4] : null);
 			resp.setMaterialDesc(result[5] != null ? (String) result[5] : null);
 			resp.setFthickness(result[6] != null ? (Float) result[6] : null);
+			resp.setSoNumber(result[19] != null ? (String) result[19] : null);
 			
 			Float dweight;
 			Float dwidth;

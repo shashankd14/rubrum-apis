@@ -13,6 +13,8 @@ public class SalesOrderListDTO {
 
 	private String coilNo;
 
+	private String soNumber;
+
 	private String customerBatchNo;
 
 	private String partyName;

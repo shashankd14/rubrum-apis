@@ -25,7 +25,7 @@ public class SalesOrderPacketsEntity {
 	@JoinColumn(name = "so_id")
 	private SalesOrderEntity soId;
 
-	@Column(name = "instruction_d")
+	@Column(name = "instruction_id")
 	private Integer instructionId;
 
 	@Column(name = "inward_entry_d")

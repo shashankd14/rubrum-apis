@@ -16,7 +16,7 @@ import javax.transaction.Transactional;
 public interface SalesOrderRepository extends JpaRepository<SalesOrderEntity, Integer> {
 
 	@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, materialgrade, materialdesc, fthickness,  weight, npartyid,partyname,width, length,fquantity, "
-			+ "in_stock_weight, plannednoofpieces, process_status, instruction_status, classification_tag, enduser_tag_name"
+			+ "in_stock_weight, plannednoofpieces, process_status, instruction_status, classification_tag, enduser_tag_name,sono "
 			+ " from ( SELECT inwardid,  coilnumber, customerbatchid, "
 			+ " (select vdescription from product_tblmatdescription where nmatid=parent.nmatid) as  materialdesc,"
 			+ " (select gradename from product_material_grades where gradeid=parent.materialgradeid) as  materialgrade,	"
@@ -26,7 +26,8 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrderEntity, In
 			+ " (select statusname from product_status where statusid=child.status) as instruction_status,partyname, "
 			+ " (select classification_name from product_packet_classification where classification_id=child.packet_classification_id) as classification_tag, "
 			+ " (select tag_name from product_enduser_tags where tag_id=child.enduser_tag_id) as enduser_tag_name,	 "
-			+ " (SELECT count(distinct inss.instructionid) cnt FROM product_instruction inss where inss.inwardid=parent.inwardentryid  and status!=4 and inss.parentgroupid=child.groupid) as siltcutcnt, parent.npartyid"
+			+ " (SELECT count(distinct inss.instructionid) cnt FROM product_instruction inss where inss.inwardid=parent.inwardentryid  and status!=4 and inss.parentgroupid=child.groupid) as siltcutcnt, parent.npartyid, "
+			+ " (SELECT so.so_number FROM sales_order so, sales_order_child sochild where so.so_id=sochild.so_id and sochild.instruction_id = child.instructionid limit 1) as sono"
 			+ " FROM product_tblinwardentry parent, product_instruction child, product_tblpartydetails party  "
 			+ " where child.isdeleted=0 and parent.isdeleted=0 and parent.inwardentryid = child.inwardid and party.npartyid = parent.npartyid "
 			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (parent.coilNumber like %:searchText% or parent.customerBatchId like %:searchText% or parent.customerInvoiceNo like %:searchText%) else 1=1 end " 
