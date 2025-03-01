@@ -22,6 +22,10 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,7 +37,7 @@ import com.steel.product.jswone.entity.CategoryMasterJswEntity;
 import com.steel.product.jswone.entity.CoatingtypeMasterJswEntity;
 import com.steel.product.jswone.entity.FormMasterJswEntity;
 import com.steel.product.jswone.entity.GradeMasterJswEntity;
-import com.steel.product.jswone.entity.MaterialMasterFiledataEntity;
+import com.steel.product.jswone.entity.MaterialMasterFileDataEntity;
 import com.steel.product.jswone.entity.MaterialMasterJswEntity;
 import com.steel.product.jswone.entity.ProductMasterJswEntity;
 import com.steel.product.jswone.entity.SubCategoryJswEntity;
@@ -53,6 +57,7 @@ import com.steel.product.jswone.repository.SubCategoryJswRepository;
 import com.steel.product.jswone.repository.SubGradeJswRepository;
 import com.steel.product.jswone.repository.SurfacetypeMasterJswRepository;
 import com.steel.product.jswone.repository.UomMasterJswRepository;
+import com.steel.product.jswone.request.MaterialSearchPageRequest;
 import com.steel.product.jswone.request.MaterialUploadRequest;
 
 import lombok.extern.log4j.Log4j2;
@@ -100,12 +105,15 @@ public class MaterialUploadService {
 	@Autowired
 	BrandMasterJswRepository brandRepository;
 	
+	@Value("${fileUploadPath}")
+	private String fileUploadPath;
+	
 	public ResponseEntity<Object> upload(MaterialUploadRequest request) throws Exception, FileNotFoundException {
 		log.info("******MaterialUploadService.upload*****");
 
 		String newFileName = request.getFile().getOriginalFilename(); // .replace(".", "_" + new Date()+ ".");
 
-		String fileUploadPath = "E:\\WS_SampleRubrum\\jswone\\uploaded_files";
+		//String fileUploadPath = "E:\\WS_SampleRubrum\\jswone\\uploaded_files";
 		File directory = new File(fileUploadPath);
 		// get all the files from a directory
 		File[] fList2 = directory.listFiles();
@@ -123,7 +131,7 @@ public class MaterialUploadService {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		List<MaterialMasterFiledataEntity> products = new ArrayList<>();
+		List<MaterialMasterFileDataEntity> products = new ArrayList<>();
 		try (FileInputStream fis = new FileInputStream(new File(fileUploadPath + "/" + newFileName));
 				Workbook workbook = new XSSFWorkbook(fis)) {
 			Sheet sheet = workbook.getSheetAt(0);
@@ -137,7 +145,7 @@ public class MaterialUploadService {
 					break;
 				}
 				 
-				MaterialMasterFiledataEntity product = new MaterialMasterFiledataEntity();
+				MaterialMasterFileDataEntity product = new MaterialMasterFileDataEntity();
 				try {
 					product.setMmId(row.getCell(0).getStringCellValue());
 					product.setMmDescription(row.getCell(1).getStringCellValue());
@@ -167,10 +175,10 @@ public class MaterialUploadService {
 				products.add(product);
 			}
 			repository.saveAll(products);
-			List<MaterialMasterFiledataEntity> listFileData =repository.findAll();
+			List<MaterialMasterFileDataEntity> listFileData =repository.findAll();
 			List<MaterialMasterJswEntity> materialMasterList = new ArrayList<>();
 
-			for (MaterialMasterFiledataEntity sourceEntity : listFileData) {
+			for (MaterialMasterFileDataEntity sourceEntity : listFileData) {
 				MaterialMasterJswEntity destEntity = new MaterialMasterJswEntity();
 				BeanUtils.copyProperties(sourceEntity, destEntity);
 
@@ -462,5 +470,23 @@ public class MaterialUploadService {
 		}
 	}
 
+	public Page<Object[]> materialSearch(MaterialSearchPageRequest request) {
+		Pageable pageable = PageRequest.of((request.getPageNo() - 1), request.getPageSize());
+		
+		Page<Object[]> packetsList = materialMasterRepository.materialSearch(request.getSearchText(), 
+				request.getCategoryId(), 
+				request.getSubcategoryId(), 
+				request.getLeafcategoryId(), 
+				request.getBrandId(), 
+				request.getProducttypeId(), 
+				request.getGradeId(), 
+				request.getSubgradeId(), 
+				request.getFormId(), 
+				request.getUomId(), 
+				request.getSurfacetypeId(), 
+				request.getCoatingtypeId(), 
+				pageable);
+		return packetsList;
+	}
 
 }

@@ -13,7 +13,7 @@ import java.util.Date;
 @Data
 @Entity
 @Table(name = "jsw_material_file_data")
-public class MaterialMasterFiledataEntity {
+public class MaterialMasterFileDataEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
