@@ -21,6 +21,9 @@ public class UomMasterJswEntity {
 	@Column(name = "uom_name")
 	private String uomName;
 
+	@Column(name = "product_id")
+	private Integer productId;
+
 	@Column(name = "created_by")
 	private Integer createdBy;
 

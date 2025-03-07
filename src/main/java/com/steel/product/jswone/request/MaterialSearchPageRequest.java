@@ -13,6 +13,8 @@ public class MaterialSearchPageRequest {
 
 	private String searchText;
 
+	private String mmid;
+
 	private Integer categoryId;
 
 	private Integer subcategoryId;

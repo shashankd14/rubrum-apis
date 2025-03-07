@@ -12,4 +12,6 @@ import com.steel.product.jswone.entity.CoatingtypeMasterJswEntity;
 public interface CoatingtypeMasterJswRepository extends JpaRepository<CoatingtypeMasterJswEntity, Integer> {
 	List<CoatingtypeMasterJswEntity> findByCoatingtype(String coatingtype);
 
+	List<CoatingtypeMasterJswEntity> findByProductId(Integer productId);
+
 }

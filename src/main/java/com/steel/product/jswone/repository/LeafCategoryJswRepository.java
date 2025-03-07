@@ -12,4 +12,6 @@ import com.steel.product.jswone.entity.LeafCategoryJswEntity;
 public interface LeafCategoryJswRepository extends JpaRepository<LeafCategoryJswEntity, Integer> {
 
 	List<LeafCategoryJswEntity> findByLeafcategoryName(String leafcategoryName);
+
+	List<LeafCategoryJswEntity> findBySubcategoryId(Integer subCategoryId);
 }

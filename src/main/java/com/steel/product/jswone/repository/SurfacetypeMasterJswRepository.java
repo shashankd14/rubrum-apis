@@ -12,4 +12,6 @@ import com.steel.product.jswone.entity.SurfacetypeMasterJswEntity;
 public interface SurfacetypeMasterJswRepository extends JpaRepository<SurfacetypeMasterJswEntity, Integer> {
 
 	List<SurfacetypeMasterJswEntity> findBySurfacetypeName(String surfacetypeName);
+
+	List<SurfacetypeMasterJswEntity> findByProductId(Integer productId);
 }

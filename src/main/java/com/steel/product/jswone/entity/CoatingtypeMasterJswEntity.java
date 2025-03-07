@@ -21,6 +21,9 @@ public class CoatingtypeMasterJswEntity {
 	@Column(name = "coatingtype")
 	private String coatingtype;
 
+	@Column(name = "product_id")
+	private Integer productId;
+
 	@Column(name = "created_by")
 	private Integer createdBy;
 

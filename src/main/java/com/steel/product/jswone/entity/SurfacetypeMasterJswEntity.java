@@ -21,6 +21,9 @@ public class SurfacetypeMasterJswEntity {
 	@Column(name = "surfacetype_name")
 	private String surfacetypeName;
 
+	@Column(name = "product_id")
+	private Integer productId;
+
 	@Column(name = "created_by")
 	private Integer createdBy;
 

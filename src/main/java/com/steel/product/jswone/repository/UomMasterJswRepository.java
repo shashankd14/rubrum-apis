@@ -11,4 +11,6 @@ import com.steel.product.jswone.entity.UomMasterJswEntity;
 public interface UomMasterJswRepository extends JpaRepository<UomMasterJswEntity, Integer> {
 
 	List<UomMasterJswEntity> findByUomName(String uomName);
+
+	List<UomMasterJswEntity> findByProductId(Integer productId);
 }

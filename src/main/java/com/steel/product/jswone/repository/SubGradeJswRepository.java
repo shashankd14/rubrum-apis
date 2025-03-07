@@ -11,4 +11,6 @@ import com.steel.product.jswone.entity.SubgradeMasterJswEntity;
 public interface SubGradeJswRepository extends JpaRepository<SubgradeMasterJswEntity, Integer> {
 
 	List<SubgradeMasterJswEntity> findBySubgradeName(String subgradeName);
+
+	List<SubgradeMasterJswEntity> findSubgradesByGradeId(Integer gradeId);
 }

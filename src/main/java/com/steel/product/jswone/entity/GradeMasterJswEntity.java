@@ -21,6 +21,9 @@ public class GradeMasterJswEntity {
 	@Column(name = "grade_name")
 	private String gradeName;
 
+	@Column(name = "product_id")
+	private Integer productId;
+
 	@Column(name = "created_by")
 	private Integer createdBy;
 

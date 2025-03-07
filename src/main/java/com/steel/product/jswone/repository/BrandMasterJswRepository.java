@@ -11,4 +11,6 @@ import com.steel.product.jswone.entity.BrandMasterJswEntity;
 public interface BrandMasterJswRepository extends JpaRepository<BrandMasterJswEntity, Integer> {
 
 	List<BrandMasterJswEntity> findByBrandName(String leafcategoryName);
+
+	List<BrandMasterJswEntity> findByLeafcategoryId(Integer leafcategoryId);
 }

@@ -9,6 +9,9 @@ import com.steel.product.jswone.entity.ProductMasterJswEntity;
 
 @Repository
 public interface ProductMasterJswRepository extends JpaRepository<ProductMasterJswEntity, Integer> {
+	
 	List<ProductMasterJswEntity> findByProductName(String productName);
+
+	List<ProductMasterJswEntity> findByBrandId(Integer gradeId);
 
 }

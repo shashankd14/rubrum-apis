@@ -21,23 +21,8 @@ public class ProductMasterJswEntity {
 	@Column(name = "product_name")
 	private String productName;
 
-	@Column(name = "grade_id")
-	private Integer gradeId;
-
-	@Column(name = "subgrade_id")
-	private Integer subgradeId;
-
-	@Column(name = "uom_id")
-	private Integer uomId;
-
-	@Column(name = "form_id")
-	private Integer formId;
-
-	@Column(name = "surface_id")
-	private Integer surfaceId;
-
-	@Column(name = "coatingtype_id")
-	private Integer coatingtypeId;
+	@Column(name = "brand_id")
+	private Integer brandId;
 
 	@Column(name = "created_by")
 	private Integer createdBy;

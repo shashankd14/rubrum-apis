@@ -11,4 +11,6 @@ import com.steel.product.jswone.entity.FormMasterJswEntity;
 public interface FormMasterJswRepository extends JpaRepository<FormMasterJswEntity, Integer> {
 	List<FormMasterJswEntity> findByFormName(String formName);
 
+	List<FormMasterJswEntity> findByProductId(Integer productId);
+
 }

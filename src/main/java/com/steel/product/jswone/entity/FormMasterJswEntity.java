@@ -21,6 +21,9 @@ public class FormMasterJswEntity {
 	@Column(name = "form_name")
 	private String formName;
 
+	@Column(name = "product_id")
+	private Integer productId;
+
 	@Column(name = "created_by")
 	private Integer createdBy;
 

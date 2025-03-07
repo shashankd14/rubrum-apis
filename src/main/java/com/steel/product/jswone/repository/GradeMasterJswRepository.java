@@ -13,4 +13,6 @@ import com.steel.product.jswone.entity.SubCategoryJswEntity;
 public interface GradeMasterJswRepository extends JpaRepository<GradeMasterJswEntity, Integer> {
 
 	List<GradeMasterJswEntity> findByGradeName(String gradeName);
+
+	List<GradeMasterJswEntity> findByProductId(Integer productId);
 }
