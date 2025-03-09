@@ -75,7 +75,7 @@ public class InwardEntryController {
 			int userId = commonUtil.getUserId();
 			inwardEntry.setInwardEntryId(0);
 			inwardEntry.setPurposeType(inward.getPurposeType());
-			inwardEntry.setParty(this.partyDetailsService.getPartyById(inward.getPartyId()));
+			//inwardEntry.setParty(this.partyDetailsService.getPartyById(inward.getPartyId()));
 			inwardEntry.setCoilNumber(inward.getCoilNumber());
 			inwardEntry.setBatchNumber(inward.getBatchNumber());
 			inwardEntry.setdReceivedDate(Timestamp.valueOf(inward.getInwardDate()));
@@ -95,8 +95,9 @@ public class InwardEntryController {
 			inwardEntry.setCustomerInvoiceNo(inward.getCustomerInvoiceNo());
 			inwardEntry.setCustomerBatchId(inward.getCustomerBatchId());
 
-			inwardEntry.setMaterial(this.matDescService.getMatById(inward.getMaterialId()));
-			inwardEntry.setMaterialGrade(matGradeService.getById(inward.getMaterialGradeId()));
+			 inwardEntry.setMmId(inward.getMmId());
+			//inwardEntry.setMaterial(this.matDescService.getMatById(inward.getMaterialId()));
+			//inwardEntry.setMaterialGrade(matGradeService.getById(inward.getMaterialGradeId()));
 
 			inwardEntry.setfWidth(inward.getWidth());
 			inwardEntry.setfThickness(inward.getThickness());

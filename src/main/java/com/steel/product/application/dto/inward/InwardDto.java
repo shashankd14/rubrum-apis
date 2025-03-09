@@ -33,6 +33,8 @@ public class InwardDto {
 	private String invoiceNumber;
 
 	private int materialId;
+
+	private Integer mmId;
 	
 	private int materialGradeId;
 
@@ -295,6 +297,14 @@ public class InwardDto {
 
 	public void setTdcNo(String tdcNo) {
 		this.tdcNo = tdcNo;
+	}
+
+	public Integer getMmId() {
+		return mmId;
+	}
+
+	public void setMmId(Integer mmId) {
+		this.mmId = mmId;
 	}
 	
 	

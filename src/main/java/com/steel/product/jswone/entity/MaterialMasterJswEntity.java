@@ -18,7 +18,7 @@ public class MaterialMasterJswEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "material_id")
-	private Integer materaiId;
+	private Integer materialId;
 
 	@Column(name = "mm_id")
 	private String mmId;
@@ -59,8 +59,17 @@ public class MaterialMasterJswEntity {
 	@Column(name = "width")
 	private BigDecimal width;
 
-	@Column(name = "length")
+	@Column(name = "lngth")
 	private BigDecimal length;
+
+	@Column(name = "o_diameter")
+	private BigDecimal oDiameter;
+
+	@Column(name = "nb")
+	private BigDecimal nb;
+
+	@Column(name = "i_diameter")
+	private BigDecimal iDiameter;
 
 	@Column(name = "surfacetype_id")
 	private Integer surfacetypeId;
@@ -78,13 +87,13 @@ public class MaterialMasterJswEntity {
 	private Integer uomId;
 
 	@Column(name = "hsn")
-	private double hsn;
+	private String hsn;
 
 	@Column(name = "tax")
-	private double tax;
+	private String tax;
 
 	@Column(name = "variant_key")
-	private double variantKey;
+	private String variantKey;
 
 	@Column(name = "filename")
 	private String filename;

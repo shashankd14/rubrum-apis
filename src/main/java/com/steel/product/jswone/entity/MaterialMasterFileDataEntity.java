@@ -5,8 +5,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Data;
 import javax.persistence.*;
-
-import java.math.BigDecimal;
 import java.util.Date;
 
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
@@ -57,13 +55,22 @@ public class MaterialMasterFileDataEntity {
 	private String diameter;
 
 	@Column(name = "thickness")
-	private BigDecimal thickness;
+	private String thickness;
 
 	@Column(name = "width")
-	private BigDecimal width;
+	private String width;
 
 	@Column(name = "length")
-	private BigDecimal length;
+	private String length;
+
+	@Column(name = "o_diameter")
+	private String oDiameter;
+
+	@Column(name = "nb")
+	private String nb;
+
+	@Column(name = "i_diameter")
+	private String iDiameter;
 
 	@Column(name = "coatingtype")
 	private String coatingtype;
@@ -78,13 +85,13 @@ public class MaterialMasterFileDataEntity {
 	private String uom;
 
 	@Column(name = "hsn")
-	private double hsn;
+	private String hsn;
 
 	@Column(name = "tax")
-	private double tax;
+	private String tax;
 
 	@Column(name = "variant_key")
-	private double variantKey;
+	private String variantKey;
 
 	@Column(name = "filename")
 	private String filename;

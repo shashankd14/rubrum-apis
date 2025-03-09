@@ -1,25 +1,12 @@
 package com.steel.product.jswone.service;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.FileReader;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,6 +18,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.opencsv.CSVReader;
+import com.opencsv.CSVReaderBuilder;
+import com.opencsv.bean.CsvToBean;
+import com.opencsv.bean.CsvToBeanBuilder;
 import com.steel.product.jswone.entity.BrandMasterJswEntity;
 import com.steel.product.jswone.entity.LeafCategoryJswEntity;
 import com.steel.product.jswone.entity.CategoryMasterJswEntity;
@@ -52,11 +43,13 @@ import com.steel.product.jswone.repository.FormMasterJswRepository;
 import com.steel.product.jswone.repository.GradeMasterJswRepository;
 import com.steel.product.jswone.repository.MaterialMasterFiledataRepository;
 import com.steel.product.jswone.repository.MaterialMasterJswRepository;
+import com.steel.product.jswone.repository.MaterialMasterJswSpecification;
 import com.steel.product.jswone.repository.ProductMasterJswRepository;
 import com.steel.product.jswone.repository.SubCategoryJswRepository;
 import com.steel.product.jswone.repository.SubGradeJswRepository;
 import com.steel.product.jswone.repository.SurfacetypeMasterJswRepository;
 import com.steel.product.jswone.repository.UomMasterJswRepository;
+import com.steel.product.jswone.request.MaterialMasterFileDataDTO;
 import com.steel.product.jswone.request.MaterialSearchPageRequest;
 import com.steel.product.jswone.request.MaterialUploadRequest;
 
@@ -108,9 +101,9 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 	@Value("${fileUploadPath}")
 	private String fileUploadPath;
 	
-	
+	/*
 	@Override
-	public ResponseEntity<Object> upload(MaterialUploadRequest request) throws Exception, FileNotFoundException {
+	public ResponseEntity<Object> uploadExcel(MaterialUploadRequest request) throws Exception, FileNotFoundException {
 		log.info("******MaterialUploadService.upload*****");
 
 		String newFileName = request.getFile().getOriginalFilename(); // .replace(".", "_" + new Date()+ ".");
@@ -209,25 +202,116 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 			e.printStackTrace();
 			return new ResponseEntity<Object>("{\"status\": \"failed\", \"message\": \"Failed to Uploaded a file.\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-	}
+	}*/
 
-	public static BigDecimal getBigDecimalValue(Cell cell) {
-		if (cell == null || cell.getCellType() != CellType.NUMERIC) {
-			return BigDecimal.ZERO; // or handle null cases appropriately
-		}
-		return BigDecimal.valueOf(cell.getNumericCellValue()).setScale(2, RoundingMode.HALF_UP);
-	}
-
-	public static String getStringValue(Cell cell) {
+	@Override
+	public ResponseEntity<Object> uploadcsv(MaterialUploadRequest request) throws Exception, FileNotFoundException {
+		log.info("******MaterialUploadService.uploadcsv*****");
+		 
 		try {
-			if (cell == null || cell.getCellType() != CellType.STRING) {
-				return "";
+			String newFileName = new File(fileUploadPath).getName(); // .replace(".", "_" + new Date()+ ".");
+
+			List<MaterialMasterFileDataDTO> products =  mmFileDetails();
+			List<MaterialMasterFileDataEntity> productList =  new ArrayList<>();
+
+			System.out.println("Hi size "+products.size());
+			for (MaterialMasterFileDataDTO dto : products) {
+				MaterialMasterFileDataEntity dest=new MaterialMasterFileDataEntity();
+				BeanUtils.copyProperties(dto, dest);
+				try {
+					dest.setFilename(newFileName);
+					productList.add(dest);
+					repository.save (dest);
+				} catch (Exception e) {
+					System.out.println("error while save --  "+e.getMessage());
+				}
 			}
-			return cell.getStringCellValue();
-		} catch (Exception e) {
+			//repository.saveAll(productList);
+			List<MaterialMasterFileDataEntity> listFileData =repository.findAll();
+			List<MaterialMasterJswEntity> materialMasterList = new ArrayList<>();
+
+			for (MaterialMasterFileDataEntity sourceEntity : listFileData) {
+				MaterialMasterJswEntity destEntity = new MaterialMasterJswEntity();
+				BeanUtils.copyProperties(sourceEntity, destEntity);
+
+				if(sourceEntity.getLength()!=null && sourceEntity.getLength().length() >0 ) {
+					destEntity.setLength(new BigDecimal(sourceEntity.getLength()));
+				} else {
+					destEntity.setLength(BigDecimal.ZERO);
+				}
+				if(sourceEntity.getWidth() !=null && sourceEntity.getWidth().length() >0 ) {
+					destEntity.setWidth(new BigDecimal(sourceEntity.getWidth()));
+				} else {
+					destEntity.setWidth(BigDecimal.ZERO);
+				}
+				if(sourceEntity.getThickness() !=null && sourceEntity.getThickness().length() >0 ) {
+					destEntity.setThickness(new BigDecimal(sourceEntity.getThickness()));
+				} else {
+					destEntity.setThickness(BigDecimal.ZERO);
+				}
+				if (sourceEntity.getODiameter() != null && sourceEntity.getODiameter().length() > 0) {
+					destEntity.setODiameter(new BigDecimal(sourceEntity.getODiameter()));
+				} else {
+					destEntity.setODiameter(BigDecimal.ZERO);
+				}
+				if (sourceEntity.getNb() != null && sourceEntity.getNb().length() > 0) {
+					destEntity.setNb(new BigDecimal(sourceEntity.getNb()));
+				} else {
+					destEntity.setNb(BigDecimal.ZERO);
+				}
+				if (sourceEntity.getIDiameter() != null && sourceEntity.getIDiameter().length() > 0) {
+					destEntity.setIDiameter(new BigDecimal(sourceEntity.getIDiameter()));
+				} else {
+					destEntity.setIDiameter(BigDecimal.ZERO);
+				}
+				
+				if(!(sourceEntity.getBrand()!=null && sourceEntity.getBrand().length()>0)) {
+					sourceEntity.setBrand("UnBrand");
+				} 
+				// Brand Master 
+				destEntity.setCategoryId(setCategoryMaster(sourceEntity.getCategory()));
+				destEntity.setSubcategoryId(setSubCategoryMaster(sourceEntity.getSubcategory(), destEntity.getCategoryId()));
+				destEntity.setLeafcategoryId(setLeafCategoryMaster(sourceEntity.getLeafcategory(), destEntity.getSubcategoryId()));
+				destEntity.setBrandId( setBrandNameMaster(sourceEntity.getBrand(), destEntity.getLeafcategoryId()));
+				// Product Master 
+				destEntity.setProducttypeId(setProductMaster(sourceEntity.getSubgrade(), destEntity));
+				destEntity.setGradeId(setGradeMaster(sourceEntity.getGrade(), destEntity.getProducttypeId()));
+				destEntity.setSubgradeId(setSubGradeMaster(sourceEntity.getSubgrade(), destEntity.getGradeId()));
+				destEntity.setCoatingtypeId(setCoatingtypeMaster( sourceEntity.getCoatingtype(), destEntity.getProducttypeId() ));
+				destEntity.setSurfacetypeId(setSurfacetypeMaster(sourceEntity.getSurfacetype(), destEntity.getProducttypeId()));
+				destEntity.setUomId(setUomMaster(sourceEntity.getUom(), destEntity.getProducttypeId()));
+				destEntity.setFormId(setFormMaster(sourceEntity.getForm(), destEntity.getProducttypeId()));
+				materialMasterList.add(destEntity);
+				try {
+					materialMasterRepository.save(destEntity);
+				} catch (Exception e) {
+					System.out.println("error while save --  "+e.getMessage());
+				}
+			}
+			//materialMasterRepository.saveAll(materialMasterList);
+			log.info("File Uploaded Successfully. Count is == " + products.size());
+
+			return new ResponseEntity<Object>("{\"status\": \"success\", \"message\": \"File Uploaded Successfully.\"}", new HttpHeaders(), HttpStatus.OK);
+		} catch( Exception e) {
 			e.printStackTrace();
-			return "";
+			return new ResponseEntity<Object>("{\"status\": \"failed\", \"message\": \"Failed to Uploaded a file.\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+	}
+	
+	private List<MaterialMasterFileDataDTO> mmFileDetails( ) {
+		// 1.read the file via csv reader
+		CSVReader reader = null;
+		try {
+			reader = new CSVReaderBuilder(new FileReader(fileUploadPath)).build();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+
+		// 2.convert into java object
+		CsvToBean<MaterialMasterFileDataDTO> csvToBean = new CsvToBeanBuilder<MaterialMasterFileDataDTO>(reader).withSkipLines(1)
+				.withIgnoreLeadingWhiteSpace(true).withIgnoreEmptyLine(true).withType(MaterialMasterFileDataDTO.class)
+				.build();
+		return csvToBean.parse();
 	}
 
 	private Integer setCategoryMaster(String categoryName) {
@@ -455,26 +539,48 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 		}
 		return pk;
 	}
-
-	private String getNumberValue(Cell cell) {
-		if (cell == null)
-			return "";
-
-		switch (cell.getCellType()) {
-		case STRING:
-			return cell.getStringCellValue();
-		case NUMERIC:
-			return String.valueOf(cell.getNumericCellValue());
-		default:
-			return "";
-		}
-	}
 	
 	@Override
-	public Page<Object[]> materialSearch(MaterialSearchPageRequest request) {
+	public Page<Object[]> materialSearchBymmid(MaterialSearchPageRequest request) {
+		Pageable pageable = PageRequest.of((request.getPageNo() - 1), request.getPageSize());
+
+		Page<Object[]> packetsList = materialMasterRepository.materialSearchBymmid(request.getMmid(), pageable);
+		return packetsList;
+	}
+
+	@Override
+	public Page<MaterialMasterJswEntity> materialSearch(MaterialSearchPageRequest request) {
+		Pageable pageable = PageRequest.of((request.getPageNo() - 1), request.getPageSize());
+
+		MaterialMasterJswSpecification spec = new MaterialMasterJswSpecification(request);
+
+		Page<MaterialMasterJswEntity> pageResult = materialMasterRepository.findAll(spec, pageable);
+
+		return pageResult;
+	}
+	
+
+	@Override
+	public Page<Object[]> materialSearch1(MaterialSearchPageRequest request) {
 		Pageable pageable = PageRequest.of((request.getPageNo() - 1), request.getPageSize());
 		
-		Page<Object[]> packetsList = materialMasterRepository.materialSearch(request.getSearchText(), 
+		if(!(request.getLength() !=null && request.getLength().compareTo(BigDecimal.ZERO) > 0)) {
+			request.setLength(BigDecimal.ZERO);
+		}	
+		if(!(request.getWidth() !=null && request.getWidth().compareTo(BigDecimal.ZERO) > 0)) {
+			request.setWidth(BigDecimal.ZERO);
+		}	
+		if(!(request.getThickness()!=null && request.getThickness().compareTo(BigDecimal.ZERO) > 0)) {
+			request.setThickness(BigDecimal.ZERO);
+		} 
+		Page<Object[]> packetsList = materialMasterRepository.materialSearch(
+				//request.getSearchText(), 
+				request.getLength(), 
+				request.getWidth(),
+				request.getThickness(),
+				//request.getNb(), 
+				//request.getIDiameter(),
+				//request.getODiameter(),
 				request.getCategoryId(), 
 				request.getSubcategoryId(), 
 				request.getLeafcategoryId(), 
@@ -487,14 +593,6 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 				request.getSurfacetypeId(), 
 				request.getCoatingtypeId(), 
 				pageable);
-		return packetsList;
-	}
-	
-	@Override
-	public Page<Object[]> materialSearchBymmid(MaterialSearchPageRequest request) {
-		Pageable pageable = PageRequest.of((request.getPageNo() - 1), request.getPageSize());
-
-		Page<Object[]> packetsList = materialMasterRepository.materialSearchBymmid(request.getMmid(), pageable);
 		return packetsList;
 	}
 

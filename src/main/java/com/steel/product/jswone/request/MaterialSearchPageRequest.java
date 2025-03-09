@@ -1,5 +1,7 @@
 package com.steel.product.jswone.request;
 
+import java.math.BigDecimal;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,30 +13,40 @@ public class MaterialSearchPageRequest {
 
 	private Integer pageSize;
 
-	private String searchText;
+	private BigDecimal length;
 
+	private BigDecimal width;
+
+	private BigDecimal thickness;
+
+	private BigDecimal nb;
+
+	private BigDecimal oDiameter;
+
+	private BigDecimal iDiameter;
+	
 	private String mmid;
 
-	private Integer categoryId;
+	private int categoryId;
 
-	private Integer subcategoryId;
+	private int subcategoryId;
 
-	private Integer leafcategoryId;
+	private int leafcategoryId;
 
-	private Integer formId;
+	private int formId;
 
-	private Integer producttypeId;
+	private int producttypeId;
 
-	private Integer gradeId;
+	private int gradeId;
 
-	private Integer subgradeId;
+	private int subgradeId;
 
-	private Integer brandId;
+	private int brandId;
 
-	private Integer surfacetypeId;
+	private int surfacetypeId;
 
-	private Integer coatingtypeId;
+	private int coatingtypeId;
 
-	private Integer uomId;
+	private int uomId;
 
 }

@@ -40,18 +40,22 @@ public class MaterialSearchPageResponse {
 
 	private BigDecimal length;
 
-	private String coatingtype;
+	private BigDecimal oDiameter;
 
-	private String spangletype;
+	private BigDecimal nb;
+
+	private BigDecimal iDiameter;
+
+	private String coatingtype;
 
 	private String colour;
 
 	private String uom;
 
-	private Integer hsn;
+	private String hsn;
 
-	private double tax;
+	private String tax;
 
-	private Integer variantKey;
+	private String variantKey;
 
 }

@@ -61,6 +61,9 @@ public class InwardEntry {
 	@Column(name = "vinvoiceno")
 	private String vInvoiceNo;
 
+	@JoinColumn(name = "mm_id")
+	private Integer mmId;
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "nmatid")
 	private Material material;
@@ -523,6 +526,14 @@ public class InwardEntry {
 
 	public void setTdcNo(String tdcNo) {
 		this.tdcNo = tdcNo;
+	}
+
+	public Integer getMmId() {
+		return mmId;
+	}
+
+	public void setMmId(Integer mmId) {
+		this.mmId = mmId;
 	}
 
 	public static InwardEntryPdfDto valueOf(InwardEntry inwardEntry, List<InstructionResponsePdfDto> instructionResponsePdfDtos){
