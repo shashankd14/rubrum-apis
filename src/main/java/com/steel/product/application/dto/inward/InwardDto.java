@@ -34,7 +34,7 @@ public class InwardDto {
 
 	private int materialId;
 
-	private Integer mmId;
+	private String mmId;
 	
 	private int materialGradeId;
 
@@ -299,11 +299,11 @@ public class InwardDto {
 		this.tdcNo = tdcNo;
 	}
 
-	public Integer getMmId() {
+	public String getMmId() {
 		return mmId;
 	}
 
-	public void setMmId(Integer mmId) {
+	public void setMmId(String mmId) {
 		this.mmId = mmId;
 	}
 	

@@ -69,7 +69,7 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrderEntity, In
 			+ " and so_child.created_by in (:userIds) "
 			+ " and case when :partyIdsFlag=true then parent.npartyid in :partyIds else 1=1 end "
 			+ ") a "
-			+ " where 1=1 AND CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END order by packet_id desc",
+			+ " where 1=1 AND CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END order by a.so_id desc",
 		countQuery = "SELECT count(packet_id) from "
 			+ " (select instructionid as packet_id, "
 			+ " (SELECT count(distinct inss.instructionid) cnt FROM product_instruction inss where inss.inwardid=parent.inwardentryid  and status!=4 and inss.parentgroupid=child.groupid) as siltcutcnt"

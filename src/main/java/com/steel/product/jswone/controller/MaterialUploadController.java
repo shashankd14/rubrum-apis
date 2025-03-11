@@ -21,6 +21,7 @@ import com.steel.product.jswone.entity.MaterialMasterJswEntity;
 import com.steel.product.jswone.request.MaterialSearchPageRequest;
 import com.steel.product.jswone.request.MaterialUploadRequest;
 import com.steel.product.jswone.response.MaterialSearchPageResponse;
+import com.steel.product.jswone.service.MaterialMasterJswService;
 import com.steel.product.jswone.service.MaterialUploadService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,6 +36,9 @@ public class MaterialUploadController {
 
 	@Autowired
 	MaterialUploadService materialUploadService;
+	
+	@Autowired
+	private MaterialMasterJswService materialService;
 	
 	@PostMapping(value = "/uploadcsv", produces = "application/json")
 	@Operation
@@ -51,8 +55,33 @@ public class MaterialUploadController {
 	@PostMapping(value = "/list", produces = "application/json")
 	public ResponseEntity<Object> materialSearch(@RequestBody MaterialSearchPageRequest materialSearchPageRequest) {
 		Map<String, Object> response = new HashMap<>();
+		Map<Integer, String> productMap = new HashMap<>();
+		Map<Integer, String> categoryMap = new HashMap<>();
+		Map<Integer, String> subCategoryMap = new HashMap<>();
+		Map<Integer, String> leafCategoryMap = new HashMap<>();
+		Map<Integer, String> brandMap = new HashMap<>();
+		Map<Integer, String> gradeMap = new HashMap<>();
+		Map<Integer, String> subGradeMap = new HashMap<>();
+		Map<Integer, String> formMap = new HashMap<>();
+		Map<Integer, String> uomMap = new HashMap<>();
+		Map<Integer, String> surfaceMap = new HashMap<>();
+		Map<Integer, String> coatingMap = new HashMap<>();
 
 		Page<MaterialMasterJswEntity> packetsList = materialUploadService.materialSearch(materialSearchPageRequest);
+		
+		if(packetsList != null && packetsList.getSize()>0) {
+			productMap = materialService.getProductsMap();
+			categoryMap = materialService.getCategoryMap();
+			subCategoryMap = materialService.getSubCategoryMap();
+			leafCategoryMap = materialService.getLeafCategoryMap();
+			brandMap = materialService.getBrandMap();
+			gradeMap = materialService.getGradeMap();
+			subGradeMap = materialService.getSubGradeMap();
+			formMap = materialService.getFormMap();
+			uomMap = materialService.getUomMap();
+			surfaceMap = materialService.getSurfaceMap();
+			coatingMap = materialService.getCoatingMap();
+		}
 		
 		List<MaterialSearchPageResponse> qirList = new ArrayList<>();
 		for (MaterialMasterJswEntity result : packetsList) {
@@ -60,24 +89,24 @@ public class MaterialUploadController {
 			resp.setMateraiId(result.getMaterialId());
 			resp.setMmId(result.getMmId());
 			resp.setMmDescription(result.getMmDescription());
-			resp.setCategory(""+result.getCategoryId());
-			resp.setSubcategory(""+result.getSubcategoryId());
-			resp.setLeafcategory(""+result.getLeafcategoryId());
-			resp.setBrand(""+result.getBrandId());
-			resp.setProducttype(""+result.getProducttypeId());
-			resp.setGrade(""+result.getGradeId());
-			resp.setSubgrade(""+result.getSubgradeId());
-			resp.setForm(""+result.getFormId());
-			resp.setUom(""+result.getUomId());
-			resp.setSurfacetype(""+result.getSurfacetypeId());
-			resp.setCoatingtype(""+result.getCoatingtypeId());
+			resp.setCategory(categoryMap.get(result.getCategoryId()));
+			resp.setSubcategory(subCategoryMap.get(result.getSubcategoryId()));
+			resp.setLeafcategory(leafCategoryMap.get(result.getLeafcategoryId()));
+			resp.setBrand(brandMap.get(result.getBrandId()));
+			resp.setProducttype(productMap.get(result.getProducttypeId()));
+			resp.setGrade(gradeMap.get(result.getGradeId()));
+			resp.setSubgrade(subGradeMap.get(result.getSubgradeId()));
+			resp.setForm(formMap.get(result.getFormId()));
+			resp.setUom(uomMap.get( result.getUomId()));
+			resp.setSurfacetype(surfaceMap.get(result.getSurfacetypeId()));
+			resp.setCoatingtype(coatingMap.get(result.getCoatingtypeId()));
 			resp.setThickness(result.getThickness());
 			resp.setWidth(result.getWidth());
 			resp.setLength(result.getLength());
 			resp.setODiameter(result.getODiameter());
 			resp.setNb(result.getNb());
 			resp.setIDiameter(result.getIDiameter());
-			resp.setColour(""+result.getColour());
+			resp.setColour("" + result.getColour());
 			resp.setHsn(result.getHsn());
 			resp.setTax(result.getTax());
 			resp.setVariantKey(result.getVariantKey());

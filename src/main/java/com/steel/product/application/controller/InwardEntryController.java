@@ -75,7 +75,7 @@ public class InwardEntryController {
 			int userId = commonUtil.getUserId();
 			inwardEntry.setInwardEntryId(0);
 			inwardEntry.setPurposeType(inward.getPurposeType());
-			//inwardEntry.setParty(this.partyDetailsService.getPartyById(inward.getPartyId()));
+			inwardEntry.setParty(this.partyDetailsService.getPartyById(inward.getPartyId()));
 			inwardEntry.setCoilNumber(inward.getCoilNumber());
 			inwardEntry.setBatchNumber(inward.getBatchNumber());
 			inwardEntry.setdReceivedDate(Timestamp.valueOf(inward.getInwardDate()));

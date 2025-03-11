@@ -62,7 +62,7 @@ public class InwardEntry {
 	private String vInvoiceNo;
 
 	@JoinColumn(name = "mm_id")
-	private Integer mmId;
+	private String mmId;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "nmatid")
@@ -528,11 +528,11 @@ public class InwardEntry {
 		this.tdcNo = tdcNo;
 	}
 
-	public Integer getMmId() {
+	public String getMmId() {
 		return mmId;
 	}
 
-	public void setMmId(Integer mmId) {
+	public void setMmId(String mmId) {
 		this.mmId = mmId;
 	}
 

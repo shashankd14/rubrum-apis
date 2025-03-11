@@ -59,7 +59,7 @@ public class MaterialMasterJswEntity {
 	@Column(name = "width")
 	private BigDecimal width;
 
-	@Column(name = "lngth")
+	@Column(name = "length")
 	private BigDecimal length;
 
 	@Column(name = "o_diameter")

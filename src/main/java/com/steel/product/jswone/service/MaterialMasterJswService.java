@@ -1,6 +1,7 @@
 package com.steel.product.jswone.service;
 
 import java.util.List;
+import java.util.Map;
 
 import com.steel.product.jswone.entity.BrandMasterJswEntity;
 import com.steel.product.jswone.entity.CategoryMasterJswEntity;
@@ -25,18 +26,42 @@ public interface MaterialMasterJswService {
 
 	List<BrandMasterJswEntity> findBrandByLeafcategoryId(SearchRequest searchPageRequest);
 
-	List<CoatingtypeMasterJswEntity> getCoatingList(SearchRequest searchPageRequest);
+	List<CoatingtypeMasterJswEntity> getCoatingListByProduct(SearchRequest searchPageRequest);
 
-	List<SurfacetypeMasterJswEntity> getSurfaceList(SearchRequest searchPageRequest);
+	List<SurfacetypeMasterJswEntity> getSurfaceListByProduct(SearchRequest searchPageRequest);
 
-	List<UomMasterJswEntity> getUomList(SearchRequest searchPageRequest);
+	List<UomMasterJswEntity> getUomListByProduct(SearchRequest searchPageRequest);
 
-	List<FormMasterJswEntity> getFormList(SearchRequest searchPageRequest);
+	List<FormMasterJswEntity> getFormListByProduct(SearchRequest searchPageRequest);
 
-	List<GradeMasterJswEntity> getGradeList(SearchRequest searchPageRequest);
+	List<GradeMasterJswEntity> getGradeListByProduct(SearchRequest searchPageRequest);
 
-	List<SubgradeMasterJswEntity> getSubGradeList(SearchRequest searchPageRequest);
+	List<SubgradeMasterJswEntity> getSubGradeListByGrade(SearchRequest searchPageRequest);
+
+	List<ProductMasterJswEntity> getProductListByBrand(SearchRequest searchPageRequest);
 
 	List<ProductMasterJswEntity> getProductList(SearchRequest searchPageRequest);
+
+	Map<Integer, String> getProductsMap();
+
+	Map<Integer, String> getCategoryMap();
+
+	Map<Integer, String> getSubCategoryMap();
+
+	Map<Integer, String> getLeafCategoryMap();
+
+	Map<Integer, String> getCoatingMap();
+
+	Map<Integer, String> getSurfaceMap();
+
+	Map<Integer, String> getUomMap();
+
+	Map<Integer, String> getGradeMap();
+
+	Map<Integer, String> getSubGradeMap();
+
+	Map<Integer, String> getBrandMap();
+
+	Map<Integer, String> getFormMap();
 
 }

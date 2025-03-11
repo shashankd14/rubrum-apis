@@ -57,44 +57,51 @@ public class MaterialMasterController {
 
 	@PostMapping({ "/form/list" })
 	public ResponseEntity<Object> getFormList(@RequestBody SearchRequest searchPageRequest) {
-		List<FormMasterJswEntity> pageResult = materialService.getFormList(searchPageRequest);
+		List<FormMasterJswEntity> pageResult = materialService.getFormListByProduct(searchPageRequest);
 		return new ResponseEntity<Object>(pageResult, HttpStatus.OK);
 	}
 
 	@PostMapping({ "/uom/list" })
 	public ResponseEntity<Object> getUomList(@RequestBody SearchRequest searchPageRequest) {
-		List<UomMasterJswEntity> pageResult = materialService.getUomList(searchPageRequest);
+		List<UomMasterJswEntity> pageResult = materialService.getUomListByProduct(searchPageRequest);
 		return new ResponseEntity<Object>(pageResult, HttpStatus.OK);
 	}
 
 	@PostMapping({ "/surface/list" })
 	public ResponseEntity<Object> getSurfaceList(@RequestBody SearchRequest searchPageRequest) {
-		List<SurfacetypeMasterJswEntity> pageResult = materialService.getSurfaceList(searchPageRequest);
+		List<SurfacetypeMasterJswEntity> pageResult = materialService.getSurfaceListByProduct(searchPageRequest);
 		return new ResponseEntity<Object>(pageResult, HttpStatus.OK);
 	}
 
 	@PostMapping({ "/coating/list" })
 	public ResponseEntity<Object> getCoatingList(@RequestBody SearchRequest searchPageRequest) {
-		List<CoatingtypeMasterJswEntity> pageResult = materialService.getCoatingList(searchPageRequest);
+		List<CoatingtypeMasterJswEntity> pageResult = materialService.getCoatingListByProduct(searchPageRequest);
 		return new ResponseEntity<Object>(pageResult, HttpStatus.OK);
 	}
 
 	@PostMapping({ "/grade/list" })
 	public ResponseEntity<Object> getGradeList(@RequestBody SearchRequest searchPageRequest) {
-		List<GradeMasterJswEntity> pageResult = materialService.getGradeList(searchPageRequest);
+		List<GradeMasterJswEntity> pageResult = materialService.getGradeListByProduct( searchPageRequest);
 		return new ResponseEntity<Object>(pageResult, HttpStatus.OK);
 	}
 
 	@PostMapping({ "/subgrade/list/gradeId" })
 	public ResponseEntity<Object> getSubGradeList(@RequestBody SearchRequest searchPageRequest) {
-		List<SubgradeMasterJswEntity > resp = materialService.getSubGradeList(searchPageRequest);
+		List<SubgradeMasterJswEntity > resp = materialService.getSubGradeListByGrade( searchPageRequest);
 		return new ResponseEntity<Object>(resp, HttpStatus.OK);
 	}
 
 	@PostMapping({ "/product/list" })
-	public ResponseEntity<Object> getPproductList(@RequestBody SearchRequest searchPageRequest) {
-		List<ProductMasterJswEntity > pageResult = materialService.getProductList(searchPageRequest);
+	public ResponseEntity<Object> getProductListByBrand(@RequestBody SearchRequest searchPageRequest) {
+		List<ProductMasterJswEntity > pageResult = materialService.getProductListByBrand(searchPageRequest);
 		return new ResponseEntity<Object>(pageResult, HttpStatus.OK);
 	}
+
+	/*
+	@PostMapping({ "/product" })
+	public ResponseEntity<Object> getAllProductList(@RequestBody SearchRequest searchPageRequest) {
+		List<ProductMasterJswEntity > pageResult = materialService.getProductList(searchPageRequest);
+		return new ResponseEntity<Object>(pageResult, HttpStatus.OK);
+	}*/
 
 }

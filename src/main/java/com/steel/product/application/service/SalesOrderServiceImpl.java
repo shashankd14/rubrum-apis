@@ -83,7 +83,7 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 					salesOrderEntity.setSoId(request.getSoId());
 					salesOrderEntity.setUpdatedBy(request.getUserId());
 					salesOrderEntity.setUpdatedOn(new Date());
-					Optional<SalesOrderEntity> dummy =salesOrderRepository.findById(request.getSoChildId());
+					Optional<SalesOrderEntity> dummy =salesOrderRepository.findById(request.getSoId());
 					SalesOrderEntity oldEntity = null;
 					if (dummy.isPresent()) {
 						oldEntity = dummy.get();

@@ -31,8 +31,8 @@ public interface MaterialMasterJswRepository
 			+ " material.diameter,   "
 			+ " material.thickness,   "
 			+ " material.width,   "
-			+ " material.lngth,   "
-			+ " :lngth as spangle_type,   "
+			+ " material.length,   "
+			+ " material.spangle_type,   "
 			+ " material.colour,   "
 			+ " CAST(material.hsn AS CHAR) ,   "
 			+ " material.tax,   "
@@ -61,7 +61,7 @@ public interface MaterialMasterJswRepository
 			+ " and material.uom_id=case when :uomId >0 then :uomId else material.uom_id end "
 			+ " and material.surfacetype_id=case when :surfacetypeId >0 then :surfacetypeId else material.surfacetype_id end "
 			+ " and material.coatingtype_id=case when :coatingtypeId >0 then :coatingtypeId else material.coatingtype_id end "
-			+ " and material.lngth=case when :lngth >0 then :lngth else material.lngth end "
+			+ " and material.length=case when :length >0 then :length else material.length end "
 			+ " and material.width=case when :width >0 then :width else material.width end "
 			+ " and material.thickness=case when :thickness >0 then :thickness else material.thickness end "
 			+ " order by material_id desc"  ,
@@ -90,7 +90,7 @@ public interface MaterialMasterJswRepository
 				+ " and material.uom_id=case when :uomId >0 then :uomId else material.uom_id end "
 				+ " and material.surfacetype_id=case when :surfacetypeId >0 then :surfacetypeId else material.surfacetype_id end "
 				+ " and material.coatingtype_id=case when :coatingtypeId >0 then :coatingtypeId else material.coatingtype_id end "
-				+ " and material.lngth=case when :lngth >0 then :lngth else material.lngth end "
+				+ " and material.length=case when :length >0 then :length else material.length end "
 				+ " and material.width=case when :width >0 then :width else material.width end "
 				+ " and material.thickness=case when :thickness >0 then :thickness else material.thickness end "
 			+ " ", 
@@ -98,7 +98,7 @@ public interface MaterialMasterJswRepository
 	Page<Object[]> materialSearch( 
 			@Param("thickness") BigDecimal thickness, 
 			@Param("width") BigDecimal width, 
-			@Param("lngth") BigDecimal lngth, 
+			@Param("length") BigDecimal length, 
 			//@Param("oDiameter") BigDecimal oDiameter, 
 			//@Param("nb") BigDecimal nb, 
 			//@Param("iDiameter") BigDecimal iDiameter, 			
@@ -130,7 +130,7 @@ public interface MaterialMasterJswRepository
 			+ " material.diameter,   "
 			+ " material.thickness,   "
 			+ " material.width,   "
-			+ " material.lngth,   "
+			+ " material.length,   "
 			+ " material.spangle_type,   "
 			+ " material.colour,   "
 			+ " CAST(material.hsn AS CHAR),   "
