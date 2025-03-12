@@ -16,6 +16,7 @@ public interface SalesOrderChildRepository extends JpaRepository<SalesOrderPacke
 	@Transactional
 	@Query("update SalesOrderPacketsEntity inw set inw.isDeleted = true, inw.updatedBy=:userId, inw.updatedOn=CURRENT_TIMESTAMP where inw.soChildId in :itemIds ")
 	void deleteData(@Param("itemIds") List<Integer> itemIds, @Param("userId") Integer userId);
-	
+
+	List<SalesOrderPacketsEntity> findBySoIdAndInstructionId(Integer soId, Integer instructionId);
 	
 }

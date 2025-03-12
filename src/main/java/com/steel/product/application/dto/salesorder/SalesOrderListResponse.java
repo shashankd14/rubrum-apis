@@ -12,6 +12,8 @@ public class SalesOrderListResponse {
 
 	private String soNumber;
 
+	private String customerCode;
+
 	private Integer soId;
 
 	private Integer partyId;

@@ -14,9 +14,11 @@ public interface SalesOrderService {
 
 	ResponseEntity<Object> save(List<SalesOrderCreateDTO> salesOrderPacketsListNew);
 
-	Page<Object[]> listAllSOs(ListPageSearchRequest listPageSearchRequest);
+	List<Object[]> listAllSOs(List<Integer> soIDsList);
 
 	ResponseEntity<Object> delete(DeleteRequest deleteRequest);
 
 	ResponseEntity<Object> deletePackets(DeleteRequest deleteRequest);
+
+	Page<Object[]> listAllSOIDs(ListPageSearchRequest listPageSearchRequest);
 }

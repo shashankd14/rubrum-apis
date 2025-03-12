@@ -21,6 +21,8 @@ public class SalesOrderCreateDTO {
 
 	private String soNumber;
 
+	private String customerCode;
+
 	private String customerBatchNo;
 
 	private BigDecimal fthickness;

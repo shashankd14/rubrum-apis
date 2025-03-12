@@ -21,9 +21,8 @@ public class SalesOrderPacketsEntity {
 	@Column(name = "so_child_id")
 	private Integer soChildId;
 
-	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "so_id")
-	private SalesOrderEntity soId;
+	private Integer soId;
 
 	@Column(name = "instruction_id")
 	private Integer instructionId;

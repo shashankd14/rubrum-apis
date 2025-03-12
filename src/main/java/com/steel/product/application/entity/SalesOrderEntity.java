@@ -22,6 +22,9 @@ public class SalesOrderEntity {
 	@Column(name = "so_number")
 	private String soNumber;
 
+	@Column(name = "customer_code")
+	private String customerCode;
+
 	@Column(name = "party_id")
 	private Integer partyId;
 
@@ -54,14 +57,6 @@ public class SalesOrderEntity {
 
 	@OneToMany(mappedBy = "soId", cascade = { CascadeType.PERSIST, CascadeType.MERGE }, orphanRemoval = true)
 	private Set<SalesOrderPacketsEntity> instructions;
-
-	public void addInstruction(SalesOrderPacketsEntity instruction) {
-		if (this.instructions == null) {
-			this.instructions = new LinkedHashSet<>();
-		}
-		this.getInstructions().add(instruction);
-		instruction.setSoId(this);
-	}
 
 	public void removeInstruction(SalesOrderPacketsEntity instruction) {
 		this.getInstructions().remove(instruction);

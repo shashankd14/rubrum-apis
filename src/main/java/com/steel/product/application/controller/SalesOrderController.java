@@ -110,7 +110,17 @@ public class SalesOrderController {
 	@PostMapping(value = "/list", produces = "application/json")
 	public ResponseEntity<Object> listAllSOs(@RequestBody ListPageSearchRequest listPageSearchRequest) {
 		Map<String, Object> response = new HashMap<>();
-		Page<Object[]> packetsList = salesOrderService.listAllSOs(listPageSearchRequest);
+		
+		Page<Object[]> packetsList1 = salesOrderService.listAllSOIDs(listPageSearchRequest);
+		
+		List<Integer> soIDsList  = new ArrayList<>(); 
+		for (Object[] result : packetsList1) {
+			Integer soId =  (result[0] != null ? (Integer) result[0] : null);
+			soIDsList.add(soId);
+		}
+
+		List<Object[]> packetsList = salesOrderService.listAllSOs(soIDsList);
+		
 		Map<Integer, SalesOrderListResponse> soMap = new LinkedHashMap<>();
 		for (Object[] result : packetsList) {
 			SalesOrderListResponse resp = new SalesOrderListResponse();
@@ -121,7 +131,8 @@ public class SalesOrderController {
 			resp.setSoStatus( result[12] != null ? (String) result[12] : null);
 			resp.setSoNumber(result[14] != null ? (String) result[14] : null);
 			resp.setSoId(result[15] != null ? Integer.parseInt(result[15].toString()) : null);
-			
+			resp.setCustomerCode( result[18] != null ? (String) result[18] : null);
+
 			child.setInstructionId(result[0] != null ? (Integer) result[0] : null);
 			child.setInwardEntryId(result[1] != null ? (Integer) result[1] : null);
 			child.setCoilNo(result[2] != null ? (String) result[2] : null);
@@ -160,9 +171,9 @@ public class SalesOrderController {
 		}		
 		List<SalesOrderListResponse> list = new ArrayList<>(soMap.values());
 		response.put("content", list);
-		response.put("currentPage", packetsList.getNumber());
-		response.put("totalItems", packetsList.getTotalElements());
-		response.put("totalPages", packetsList.getTotalPages());
+		response.put("currentPage", packetsList1.getNumber());
+		response.put("totalItems", packetsList1.getTotalElements());
+		response.put("totalPages", packetsList1.getTotalPages());
 		return new ResponseEntity<Object>(response, HttpStatus.OK);
 	}
 

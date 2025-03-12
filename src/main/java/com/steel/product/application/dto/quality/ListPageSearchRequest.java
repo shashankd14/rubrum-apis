@@ -14,4 +14,7 @@ public class ListPageSearchRequest {
 	private String searchText;
 
 	private Integer partyId;
+	
+	private Integer soId;
+
 }

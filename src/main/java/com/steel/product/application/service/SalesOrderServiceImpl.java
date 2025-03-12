@@ -73,11 +73,11 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 	@Override
 	public ResponseEntity<Object> save(List<SalesOrderCreateDTO> salesOrderPacketsListNew) {
         ResponseEntity< Object > responseEntity = null;
-		SalesOrderEntity salesOrderEntity = new SalesOrderEntity();
 		String message="Sales Order created successfully ! ";
 		try {
 			
 			for (SalesOrderCreateDTO request : salesOrderPacketsListNew) {
+				SalesOrderEntity salesOrderEntity = new SalesOrderEntity();
 				if(request.getSoId() !=null && request.getSoId() > 0 ) {
 					message="Sales Order details updated successfully ! ";
 					salesOrderEntity.setSoId(request.getSoId());
@@ -90,19 +90,31 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 						salesOrderEntity.setCreatedBy(oldEntity.getCreatedBy());
 						salesOrderEntity.setCreatedOn(oldEntity.getCreatedOn());
 					}
-
+				} else if(request.getSoNumber() !=null && request.getSoNumber().length() > 0 ) {
+					List<SalesOrderEntity> dummy =salesOrderRepository.findBySoNumber(request.getSoNumber());
+					if (dummy != null && dummy.size()>0 ) {
+						salesOrderEntity = dummy.get(0);
+						salesOrderEntity.setUpdatedBy(request.getUserId());
+						salesOrderEntity.setUpdatedOn(new Date());
+					}else {
+						salesOrderEntity.setSoNumber(request.getSoNumber());
+						salesOrderEntity.setCreatedBy(request.getUserId());
+						salesOrderEntity.setCreatedOn(new Date());
+					}
 				} else {
+					salesOrderEntity.setSoNumber(request.getSoNumber());
 					salesOrderEntity.setCreatedBy(request.getUserId());
 					salesOrderEntity.setCreatedOn(new Date());
 				}
-				salesOrderEntity.setSoNumber(request.getSoNumber());
+				salesOrderEntity.setCustomerCode( request.getCustomerCode());
 				salesOrderEntity.setPartyId(request.getPartyId());
 				salesOrderEntity.setTotalWeight(BigDecimal.ZERO);
 				salesOrderEntity.setStatus(this.statusService.getStatusById(1));
 				salesOrderEntity.setIsDeleted(false);
-				
+				salesOrderRepository.save(salesOrderEntity);
 				SalesOrderPacketsEntity childEntity = new SalesOrderPacketsEntity();
 				SalesOrderPacketsEntity oldEntity = null;
+
 				if(request.getSoChildId() !=null && request.getSoChildId()> 0 ) {
 					Optional<SalesOrderPacketsEntity> dummy =childRepository.findById(request.getSoChildId());
 					if (dummy.isPresent()) {
@@ -114,10 +126,17 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 					childEntity.setUpdatedBy(request.getUserId());
 					childEntity.setUpdatedOn(new Date());
 				} else {
-					childEntity.setCreatedBy(request.getUserId());
-					childEntity.setCreatedOn(new Date());
+					List<SalesOrderPacketsEntity> dummy11 =childRepository.findBySoIdAndInstructionId(salesOrderEntity.getSoId(), request.getInstructionId());
+					if (dummy11 != null && dummy11.size() > 0) {
+						childEntity = dummy11.get(0);
+						childEntity.setUpdatedBy(request.getUserId());
+						childEntity.setUpdatedOn(new Date());
+					} else {
+						childEntity.setCreatedBy(request.getUserId());
+						childEntity.setCreatedOn(new Date());
+					}
 				}
-				
+				childEntity.setSoId(salesOrderEntity.getSoId());
 				childEntity.setCoilNo(request.getCoilNo());
 				childEntity.setInstructionId(request.getInstructionId());
 				childEntity.setInwardEntryId(request.getInwardEntryId());
@@ -128,10 +147,11 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 				childEntity.setFweight(request.getFthickness());
 				childEntity.setIsDeleted(false);
 				childEntity.setStatus(this.statusService.getStatusById(1));
-				salesOrderEntity.addInstruction( childEntity);
+				childRepository.save(childEntity);
 			}
-			salesOrderRepository.save(salesOrderEntity);
+			//salesOrderRepository.save(salesOrderEntity);
 		} catch (Exception e) {
+			e.printStackTrace();
         	responseEntity = new ResponseEntity<>( "{\"status\": \"failure\", \"message\": \""+e.getMessage()+"\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
     	responseEntity = new ResponseEntity<>( "{\"status\": \"success\", \"message\": \""+message+"\"}", new HttpHeaders(), HttpStatus.OK);
@@ -139,7 +159,7 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 	}
 
 	@Override
-	public Page<Object[]> listAllSOs(ListPageSearchRequest listPageSearchRequest) {
+	public Page<Object[]> listAllSOIDs(ListPageSearchRequest listPageSearchRequest) {
 
 		Pageable pageable = PageRequest.of((listPageSearchRequest.getPageNo() - 1),  listPageSearchRequest.getPageSize());
 		List<Integer> partyIds = new ArrayList<>();
@@ -161,7 +181,20 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 				partyIds = new ArrayList<>();
 			}
 		}
-		Page<Object[]> packetsList = salesOrderRepository.listAllSOs(listPageSearchRequest.getSearchText(), partyIds, partyIdsFlag, commonUtil.getLoginWiseMappedUserIds(), pageable);
+		Page<Object[]> packetsList = salesOrderRepository.listAllSOIDs(listPageSearchRequest.getSearchText(),
+				listPageSearchRequest.getSoId(), commonUtil.getLoginWiseMappedUserIds(),
+				pageable);
+
+		return packetsList;
+	}
+	
+	
+	@Override
+	public List<Object[]> listAllSOs(List<Integer> soIDsList) {
+
+		 
+		List<Object[]> packetsList = salesOrderRepository.listAllSOs( soIDsList);
+
 		return packetsList;
 	}
 
