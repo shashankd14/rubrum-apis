@@ -15,6 +15,8 @@ public class SalesOrderListDTO {
 
 	private String soNumber;
 
+	private String customerCode;
+
 	private String customerBatchNo;
 
 	private String partyName;

@@ -89,6 +89,17 @@ public class MaterialUploadController {
 			resp.setMateraiId(result.getMaterialId());
 			resp.setMmId(result.getMmId());
 			resp.setMmDescription(result.getMmDescription());
+			resp.setCategoryId(result.getCategoryId());
+			resp.setSubcategoryId(result.getSubcategoryId());
+			resp.setLeafcategoryId(result.getLeafcategoryId());
+			resp.setBrandId(result.getBrandId());
+			resp.setProducttypeId(result.getProducttypeId());
+			resp.setGradeId(result.getGradeId());
+			resp.setSubgradeId(result.getSubgradeId());
+			resp.setFormId(result.getFormId());
+			resp.setUomId( result.getUomId());
+			resp.setSurfacetypeId( result.getSurfacetypeId() );
+			resp.setCoatingtypeId(result.getCoatingtypeId());
 			resp.setCategory(categoryMap.get(result.getCategoryId()));
 			resp.setSubcategory(subCategoryMap.get(result.getSubcategoryId()));
 			resp.setLeafcategory(leafCategoryMap.get(result.getLeafcategoryId()));

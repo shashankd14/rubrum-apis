@@ -14,6 +14,28 @@ public class MaterialSearchPageResponse {
 
 	private String mmDescription;
 
+	private int categoryId;
+
+	private int subcategoryId;
+
+	private int leafcategoryId;
+
+	private int formId;
+
+	private int producttypeId;
+
+	private int gradeId;
+
+	private int subgradeId;
+
+	private int brandId;
+
+	private int surfacetypeId;
+
+	private int coatingtypeId;
+
+	private int uomId;
+
 	private String category;
 
 	private String surfacetype;

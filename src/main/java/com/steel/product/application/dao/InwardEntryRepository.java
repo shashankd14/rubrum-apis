@@ -68,7 +68,10 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
             " ins.status.statusId = 4 order by ins.instructionId asc")
     public List<InwardEntry> findDeliveryItemsByInstructionIds(@Param("instructionIds")List<Integer> instructionIds);
 
-    @Query("select inw from InwardEntry inw join fetch inw.party join fetch inw.material join fetch inw.materialGrade where inw.inwardEntryId = :inwardId")
+   // @Query("select inw from InwardEntry inw join fetch inw.party join fetch inw.material join fetch inw.materialGrade where inw.inwardEntryId = :inwardId")
+    //public Optional<InwardEntry> findById(@Param("inwardId")Integer inwardId);
+
+    @Query("select inw from InwardEntry inw join fetch inw.party join fetch MaterialMasterJswEntity mat on mat.mmId=inw.mmId where inw.inwardEntryId = :inwardId")
     public Optional<InwardEntry> findById(@Param("inwardId")Integer inwardId);
 
     @Query("select inw from InwardEntry inw join fetch inw.party join fetch inw.material join fetch inw.materialGrade join fetch inw.instructions ins join fetch ins.childInstructions")
