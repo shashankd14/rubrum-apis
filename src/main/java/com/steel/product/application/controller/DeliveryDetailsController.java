@@ -26,6 +26,7 @@ import com.steel.product.application.dto.pricemaster.PriceCalculateResponseDTO;
 import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.service.DeliveryDetailsService;
+import com.steel.product.application.service.SalesOrderService;
 import com.steel.product.application.util.CommonUtil;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -38,6 +39,9 @@ public class DeliveryDetailsController {
 
     @Autowired
     private DeliveryDetailsService deliveryDetailsService;
+    
+    @Autowired
+	private SalesOrderService salesOrderService;
     
     @Autowired
 	private CommonUtil commonUtil;
@@ -136,6 +140,13 @@ public class DeliveryDetailsController {
 		ResponseEntity<Object> result = null;
 
 		try {
+			int sonovalidationCNt = salesOrderService.validateSoNoAndCustCode(deliveryDto.getDeliveryItemDetails());
+			if (sonovalidationCNt > 1) {
+				HttpHeaders headers = new HttpHeaders();                    
+				headers.set( "Content-Type", "application/json" );
+				return new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"The selected packets dont have the same SONO and CUSTCODE\"}", headers, HttpStatus.OK);
+			}
+			
 			int userId = commonUtil.getUserId();	
 			if(!(deliveryDto.getPackingRateId() !=null && deliveryDto.getPackingRateId() > 0 )) {
 				deliveryDto.setPackingRateId(0);

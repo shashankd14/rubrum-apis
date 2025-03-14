@@ -15,27 +15,27 @@ import javax.transaction.Transactional;
 @Repository
 public interface SalesOrderRepository extends JpaRepository<SalesOrderEntity, Integer> {
 
-	@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, materialgrade, materialdesc, fthickness,  weight, npartyid,partyname,width, length,fquantity, "
-			+ "in_stock_weight, plannednoofpieces, process_status, instruction_status, classification_tag, enduser_tag_name,sono,customer_code "
+	@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, materialgrade, materialdesc, fthickness, fweight, npartyid,partyname,fWidth, flength,fquantity, "
+			+ "inStockWeight, actualNoOfPieces , process_status, instruction_status, classification_tag, enduser_tag_name,sono,customer_code "
 			+ " from ( SELECT inwardid,  coilnumber, customerbatchid, "
 			+ " (select vdescription from product_tblmatdescription where nmatid=parent.nmatid) as  materialdesc,"
 			+ " (select gradename from product_material_grades where gradeid=parent.materialgradeid) as  materialgrade,	"
-			+ "	fthickness, instructionid as packet_id,  coalesce(actualwidth, plannedwidth) width, coalesce( actuallength,plannedlength) length, "
-			+ " coalesce(actualweight, plannedweight) weight, fquantity,in_stock_weight, plannednoofpieces,"
+			+ "	fthickness, instructionid as packet_id,  coalesce(actualwidth, plannedwidth) fWidth, coalesce( actuallength,plannedlength) flength, "
+			+ " coalesce(actualweight, plannedweight) fweight, fquantity,in_stock_weight inStockWeight, plannednoofpieces actualNoOfPieces,"
 			+ " (select processname from product_process where processid=child.processid) as process_status ,"
 			+ " (select statusname from product_status where statusid=child.status) as instruction_status,partyname, "
 			+ " (select classification_name from product_packet_classification where classification_id=child.packet_classification_id) as classification_tag, "
 			+ " (select tag_name from product_enduser_tags where tag_id=child.enduser_tag_id) as enduser_tag_name,	 "
-			+ " (SELECT count(distinct inss.instructionid) cnt FROM product_instruction inss where inss.inwardid=parent.inwardentryid  and status!=4 and inss.parentgroupid=child.groupid) as siltcutcnt, parent.npartyid, "
-			+ " (SELECT so.so_number FROM sales_order so, sales_order_child sochild where so.so_id=sochild.so_id and sochild.instruction_id = child.instructionid limit 1) as sono,"
-			+ " (SELECT so.customer_code FROM sales_order so, sales_order_child sochild where so.so_id=sochild.so_id and sochild.instruction_id = child.instructionid limit 1) as customer_code"
+			+ " (SELECT count(distinct a.instructionid) cnt FROM product_instruction a where a.inwardid=parent.inwardentryid and status!=4 and a.parentgroupid=child.groupid) as siltcutcnt, parent.npartyid, "
+			+ " (SELECT so.so_number from sales_order so, sales_order_child sochild where so.so_id=sochild.so_id and sochild.instruction_id = child.instructionid limit 1) as sono,"
+			+ " (SELECT so.customer_code from sales_order so, sales_order_child sochild where so.so_id=sochild.so_id and sochild.instruction_id = child.instructionid limit 1) as customer_code"
 			+ " FROM product_tblinwardentry parent, product_instruction child, product_tblpartydetails party  "
 			+ " where child.isdeleted=0 and parent.isdeleted=0 and parent.inwardentryid = child.inwardid and party.npartyid = parent.npartyid "
 			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (parent.coilNumber like %:searchText% or parent.customerBatchId like %:searchText% or parent.customerInvoiceNo like %:searchText%) else 1=1 end " 
 			+ " and parent.createdby in (:userIds) "
 			+ " and case when :partyIdsFlag=true then parent.npartyid in :partyIds else 1=1 end "
 			+ ") a "
-			+ " where 1=1 AND CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END order by packet_id desc",
+			+ " where 1=1 AND CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END",
 		countQuery = "SELECT count(packet_id) from "
 			+ " (select instructionid as packet_id, "
 			+ " (SELECT count(distinct inss.instructionid) cnt FROM product_instruction inss where inss.inwardid=parent.inwardentryid  and status!=4 and inss.parentgroupid=child.groupid) as siltcutcnt"
@@ -93,5 +93,11 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrderEntity, In
 	void deleteData(@Param("itemIds") List<Integer> itemIds, @Param("userId") Integer userId);
 
 	List<SalesOrderEntity> findBySoNumber(String soNumber);
+
+	@Query(value = "select distinct so_number, customer_code FROM sales_order so, sales_order_child so_child "
+			+ " where so.is_deleted = 0 and so_child.is_deleted = 0 and so_child.so_id=so.so_id "
+			+ " and so_child.instruction_id in :instructionIdList ", 
+		nativeQuery = true)
+	List<Object[]> validateSoNoAndCustCode(@Param("instructionIdList") List<Integer> instructionIdList);
 	
 }

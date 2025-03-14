@@ -17,4 +17,8 @@ public class ListPageSearchRequest {
 	
 	private Integer soId;
 
+	private String sortColumn;
+
+	private String sortOrder;
+
 }

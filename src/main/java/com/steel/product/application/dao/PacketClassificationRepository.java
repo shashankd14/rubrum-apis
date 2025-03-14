@@ -23,6 +23,6 @@ public interface PacketClassificationRepository extends JpaRepository<PacketClas
 	@Query("select pc from PacketClassification pc left join fetch pc.parties p where p.nPartyId = :partyId")
 	public List<PacketClassification> findByPartyId(@Param("partyId") Integer partyId);
 	
-	@Query("select mat from PacketClassification mat where mat.createdby in :userIds order by mat.classificationId desc")
+	@Query("select mat from PacketClassification mat where 1=1 order by mat.classificationId desc")
 	public List<PacketClassification> findAllClassificationTags(@Param("userIds") List<Integer> userIds);
 }

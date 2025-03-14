@@ -772,13 +772,13 @@ public class InstructionServiceImpl implements InstructionService {
         inwardEntryPdfDto.setPlannedYieldLossRatio(""+plannedYieldLossRatio);
         inwardEntryPdfDto.setVProcess(String.valueOf(processId));
         
-        Map<Integer, String> kqpParamsList = getKQPParams(partDetailsId, inwardEntry, partDetailsCutMap, partDetailsSlitMap);
+        Map<Integer, String> kqpParamsList = new HashMap<>();  //getKQPParams(partDetailsId, inwardEntry, partDetailsCutMap, partDetailsSlitMap);
 		log.info("kQPParamsList " + kqpParamsList);
         inwardEntryPdfDto.setKqpParamsList(kqpParamsList);
         return inwardEntryPdfDto;
     }
 
-	public Map<Integer, String> getKQPParams(String partDetailsId, InwardEntry inwardEntry,
+	public Map<Integer, String> getKQPParamss(String partDetailsId, InwardEntry inwardEntry,
 			Map<PartDetailsPdfResponse, List<InstructionResponsePdfDto>> partDetailsCutMap,
 			Map<PartDetailsPdfResponse, List<InstructionResponsePdfDto>> partDetailsSlitMap)
 	{

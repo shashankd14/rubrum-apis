@@ -2,8 +2,10 @@ package com.steel.product.application.service;
 
 import com.steel.product.application.dao.SalesOrderChildRepository;
 import com.steel.product.application.dao.SalesOrderRepository;
+import com.steel.product.application.dto.delivery.DeliveryItemDetails;
 import com.steel.product.application.dto.quality.ListPageSearchRequest;
 import com.steel.product.application.dto.salesorder.SalesOrderCreateDTO;
+import com.steel.product.application.dto.salesorder.SalesOrderListDTO;
 import com.steel.product.application.entity.*;
 import com.steel.product.application.util.CommonUtil;
 import com.steel.product.trading.request.DeleteRequest;
@@ -14,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,13 +47,25 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 	}
 
 	@Override
-	public Page<Object[]> listAllPackets(ListPageSearchRequest listPageSearchRequest) {
+	public Page<Object[]> listAllPackets(ListPageSearchRequest searchListPageRequest) {
 
-		Pageable pageable = PageRequest.of((listPageSearchRequest.getPageNo() - 1), listPageSearchRequest.getPageSize());
+		Pageable pageable = null;
+		if (searchListPageRequest.getSortColumn() != null && searchListPageRequest.getSortColumn().length() > 0
+				&& searchListPageRequest.getSortOrder() != null && searchListPageRequest.getSortOrder().length() > 0
+				&& "ASC".equalsIgnoreCase(searchListPageRequest.getSortOrder())) {
+			pageable = PageRequest.of((searchListPageRequest.getPageNo()-1), searchListPageRequest.getPageSize(), Sort.by(searchListPageRequest.getSortColumn()).ascending());
+		}else if (searchListPageRequest.getSortColumn() != null && searchListPageRequest.getSortColumn().length() > 0
+				&& searchListPageRequest.getSortOrder() != null && searchListPageRequest.getSortOrder().length() > 0
+				&& "DESC".equalsIgnoreCase(searchListPageRequest.getSortOrder())) {
+			pageable = PageRequest.of((searchListPageRequest.getPageNo()-1), searchListPageRequest.getPageSize(), Sort.by(searchListPageRequest.getSortColumn()).descending());
+		} else {
+			pageable = PageRequest.of((searchListPageRequest.getPageNo()-1), searchListPageRequest.getPageSize(), Sort.by("packet_id").descending());
+		}		
+		
 		List<Integer> partyIds = new ArrayList<>();
 		boolean partyIdsFlag = false;
-		if (listPageSearchRequest.getPartyId() != null && listPageSearchRequest.getPartyId() > 0) {
-			partyIds.add(listPageSearchRequest.getPartyId());
+		if (searchListPageRequest.getPartyId() != null && searchListPageRequest.getPartyId() > 0) {
+			partyIds.add(searchListPageRequest.getPartyId());
 			partyIdsFlag = true;
 		} else {
 			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
@@ -66,7 +81,7 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 				partyIds = new ArrayList<>();
 			}
 		}
-		Page<Object[]> packetsList = salesOrderRepository.listAllPackets(listPageSearchRequest.getSearchText(), partyIds, partyIdsFlag, commonUtil.getLoginWiseMappedUserIds(), pageable);
+		Page<Object[]> packetsList = salesOrderRepository.listAllPackets(searchListPageRequest.getSearchText(), partyIds, partyIdsFlag, commonUtil.getLoginWiseMappedUserIds(), pageable);
 		return packetsList;
 	}
 
@@ -230,5 +245,23 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 		}
 		return response;
 	}
-	
+
+	@Override
+	public int validateSoNoAndCustCode(List<DeliveryItemDetails> deliveryItemDetails) {
+		int cnt = 0;
+		List<Integer> dcIds = new ArrayList<>();
+		for (DeliveryItemDetails deliveryDetails : deliveryItemDetails) {
+			dcIds.add(deliveryDetails.getInstructionId());
+		}
+		List<Object[]> packetsList = salesOrderRepository.validateSoNoAndCustCode(dcIds);
+		System.out.println("dcIds " + dcIds);
+
+		Map<Integer, SalesOrderListDTO> kk = new LinkedHashMap<>();
+		for (Object[] result : packetsList) {
+			cnt++;
+			String sono = result[0] != null ? (String) result[0] : null;
+			String cuatCode = result[1] != null ? (String) result[1] : null;
+		}
+		return cnt;
+	}
 }
