@@ -121,7 +121,7 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 					salesOrderEntity.setCreatedBy(request.getUserId());
 					salesOrderEntity.setCreatedOn(new Date());
 				}
-				salesOrderEntity.setCustomerCode( request.getCustomerCode());
+				salesOrderEntity.setCustomerCodeId( request.getCustomerCodeId());
 				salesOrderEntity.setPartyId(request.getPartyId());
 				salesOrderEntity.setTotalWeight(BigDecimal.ZERO);
 				salesOrderEntity.setStatus(this.statusService.getStatusById(1));
@@ -203,12 +203,10 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 		return packetsList;
 	}
 	
-	
 	@Override
-	public List<Object[]> listAllSOs(List<Integer> soIDsList) {
+	public List<Object[]> listAllSOs(List<String> soIDsList) {
 
-		 
-		List<Object[]> packetsList = salesOrderRepository.listAllSOs( soIDsList);
+		List<Object[]> packetsList = salesOrderRepository.listAllSOs(soIDsList);
 
 		return packetsList;
 	}

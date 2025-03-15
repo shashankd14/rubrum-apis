@@ -11,7 +11,7 @@ import java.util.*;
 
 @Entity
 @Data
-@Table(name = "sales_order")
+@Table(name = "salesorder")
 public class SalesOrderEntity {
 
 	@Id
@@ -22,8 +22,8 @@ public class SalesOrderEntity {
 	@Column(name = "so_number")
 	private String soNumber;
 
-	@Column(name = "customer_code")
-	private String customerCode;
+	@Column(name = "customer_code_id")
+	private Integer customerCodeId;
 
 	@Column(name = "party_id")
 	private Integer partyId;

@@ -15,7 +15,7 @@ public interface SalesOrderService {
 
 	ResponseEntity<Object> save(List<SalesOrderCreateDTO> salesOrderPacketsListNew);
 
-	List<Object[]> listAllSOs(List<Integer> soIDsList);
+	List<Object[]> listAllSOs(List<String> soIDsList);
 
 	ResponseEntity<Object> delete(DeleteRequest deleteRequest);
 

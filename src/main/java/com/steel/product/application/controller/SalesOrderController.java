@@ -2,6 +2,7 @@ package com.steel.product.application.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -53,8 +54,10 @@ public class SalesOrderController {
 			resp.setMaterialDesc(result[5] != null ? (String) result[5] : null);
 			resp.setFthickness(result[6] != null ? (Float) result[6] : null);
 			resp.setSoNumber(result[19] != null ? (String) result[19] : null);
-			resp.setCustomerCode( result[20] != null ? (String) result[20] : null);
-			
+			if (result[20] != null) {
+				BigInteger ok = result[20] != null ? (BigInteger) result[20] : null;
+				resp.setCustomerCodeId(ok.intValue());
+			}
 			Float dweight;
 			Float dwidth;
 			Float dlength;
@@ -114,12 +117,11 @@ public class SalesOrderController {
 		
 		Page<Object[]> packetsList1 = salesOrderService.listAllSOIDs(listPageSearchRequest);
 		
-		List<Integer> soIDsList  = new ArrayList<>(); 
+		List<String> soIDsList  = new ArrayList<>(); 
 		for (Object[] result : packetsList1) {
-			Integer soId =  (result[0] != null ? (Integer) result[0] : null);
+			String soId =  (result[0] != null ? (String) result[0] : null);
 			soIDsList.add(soId);
 		}
-
 		List<Object[]> packetsList = salesOrderService.listAllSOs(soIDsList);
 		
 		Map<Integer, SalesOrderListResponse> soMap = new LinkedHashMap<>();
