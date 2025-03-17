@@ -171,7 +171,7 @@ public class LabelPrintPDFGenerator {
 
 			Paragraph specParagraph = new Paragraph();
 			specParagraph.add(new Phrase(new Chunk("SPEC: ", font8b)));
-			specParagraph.add(new Phrase(new Chunk("", font11b)));
+			specParagraph.add(new Phrase(new Chunk(resp.getMaterialDesc(), font11b)));
 			PdfPCell companyNameCell4 = new PdfPCell(specParagraph);
 			companyNameCell4.setHorizontalAlignment( Element.ALIGN_LEFT);
 			companyNameCell4.setColspan(2);
@@ -191,7 +191,7 @@ public class LabelPrintPDFGenerator {
 
 			Paragraph gradeParagraph = new Paragraph();
 			gradeParagraph.add(new Phrase(new Chunk("GRADE: ", font8b)));
-			gradeParagraph.add(new Phrase(new Chunk("", font11b)));	
+			gradeParagraph.add(new Phrase(new Chunk(resp.getMaterialGrade(), font11b)));	
 			PdfPCell companyNameCell6 = new PdfPCell(gradeParagraph);
 			companyNameCell6.setColspan(2);
 			companyNameCell6.setHorizontalAlignment( Element.ALIGN_LEFT);

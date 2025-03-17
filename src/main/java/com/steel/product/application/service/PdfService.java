@@ -2,11 +2,13 @@ package com.steel.product.application.service;
 
 import com.lowagie.text.DocumentException;
 import com.steel.product.application.dto.instruction.InstructionFinishDto;
+import com.steel.product.application.dto.material.MaterialResponseDto;
 import com.steel.product.application.dto.pdf.*;
 import com.steel.product.application.dto.qrcode.QRCodeResponse;
 import com.steel.product.application.entity.CompanyDetails;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
+import com.steel.product.jswone.service.MaterialMasterJswService;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -36,14 +38,16 @@ public class PdfService {
 	private AWSS3Service awsS3Service;
 	private PartDetailsService partDetailsService;
 	private LabelPrintPDFGenerator labelPrintPDFGenerator;
-
+	private MaterialMasterJswService materialMasterJswService;
+	
 	@Value("${aws.s3.bucketPDFs}")
 	private String bucketName;
 
 	@Autowired
 	public PdfService(InwardEntryService inwardEntryService, CompanyDetailsService companyDetailsService,
 			SpringTemplateEngine templateEngine, InstructionService instructionService, AWSS3Service awsS3Service,
-			PartDetailsService partDetailsService, LabelPrintPDFGenerator labelPrintPDFGenerator ) {
+			PartDetailsService partDetailsService, LabelPrintPDFGenerator labelPrintPDFGenerator,
+			MaterialMasterJswService materialMasterJswService) {
 		this.inwardEntryService = inwardEntryService;
 		this.companyDetailsService = companyDetailsService;
 		this.templateEngine = templateEngine;
@@ -51,6 +55,7 @@ public class PdfService {
 		this.awsS3Service = awsS3Service;
 		this.partDetailsService = partDetailsService;
 		this.labelPrintPDFGenerator = labelPrintPDFGenerator;
+		this.materialMasterJswService = materialMasterJswService;
 	}
 
     public File generatePdf(PdfDto pdfDto) throws IOException, org.dom4j.DocumentException, DocumentException {
@@ -227,10 +232,16 @@ public class PdfService {
                     .map(i -> Instruction.valueOfInstructionPdf(i, null))
                     .collect(Collectors.toList());
             inwardEntryPdfDto = InwardEntry.valueOf(inwardEntry, instructionResponsePdfDtos);
+    		MaterialResponseDto materialGradeDto = materialMasterJswService.getGradeProductName(inwardEntry.getMmId());
+    		inwardEntryPdfDto.setMaterialGradeName(materialGradeDto.getMaterialGrade().getGradeName());
+    		inwardEntryPdfDto.setMatDescription(materialGradeDto.getDescription());
         } else {
             inwardEntry = inwardEntryService.getByEntryId(pdfDto.getInwardId());
             instructionResponsePdfDtos = null;
             inwardEntryPdfDto = InwardEntry.valueOf(inwardEntry, instructionResponsePdfDtos);
+    		MaterialResponseDto materialGradeDto = materialMasterJswService.getGradeProductName(inwardEntry.getMmId());
+    		inwardEntryPdfDto.setMaterialGradeName(materialGradeDto.getMaterialGrade().getGradeName());
+    		inwardEntryPdfDto.setMatDescription(materialGradeDto.getDescription());
         }
         context.setVariable("inward", inwardEntryPdfDto);
         return context;

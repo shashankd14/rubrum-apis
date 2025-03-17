@@ -5,6 +5,7 @@ import com.steel.product.application.dao.InstructionRepository;
 import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.dao.PartDetailsRepository;
 import com.steel.product.application.dto.instruction.*;
+import com.steel.product.application.dto.material.MaterialResponseDto;
 import com.steel.product.application.dto.partDetails.PartDetailsResponse;
 import com.steel.product.application.dto.partDetails.PartDetailsRequest;
 import com.steel.product.application.dto.pdf.InstructionResponsePdfDto;
@@ -18,6 +19,7 @@ import com.steel.product.application.exception.MockException;
 import com.steel.product.application.mapper.InstructionMapper;
 import com.steel.product.application.mapper.PartDetailsMapper;
 import com.steel.product.application.mapper.TotalLengthAndWeight;
+import com.steel.product.jswone.service.MaterialMasterJswService;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -73,6 +75,8 @@ public class InstructionServiceImpl implements InstructionService {
     private PartDetailsMapper partDetailsMapper;
 
     private InstructionMapper instructionMapper;
+    
+    private MaterialMasterJswService materialMasterJswService;
 
 	@Autowired
 	public InstructionServiceImpl(InstructionRepository instructionRepository,
@@ -81,24 +85,26 @@ public class InstructionServiceImpl implements InstructionService {
 			PacketClassificationService packetClassificationService, EndUserTagsService endUserTagsService,
 			PartDetailsService partDetailsService, PartDetailsMapper partDetailsMapper,
 			InstructionMapper instructionMapper, DeliveryDetailsRepository deliveryDetailsRepository,
-			QualityService qualityService, PartDetailsRepository partDetailsRepository) {
-        this.instructionRepository = instructionRepository;
-        this.inwardEntryRepository = inwardEntryRepository;
-        this.deliveryDetailsRepository = deliveryDetailsRepository;
-        this.inwardService = inwardService;
-        this.processService = processService;
-        this.statusService = statusService;
-        this.packetClassificationService = packetClassificationService;
-        this.endUserTagsService = endUserTagsService;
-        this.partDetailsService = partDetailsService;
-        this.partDetailsMapper = partDetailsMapper;
-        this.instructionMapper = instructionMapper;
-        this.qualityService = qualityService;
-        this.partDetailsRepository =partDetailsRepository;
-    }
+			QualityService qualityService, PartDetailsRepository partDetailsRepository,
+			MaterialMasterJswService materialMasterJswService) {
+		this.instructionRepository = instructionRepository;
+		this.inwardEntryRepository = inwardEntryRepository;
+		this.deliveryDetailsRepository = deliveryDetailsRepository;
+		this.inwardService = inwardService;
+		this.processService = processService;
+		this.statusService = statusService;
+		this.packetClassificationService = packetClassificationService;
+		this.endUserTagsService = endUserTagsService;
+		this.partDetailsService = partDetailsService;
+		this.partDetailsMapper = partDetailsMapper;
+		this.instructionMapper = instructionMapper;
+		this.qualityService = qualityService;
+		this.partDetailsRepository = partDetailsRepository;
+		this.materialMasterJswService = materialMasterJswService;
+	}
 
-    @Override
-    public List<Instruction> getAll() {
+	@Override
+	public List<Instruction> getAll() {
         return instructionRepository.getAll();
     }
 
@@ -699,6 +705,9 @@ public class InstructionServiceImpl implements InstructionService {
         inwardEntryPdfDto.setTotalWeightSlit(totalWeightSlit);
         inwardEntryPdfDto.setPartDetailsId(partDetailsId != null ? partDetailsId : cutPartDetailsId);
         inwardEntryPdfDto.setVProcess(String.valueOf(processId));
+        MaterialResponseDto materialGradeDto = materialMasterJswService.getGradeProductName(inwardEntry.getMmId());
+		inwardEntryPdfDto.setMaterialGradeName(materialGradeDto.getMaterialGrade().getGradeName());
+		inwardEntryPdfDto.setMatDescription(materialGradeDto.getDescription());
         return inwardEntryPdfDto;
     }
 
@@ -762,16 +771,20 @@ public class InstructionServiceImpl implements InstructionService {
         InwardEntryPdfDto inwardEntryPdfDto;
 
         inwardEntry = inwardService.getByEntryId(inwardId);
+
         inwardEntryPdfDto = InwardEntry.valueOf(inwardEntry, null);
         inwardEntryPdfDto.setPartDetailsCutMap(partDetailsCutMap);
         inwardEntryPdfDto.setPartDetailsSlitMap(partDetailsSlitMap);
         inwardEntryPdfDto.setInstructions( instructions);
         inwardEntryPdfDto.setTotalWeightCut(partDetailsSlitMap == null ? totalWeightCut : 0f);
-        inwardEntryPdfDto.setTotalWeightSlit(totalWeightSlit);
-        inwardEntryPdfDto.setPartDetailsId(partDetailsId != null ? partDetailsId : cutPartDetailsId);
-        inwardEntryPdfDto.setPlannedYieldLossRatio(""+plannedYieldLossRatio);
-        inwardEntryPdfDto.setVProcess(String.valueOf(processId));
-        
+		inwardEntryPdfDto.setTotalWeightSlit(totalWeightSlit);
+		inwardEntryPdfDto.setPartDetailsId(partDetailsId != null ? partDetailsId : cutPartDetailsId);
+		inwardEntryPdfDto.setPlannedYieldLossRatio("" + plannedYieldLossRatio);
+		inwardEntryPdfDto.setVProcess(String.valueOf(processId));
+		MaterialResponseDto materialGradeDto = materialMasterJswService.getGradeProductName(inwardEntry.getMmId());
+		inwardEntryPdfDto.setMaterialGradeName(materialGradeDto.getMaterialGrade().getGradeName());
+		inwardEntryPdfDto.setMatDescription(materialGradeDto.getDescription());
+
         Map<Integer, String> kqpParamsList;
 		try {
 			kqpParamsList = getKQPParams(partDetailsId, inwardEntry, partDetailsCutMap, partDetailsSlitMap);
@@ -832,9 +845,9 @@ public class InstructionServiceImpl implements InstructionService {
 							partyFlag = true;
 						}
 					}
-					/*if("Y".equals(entity.getAnyMatGradeFlag() )) {
+					if("Y".equals(entity.getAnyMatGradeFlag() )) {
 						matgradeFlag=true;
-					} else {
+					} else {/*
 						List<Integer> materialGradeList =new ArrayList<>();
 						String[] materialGradeListq = {};
 						if(entity.getMatGradeIdList()!=null && entity.getMatGradeIdList().length() > 0 ) {
@@ -847,8 +860,8 @@ public class InstructionServiceImpl implements InstructionService {
 						}
 						if (materialGradeList.contains(inwardEntry.getMaterialGrade().getGradeId())) {
 							matgradeFlag = true;
-						}
-					}*/
+						}*/
+					}
 					if("Y".equals(entity.getAnyThicknessFlag() )) {
 						thicknessFlag=true;
 					} else {

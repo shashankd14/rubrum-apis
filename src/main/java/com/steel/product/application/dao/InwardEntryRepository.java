@@ -141,8 +141,8 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 	public List<Object[]> getCoilStatus(@Param("inwardId") Integer inwardId);
 	
 	@Query(value = "SELECT distinct coilnumber `Coil No`,customerbatchid `Batch No`," + 
-			" (select desc2.vdescription from product_tblmatdescription desc2 where desc2.nmatid=inward.nmatid) as material_desc," + 
-			" (select aa.`gradename` from `product_material_grades` aa where aa.`gradeid` = `inward`.`materialgradeid`) AS `material_grade`," + 
+			" (select product_name from jsw_material_master material, jsw_product_master product where product.product_id=material.producttype_id and material.mm_id=inward.mm_id limit 1 )  as  material_desc, " + 
+			" (select grade_name from jsw_material_master material, jsw_grade_master product where product.grade_id=material.grade_id and material.mm_id=inward.mm_id limit 1)  as  material_grade, " + 
 			" ROUND(`fthickness`, 2) as `fthickness`, round(fquantity,2) as `net weight`, " +
 			" ROUND(`grossweight`, 2) as `grossweight`, ROUND(`fwidth`, 2) as `fwidth`,ROUND(`flength`, 2) as `flength`, " +
 			" DATE_FORMAT(dreceiveddate, '%d-%m-%Y') as dt, DATE_FORMAT(createdon, '%d-%m-%Y') as credt, parentcoilnumber, " +

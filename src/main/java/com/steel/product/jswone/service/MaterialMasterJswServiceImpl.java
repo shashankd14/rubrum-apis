@@ -1,6 +1,7 @@
 package com.steel.product.jswone.service;
 
 import com.steel.product.application.dto.material.MaterialResponseDto;
+import com.steel.product.application.dto.materialGradeDto.MaterialGradeDto;
 import com.steel.product.jswone.entity.BrandMasterJswEntity;
 import com.steel.product.jswone.entity.CategoryMasterJswEntity;
 import com.steel.product.jswone.entity.CoatingtypeMasterJswEntity;
@@ -287,5 +288,34 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 		}
 		return productName;
 	}
+	
+	@Override
+	public MaterialGradeDto getGradeName(String mmId) {
+		log.info("In getGradeName page ");
+		MaterialGradeDto productName = null;
+		List<Object[]> productNameList = gradeRepository.getGradeName(mmId) ;
+		for (Object[] result : productNameList) {
+			productName = new MaterialGradeDto();
+			productName.setGradeId( result[0] != null ? (Integer) result[0] : null);
+			productName.setGradeName( result[1] != null ? (String) result[1] : null);
+		}
+		return productName;
+	}
 
+	@Override
+	public MaterialResponseDto getGradeProductName(String mmId) {
+		log.info("In getGradeProductName page ");
+		MaterialResponseDto materialResponseDto = null;
+		List<Object[]> productNameList = gradeRepository.getGradeProductName(mmId);
+		for (Object[] result : productNameList) {
+			materialResponseDto = new MaterialResponseDto();
+			materialResponseDto.setDescription(result[0] != null ? (String) result[0] : null);
+			materialResponseDto.setMatId(result[2] != null ? (Integer) result[2] : null);
+		    MaterialGradeDto materialGrade=new MaterialGradeDto();
+		    materialGrade.setGradeName(result[1] != null ? (String) result[1] : null);
+		    materialGrade.setGradeId(result[3] != null ? (Integer) result[3] : null);
+		    materialResponseDto.setMaterialGrade(materialGrade);
+		}
+		return materialResponseDto;
+	}
 }

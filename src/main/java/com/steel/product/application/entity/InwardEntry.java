@@ -546,8 +546,8 @@ public class InwardEntry {
         inwardEntryPdfDto.setBatchNumber(inwardEntry.getBatchNumber());
         inwardEntryPdfDto.setCustomerBatchId(inwardEntry.getCustomerBatchId());
         inwardEntryPdfDto.setFQuantity(inwardEntry.getfQuantity());
-        inwardEntryPdfDto.setMatDescription(inwardEntry.getMaterial() != null ? inwardEntry.getMaterial().getDescription() : "");
-        inwardEntryPdfDto.setMaterialGradeName(inwardEntry.getMaterialGrade() != null ? inwardEntry.getMaterialGrade().getGradeName() : "");
+        //inwardEntryPdfDto.setMatDescription(inwardEntry.getMaterial() != null ? inwardEntry.getMaterial().getDescription() : "");
+       // inwardEntryPdfDto.setMaterialGradeName(inwardEntry.getMaterialGrade() != null ? inwardEntry.getMaterialGrade().getGradeName() : "");
         inwardEntryPdfDto.setFThickness(inwardEntry.getfThickness());
         inwardEntryPdfDto.setFWidth(inwardEntry.getfWidth());
         inwardEntryPdfDto.setGrossWeight(inwardEntry.getGrossWeight());

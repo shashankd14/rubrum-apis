@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.steel.product.application.dto.material.MaterialResponseDto;
+import com.steel.product.application.dto.materialGradeDto.MaterialGradeDto;
 import com.steel.product.jswone.entity.BrandMasterJswEntity;
 import com.steel.product.jswone.entity.CategoryMasterJswEntity;
 import com.steel.product.jswone.entity.CoatingtypeMasterJswEntity;
@@ -66,5 +67,9 @@ public interface MaterialMasterJswService {
 	Map<Integer, String> getFormMap();
 
 	MaterialResponseDto getProductName(String mmId);
+
+	MaterialGradeDto getGradeName(String mmId);
+
+	MaterialResponseDto getGradeProductName(String mmId);
 
 }

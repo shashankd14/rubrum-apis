@@ -25,6 +25,7 @@ import com.steel.product.application.dao.QualityPartyTemplateRepository;
 import com.steel.product.application.dao.QualityReportRepository;
 import com.steel.product.application.dao.QualityTemplateRepository;
 import com.steel.product.application.dto.instruction.InstructionResponseDto;
+import com.steel.product.application.dto.material.MaterialResponseDto;
 import com.steel.product.application.dto.quality.KQPPartyMappingRequest;
 import com.steel.product.application.dto.quality.KQPPartyMappingResponse;
 import com.steel.product.application.dto.quality.KQPRequest;
@@ -53,6 +54,7 @@ import com.steel.product.application.entity.QualityPartyTemplateEntity;
 import com.steel.product.application.entity.QualityTemplateEntity;
 import com.steel.product.application.entity.UserPartyMap;
 import com.steel.product.application.util.CommonUtil;
+import com.steel.product.jswone.service.MaterialMasterJswService;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -116,6 +118,9 @@ public class QualityServiceImpl implements QualityService {
 
 	@Autowired
 	private CommonUtil commonUtil;
+
+	@Autowired
+	private MaterialMasterJswService materialMasterJswService;
 
 	@Override
 	public ResponseEntity<Object> save(String templateId, String templateName, String stageName, String templateDetails,
@@ -1427,23 +1432,25 @@ public class QualityServiceImpl implements QualityService {
 			widthCellValue.setBorder(Rectangle.NO_BORDER);
 			coilDetailsTab.addCell(widthCellValue);
 			
+			MaterialResponseDto materialGradeDto = materialMasterJswService.getGradeProductName(inwardEntry.getMmId());
+
 			PdfPCell matDescCell = new PdfPCell(new Phrase("Material Desc : ", font11));
 			matDescCell.setHorizontalAlignment( Element.ALIGN_LEFT);
 			matDescCell.setFixedHeight(fixedHeight);
 			matDescCell.setBorder(Rectangle.NO_BORDER);
 			coilDetailsTab.addCell(matDescCell);			
-			PdfPCell matDescCellValue = new PdfPCell(new Phrase(inwardEntry.getMaterial().getDescription(), font11));
+			PdfPCell matDescCellValue = new PdfPCell(new Phrase(materialGradeDto.getDescription(), font11));
 			matDescCellValue.setHorizontalAlignment( Element.ALIGN_LEFT);
 			matDescCellValue.setFixedHeight(fixedHeight);
 			matDescCellValue.setBorder(Rectangle.NO_BORDER);
 			coilDetailsTab.addCell(matDescCellValue);
-
+			
 			PdfPCell matGradeCell = new PdfPCell(new Phrase("Material Grade : ", font11));
 			matGradeCell.setHorizontalAlignment( Element.ALIGN_LEFT);
 			matGradeCell.setFixedHeight(fixedHeight);
 			matGradeCell.setBorder(Rectangle.NO_BORDER);
 			coilDetailsTab.addCell(matGradeCell);			
-			PdfPCell matGradeCellValue = new PdfPCell(new Phrase(inwardEntry.getMaterialGrade().getGradeName(), font11));
+			PdfPCell matGradeCellValue = new PdfPCell(new Phrase(materialGradeDto.getMaterialGrade().getGradeName(), font11));
 			matGradeCellValue.setHorizontalAlignment( Element.ALIGN_LEFT);
 			matGradeCellValue.setFixedHeight(fixedHeight);
 			matGradeCellValue.setBorder(Rectangle.NO_BORDER);
