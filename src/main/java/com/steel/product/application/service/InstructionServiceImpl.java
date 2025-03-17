@@ -772,13 +772,18 @@ public class InstructionServiceImpl implements InstructionService {
         inwardEntryPdfDto.setPlannedYieldLossRatio(""+plannedYieldLossRatio);
         inwardEntryPdfDto.setVProcess(String.valueOf(processId));
         
-        Map<Integer, String> kqpParamsList = new HashMap<>();  //getKQPParams(partDetailsId, inwardEntry, partDetailsCutMap, partDetailsSlitMap);
-		log.info("kQPParamsList " + kqpParamsList);
-        inwardEntryPdfDto.setKqpParamsList(kqpParamsList);
+        Map<Integer, String> kqpParamsList;
+		try {
+			kqpParamsList = getKQPParams(partDetailsId, inwardEntry, partDetailsCutMap, partDetailsSlitMap);
+			log.info("kQPParamsList " + kqpParamsList);
+	        inwardEntryPdfDto.setKqpParamsList(kqpParamsList);
+		} catch (Exception e) {
+			log.info("getMessage == " + e.getMessage());
+		}
         return inwardEntryPdfDto;
     }
 
-	public Map<Integer, String> getKQPParamss(String partDetailsId, InwardEntry inwardEntry,
+	public Map<Integer, String> getKQPParams(String partDetailsId, InwardEntry inwardEntry,
 			Map<PartDetailsPdfResponse, List<InstructionResponsePdfDto>> partDetailsCutMap,
 			Map<PartDetailsPdfResponse, List<InstructionResponsePdfDto>> partDetailsSlitMap)
 	{
@@ -827,7 +832,7 @@ public class InstructionServiceImpl implements InstructionService {
 							partyFlag = true;
 						}
 					}
-					if("Y".equals(entity.getAnyMatGradeFlag() )) {
+					/*if("Y".equals(entity.getAnyMatGradeFlag() )) {
 						matgradeFlag=true;
 					} else {
 						List<Integer> materialGradeList =new ArrayList<>();
@@ -843,7 +848,7 @@ public class InstructionServiceImpl implements InstructionService {
 						if (materialGradeList.contains(inwardEntry.getMaterialGrade().getGradeId())) {
 							matgradeFlag = true;
 						}
-					}
+					}*/
 					if("Y".equals(entity.getAnyThicknessFlag() )) {
 						thicknessFlag=true;
 					} else {

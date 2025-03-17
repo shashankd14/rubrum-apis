@@ -3,6 +3,8 @@ package com.steel.product.application.entity;
 import com.steel.product.application.dto.inward.InwardEntryResponseDto;
 import com.steel.product.application.dto.pdf.InstructionResponsePdfDto;
 import com.steel.product.application.dto.pdf.InwardEntryPdfDto;
+import com.steel.product.jswone.service.MaterialMasterJswService;
+
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -613,6 +615,53 @@ public class InwardEntry {
         inwardEntryPdfDto.setFLength(inwardEntry.getfLength());
         return inwardEntryPdfDto;
     }
+	
+	public static InwardEntryResponseDto valueOfResponse (InwardEntry inwardEntry, MaterialMasterJswService materialService) {
+		InwardEntryResponseDto inwardEntryResponseDto = new InwardEntryResponseDto();
+		inwardEntryResponseDto.setInwardEntryId(inwardEntry.getInwardEntryId());
+		inwardEntryResponseDto.setParty(inwardEntry.getParty() != null ? Party.valueOf(inwardEntry.getParty()) : null);
+		inwardEntryResponseDto.setCoilNumber(inwardEntry.getCoilNumber());
+		inwardEntryResponseDto.setTdcNo( inwardEntry.getTdcNo() );
+		inwardEntryResponseDto.setBatchNumber(inwardEntry.getBatchNumber());
+		inwardEntryResponseDto.setCustomerBatchId(inwardEntry.getCustomerBatchId());
+		inwardEntryResponseDto.setfQuantity(inwardEntry.getfQuantity());
+		inwardEntryResponseDto.setMaterial(inwardEntry.getMmId()!= null ? materialService.getProductName( inwardEntry.getMmId()) : null);
+		inwardEntryResponseDto.setMaterialGrade(inwardEntry.getMaterialGrade() != null ? MaterialGrade.valueOf(inwardEntry.getMaterialGrade()) : null);
+		inwardEntryResponseDto.setfThickness(inwardEntry.getfThickness());
+		inwardEntryResponseDto.setfWidth(inwardEntry.getfWidth());
+		inwardEntryResponseDto.setGrossWeight(inwardEntry.getGrossWeight());
+		inwardEntryResponseDto.setCreatedOn(inwardEntry.getCreatedOn());
+		inwardEntryResponseDto.setInstruction(inwardEntry.getInstructions() != null ?
+				inwardEntry.getInstructions().stream().filter(i -> !i.getIsDeleted())
+						.map(i -> Instruction.valueOf(i)).collect(Collectors.toList()): null);
+		if(inwardEntryResponseDto.getInstruction()!=null && inwardEntryResponseDto.getInstruction().size()>0) {
+			Collections.sort(inwardEntryResponseDto.getInstruction(), new MyInstructionIdComp());
+		}
+		
+		inwardEntryResponseDto.setPurposeType(inwardEntry.getPurposeType());
+		inwardEntryResponseDto.setdReceivedDate(inwardEntry.getdReceivedDate());
+		inwardEntryResponseDto.setvLorryNo(inwardEntry.getvLorryNo());
+		inwardEntryResponseDto.setvInvoiceNo(inwardEntry.getvInvoiceNo());
+		inwardEntryResponseDto.setTestCertificateNumber(inwardEntry.getTestCertificateNumber());
+		inwardEntryResponseDto.setRemarks(inwardEntry.getRemarks());
+		inwardEntryResponseDto.setdInvoiceDate(inwardEntry.getdInvoiceDate());
+		inwardEntryResponseDto.setValueOfGoods(inwardEntry.getValueOfGoods());
+		inwardEntryResponseDto.setCreatedBy(inwardEntry.getCreatedBy());
+		inwardEntryResponseDto.setCreatedOn(inwardEntry.getCreatedOn());
+		inwardEntryResponseDto.setUpdatedBy(inwardEntry.getUpdatedBy());
+		inwardEntryResponseDto.setUpdatedOn(inwardEntry.getUpdatedOn());
+		inwardEntryResponseDto.setStatus(inwardEntry.getStatus());
+		inwardEntryResponseDto.setfQuantity(inwardEntry.getfQuantity());
+		inwardEntryResponseDto.setFpresent(inwardEntry.getFpresent());
+		inwardEntryResponseDto.setInStockWeight(inwardEntry.getInStockWeight());
+		inwardEntryResponseDto.setDeleted(inwardEntry.getDeleted());
+		inwardEntryResponseDto.setfLength(inwardEntry.getfLength());
+		inwardEntryResponseDto.setAvailableLength(inwardEntry.getAvailableLength());
+		inwardEntryResponseDto.setCustomerInvoiceNo(inwardEntry.getCustomerInvoiceNo());
+		inwardEntryResponseDto.setParentCoilNumber(inwardEntry.getParentCoilNumber());
+		inwardEntryResponseDto.setScrapWeight( inwardEntry.getScrapWeight() );
+		return inwardEntryResponseDto;
+	}
 
 	public static InwardEntryResponseDto valueOfResponse(InwardEntry inwardEntry) {
 		InwardEntryResponseDto inwardEntryResponseDto = new InwardEntryResponseDto();
@@ -660,5 +709,4 @@ public class InwardEntry {
 		inwardEntryResponseDto.setScrapWeight( inwardEntry.getScrapWeight() );
 		return inwardEntryResponseDto;
 	}
-
 }

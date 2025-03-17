@@ -3,6 +3,7 @@ package com.steel.product.jswone.service;
 import java.util.List;
 import java.util.Map;
 
+import com.steel.product.application.dto.material.MaterialResponseDto;
 import com.steel.product.jswone.entity.BrandMasterJswEntity;
 import com.steel.product.jswone.entity.CategoryMasterJswEntity;
 import com.steel.product.jswone.entity.CoatingtypeMasterJswEntity;
@@ -63,5 +64,7 @@ public interface MaterialMasterJswService {
 	Map<Integer, String> getBrandMap();
 
 	Map<Integer, String> getFormMap();
+
+	MaterialResponseDto getProductName(String mmId);
 
 }

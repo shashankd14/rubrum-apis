@@ -258,7 +258,7 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 		for (Object[] result : packetsList) {
 			cnt++;
 			String sono = result[0] != null ? (String) result[0] : null;
-			String cuatCode = result[1] != null ? (String) result[1] : null;
+			//String cuatCode = result[1] != null ? (String) result[1] : null;
 		}
 		return cnt;
 	}

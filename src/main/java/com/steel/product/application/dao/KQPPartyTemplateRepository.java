@@ -29,7 +29,7 @@ public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTempla
 			" fthickness, grossweight, inward.npartyid, " + 
 			" (SELECT rpt.qir_id FROM quality_inspection_report rpt where rpt.coil_no=inward.coilnumber limit 1) qirid, " +
 			" (SELECT aaa.partyname from product_tblpartydetails aaa where aaa.npartyid=inward.npartyid) , fwidth, " + 
-			" (select matdes.`material_code` from `product_tblmatdescription` matdes where matdes.`nmatid` = `inward`.`nmatid` ) " +
+			" (select product_name from jsw_material_master material, jsw_product_master product where product.product_id=material.producttype_id and material.mm_id=inward.mm_id limit 1) " +
 			" FROM product_tblinwardentry inward " +
 			" WHERE case when :searchText is not null and LENGTH(:searchText) >0 then (inward.coilNumber like %:searchText% or inward.customerBatchId like %:searchText% or inward.customerInvoiceNo like %:searchText%) else 1=1 end" + 
 			" and case when :partyIdsFlag=true then npartyid in :partyIds else 1=1 end " +
@@ -48,7 +48,7 @@ public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTempla
 			" fthickness, part.target_weight, inward.npartyid, " + 
 			" (SELECT rpt.qir_id FROM quality_inspection_report rpt where rpt.plan_id=part.part_details_id and rpt.stage_name = 'PRE_PROCESSING' limit 1) qirid, " +
 			" (SELECT aaa.partyname from product_tblpartydetails aaa where aaa.npartyid=inward.npartyid) partyname, fwidth, "  +
-			" (select matdes.`material_code` from `product_tblmatdescription` matdes where matdes.`nmatid` = `inward`.`nmatid`) AS `material_code`, " + 
+			" (select product_name from jsw_material_master material, jsw_product_master product where product.product_id=material.producttype_id and material.mm_id=inward.mm_id limit 1) AS `material_code`, " + 
 			" inward.inwardentryid " + 
 			" FROM product_part_details part" + 
 			" INNER JOIN product_instruction ins ON part.id = ins.part_details_id" + 
@@ -71,7 +71,7 @@ public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTempla
 			" fthickness, part.target_weight, inward.npartyid, " + 
 			" (SELECT rpt.qir_id FROM quality_inspection_report rpt where rpt.plan_id=part.part_details_id and stage_name = 'PROCESSING'limit 1) qirid, " +
 			" (SELECT aaa.partyname from product_tblpartydetails aaa where aaa.npartyid=inward.npartyid) partyname, fwidth, "  +
-			" (select matdes.`material_code` from `product_tblmatdescription` matdes where matdes.`nmatid` = `inward`.`nmatid`) AS `material_code`, " + 
+			" (select product_name from jsw_material_master material, jsw_product_master product where product.product_id=material.producttype_id and material.mm_id=inward.mm_id limit 1) AS `material_code`, " + 
 			" inward.inwardentryid, part.planned_yield_loss_ratio, part.actual_yield_loss_ratio " + 
 			" FROM product_part_details part" + 
 			" INNER JOIN product_instruction ins ON part.id = ins.part_details_id" + 
@@ -100,7 +100,7 @@ public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTempla
 			+ " (SELECT group_concat( distinct `tag_name` SEPARATOR  ', ') FROM product_enduser_tags deli, product_instruction ins WHERE  deli.tag_id = ins.enduser_tag_id and ins.inwardid = inward.inwardentryid group by ins.inwardid ), "
 			+ " inward.npartyid, (SELECT rpt.qir_id FROM quality_inspection_report rpt where rpt.delivery_chalan_no=deli.deliveryid and rpt.stage_name = 'PRE_DISPATCH' limit 1) qirid, "
 			+ " (SELECT aaa.partyname from product_tblpartydetails aaa where aaa.npartyid=inward.npartyid) partyname, fwidth, "  
-			+ " (select matdes.`material_code` from `product_tblmatdescription` matdes where matdes.`nmatid` = `inward`.`nmatid`) AS `material_code`, "  
+			+ " (select product_name from jsw_material_master material, jsw_product_master product where product.product_id=material.producttype_id and material.mm_id=inward.mm_id limit 1) AS `material_code`, "  
 			+ " (select aa.`gradename` from `product_material_grades` aa where aa.`gradeid` = `inward`.`materialgradeid`) AS `material_grade` , " 
 			+ " ins.remarks " 
 			+ " FROM product_tbl_delivery_details deli, product_instruction ins, product_tblinwardentry inward "
@@ -123,7 +123,7 @@ public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTempla
 			+ " (SELECT group_concat( distinct `tag_name` SEPARATOR  ', ') FROM product_enduser_tags deli, product_instruction ins WHERE deli.tag_id = ins.enduser_tag_id and ins.inwardid = inward.inwardentryid group by ins.inwardid ), "
 			+ " inward.npartyid, (SELECT rpt.qir_id FROM quality_inspection_report rpt where rpt.delivery_chalan_no=deli.deliveryid and rpt.stage_name = 'POST_DISPATCH' limit 1) qirid, "
 			+ " (SELECT aaa.partyname from product_tblpartydetails aaa where aaa.npartyid=inward.npartyid) partyname, fwidth, "  
-			+ " (select matdes.`material_code` from `product_tblmatdescription` matdes where matdes.`nmatid` = `inward`.`nmatid`) AS `material_code`, "  
+			+ " (select product_name from jsw_material_master material, jsw_product_master product where product.product_id=material.producttype_id and material.mm_id=inward.mm_id limit 1) AS `material_code`, "  
 			+ " (select aa.`gradename` from `product_material_grades` aa where aa.`gradeid` = `inward`.`materialgradeid`) AS `material_grade`,  " 
 			+ " ins.remarks " 
 			+ " FROM product_tbl_delivery_details deli, product_instruction ins, product_tblinwardentry inward "

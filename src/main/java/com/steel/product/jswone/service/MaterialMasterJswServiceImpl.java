@@ -1,5 +1,6 @@
 package com.steel.product.jswone.service;
 
+import com.steel.product.application.dto.material.MaterialResponseDto;
 import com.steel.product.jswone.entity.BrandMasterJswEntity;
 import com.steel.product.jswone.entity.CategoryMasterJswEntity;
 import com.steel.product.jswone.entity.CoatingtypeMasterJswEntity;
@@ -272,6 +273,19 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 			map.put(i.getFormId(), i.getFormName());
 		}
 		return map;
+	}
+
+	@Override
+	public MaterialResponseDto getProductName(String mmId) {
+		log.info("In getProductName page ");
+		MaterialResponseDto productName = null;
+		List<Object[]> productNameList = productRepository.getProductName(mmId);
+		for (Object[] result : productNameList) {
+			productName = new MaterialResponseDto();
+			productName.setMatId(result[0] != null ? (Integer) result[0] : null);
+			productName.setDescription(result[1] != null ? (String) result[1] : null);
+		}
+		return productName;
 	}
 
 }

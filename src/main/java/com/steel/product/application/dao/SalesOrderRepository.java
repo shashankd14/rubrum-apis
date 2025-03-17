@@ -93,7 +93,7 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrderEntity, In
 
 	List<SalesOrderEntity> findBySoNumber(String soNumber);
 
-	@Query(value = "select distinct so_number, customer_code FROM salesorder so, salesorder_child so_child "
+	@Query(value = "select distinct so_number, customer_code_id FROM salesorder so, salesorder_child so_child "
 			+ " where so.is_deleted = 0 and so_child.is_deleted = 0 and so_child.so_id=so.so_id "
 			+ " and so_child.instruction_id in :instructionIdList ", 
 		nativeQuery = true)
