@@ -38,6 +38,8 @@ public interface MaterialMasterJswService {
 
 	List<GradeMasterJswEntity> getGradeListByProduct(SearchRequest searchPageRequest);
 
+	GradeMasterJswEntity getGradeById(Integer gradeId);
+
 	List<SubgradeMasterJswEntity> getSubGradeListByGrade(SearchRequest searchPageRequest);
 
 	List<ProductMasterJswEntity> getProductListByBrand(SearchRequest searchPageRequest);

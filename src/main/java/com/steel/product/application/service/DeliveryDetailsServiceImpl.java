@@ -8,6 +8,7 @@ import com.steel.product.application.dto.delivery.DeliveryPacketsDto;
 import com.steel.product.application.dto.delivery.TallyUpdateStatusDTO;
 import com.steel.product.application.dto.delivery.TallyUpdateSttsRequestDTO;
 import com.steel.product.application.dto.delivery.ValidatePriceMappingDTO;
+import com.steel.product.application.dto.material.MaterialResponseDto;
 import com.steel.product.application.dto.pricemaster.PriceCalculateDTO;
 import com.steel.product.application.dto.pricemaster.PriceCalculateResponseDTO;
 import com.steel.product.application.entity.AdminUserEntity;
@@ -17,6 +18,7 @@ import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.entity.Status;
 import com.steel.product.application.entity.UserPartyMap;
 import com.steel.product.application.util.CommonUtil;
+import com.steel.product.jswone.service.MaterialMasterJswService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,22 +50,26 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
     private InwardEntryService inwardEntryService;
 
     private PriceMasterService priceMasterService;
-    
+
 	private CommonUtil commonUtil;
+
+	private MaterialMasterJswService materialMasterJswService;
 
 	@Autowired
 	public DeliveryDetailsServiceImpl(DeliveryDetailsRepository deliveryDetailsRepo,
 			InstructionService instructionService, StatusService statusService, InwardEntryService inwardEntryService,
-			PriceMasterService priceMasterService, CommonUtil commonUtil) {
+			PriceMasterService priceMasterService, CommonUtil commonUtil,
+			MaterialMasterJswService materialMasterJswService) {
 		this.deliveryDetailsRepo = deliveryDetailsRepo;
 		this.instructionService = instructionService;
 		this.statusService = statusService;
 		this.inwardEntryService = inwardEntryService;
 		this.priceMasterService = priceMasterService;
 		this.commonUtil = commonUtil;
+		this.materialMasterJswService = materialMasterJswService;
 	}
 
-    @Override
+	@Override
     public List<Instruction> getAll() {
         return deliveryDetailsRepo.deliveredItems();
     }
@@ -491,7 +497,8 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 			for (Instruction instruction : instructions) {
 				boolean innerStts = false;
 				InwardEntry inwardEntry = instruction.getInwardId();
-				
+		        MaterialResponseDto materialGradeDto = materialMasterJswService.getGradeProductName(inwardEntry.getMmId());
+
 				/*PriceCalculateDTO priceCalculateDTO = priceMasterService.calculateInstructionWisePrice(
 						inwardEntry.getParty().getnPartyId(), BigDecimal.valueOf(inwardEntry.getfThickness()),
 						instruction.getProcess().getProcessId(), inwardEntry.getMaterialGrade().getGradeId(),
@@ -505,8 +512,8 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 				priceCalculateDTO.setCustomerBatchNo(inwardEntry.getCustomerBatchId());
 				priceCalculateDTO.setInstructionId(instruction.getInstructionId());
 				priceCalculateDTO.setThickness(BigDecimal.valueOf(inwardEntry.getfThickness()));
-				priceCalculateDTO.setMatGradeName(inwardEntry.getMaterialGrade().getGradeName());
-				priceCalculateDTO.setActualWeight(instruction.getActualWeight());
+				priceCalculateDTO.setMatGradeName(materialGradeDto.getMaterialGrade().getGradeName());
+				priceCalculateDTO.setActualWeight((instruction.getActualWeight()==null ? instruction.getPlannedWeight() : instruction.getActualWeight()));
 
 				BigDecimal amount =new BigDecimal("0.00");
 				

@@ -30,6 +30,7 @@ import lombok.extern.log4j.Log4j2;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -317,5 +318,16 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 		    materialResponseDto.setMaterialGrade(materialGrade);
 		}
 		return materialResponseDto;
+	}
+
+	@Override
+	public GradeMasterJswEntity getGradeById(Integer gradeId) {
+		log.info("In getGradeById page ");
+		Optional<GradeMasterJswEntity> list = gradeRepository.findById(gradeId);
+		GradeMasterJswEntity kk = new GradeMasterJswEntity();
+		if (list.isPresent()) {
+			kk = list.get();
+		}
+		return kk;
 	}
 }

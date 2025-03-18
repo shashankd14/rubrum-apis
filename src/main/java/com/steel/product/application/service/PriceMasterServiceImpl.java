@@ -5,6 +5,7 @@ import com.steel.product.application.dao.PriceMasterRepository;
 import com.steel.product.application.dto.pricemaster.PriceMasterResponse;
 import com.steel.product.application.dto.additionalpricemaster.AdditionalPriceMasterResponse;
 import com.steel.product.application.dto.lamination.LaminationChargesResponse;
+import com.steel.product.application.dto.material.MaterialResponseDto;
 import com.steel.product.application.dto.packingmaster.PackingRateMasterResponse;
 import com.steel.product.application.dto.pricemaster.PriceCalculateDTO;
 import com.steel.product.application.dto.pricemaster.PriceMasterListPageRequest;
@@ -13,6 +14,7 @@ import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.entity.PriceMasterEntity;
 import com.steel.product.application.util.CommonUtil;
+import com.steel.product.jswone.service.MaterialMasterJswService;
 
 import lombok.extern.log4j.Log4j2;
 import java.io.IOException;
@@ -63,6 +65,9 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 
 	@Autowired
 	CommonUtil commonUtil;
+
+	@Autowired
+	MaterialMasterJswService materialMasterJswService;
 	
 	@Override
 	public ResponseEntity<Object> save(List<PriceMasterRequest> priceMasterRequestList) {
@@ -536,12 +541,15 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 		PriceCalculateDTO priceCalculateDTO=new PriceCalculateDTO();
 		
 		try {
+			
+	        MaterialResponseDto materialGradeDto = materialMasterJswService.getGradeProductName(ins.getInwardId().getMmId());
+			
 			BigDecimal totalPrice = new BigDecimal(BigInteger.ZERO,  2);
 			BigDecimal additionalPrice = new BigDecimal(BigInteger.ZERO,  2);
 			
 			int processId=ins.getProcess().getProcessId();
 			
-			List<PriceMasterResponse> basePriceList = getPartyGradeWiseDetails(ins.getInwardId().getParty().getnPartyId(), processId, ins.getInwardId().getMaterialGrade().getGradeId());
+			List<PriceMasterResponse> basePriceList = getPartyGradeWiseDetails(ins.getInwardId().getParty().getnPartyId(), processId, materialGradeDto.getMaterialGrade().getGradeId());
 						
 			for (PriceMasterResponse priceMasterResponse : basePriceList) {
 				if(processId==8 || processId==7) {
