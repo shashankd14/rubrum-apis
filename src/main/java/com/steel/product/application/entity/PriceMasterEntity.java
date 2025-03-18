@@ -5,7 +5,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import com.steel.product.application.dto.pricemaster.PriceMasterResponse;
 import com.steel.product.application.entity.Process;
-
+import com.steel.product.jswone.entity.GradeMasterJswEntity;
+import com.steel.product.jswone.entity.ProductMasterJswEntity;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -24,16 +25,19 @@ public class PriceMasterEntity {
 	private Integer id;
 
 	@ManyToOne(fetch = FetchType.EAGER)
-	@JoinColumn(name = "party_id")
-	private Party party;
-
-	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "process_id")
 	private Process process;
 
+	@Column(name = "location_id")
+	private Integer locationId;
+
 	@ManyToOne(fetch = FetchType.EAGER)
-	@JoinColumn(name = "mat_grade_id")
-	private MaterialGrade matGrade;
+	@JoinColumn(name = "product_id")
+	private ProductMasterJswEntity product;
+
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "grade_id")
+	private GradeMasterJswEntity grade;
 
 	@Column(name = "thickness_from")
 	private BigDecimal thicknessFrom;
@@ -61,17 +65,15 @@ public class PriceMasterEntity {
 	public static PriceMasterResponse valueOf(PriceMasterEntity entity) {
 		PriceMasterResponse dtoResponse = new PriceMasterResponse();
 		dtoResponse.setId(entity.getId());
-		dtoResponse.setMatGradeId(entity.getMatGrade().getGradeId());
-		dtoResponse.setPartyId(entity.getParty().getnPartyId());
+		dtoResponse.setGradeId(entity.getGrade().getGradeId() );
 		dtoResponse.setProcessId(entity.getProcess().getProcessId());
-		dtoResponse.setPartyName(entity.getParty().getPartyName());
 		dtoResponse.setProcessName(entity.getProcess().getProcessName());
-		dtoResponse.setMatGradeName(entity.getMatGrade().getGradeName());
-		dtoResponse.setMaterialDescription( entity.getMatGrade().getParentMaterial().getDescription());
+		dtoResponse.setGradeName(entity.getGrade().getGradeName());
 		dtoResponse.setThicknessFrom(entity.getThicknessFrom());
 		dtoResponse.setThicknessTo(entity.getThicknessTo());
 		dtoResponse.setPrice(entity.getPrice());
-		dtoResponse.setMatId( entity.getMatGrade().getParentMaterial().getMatId());
+		dtoResponse.setProductId( entity.getProduct().getProductId());
+		dtoResponse.setProductName(entity.getProduct().getProductName());
 		return dtoResponse;
 	}
 

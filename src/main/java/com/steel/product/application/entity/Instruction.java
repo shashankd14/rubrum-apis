@@ -249,7 +249,7 @@ public class Instruction {
 		instructionResponsePdfDto.setAdditionalTotalPrice( additionalTotalPrice );
 		instructionResponsePdfDto.setPackingRate(packingPrice);
 		instructionResponsePdfDto.setTotalPrice( totalPrice );
-		Float actualWeight = (instruction.getProcess().getProcessId() == 7 ? instruction.getPlannedWeight():instruction.getActualWeight());
+		Float actualWeight = (instruction.getProcess().getProcessId() == 7 ? instruction.getPlannedWeight(): (instruction.getActualWeight() == null ? instruction.getPlannedWeight(): instruction.getActualWeight()  ) );
 		//if (packingRateMain != null && packingRateMain.compareTo(BigDecimal.ZERO) > 0 && actualWeight > 0) {
 			//float kk = packingRateMain.floatValue() * (actualWeight/1000);
 			//instructionResponsePdfDto.setPackingRate(Float.toString(kk));

@@ -1,8 +1,6 @@
 package com.steel.product.application.dto.pricemaster;
 
 import java.math.BigDecimal;
-import java.util.Date;
-
 import lombok.Data;
 
 @Data
@@ -14,17 +12,21 @@ public class PriceMasterResponse {
 
 	private Integer processId;
 
-	private Integer matGradeId;
+	private Integer gradeId;
 	
+	private Integer productId;
+	
+	private Integer locationId;
+	
+	private Integer locationName;
+
 	private String partyName;
 
 	private String processName;
 
-	private String matGradeName;
+	private String gradeName;
 	
-	private String materialDescription;
-	
-	private Integer matId;
+	private String productName;	
 
 	private BigDecimal thicknessFrom;
 

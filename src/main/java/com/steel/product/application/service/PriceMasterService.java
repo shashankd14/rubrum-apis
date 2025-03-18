@@ -26,7 +26,7 @@ public interface PriceMasterService {
 
 	List<PriceMasterResponse> getAllPriceDetails(int partyId);
 
-	List<PriceMasterResponse> getPartyGradeWiseDetails(int partyId, int processId, int gradeId);
+	List<PriceMasterResponse> getPartyGradeWiseDetails(int partyId, int processId, int gradeId, int productId);
 
 	PriceCalculateDTO calculateInstructionWisePrice(int partyId, BigDecimal fThickness, int processId, int gradeId,
 			Integer packingRateId, BigDecimal actualWeight, Float actualLength1, int plannedNoOfPieces1, int instrSize,

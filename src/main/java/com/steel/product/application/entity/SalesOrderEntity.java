@@ -11,7 +11,7 @@ import java.util.*;
 
 @Entity
 @Data
-@Table(name = "salesorder")
+@Table(name = "sales_order")
 public class SalesOrderEntity {
 
 	@Id

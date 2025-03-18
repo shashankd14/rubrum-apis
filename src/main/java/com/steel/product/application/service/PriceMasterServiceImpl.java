@@ -76,34 +76,37 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 		List<PriceMasterEntity> list=new ArrayList<>();
 		
 		for (PriceMasterRequest priceMasterRequest : priceMasterRequestList) {
-			for (Integer partyId : priceMasterRequest.getPartyId()) {
-				for (Integer matGradeId : priceMasterRequest.getMatGradeId()) {
-					PriceMasterEntity priceMasterEntity = new PriceMasterEntity();
-					if (priceMasterRequest.getId() != null && priceMasterRequest.getId() > 0) {
-						priceMasterEntity.setId(priceMasterRequest.getId());
-						priceMasterEntity.setUpdatedBy(priceMasterRequest.getUserId());
-						priceMasterEntity.setUpdatedOn(new Date());
+			for (Integer locationId : priceMasterRequest.getLocationId()) {
+				for (Integer productId : priceMasterRequest.getProductId()) {
+					for (Integer gradeId : priceMasterRequest.getGradeId()) {
+						PriceMasterEntity priceMasterEntity = new PriceMasterEntity();
+						if (priceMasterRequest.getId() != null && priceMasterRequest.getId() > 0) {
+							priceMasterEntity.setId(priceMasterRequest.getId());
+							priceMasterEntity.setUpdatedBy(priceMasterRequest.getUserId());
+							priceMasterEntity.setUpdatedOn(new Date());
 
-						PriceMasterEntity oldEntity = new PriceMasterEntity();
-						Optional<PriceMasterEntity> kk = priceMasterRepository.findById(priceMasterRequest.getId());
-						if (kk.isPresent()) {
-							oldEntity = kk.get();
-							priceMasterEntity.setCreatedBy(oldEntity.getCreatedBy());
-							priceMasterEntity.setCreatedOn(oldEntity.getCreatedOn());
+							PriceMasterEntity oldEntity = new PriceMasterEntity();
+							Optional<PriceMasterEntity> kk = priceMasterRepository.findById(priceMasterRequest.getId());
+							if (kk.isPresent()) {
+								oldEntity = kk.get();
+								priceMasterEntity.setCreatedBy(oldEntity.getCreatedBy());
+								priceMasterEntity.setCreatedOn(oldEntity.getCreatedOn());
+							}
+						} else {
+							priceMasterEntity.setCreatedBy(priceMasterRequest.getUserId());
+							priceMasterEntity.setCreatedOn(new Date());
 						}
-					} else {
-						priceMasterEntity.setCreatedBy(priceMasterRequest.getUserId());
-						priceMasterEntity.setCreatedOn(new Date());
-					}
-					priceMasterEntity.setParty(partyDetailsService.getPartyById(partyId));
-					priceMasterEntity.setMatGrade(materialGradeService.getById(matGradeId));
-					priceMasterEntity.setProcess(processService.getById(priceMasterRequest.getProcessId()));
-					priceMasterEntity.setPrice(priceMasterRequest.getPrice());
-					priceMasterEntity.setThicknessFrom(priceMasterRequest.getThicknessFrom());
-					priceMasterEntity.setThicknessTo(priceMasterRequest.getThicknessTo());
+						priceMasterEntity.setLocationId(locationId);
+						priceMasterEntity.setProduct( materialMasterJswService.getProductById(productId));
+						priceMasterEntity.setGrade(materialMasterJswService.getGradeById(gradeId));
+						priceMasterEntity.setProcess(processService.getById(priceMasterRequest.getProcessId()));
+						priceMasterEntity.setPrice(priceMasterRequest.getPrice());
+						priceMasterEntity.setThicknessFrom(priceMasterRequest.getThicknessFrom());
+						priceMasterEntity.setThicknessTo(priceMasterRequest.getThicknessTo());
 
-					if (priceMasterRequest.getPrice() != null) {
-						list.add(priceMasterEntity);
+						if (priceMasterRequest.getPrice() != null) {
+							list.add(priceMasterEntity);
+						}
 					}
 				}
 			}
@@ -114,12 +117,12 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 			List<PriceMasterEntity> fromList = null;
 			
 			if (entity.getId() != null && entity.getId() > 0) {
-				fromList = priceMasterRepository.validateRangeUpdate(entity.getParty().getnPartyId(),
-						entity.getProcess().getProcessId(), entity.getMatGrade().getGradeId(),
+				fromList = priceMasterRepository.validateRangeUpdate(entity.getLocationId(),
+						entity.getProcess().getProcessId(), entity.getGrade().getGradeId(),
 						entity.getThicknessFrom(), entity.getId());
 			} else {
-				fromList = priceMasterRepository.validateRange(entity.getParty().getnPartyId(),
-						entity.getProcess().getProcessId(), entity.getMatGrade().getGradeId(),
+				fromList = priceMasterRepository.validateRange(entity.getLocationId(),
+						entity.getProcess().getProcessId(), entity.getGrade().getGradeId(),
 						entity.getThicknessFrom());
 			}
 			
@@ -137,13 +140,13 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 			List<PriceMasterEntity> toList = null;
 		
 			if (entity.getId() != null && entity.getId() > 0) {
-				toList = priceMasterRepository.validateRangeUpdate(entity.getParty().getnPartyId(),
-						entity.getProcess().getProcessId(), entity.getMatGrade().getGradeId(), entity.getThicknessTo(),
+				toList = priceMasterRepository.validateRangeUpdate(entity.getLocationId(),
+						entity.getProcess().getProcessId(), entity.getGrade().getGradeId(), entity.getThicknessTo(),
 						entity.getId());
 
 			} else {
-				toList = priceMasterRepository.validateRange(entity.getParty().getnPartyId(),
-						entity.getProcess().getProcessId(), entity.getMatGrade().getGradeId(), entity.getThicknessTo());
+				toList = priceMasterRepository.validateRange(entity.getLocationId(),
+						entity.getProcess().getProcessId(), entity.getGrade().getGradeId(), entity.getThicknessTo());
 
 			}
 			if(toList!=null && toList.size()>0) {
@@ -190,9 +193,9 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 	}
 	
 	@Override
-	public List<PriceMasterResponse> getPartyGradeWiseDetails(int partyId, int processId, int gradeId) {
+	public List<PriceMasterResponse> getPartyGradeWiseDetails(int partyId, int processId, int gradeId, int productId) {
 
-		List<Object[]> list = priceMasterRepository.findByPartyIdAndProcessIdAndMatGradeIdss(partyId, processId, gradeId);
+		List<Object[]> list = priceMasterRepository.findByPartyIdAndProcessIdAndMatGradeIds(processId, gradeId, productId);
 		return prepareDataList(list);
 	}
 	
@@ -212,15 +215,15 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 					priceMasterResponse.setId(result[0] != null ? (Integer) result[0] : null);
 					priceMasterResponse.setPartyId(result[1] != null ? (Integer) result[1] : null);
 					priceMasterResponse.setProcessId(result[2] != null ? (Integer) result[2] : null);
-					priceMasterResponse.setMatGradeId(result[3] != null ? (Integer) result[3] : null);
+					priceMasterResponse.setGradeId(result[3] != null ? (Integer) result[3] : null);
 					priceMasterResponse.setThicknessFrom(result[4] != null ? (BigDecimal) result[4] : null);
 					priceMasterResponse.setThicknessTo(result[5] != null ? (BigDecimal) result[5] : null);
 					priceMasterResponse.setPrice(result[6] != null ? (BigDecimal) result[6] : null);
 					priceMasterResponse.setPartyName(result[11] != null ? (String) result[11] : null);
 					priceMasterResponse.setProcessName(result[12] != null ? (String) result[12] : null);
-					priceMasterResponse.setMatGradeName(result[13] != null ? (String) result[13] : null);
-					priceMasterResponse.setMaterialDescription( result[14] != null ? (String) result[14] : null);
-					priceMasterResponse.setMatId(result[15] != null ? (Integer) result[15] : null);
+					priceMasterResponse.setGradeName(result[13] != null ? (String) result[13] : null);
+					priceMasterResponse.setProductName( result[14] != null ? (String) result[14] : null);
+					priceMasterResponse.setProductId( result[15] != null ? (Integer) result[15] : null);
 					list.add(priceMasterResponse);
 				}
 			}
@@ -239,15 +242,15 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 					priceMasterResponse.setId(result[0] != null ? (Integer) result[0] : null);
 					priceMasterResponse.setPartyId(result[1] != null ? (Integer) result[1] : null);
 					priceMasterResponse.setProcessId(result[2] != null ? (Integer) result[2] : null);
-					priceMasterResponse.setMatGradeId(result[3] != null ? (Integer) result[3] : null);
+					priceMasterResponse.setGradeId(result[3] != null ? (Integer) result[3] : null);
 					priceMasterResponse.setThicknessFrom(result[4] != null ? (BigDecimal) result[4] : null);
 					priceMasterResponse.setThicknessTo(result[5] != null ? (BigDecimal) result[5] : null);
 					priceMasterResponse.setPrice(result[6] != null ? (BigDecimal) result[6] : null);
 					priceMasterResponse.setPartyName(result[11] != null ? (String) result[11] : null);
 					priceMasterResponse.setProcessName(result[12] != null ? (String) result[12] : null);
-					priceMasterResponse.setMatGradeName(result[13] != null ? (String) result[13] : null);
-					priceMasterResponse.setMaterialDescription( result[14] != null ? (String) result[14] : null);
-					priceMasterResponse.setMatId(result[15] != null ? (Integer) result[15] : null);
+					priceMasterResponse.setGradeName(result[13] != null ? (String) result[13] : null);
+					priceMasterResponse.setProductName( result[14] != null ? (String) result[14] : null);
+					priceMasterResponse.setProductId(result[15] != null ? (Integer) result[15] : null);
 				}
 			}
 		} catch (Exception e) {
@@ -372,7 +375,7 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 				priceCalculateDTO.setInstructionId( ins.getInstructionId());
 				priceCalculateDTO.setCoilNo(ins.getInwardId().getCoilNumber());
 				priceCalculateDTO.setCustomerBatchNo( ins.getInwardId().getCustomerBatchId());
-				priceCalculateDTO.setMatGradeName( ins.getInwardId().getMaterialGrade().getGradeName());
+				//priceCalculateDTO.setMatGradeName( ins.getInwardId().getMaterialGrade().getGradeName());
 				priceCalculateDTO.setThickness(BigDecimal.valueOf( ins.getInwardId().getfThickness()));
 				priceCalculateDTO.setActualWeight( ins.getActualWeight());
 				
@@ -416,11 +419,11 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 		try {
 			BigDecimal totalPrice = new BigDecimal(BigInteger.ZERO,  2);
 			BigDecimal additionalPrice = new BigDecimal(BigInteger.ZERO,  2);
-			List<PriceMasterResponse> basePriceList = getPartyGradeWiseDetails(partyId, processId, gradeId);
+			List<PriceMasterResponse> basePriceList = getPartyGradeWiseDetails(partyId, processId, gradeId, 0);
 						
 			for (PriceMasterResponse priceMasterResponse : basePriceList) {
 				if(processId==8 || processId==7) {
-					if (gradeId == priceMasterResponse.getMatGradeId()
+					if (gradeId == priceMasterResponse.getGradeId()
 						&& partyId == priceMasterResponse.getPartyId()
 						&& processId == priceMasterResponse.getProcessId() ) {
 						
@@ -428,7 +431,7 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 						totalPrice = totalPrice.add(priceCalculateDTO.getBasePrice()); 
 					}
 				} else {
-					if (gradeId == priceMasterResponse.getMatGradeId()
+					if (gradeId == priceMasterResponse.getGradeId()
 						&& partyId == priceMasterResponse.getPartyId()
 						&& processId == priceMasterResponse.getProcessId()
 						&& fThickness.compareTo(priceMasterResponse.getThicknessFrom()) >= 0
@@ -549,11 +552,11 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 			
 			int processId=ins.getProcess().getProcessId();
 			
-			List<PriceMasterResponse> basePriceList = getPartyGradeWiseDetails(ins.getInwardId().getParty().getnPartyId(), processId, materialGradeDto.getMaterialGrade().getGradeId());
+			List<PriceMasterResponse> basePriceList = getPartyGradeWiseDetails(ins.getInwardId().getParty().getnPartyId(), processId, materialGradeDto.getMaterialGrade().getGradeId(), materialGradeDto.getMatId());
 						
 			for (PriceMasterResponse priceMasterResponse : basePriceList) {
 				if(processId==8 || processId==7) {
-					if (ins.getInwardId().getMaterialGrade().getGradeId() == priceMasterResponse.getMatGradeId()
+					if (ins.getInwardId().getMaterialGrade().getGradeId() == priceMasterResponse.getGradeId()
 							&& ins.getInwardId().getParty().getnPartyId().equals(priceMasterResponse.getPartyId())
 							&& processId == priceMasterResponse.getProcessId()) {
 
@@ -561,8 +564,8 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 						totalPrice = totalPrice.add(priceCalculateDTO.getBasePrice()); 
 					} 
 				} else {
-					if (ins.getInwardId().getMaterialGrade().getGradeId() == priceMasterResponse.getMatGradeId()
-							&& ins.getInwardId().getParty().getnPartyId().equals(priceMasterResponse.getPartyId())
+					if (materialGradeDto.getMaterialGrade().getGradeId() == priceMasterResponse.getGradeId()
+							&& materialGradeDto.getMatId() ==  priceMasterResponse.getProductId ()
 							&& processId == priceMasterResponse.getProcessId()
 							&& BigDecimal.valueOf(ins.getInwardId().getfThickness()).compareTo(priceMasterResponse.getThicknessFrom()) >= 0
 							&& priceMasterResponse.getThicknessTo().compareTo(BigDecimal.valueOf(ins.getInwardId().getfThickness())) >= 0) {
@@ -600,7 +603,8 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 
 			for (AdditionalPriceMasterResponse additionalPriceMasterResponse : addPriceList) {
 				System.out.println("additionalPriceMasterResponse == "+additionalPriceMasterResponse.getId());
-				if (ins.getInwardId().getParty().getnPartyId() == additionalPriceMasterResponse.getPartyId() &&
+				if (
+						//ins.getInwardId().getParty().getnPartyId() == additionalPriceMasterResponse.getPartyId() &&
 						additionalPriceMasterResponse.getProcessId() !=null	&& 
 						processId == additionalPriceMasterResponse.getProcessId()) {
 					
@@ -692,12 +696,13 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 			BigDecimal additionalPrice = new BigDecimal(BigInteger.ZERO,  2);
 			
 			int processId=8;
-			
-			List<PriceMasterResponse> basePriceList = getPartyGradeWiseDetails(inwardEntity.getParty().getnPartyId(), processId, inwardEntity.getMaterialGrade().getGradeId());
+	        MaterialResponseDto materialGradeDto = materialMasterJswService.getGradeProductName(inwardEntity.getMmId());
+
+			List<PriceMasterResponse> basePriceList = getPartyGradeWiseDetails(inwardEntity.getParty().getnPartyId(), processId, materialGradeDto.getMaterialGrade().getGradeId(),materialGradeDto.getMatId());
 						
 			for (PriceMasterResponse priceMasterResponse : basePriceList) {
 				if(processId==8 || processId==7) {
-					if (inwardEntity.getMaterialGrade().getGradeId() == priceMasterResponse.getMatGradeId()
+					if (inwardEntity.getMaterialGrade().getGradeId() == priceMasterResponse.getGradeId()
 							&& inwardEntity.getParty().getnPartyId() == priceMasterResponse.getPartyId()
 							&& processId == priceMasterResponse.getProcessId()) {
 

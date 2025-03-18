@@ -5,6 +5,7 @@ import com.steel.product.application.dto.instruction.InstructionFinishDto;
 import com.steel.product.application.dto.material.MaterialResponseDto;
 import com.steel.product.application.dto.pdf.*;
 import com.steel.product.application.dto.qrcode.QRCodeResponse;
+import com.steel.product.application.dto.salesorder.SalesOrderListResponse;
 import com.steel.product.application.entity.CompanyDetails;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
@@ -39,7 +40,8 @@ public class PdfService {
 	private PartDetailsService partDetailsService;
 	private LabelPrintPDFGenerator labelPrintPDFGenerator;
 	private MaterialMasterJswService materialMasterJswService;
-	
+	private SalesOrderService salesOrderService;
+
 	@Value("${aws.s3.bucketPDFs}")
 	private String bucketName;
 
@@ -47,7 +49,7 @@ public class PdfService {
 	public PdfService(InwardEntryService inwardEntryService, CompanyDetailsService companyDetailsService,
 			SpringTemplateEngine templateEngine, InstructionService instructionService, AWSS3Service awsS3Service,
 			PartDetailsService partDetailsService, LabelPrintPDFGenerator labelPrintPDFGenerator,
-			MaterialMasterJswService materialMasterJswService) {
+			MaterialMasterJswService materialMasterJswService, SalesOrderService salesOrderService) {
 		this.inwardEntryService = inwardEntryService;
 		this.companyDetailsService = companyDetailsService;
 		this.templateEngine = templateEngine;
@@ -56,6 +58,7 @@ public class PdfService {
 		this.partDetailsService = partDetailsService;
 		this.labelPrintPDFGenerator = labelPrintPDFGenerator;
 		this.materialMasterJswService = materialMasterJswService;
+		this.salesOrderService = salesOrderService;
 	}
 
     public File generatePdf(PdfDto pdfDto) throws IOException, org.dom4j.DocumentException, DocumentException {
@@ -95,15 +98,20 @@ public class PdfService {
         }
     }
 
-    private Context getDeliveryContext(DeliveryPdfDto deliveryPdfDto) {
-        Context context = new Context();
-        List<InwardEntry> inwardEntries = inwardEntryService.findDeliveryItemsByInstructionIds(deliveryPdfDto.getInstructionIds());
-        CompanyDetails companyDetails = companyDetailsService.findById(1);
-            	
-        DeliveryChallanPdfDto deliveryChallanPdfDto = new DeliveryChallanPdfDto(companyDetails,inwardEntries);
-        context.setVariable("deliveryChallan",deliveryChallanPdfDto);
-        return context;
-    }
+	private Context getDeliveryContext(DeliveryPdfDto deliveryPdfDto) {
+		Context context = new Context();
+		List<InwardEntry> inwardEntries = inwardEntryService.findDeliveryItemsByInstructionIds(deliveryPdfDto.getInstructionIds());
+		CompanyDetails companyDetails = companyDetailsService.findById(1);
+
+		DeliveryChallanPdfDto deliveryChallanPdfDto = new DeliveryChallanPdfDto(companyDetails, inwardEntries);
+		SalesOrderListResponse resp = salesOrderService.getSoNoAndCustCode(deliveryPdfDto.getInstructionIds());
+		if (resp != null) {
+			deliveryChallanPdfDto.setSoNumber(resp.getSoNumber());
+			deliveryChallanPdfDto.setCustomerCode(resp.getCustomerCode());
+		}
+		context.setVariable("deliveryChallan", deliveryChallanPdfDto);
+		return context;
+	}
 
     private File renderPdf(String html,String filename) throws IOException, DocumentException {
         File file = File.createTempFile("aspen-steel-"+filename, ".pdf");

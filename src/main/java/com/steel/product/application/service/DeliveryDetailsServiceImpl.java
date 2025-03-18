@@ -192,7 +192,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
                     if(instruction.getProcess().getProcessId() == 7 ) {
                         weightToDeliver = instruction.getPlannedWeight();
                     } else {
-                        weightToDeliver = instruction.getActualWeight();
+                        weightToDeliver = (instruction.getActualWeight() == null ? instruction.getPlannedWeight() : instruction.getActualWeight());
                     }
                     childrenInstructions = instruction.getChildInstructions();
                     if (childrenInstructions != null && !childrenInstructions.isEmpty()) {

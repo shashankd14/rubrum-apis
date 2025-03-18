@@ -2,8 +2,12 @@ package com.steel.product.jswone.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +25,8 @@ import com.steel.product.jswone.entity.SurfacetypeMasterJswEntity;
 import com.steel.product.jswone.entity.UomMasterJswEntity;
 import com.steel.product.jswone.request.SearchRequest;
 import com.steel.product.jswone.service.MaterialMasterJswService;
+import com.steel.product.trading.entity.LocationEntity;
+import com.steel.product.trading.service.LocationService;
 
 @RestController
 @CrossOrigin
@@ -30,6 +36,9 @@ public class MaterialMasterController {
 
 	@Autowired
 	private MaterialMasterJswService materialService;
+
+	@Autowired
+	private LocationService locationService;
 
 	@PostMapping({ "/category/list" })
 	public ResponseEntity<Object> getCategoryList(@RequestBody SearchRequest searchPageRequest) {
@@ -96,12 +105,34 @@ public class MaterialMasterController {
 		List<ProductMasterJswEntity > pageResult = materialService.getProductListByBrand(searchPageRequest);
 		return new ResponseEntity<Object>(pageResult, HttpStatus.OK);
 	}
-
-	/*
+	 
 	@PostMapping({ "/product" })
-	public ResponseEntity<Object> getAllProductList(@RequestBody SearchRequest searchPageRequest) {
-		List<ProductMasterJswEntity > pageResult = materialService.getProductList(searchPageRequest);
+	public ResponseEntity<Object> getAllProductList() {
+		List<ProductMasterJswEntity > pageResult = materialService.getProductList();
 		return new ResponseEntity<Object>(pageResult, HttpStatus.OK);
-	}*/
+	} 
+	 
+	@PostMapping({ "/grade" })
+	public ResponseEntity<Object> getAllGradesList() {
+		List<GradeMasterJswEntity > pageResult = materialService.getGradesList();
+		return new ResponseEntity<Object>(pageResult, HttpStatus.OK);
+	} 
+	
+	@PostMapping({ "/location" })
+	public ResponseEntity<Object> list(@RequestBody com.steel.product.trading.request.SearchRequest searchRequest) {
+		Map<String, Object> response = new HashMap<>();
+
+		if (searchRequest.getId() != null && searchRequest.getId() > 0) {
+			LocationEntity resp = locationService.findByLocationId( searchRequest.getId());
+			return new ResponseEntity<Object>(resp, HttpStatus.OK);
+		} else {
+			Page<LocationEntity> pageResult = locationService.getLocationList(searchRequest);
+			response.put("content", pageResult.toList());
+			response.put("currentPage", pageResult.getNumber());
+			response.put("totalItems", pageResult.getTotalElements());
+			response.put("totalPages", pageResult.getTotalPages());
+			return new ResponseEntity<Object>(response, HttpStatus.OK);
+		}
+	}
 
 }

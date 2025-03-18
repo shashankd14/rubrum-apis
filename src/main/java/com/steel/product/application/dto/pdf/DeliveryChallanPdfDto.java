@@ -21,7 +21,9 @@ public class DeliveryChallanPdfDto {
     private String partyGSTNo;
     private String partyAddress;
     private String customerInvoiceNo;
-
+    private String soNumber;
+	private String customerCode;
+	
     public DeliveryChallanPdfDto() {
     }
 
@@ -40,7 +42,7 @@ public class DeliveryChallanPdfDto {
                 .stream().map(ins -> Instruction.valueOfInstructionPdf(ins, inw)).collect(Collectors.toList()))).collect(Collectors.toList());
 
         this.totalDeliveryWeight = inwardPdfDtos.stream().flatMap(inw -> inw.getInstructions().stream())
-                .reduce(0f, (sum, ins) -> sum + (ins.getProcess().getProcessId() == 7 ? ins.getPlannedWeight():ins.getActualWeight()) , Float::sum);
+                .reduce(0f, (sum, ins) -> sum + (ins.getProcess().getProcessId() == 7 ? ins.getPlannedWeight(): (ins.getActualWeight() == null ? ins.getPlannedWeight():  ins.getActualWeight()) ) , Float::sum);
         
         this.totalValueOfGoods = inwardPdfDtos.stream().flatMap(inw -> inw.getInstructions().stream())
                 .reduce(0f,(sum,ins) -> sum+ins.getValueOfGoods(),Float::sum);
@@ -158,6 +160,22 @@ public class DeliveryChallanPdfDto {
 
 	public void setCustomerInvoiceNo(String customerInvoiceNo) {
 		this.customerInvoiceNo = customerInvoiceNo;
+	}
+
+	public String getSoNumber() {
+		return soNumber;
+	}
+
+	public void setSoNumber(String soNumber) {
+		this.soNumber = soNumber;
+	}
+
+	public String getCustomerCode() {
+		return customerCode;
+	}
+
+	public void setCustomerCode(String customerCode) {
+		this.customerCode = customerCode;
 	}
     
 }

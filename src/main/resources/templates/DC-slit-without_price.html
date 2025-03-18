@@ -110,9 +110,14 @@
             <p class="col"><strong>DC Number : </strong><span
                     th:text="${deliveryChallan?.inwardPdfDtos[0]?.instructions[0]?.deliveryDetails.deliveryId}"></span>
             </p>
-			<p class="col"><strong>Desp By Lorry No : </strong>
+			<p class="col"><strong>SO Number : </strong>
                 <th:block th:each="inw : ${deliveryChallan.inwardPdfDtos}">
-                    <span th:if="${inwStat.first}" th:text="${inw.instructions[0].deliveryDetails.vehicleNo}"></span>
+                    <span th:if="${inwStat.first}" th:text="${deliveryChallan?.soNumber}"></span>
+                </th:block>
+            </p>
+			<p class="col"><strong>Customer Code : </strong>
+                <th:block th:each="inw : ${deliveryChallan.inwardPdfDtos}">
+                    <span th:if="${inwStat.first}" th:text="${deliveryChallan?.customerCode}"></span>
                 </th:block>
             </p>
         </div>
@@ -123,6 +128,11 @@
                     th:text="${deliveryChallan?.partyAddress}"></span></p>
             <p class="font-size-small" style="vertical-align: top;">
             	<strong>GST No: </strong><span th:text="${deliveryChallan?.partyGSTNo}"></span></p>
+			<p class="col"><strong>Desp By Lorry No : </strong>
+                <th:block th:each="inw : ${deliveryChallan.inwardPdfDtos}">
+                    <span th:if="${inwStat.first}" th:text="${inw.instructions[0].deliveryDetails.vehicleNo}"></span>
+                </th:block>
+            </p>
         </div>
     </div>
     <div style="margin-top: 1%;">

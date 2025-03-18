@@ -39,12 +39,12 @@ public interface MaterialMasterJswService {
 	List<GradeMasterJswEntity> getGradeListByProduct(SearchRequest searchPageRequest);
 
 	GradeMasterJswEntity getGradeById(Integer gradeId);
+	
+	ProductMasterJswEntity getProductById(Integer productId);
 
 	List<SubgradeMasterJswEntity> getSubGradeListByGrade(SearchRequest searchPageRequest);
 
 	List<ProductMasterJswEntity> getProductListByBrand(SearchRequest searchPageRequest);
-
-	List<ProductMasterJswEntity> getProductList(SearchRequest searchPageRequest);
 
 	Map<Integer, String> getProductsMap();
 
@@ -73,5 +73,9 @@ public interface MaterialMasterJswService {
 	MaterialGradeDto getGradeName(String mmId);
 
 	MaterialResponseDto getGradeProductName(String mmId);
+
+	List<ProductMasterJswEntity> getProductList();
+
+	List<GradeMasterJswEntity> getGradesList();
 
 }

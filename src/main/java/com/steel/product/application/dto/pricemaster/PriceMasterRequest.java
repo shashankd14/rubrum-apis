@@ -14,11 +14,13 @@ public class PriceMasterRequest extends BaseRequest{
 
 	private Integer id;
 
-	private List<Integer> partyId;
+	private List<Integer> locationId;
 
 	private Integer processId;
 
-	private List<Integer> matGradeId;
+	private List<Integer> gradeId;
+
+	private List<Integer> productId;
 	
 	private BigDecimal thicknessFrom;
 

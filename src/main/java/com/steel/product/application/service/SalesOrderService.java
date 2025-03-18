@@ -3,6 +3,7 @@ package com.steel.product.application.service;
 import com.steel.product.application.dto.delivery.DeliveryItemDetails;
 import com.steel.product.application.dto.quality.ListPageSearchRequest;
 import com.steel.product.application.dto.salesorder.SalesOrderCreateDTO;
+import com.steel.product.application.dto.salesorder.SalesOrderListResponse;
 import com.steel.product.trading.request.DeleteRequest;
 
 import java.util.List;
@@ -24,4 +25,6 @@ public interface SalesOrderService {
 	Page<Object[]> listAllSOIDs(ListPageSearchRequest listPageSearchRequest);
 
 	int validateSoNoAndCustCode(List<DeliveryItemDetails> deliveryItemDetails);
+
+	SalesOrderListResponse getSoNoAndCustCode(List<Integer> list);
 }

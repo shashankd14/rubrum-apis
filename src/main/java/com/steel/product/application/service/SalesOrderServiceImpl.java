@@ -6,6 +6,7 @@ import com.steel.product.application.dto.delivery.DeliveryItemDetails;
 import com.steel.product.application.dto.quality.ListPageSearchRequest;
 import com.steel.product.application.dto.salesorder.SalesOrderCreateDTO;
 import com.steel.product.application.dto.salesorder.SalesOrderListDTO;
+import com.steel.product.application.dto.salesorder.SalesOrderListResponse;
 import com.steel.product.application.entity.*;
 import com.steel.product.application.util.CommonUtil;
 import com.steel.product.trading.request.DeleteRequest;
@@ -252,14 +253,22 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 			dcIds.add(deliveryDetails.getInstructionId());
 		}
 		List<Object[]> packetsList = salesOrderRepository.validateSoNoAndCustCode(dcIds);
-		System.out.println("dcIds " + dcIds);
-
 		Map<Integer, SalesOrderListDTO> kk = new LinkedHashMap<>();
 		for (Object[] result : packetsList) {
 			cnt++;
 			String sono = result[0] != null ? (String) result[0] : null;
-			//String cuatCode = result[1] != null ? (String) result[1] : null;
 		}
 		return cnt;
+	}
+
+	@Override
+	public SalesOrderListResponse getSoNoAndCustCode(List<Integer> list) {
+		SalesOrderListResponse resp = new SalesOrderListResponse();
+		List<Object[]> packetsList = salesOrderRepository.validateSoNoAndCustCode(list);
+		for (Object[] result : packetsList) {
+			resp.setSoNumber(result[0] != null ? (String) result[0] : null);
+			resp.setCustomerCode(result[2] != null ? (String) result[2] : null);
+		}
+		return resp;
 	}
 }

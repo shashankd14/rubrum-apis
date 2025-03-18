@@ -333,24 +333,6 @@ public class LabelPrintPDFGenerator {
 					unitDetailsTab.setWidthPercentage(100);
 					unitDetailsTab.setWidths(new int[] {90, 90, 90});
 	
-					PdfPCell unit1Cell = new PdfPCell(new Phrase(new Chunk("UNIT - I", font7b)));
-					unit1Cell.setHorizontalAlignment( Element.ALIGN_CENTER);
-					unit1Cell.setVerticalAlignment( Element.ALIGN_TOP);
-					unit1Cell.setBorder( Rectangle.NO_BORDER);
-					unitDetailsTab.addCell(unit1Cell);	
-	
-					PdfPCell unit2Cell = new PdfPCell(new Phrase(new Chunk("UNIT - II", font7b)));
-					unit2Cell.setHorizontalAlignment( Element.ALIGN_CENTER);
-					unit2Cell.setVerticalAlignment( Element.ALIGN_TOP);
-					unit2Cell.setBorder( Rectangle.NO_BORDER);
-					unitDetailsTab.addCell(unit2Cell);	
-	
-					PdfPCell unit3Cell = new PdfPCell(new Phrase(new Chunk("UNIT - III", font7b)));
-					unit3Cell.setHorizontalAlignment( Element.ALIGN_CENTER);
-					unit3Cell.setVerticalAlignment( Element.ALIGN_TOP);
-					unit3Cell.setBorder( Rectangle.NO_BORDER);
-					unitDetailsTab.addCell(unit3Cell);	
-	
 					PdfPCell addressCELL = new PdfPCell();
 					addressCELL.setHorizontalAlignment(Element.ALIGN_CENTER);
 					addressCELL.setColspan(4);
@@ -386,7 +368,7 @@ public class LabelPrintPDFGenerator {
 					coilDetailsTab.addCell(companyNameCell8);	
 	
 					Paragraph coilParagraph = new Paragraph();
-					coilParagraph.add(new Phrase(new Chunk("ASPL COIL NO: ", font8b)));
+					coilParagraph.add(new Phrase(new Chunk("SC Inward Id: ", font8b)));
 					coilParagraph.add(new Phrase(new Chunk(response.getCoilNo(), font11b)));
 					PdfPCell companyNameCell3 = new PdfPCell(coilParagraph);
 					companyNameCell3.setHorizontalAlignment( Element.ALIGN_LEFT);

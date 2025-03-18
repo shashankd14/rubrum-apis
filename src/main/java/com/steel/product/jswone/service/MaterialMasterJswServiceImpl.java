@@ -150,9 +150,16 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	}
 
 	@Override
-	public List<ProductMasterJswEntity> getProductList(SearchRequest searchPageRequest) {
+	public List<ProductMasterJswEntity> getProductList() {
 		log.info("In getAllProductList page ");
 		List<ProductMasterJswEntity> pageResult = productRepository.findAll();
+		return pageResult;
+	}
+
+	@Override
+	public List<GradeMasterJswEntity> getGradesList() {
+		log.info("In getGradesList page ");
+		List<GradeMasterJswEntity> pageResult = gradeRepository.findAll();
 		return pageResult;
 	}
 
@@ -325,6 +332,17 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 		log.info("In getGradeById page ");
 		Optional<GradeMasterJswEntity> list = gradeRepository.findById(gradeId);
 		GradeMasterJswEntity kk = new GradeMasterJswEntity();
+		if (list.isPresent()) {
+			kk = list.get();
+		}
+		return kk;
+	}
+
+	@Override
+	public ProductMasterJswEntity getProductById(Integer gradeId) {
+		log.info("In getProductById page ");
+		Optional<ProductMasterJswEntity> list = productRepository.findById(gradeId);
+		ProductMasterJswEntity kk = new ProductMasterJswEntity();
 		if (list.isPresent()) {
 			kk = list.get();
 		}
