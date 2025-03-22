@@ -66,6 +66,7 @@ public class PriceMasterEntity {
 		PriceMasterResponse dtoResponse = new PriceMasterResponse();
 		dtoResponse.setId(entity.getId());
 		dtoResponse.setGradeId(entity.getGrade().getGradeId() );
+		dtoResponse.setLocationId(entity.getLocationId() );
 		dtoResponse.setProcessId(entity.getProcess().getProcessId());
 		dtoResponse.setProcessName(entity.getProcess().getProcessName());
 		dtoResponse.setGradeName(entity.getGrade().getGradeName());
@@ -75,6 +76,5 @@ public class PriceMasterEntity {
 		dtoResponse.setProductId( entity.getProduct().getProductId());
 		dtoResponse.setProductName(entity.getProduct().getProductName());
 		return dtoResponse;
-	}
-
+	} 
 }

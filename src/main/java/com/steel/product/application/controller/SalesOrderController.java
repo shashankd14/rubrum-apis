@@ -2,18 +2,26 @@ package com.steel.product.application.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.lowagie.text.DocumentException;
+import com.steel.product.application.dto.pdf.PdfResponseDto;
 import com.steel.product.application.dto.quality.ListPageSearchRequest;
 import com.steel.product.application.dto.salesorder.SalesOrderCreateDTO;
 import com.steel.product.application.dto.salesorder.SalesOrderListDTO;
@@ -192,5 +200,21 @@ public class SalesOrderController {
 		return salesOrderService.deletePackets(deleteRequest);
 	}
 
+	@PostMapping("/pdf")
+	public ResponseEntity<PdfResponseDto> downloadDeliveryPDF(@RequestBody ListPageSearchRequest request) throws DocumentException {
+		Path file = null;
+		byte[] bytes = null;
+		StringBuilder builder = new StringBuilder();
+		try {
 
+			file = Paths.get(salesOrderService.generatePdf(request).getAbsolutePath());
+			bytes = Files.readAllBytes(file);
+			builder.append(Base64.getEncoder().encodeToString(bytes));
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		}
+		String encodedFile = builder.toString();
+		return new ResponseEntity<>(new PdfResponseDto(encodedFile), HttpStatus.OK);
+	}
+	
 }

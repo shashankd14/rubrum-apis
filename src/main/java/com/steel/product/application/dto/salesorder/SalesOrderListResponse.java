@@ -14,6 +14,8 @@ public class SalesOrderListResponse {
 
 	private String customerCode;
 
+	private String orderDate;
+
 	private Integer soId;
 
 	private Integer partyId;
@@ -22,6 +24,12 @@ public class SalesOrderListResponse {
 
 	private String partyName;
 
+	private String cagtegoryName;
+
+	private Float fweightTotal;
+	
+	private String processCenter;
+	
 	List<SalesOrderListDTO> childListResp = new ArrayList<>();
 
 }

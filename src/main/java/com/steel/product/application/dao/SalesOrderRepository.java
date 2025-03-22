@@ -86,6 +86,29 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrderEntity, In
 			+ " where 1=1 AND CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END order by a.so_id desc", nativeQuery = true)
 	List<Object[]> listAllSOs(@Param("soIDsList") List<String> soIDsList);
 	
+	@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, materialgrade, materialdesc, fthickness, plannedweight, npartyid,partyname,plannedwidth, plannedlength, "
+			+ "process_status, instruction_status,(select so_number from sales_order so where so.so_id= a.so_id) sonumber, "
+			+ " a.so_id, classification_tag, enduser_tag_name, customer_code, order_date,category_name, plannednoofpieces"
+			+ " from ( SELECT inwardid,  coilnumber, customerbatchid, "
+			+ " (SELECT product_name FROM jsw_product_master product, jsw_material_master mat where product.product_id=mat.producttype_id and mat.mm_id=parent.mm_id limit 1) as  materialdesc,"
+			+ " (SELECT grade_name FROM jsw_grade_master grade, jsw_material_master mat where grade.grade_id=mat.grade_id and mat.mm_id=parent.mm_id limit 1) as  materialgrade,"
+			+ "	parent.fthickness, instructionid as packet_id,  plannedwidth, plannedlength, "
+			+ "  plannedweight, fquantity,in_stock_weight, plannednoofpieces,"
+			+ " (select processname from product_process where processid=child.processid) as process_status ,"
+			+ " (select statusname from product_status where statusid=child.status) as instruction_status,partyname, "
+			+ " (select classification_name from product_packet_classification where classification_id=child.packet_classification_id) as classification_tag, "
+			+ " (select tag_name from product_enduser_tags where tag_id=child.enduser_tag_id) as enduser_tag_name,	 "
+			+ " (SELECT count(distinct inss.instructionid) cnt FROM product_instruction inss where inss.inwardid=parent.inwardentryid  and status!=4 and inss.parentgroupid=child.groupid) as siltcutcnt, "
+			+ " parent.npartyid, so_child.so_id,  "
+			+ " (select tag_name from product_enduser_tags tags where so.customer_code_id=tags.tag_id) as customer_code,"
+			+ " DATE_FORMAT(so.created_on, '%d-%m-%Y') AS order_date, "
+			+ " (SELECT category_name FROM jsw_category_master grade, jsw_material_master mat where grade.category_id=mat.category_id and mat.mm_id=parent.mm_id limit 1) as  category_name "
+			+ " FROM product_tblinwardentry parent, product_instruction child, sales_order_child so_child, sales_order so, product_tblpartydetails party "
+			+ " where so.is_deleted = 0 and so_child.is_deleted = 0 and parent.inwardentryid = child.inwardid and parent.inwardentryid = so_child.inward_entry_d and so_child.so_id = so.so_id and so_child.instruction_id = child.instructionid and party.npartyid = parent.npartyid "
+			+ " and  so.so_id = :soId ) a "
+			+ " where 1=1 AND CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END order by a.so_id desc", nativeQuery = true)
+	List<Object[]> soDetailsBySoId(@Param("soId") Integer soId);
+	
 	@Modifying
 	@Transactional
 	@Query("update SalesOrderEntity inw set inw.isDeleted = true, inw.updatedBy=:userId, inw.updatedOn=CURRENT_TIMESTAMP where inw.soId in :itemIds")

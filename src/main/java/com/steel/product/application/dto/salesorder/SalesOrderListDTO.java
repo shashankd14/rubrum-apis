@@ -13,6 +13,16 @@ public class SalesOrderListDTO {
 
 	private String coilNo;
 
+	private String coilSKU;
+
+	private String processing;
+
+	private String finalProcessingSKU;
+
+	private String packingMode;
+
+	private String specilaInstructions;
+
 	private String soNumber;
 
 	private Integer customerCodeId;
@@ -27,6 +37,10 @@ public class SalesOrderListDTO {
 
 	private String materialDesc;
 
+	private String diagonal;
+
+	private String edgeBurr;
+
 	private Float fthickness;
 
 	private Float fwidth;
@@ -34,8 +48,10 @@ public class SalesOrderListDTO {
 	private Float flenghth;
 
 	private Float fweight;
-
+	
 	private Integer partyId;
+
+	private Integer plannedNoofPieces;
 	
 	
 
