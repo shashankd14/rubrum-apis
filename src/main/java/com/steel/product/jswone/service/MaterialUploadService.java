@@ -21,4 +21,6 @@ public interface MaterialUploadService {
 
 	public Page<MaterialMasterJswEntity> materialSearch(MaterialSearchPageRequest materialSearchPageRequest);
 
+	public ResponseEntity<Object> uploadInwardData(MaterialUploadRequest request) throws Exception, FileNotFoundException;
+
 }

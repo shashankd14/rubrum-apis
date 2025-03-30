@@ -173,5 +173,17 @@ public class MaterialUploadController {
 		response.put("totalPages", packetsList.getTotalPages());
 		return new ResponseEntity<Object>(response, HttpStatus.OK);
 	}
+	
+	@PostMapping(value = "/uploadinwardcsv", produces = "application/json")
+	@Operation
+	public ResponseEntity<Object> uploadInwardData(@RequestBody MaterialUploadRequest request)
+			throws Exception, FileNotFoundException {
+		log.info("******MaterialUploadController.uploadInwardData*****");
+		if (request.isUploadFlag()) {
+			return materialUploadService.uploadInwardData(request);
+		} else {
+			return new ResponseEntity<Object>("{\"status\": \"failed\", \"message\": \"Invalid Request to Uploaded a file.\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
 }

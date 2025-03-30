@@ -3,6 +3,7 @@ package com.steel.product.jswone.repository;
 import com.steel.product.jswone.entity.MaterialMasterJswEntity;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -164,4 +165,6 @@ public interface MaterialMasterJswRepository
 			+ " left outer join jsw_coatingtype_master  coating on coating.coatingtype_id = material.coatingtype_id  "
 			+ " where 1=1 and material.mm_id like %:mmid% ", nativeQuery = true)
 	Page<Object[]> materialSearchBymmid(@Param("mmid") String mmid,  Pageable pageable);
+
+	List<MaterialMasterJswEntity> findByMmId(String mmid);
 }

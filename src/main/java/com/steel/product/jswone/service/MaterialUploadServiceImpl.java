@@ -3,8 +3,16 @@ package com.steel.product.jswone.service;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.BeanUtils;
@@ -17,17 +25,24 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
+import com.lowagie.text.DocumentException;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
+import com.steel.product.application.dto.pdf.PdfDto;
+import com.steel.product.application.entity.InwardEntry;
+import com.steel.product.application.service.InwardEntryService;
+import com.steel.product.application.service.PartyDetailsService;
+import com.steel.product.application.service.PdfService;
+import com.steel.product.application.service.StatusService;
 import com.steel.product.jswone.entity.BrandMasterJswEntity;
 import com.steel.product.jswone.entity.LeafCategoryJswEntity;
 import com.steel.product.jswone.entity.CategoryMasterJswEntity;
 import com.steel.product.jswone.entity.CoatingtypeMasterJswEntity;
 import com.steel.product.jswone.entity.FormMasterJswEntity;
 import com.steel.product.jswone.entity.GradeMasterJswEntity;
+import com.steel.product.jswone.entity.InwardFileDataEntity;
 import com.steel.product.jswone.entity.MaterialMasterFileDataEntity;
 import com.steel.product.jswone.entity.MaterialMasterJswEntity;
 import com.steel.product.jswone.entity.ProductMasterJswEntity;
@@ -41,6 +56,7 @@ import com.steel.product.jswone.repository.CategoryMasterRepository;
 import com.steel.product.jswone.repository.CoatingtypeMasterJswRepository;
 import com.steel.product.jswone.repository.FormMasterJswRepository;
 import com.steel.product.jswone.repository.GradeMasterJswRepository;
+import com.steel.product.jswone.repository.InwardFiledataRepository;
 import com.steel.product.jswone.repository.MaterialMasterFiledataRepository;
 import com.steel.product.jswone.repository.MaterialMasterJswRepository;
 import com.steel.product.jswone.repository.MaterialMasterJswSpecification;
@@ -49,6 +65,7 @@ import com.steel.product.jswone.repository.SubCategoryJswRepository;
 import com.steel.product.jswone.repository.SubGradeJswRepository;
 import com.steel.product.jswone.repository.SurfacetypeMasterJswRepository;
 import com.steel.product.jswone.repository.UomMasterJswRepository;
+import com.steel.product.jswone.request.InwardFileDataDTO;
 import com.steel.product.jswone.request.MaterialMasterFileDataDTO;
 import com.steel.product.jswone.request.MaterialSearchPageRequest;
 import com.steel.product.jswone.request.MaterialUploadRequest;
@@ -63,7 +80,19 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 	MaterialMasterFiledataRepository repository;
 
 	@Autowired
+	PartyDetailsService partyDetailsService;
+
+	@Autowired
+	StatusService statusService;
+
+	@Autowired
+	InwardFiledataRepository inwardFiledataRepository;
+
+	@Autowired
 	MaterialMasterJswRepository materialMasterRepository;
+
+	@Autowired
+	InwardEntryService inwdEntrySvc;
 
 	@Autowired
 	CategoryMasterRepository categoryRepository;
@@ -93,13 +122,19 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 	SubCategoryJswRepository subCategoryRepository;
 
 	@Autowired
+	PdfService pdfService;
+
+	@Autowired
 	LeafCategoryJswRepository leafCategoryJswRepository;
 
 	@Autowired
 	BrandMasterJswRepository brandRepository;
-	
+
 	@Value("${fileUploadPath}")
 	private String fileUploadPath;
+	
+	@Value("${inwardFileUploadPath}")
+	private String inwardFileUploadPath;
 	 
 	@Override
 	public ResponseEntity<Object> uploadcsv(MaterialUploadRequest request) throws Exception, FileNotFoundException {
@@ -493,4 +528,149 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 		return packetsList;
 	}
 
+	@Override
+	public ResponseEntity<Object> uploadInwardData(MaterialUploadRequest request) throws Exception, FileNotFoundException {
+		log.info("******MaterialUploadService.uploadInwardData*****");
+		 
+		try {
+			String newFileName = new File(inwardFileUploadPath).getName();
+
+			List<InwardFileDataDTO> products =  inwardFileDetails();
+			List<InwardFileDataEntity> productList =  new ArrayList<>();
+
+			System.out.println("Hi size "+products.size());
+			for (InwardFileDataDTO dto : products) {
+				InwardFileDataEntity dest=new InwardFileDataEntity();
+				BeanUtils.copyProperties(dto, dest);
+				try {
+					dest.setFilename(newFileName);
+					productList.add(dest);
+					inwardFiledataRepository.save (dest);
+				} catch (Exception e) {
+					System.out.println("error while save --  "+e.getMessage());
+				}
+			}
+			List<InwardFileDataEntity> listFileData = inwardFiledataRepository.findAll();
+			for (InwardFileDataEntity sourceEntity : listFileData) {
+				saveInwardEntry(sourceEntity);
+			}
+			log.info("File Uploaded Successfully. Count is == " + products.size());
+			return new ResponseEntity<Object>("{\"status\": \"success\", \"message\": \"File Uploaded Successfully.\"}", new HttpHeaders(), HttpStatus.OK);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity<Object>("{\"status\": \"failed\", \"message\": \"Failed to Uploaded a file.\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	public Integer saveInwardEntry(InwardFileDataEntity inward) {
+		InwardEntry inwardEntry = new InwardEntry();
+		Integer inwardEnrtyId = 0;
+		System.out.println("DTO details " + inward);
+		MaterialMasterJswEntity mmObj = null;
+		try {
+
+			List<MaterialMasterJswEntity> mmList = materialMasterRepository.findByMmId(inward.getMmid());
+			if (mmList != null && mmList.size() > 0) {
+				mmObj = mmList.get(0);
+
+				int userId = 1;
+				inwardEntry.setInwardEntryId(0);
+				inwardEntry.setPurposeType("STEEL SERVICE CENTRE");
+				inwardEntry.setParty(this.partyDetailsService.getPartyById(137));
+				inwardEntry.setCoilNumber(inward.getCoilno());
+				inwardEntry.setBatchNumber(inward.getBatchnumber());
+
+				if (inward.getReceiveddate() != null) {
+					System.out.println("date is == " + inward.getReceiveddate());
+					DateFormat sourceFormat = new SimpleDateFormat("dd/MM/yyyy");
+					Date date = sourceFormat.parse(inward.getReceiveddate());
+					inwardEntry.setdReceivedDate(date);
+				} else {
+					inwardEntry.setdReceivedDate(new Date());
+				}
+				inwardEntry.setvLorryNo(inward.getVehicleno());
+				inwardEntry.setvInvoiceNo(inward.getInvoicenumber());
+				// inwardEntry.setdInvoiceDate(Timestamp.valueOf(inward.getInvoicenumber()ceDate()));
+
+				inwardEntry.setCustomerCoilId("");
+				inwardEntry.setCustomerInvoiceNo(inward.getInvoicenumber());
+				inwardEntry.setCustomerBatchId(inward.getCustbatchno());
+
+				inwardEntry.setMmId(inward.getMmid());
+				// inwardEntry.setMaterial(this.matDescService.getMatById(inward.getMaterialId()));
+				// inwardEntry.setMaterialGrade(matGradeService.getById(inward.getMaterialGradeId()));
+				inwardEntry.setfWidth(mmObj.getWidth().floatValue());
+				inwardEntry.setfThickness(mmObj.getThickness().floatValue());
+				inwardEntry.setfLength(mmObj.getLength().floatValue());
+				inwardEntry.setAvailableLength(mmObj.getLength().floatValue());
+				inwardEntry.setfQuantity(Float.valueOf(inward.getPresentweight()));
+				inwardEntry.setFpresent( Float.valueOf(inward.getPresentweight()));
+				inwardEntry.setGrossWeight(Float.valueOf(inward.getGrossweight()));
+
+				float fLength;
+				try {
+					float fConstant = 7.85f;
+					fLength = (Float.valueOf(inward.getGrossweight())
+							/ ((mmObj.getThickness().floatValue() * fConstant *  mmObj.getWidth().floatValue())/1000) * 1000);
+				} catch (Exception e) {
+					fLength=mmObj.getLength().floatValue();
+				}
+				inwardEntry.setfLength(fLength );
+				// inwardEntry.setStatus(this.statusService.getStatusById(inward.getStatusId()));
+				inwardEntry.setStatus(this.statusService.getStatusById(1));
+
+				inwardEntry.setvProcess("");
+				inwardEntry.setTdcNo(inward.getTdcno());
+				inwardEntry.setValueOfGoods(Float.valueOf(inward.getValueofgoods()));
+				inwardEntry.setBilledweight(0);
+				inwardEntry.setParentCoilNumber(null);
+				inwardEntry.setvParentBundleNumber(0);
+				inwardEntry.setRemarks("Migration");
+				inwardEntry.setIsDeleted(Boolean.valueOf(false));
+				inwardEntry.setCreatedOn(new Date());
+				inwardEntry.setUpdatedOn(new Date());
+				inwardEntry.setCreatedBy(userId);
+				inwardEntry.setUpdatedBy(userId);
+				inwardEntry.setTestCertificateNumber(inward.getTestcertificateno());
+				InwardEntry savedInwardEntry = inwdEntrySvc.saveEntry(inwardEntry);
+				if (savedInwardEntry != null && savedInwardEntry.getInwardEntryId() > 0) {
+					try {
+						inwardEnrtyId = savedInwardEntry.getInwardEntryId();
+
+						PdfDto pdfDto = new PdfDto();
+						pdfDto.setInwardId(inwardEnrtyId);
+						Path file = null;
+						byte[] bytes = null;
+						StringBuilder builder = new StringBuilder();
+
+						file = Paths.get(pdfService.generatePdf(pdfDto).getAbsolutePath());
+						bytes = Files.readAllBytes(file);
+						builder.append(Base64.getEncoder().encodeToString(bytes));
+					} catch (IOException | DocumentException | org.dom4j.DocumentException ex) {
+						ex.printStackTrace();
+					}
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return inwardEnrtyId;
+	}
+	
+	private List<InwardFileDataDTO> inwardFileDetails( ) {
+		// 1.read the file via csv reader
+		CSVReader reader = null;
+		try {
+			reader = new CSVReaderBuilder(new FileReader(inwardFileUploadPath)).build();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+
+		// 2.convert into java object
+		CsvToBean<InwardFileDataDTO> csvToBean = new CsvToBeanBuilder<InwardFileDataDTO>(reader).withSkipLines(1)
+				.withIgnoreLeadingWhiteSpace(true).withIgnoreEmptyLine(true).withType(InwardFileDataDTO.class)
+				.build();
+		return csvToBean.parse();
+	}
+	
 }

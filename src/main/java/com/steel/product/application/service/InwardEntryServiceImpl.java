@@ -134,7 +134,7 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 		}		
 		if(searchListPageRequest.getPartyId()!=null && searchListPageRequest.getPartyId().length() > 0) {
 			if(searchListPageRequest.getSearchText() !=null && searchListPageRequest.getSearchText().length()>0) {
-				Page<InwardEntry> pageResult = inwdEntryRepo.findAllWithSearchTextAndPartyId(searchListPageRequest.getSearchText(), Integer.parseInt(searchListPageRequest.getPartyId()), commonUtil.getLocationWiseMappedUserIds(), pageable);
+				Page<InwardEntry> pageResult = inwdEntryRepo.findAllWithSearchTextAndPartyId(searchListPageRequest.getSearchText(), Integer.parseInt(searchListPageRequest.getPartyId()), pageable);
 				return pageResult;
 			} else {
 				Page<InwardEntry> pageResult = inwdEntryRepo.findAllInwardListWithPartyId(Integer.parseInt(searchListPageRequest.getPartyId()), pageable);
@@ -148,7 +148,7 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 					partyIds.add(userPartyMap.getPartyId());
 					LOGGER.info("In partyIds === "+partyIds);
 				}
-				Page<InwardEntry> pageResult = inwdEntryRepo.findAll(searchListPageRequest.getSearchText(), partyIds, commonUtil.getLoginWiseMappedUserIds(), pageable);
+				Page<InwardEntry> pageResult = inwdEntryRepo.findAll(searchListPageRequest.getSearchText(), partyIds, pageable);
 				return pageResult;
 			} else {
 				if(searchListPageRequest.getSearchText()!=null && searchListPageRequest.getSearchText().length()>0) {
@@ -183,10 +183,10 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 		
 		if(searchListPageRequest.getPartyId()!=null && searchListPageRequest.getPartyId().length() > 0) {			
 			if(searchListPageRequest.getSearchText() !=null && searchListPageRequest.getSearchText().length()>0) {
-				Page<InwardEntry> pageResult = inwdEntryRepo.findAllWithSearchTextAndPartyId(searchListPageRequest.getSearchText(), Integer.parseInt(searchListPageRequest.getPartyId()), commonUtil.getLoginWiseMappedUserIds(), pageable);
+				Page<InwardEntry> pageResult = inwdEntryRepo.findAllWithSearchTextAndPartyId(searchListPageRequest.getSearchText(), Integer.parseInt(searchListPageRequest.getPartyId()), pageable);
 				return pageResult;
 			} else {
-				Page<InwardEntry> pageResult = inwdEntryRepo.findAllWithPartyId(Integer.parseInt(searchListPageRequest.getPartyId()), commonUtil.getLoginWiseMappedUserIds(), pageable);
+				Page<InwardEntry> pageResult = inwdEntryRepo.findAllWithPartyId(Integer.parseInt(searchListPageRequest.getPartyId()), pageable);
 				return pageResult;
 			}
 		} else {
@@ -197,7 +197,7 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 					partyIds.add(userPartyMap.getPartyId());
 					LOGGER.info("In partyIds === "+partyIds);
 				}
-				Page<InwardEntry> pageResult = inwdEntryRepo.findAll(searchListPageRequest.getSearchText(), partyIds, commonUtil.getLoginWiseMappedUserIds(), pageable);
+				Page<InwardEntry> pageResult = inwdEntryRepo.findAll(searchListPageRequest.getSearchText(), partyIds, pageable);
 				return pageResult;
 			} else {
 				if(searchListPageRequest.getSearchText()!=null && searchListPageRequest.getSearchText().length()>0) {
