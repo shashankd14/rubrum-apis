@@ -9,6 +9,7 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = false)
 public class MaterialUploadRequest extends BaseRequest {
 
-	private boolean uploadFlag; 
+	private boolean fileData; 
+	private boolean masterData;
 
 }

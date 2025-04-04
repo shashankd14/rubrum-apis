@@ -33,14 +33,12 @@ public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTempla
 			" FROM product_tblinwardentry inward " +
 			" WHERE case when :searchText is not null and LENGTH(:searchText) >0 then (inward.coilNumber like %:searchText% or inward.customerBatchId like %:searchText% or inward.customerInvoiceNo like %:searchText%) else 1=1 end" + 
 			" and case when :partyIdsFlag=true then npartyid in :partyIds else 1=1 end " +
-			" and inward.createdby in (:userIds) "+
 			" order by inward.inwardentryid desc", 
 			countQuery = "SELECT count(distinct inwardentryid) FROM product_tblinwardentry inward " +
 					" WHERE case when :searchText is not null and LENGTH(:searchText) >0 then (inward.coilNumber like %:searchText% or inward.customerBatchId like %:searchText% or inward.customerInvoiceNo like %:searchText%) else 1=1 end " + 
-					" and inward.createdby in (:userIds) "+
 					" and case when :partyIdsFlag=true then npartyid in :partyIds else 1=1 end ", 
 			nativeQuery = true)
-	Page<Object[]> qirInwardListPage(@Param("searchText") String searchText, @Param("partyIds") List<Integer> partyIds, @Param("partyIdsFlag") boolean partyIdsFlag, @Param("userIds") List<Integer> userIds, Pageable pageable);
+	Page<Object[]> qirInwardListPage(@Param("searchText") String searchText, @Param("partyIds") List<Integer> partyIds, @Param("partyIdsFlag") boolean partyIdsFlag, Pageable pageable);
 
 	@Query(value = "SELECT distinct part.part_details_id `Plan ID`, coilnumber `Coil No`,customerbatchid `Batch No`," + 
 			" DATE_FORMAT(instructiondate,'%d/%m/%Y') `Plan Date`," + 
@@ -54,16 +52,14 @@ public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTempla
 			" INNER JOIN product_instruction ins ON part.id = ins.part_details_id" + 
 			" INNER JOIN product_tblinwardentry inward ON ins.inwardid = inward.inwardentryid" + 
 			" WHERE case when :searchText is not null and LENGTH(:searchText) >0 then (inward.coilNumber like %:searchText% or inward.customerBatchId like %:searchText% or inward.customerInvoiceNo like %:searchText%) else 1=1 end" + 
-			" and inward.createdby in (:userIds) "+
 			" and case when :partyIdsFlag=true then npartyid in :partyIds else 1=1 end order by inward.inwardentryid desc ",
 			countQuery = "SELECT count(distinct part.part_details_id ) FROM product_part_details part" + 
 					" INNER JOIN product_instruction ins ON part.id = ins.part_details_id" + 
 					" INNER JOIN product_tblinwardentry inward ON ins.inwardid = inward.inwardentryid" + 
 					" WHERE case when :searchText is not null and LENGTH(:searchText) >0 then (inward.coilNumber like %:searchText% or inward.customerBatchId like %:searchText% or inward.customerInvoiceNo like %:searchText%) else 1=1 end " + 
-					" and inward.createdby in (:userIds) "+
 					" and case when :partyIdsFlag=true then npartyid in :partyIds else 1=1 end  ", 
 			nativeQuery = true)
-	Page<Object[]> qirPreProcessingListPage(@Param("searchText") String searchText, @Param("partyIds") List<Integer> partyIds, @Param("partyIdsFlag") boolean partyIdsFlag, @Param("userIds") List<Integer> userIds, Pageable pageable);
+	Page<Object[]> qirPreProcessingListPage(@Param("searchText") String searchText, @Param("partyIds") List<Integer> partyIds, @Param("partyIdsFlag") boolean partyIdsFlag, Pageable pageable);
 
 	@Query(value = "SELECT distinct part.part_details_id `Plan ID`, coilnumber `Coil No`,customerbatchid `Batch No`," + 
 			" DATE_FORMAT(instructiondate,'%d/%m/%Y') `Plan Date`," + 
@@ -77,16 +73,14 @@ public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTempla
 			" INNER JOIN product_instruction ins ON part.id = ins.part_details_id" + 
 			" INNER JOIN product_tblinwardentry inward ON ins.inwardid = inward.inwardentryid" + 
 			" WHERE case when :searchText is not null and LENGTH(:searchText) >0 then (inward.coilNumber like %:searchText% or inward.customerBatchId like %:searchText% or inward.customerInvoiceNo like %:searchText%) else 1=1 end" + 
-			" and inward.createdby in (:userIds) "+
 			" and case when :partyIdsFlag=true then npartyid in :partyIds else 1=1 end  order by inward.inwardentryid desc", 
 			countQuery = "SELECT count(distinct part.part_details_id) FROM product_part_details part " + 
 					" INNER JOIN product_instruction ins ON part.id = ins.part_details_id" + 
 					" INNER JOIN product_tblinwardentry inward ON ins.inwardid = inward.inwardentryid" + 
 					" WHERE case when :searchText is not null and LENGTH(:searchText) >0 then (inward.coilNumber like %:searchText% or inward.customerBatchId like %:searchText% or inward.customerInvoiceNo like %:searchText%) else 1=1 end " + 
-					" and inward.createdby in (:userIds) "+
 					" and case when :partyIdsFlag=true then npartyid in :partyIds else 1=1 end ", 
 			nativeQuery = true)
-	Page<Object[]> qirProcessingListPage(@Param("searchText") String searchText, @Param("partyIds") List<Integer> partyIds, @Param("partyIdsFlag") boolean partyIdsFlag, @Param("userIds") List<Integer> userIds, Pageable pageable);
+	Page<Object[]> qirProcessingListPage(@Param("searchText") String searchText, @Param("partyIds") List<Integer> partyIds, @Param("partyIdsFlag") boolean partyIdsFlag, Pageable pageable);
 	
 	@Query(value = "SELECT ins FROM Instruction ins where ins.inwardId.coilNumber = :coilNo and ins.partDetails.partDetailsId = :partDetailsId ")
 	List<Instruction> fetchpacketdtls(@Param("coilNo") String coilNo, @Param("partDetailsId") String partDetailsId);

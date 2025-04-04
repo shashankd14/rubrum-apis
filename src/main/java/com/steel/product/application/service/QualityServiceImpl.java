@@ -831,7 +831,7 @@ public class QualityServiceImpl implements QualityService {
 				partyIds = new ArrayList<>();
 			}
 		}
-		Page<Object[]> pageResult = kqpPartyTemplateRepository.qirInwardListPage(listPageSearchRequest.getSearchText(), partyIds, partyIdsFlag, commonUtil.getLoginWiseMappedUserIds(), pageable);
+		Page<Object[]> pageResult = kqpPartyTemplateRepository.qirInwardListPage(listPageSearchRequest.getSearchText(), partyIds, partyIdsFlag,  pageable);
 		return pageResult;
 	}
 
@@ -858,7 +858,7 @@ public class QualityServiceImpl implements QualityService {
 			}
 		}
 		
-		Page<Object[]> packetsList = kqpPartyTemplateRepository.qirPreProcessingListPage(listPageSearchRequest.getSearchText(), partyIds, partyIdsFlag, commonUtil.getLoginWiseMappedUserIds(), pageable);
+		Page<Object[]> packetsList = kqpPartyTemplateRepository.qirPreProcessingListPage(listPageSearchRequest.getSearchText(), partyIds, partyIdsFlag, pageable);
 		return packetsList;
 	}
 
@@ -884,7 +884,7 @@ public class QualityServiceImpl implements QualityService {
 				partyIds = new ArrayList<>();
 			}
 		}
-		Page<Object[]> packetsList = kqpPartyTemplateRepository.qirProcessingListPage(listPageSearchRequest.getSearchText(), partyIds, partyIdsFlag, commonUtil.getLoginWiseMappedUserIds(), pageable);
+		Page<Object[]> packetsList = kqpPartyTemplateRepository.qirProcessingListPage(listPageSearchRequest.getSearchText(), partyIds, partyIdsFlag, pageable);
 		return packetsList;
 	}
 

@@ -40,13 +40,13 @@ public class MaterialUploadController {
 	@Autowired
 	private MaterialMasterJswService materialService;
 	
-	@PostMapping(value = "/uploadcsv", produces = "application/json")
+	@PostMapping(value = "/importmmiddata", produces = "application/json")
 	@Operation
-	public ResponseEntity<Object> uploadcsv(@RequestBody MaterialUploadRequest request)
+	public ResponseEntity<Object> importmmiddata(@RequestBody MaterialUploadRequest request)
 			throws Exception, FileNotFoundException {
-		log.info("******MaterialUploadController.uploadcsv*****");
-		if (request.isUploadFlag()) {
-			return materialUploadService.uploadcsv(request);
+		log.info("******MaterialUploadController.uploadmmidData*****");
+		if (request.isFileData() || request.isMasterData() ) {
+			return materialUploadService.uploadmmidData(request);
 		} else {
 			return new ResponseEntity<Object>("{\"status\": \"failed\", \"message\": \"Invalid Request to Uploaded a file.\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -174,12 +174,12 @@ public class MaterialUploadController {
 		return new ResponseEntity<Object>(response, HttpStatus.OK);
 	}
 	
-	@PostMapping(value = "/uploadinwardcsv", produces = "application/json")
+	@PostMapping(value = "/importinwarddata", produces = "application/json")
 	@Operation
-	public ResponseEntity<Object> uploadInwardData(@RequestBody MaterialUploadRequest request)
+	public ResponseEntity<Object> importinwarddata(@RequestBody MaterialUploadRequest request)
 			throws Exception, FileNotFoundException {
 		log.info("******MaterialUploadController.uploadInwardData*****");
-		if (request.isUploadFlag()) {
+		if (request.isFileData() || request.isMasterData() ) {
 			return materialUploadService.uploadInwardData(request);
 		} else {
 			return new ResponseEntity<Object>("{\"status\": \"failed\", \"message\": \"Invalid Request to Uploaded a file.\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);

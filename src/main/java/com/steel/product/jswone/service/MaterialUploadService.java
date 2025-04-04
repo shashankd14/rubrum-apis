@@ -13,7 +13,7 @@ import com.steel.product.jswone.request.MaterialUploadRequest;
 @Service
 public interface MaterialUploadService {
 
-	public ResponseEntity<Object> uploadcsv(MaterialUploadRequest request) throws Exception, FileNotFoundException;
+	public ResponseEntity<Object> uploadmmidData(MaterialUploadRequest request) throws Exception, FileNotFoundException;
 
 	public Page<Object[]> materialSearch1(MaterialSearchPageRequest materialSearchPageRequest);
 
