@@ -539,28 +539,30 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 		try {
 			String newFileName = new File(inwardFileUploadPath).getName();
 
-			List<InwardFileDataDTO> products =  inwardFileDetails();
-			List<InwardFileDataEntity> productList =  new ArrayList<>();
+			if (request.isFileData()) {
+				List<InwardFileDataDTO> products = inwardFileDetails();
+				List<InwardFileDataEntity> productList = new ArrayList<>();
 
-			System.out.println("Hi size "+products.size());
-			for (InwardFileDataDTO dto : products) {
-				if (dto != null && dto.getCoilno() != null && dto.getCoilno().length() > 0) {
-					InwardFileDataEntity dest = new InwardFileDataEntity();
-					BeanUtils.copyProperties(dto, dest);
-					try {
-						dest.setFilename(newFileName);
-						productList.add(dest);
-						inwardFiledataRepository.save(dest);
-					} catch (Exception e) {
-						System.out.println("error while save --  " + e.getMessage());
+				System.out.println("Hi size " + products.size());
+				for (InwardFileDataDTO dto : products) {
+					if (dto != null && dto.getCoilno() != null && dto.getCoilno().length() > 0) {
+						InwardFileDataEntity dest = new InwardFileDataEntity();
+						BeanUtils.copyProperties(dto, dest);
+						try {
+							dest.setFilename(newFileName);
+							productList.add(dest);
+							inwardFiledataRepository.save(dest);
+						} catch (Exception e) {
+							System.out.println("error while save --  " + e.getMessage());
+						}
 					}
 				}
+				log.info("File Uploaded Successfully. Count is == " + products.size());
 			}
 			List<InwardFileDataEntity> listFileData = inwardFiledataRepository.findAll();
 			for (InwardFileDataEntity sourceEntity : listFileData) {
 				saveInwardEntry(sourceEntity);
 			}
-			log.info("File Uploaded Successfully. Count is == " + products.size());
 			return new ResponseEntity<Object>("{\"status\": \"success\", \"message\": \"File Uploaded Successfully.\"}", new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -616,8 +618,9 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 				float fLength;
 				try {
 					float fConstant = 7.85f;
-					fLength = (Float.valueOf(inward.getGrossweight())
-							/ ((mmObj.getThickness().floatValue() * fConstant *  mmObj.getWidth().floatValue())/1000) * 1000);
+					fLength = (Float.valueOf(inwardEntry.getFpresent()) / 
+							(inwardEntry.getfThickness() * fConstant *  ( inwardEntry.getfWidth() /1000 ))) * 1000;
+					System.out.println("Hi Kanak == "+fLength);
 				} catch (Exception e) {
 					fLength=mmObj.getLength().floatValue();
 				}
