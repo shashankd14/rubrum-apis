@@ -559,9 +559,11 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 				}
 				log.info("File Uploaded Successfully. Count is == " + products.size());
 			}
-			List<InwardFileDataEntity> listFileData = inwardFiledataRepository.findAll();
-			for (InwardFileDataEntity sourceEntity : listFileData) {
-				saveInwardEntry(sourceEntity);
+			if (request.isMasterData()) {
+				List<InwardFileDataEntity> listFileData = inwardFiledataRepository.findAll();
+				for (InwardFileDataEntity sourceEntity : listFileData) {
+					saveInwardEntry(sourceEntity);
+				}
 			}
 			return new ResponseEntity<Object>("{\"status\": \"success\", \"message\": \"File Uploaded Successfully.\"}", new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
@@ -584,7 +586,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 				int userId = 1;
 				inwardEntry.setInwardEntryId(0);
 				inwardEntry.setPurposeType("STEEL SERVICE CENTRE");
-				inwardEntry.setParty(this.partyDetailsService.getPartyById(137));
+				inwardEntry.setParty(this.partyDetailsService.getPartyById(2));
 				inwardEntry.setCoilNumber(inward.getCoilno());
 				inwardEntry.setBatchNumber(inward.getBatchnumber());
 
@@ -610,7 +612,6 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 				inwardEntry.setfWidth(mmObj.getWidth().floatValue());
 				inwardEntry.setfThickness(mmObj.getThickness().floatValue());
 				inwardEntry.setfLength(mmObj.getLength().floatValue());
-				inwardEntry.setAvailableLength(mmObj.getLength().floatValue());
 				inwardEntry.setfQuantity(Float.valueOf(inward.getPresentweight()));
 				inwardEntry.setFpresent( Float.valueOf(inward.getPresentweight()));
 				inwardEntry.setGrossWeight(Float.valueOf(inward.getGrossweight()));
@@ -625,6 +626,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 					fLength=mmObj.getLength().floatValue();
 				}
 				inwardEntry.setfLength(fLength );
+				inwardEntry.setAvailableLength(fLength);
 				// inwardEntry.setStatus(this.statusService.getStatusById(inward.getStatusId()));
 				inwardEntry.setStatus(this.statusService.getStatusById(1));
 
