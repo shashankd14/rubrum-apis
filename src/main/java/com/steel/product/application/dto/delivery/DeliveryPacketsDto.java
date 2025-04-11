@@ -31,9 +31,8 @@ public class DeliveryPacketsDto {
         this.customerBatchId = instruction.getInwardId().getCustomerBatchId();
         this.coilNumber = instruction.getInwardId().getCoilNumber();
         this.fThickness = instruction.getInwardId().getfThickness();
-        this.materialResponseDto = Material.valueOf(instruction.getInwardId().getMaterial(),instruction.getInwardId());
+        //this.materialResponseDto = Material.valueOf(instruction.getInwardId().getMaterial(),instruction.getInwardId());
     }
-
 
     public DeliveryResponseDto getDeliveryDetails() {
         return deliveryDetails;

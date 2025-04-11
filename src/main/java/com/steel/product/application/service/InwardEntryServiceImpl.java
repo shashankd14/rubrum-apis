@@ -232,7 +232,7 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 		Pageable pageable = PageRequest.of((pageNo-1), pageSize);
 		
 		if(partyId!=null && partyId.length()>0) {
-			Page<InwardEntry> pageResult = inwdEntryRepo.findAllWIP(searchText, Integer.parseInt(partyId), commonUtil.getLoginWiseMappedUserIds(), pageable);
+			Page<InwardEntry> pageResult = inwdEntryRepo.findAllWIP(searchText, Integer.parseInt(partyId), pageable);
 			return pageResult;
 		} else {
 			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
@@ -242,10 +242,10 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 					partyIds.add(userPartyMap.getPartyId());
 					LOGGER.info("In partyIds === "+partyIds);
 				}
-				Page<InwardEntry> pageResult = inwdEntryRepo.findAllWIP(searchText, partyIds, commonUtil.getLoginWiseMappedUserIds(), pageable);
+				Page<InwardEntry> pageResult = inwdEntryRepo.findAllWIP(searchText, partyIds, pageable);
 				return pageResult;
 			} else {
-				Page<InwardEntry> pageResult = inwdEntryRepo.findAllWIP(searchText, commonUtil.getLoginWiseMappedUserIds(), pageable);
+				Page<InwardEntry> pageResult = inwdEntryRepo.findAllWIP(searchText,   pageable);
 				return pageResult;
 			}
 		}

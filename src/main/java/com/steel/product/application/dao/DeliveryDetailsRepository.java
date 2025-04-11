@@ -22,21 +22,21 @@ public interface DeliveryDetailsRepository extends JpaRepository<DeliveryDetails
     @Query(" from Instruction where deliveryId =:deliveryId")
     public List<Instruction> deliveredItemsById(@Param("deliveryId") int deliveryId);
 
-    @Query("select dd from DeliveryDetails dd join dd.instructions ins join ins.inwardId inw where dd.createdBy in (:userIds) and dd.isDeleted is false and ins.deliveryDetails is not null and "
+    @Query("select dd from DeliveryDetails dd join dd.instructions ins join ins.inwardId inw where dd.isDeleted is false and ins.deliveryDetails is not null and "
     		+ " ( inw.coilNumber like %:searchText% or inw.customerBatchId like %:searchText% or "
     		+ " inw.customerInvoiceNo like %:searchText% or inw.party.partyName like %:searchText% ) and inw.party.nPartyId=:partyId group by inw, dd")
-    public Page<DeliveryDetails> findAllDeliveries(@Param("searchText") String searchText, @Param("partyId") int partyId, @Param("userIds") List<Integer> userIds, Pageable pageable);
+    public Page<DeliveryDetails> findAllDeliveries(@Param("searchText") String searchText, @Param("partyId") int partyId, Pageable pageable);
 
-    @Query("select dd from DeliveryDetails dd join dd.instructions ins join ins.inwardId inw where dd.createdBy in (:userIds) and dd.isDeleted is false and ins.deliveryDetails is not null and "
+    @Query("select dd from DeliveryDetails dd join dd.instructions ins join ins.inwardId inw where dd.isDeleted is false and ins.deliveryDetails is not null and "
     		+ " ( inw.coilNumber like %:searchText% or inw.customerBatchId like %:searchText% or "
     		+ " inw.customerInvoiceNo like %:searchText% or inw.party.partyName like %:searchText% ) and inw.party.nPartyId in :partyIds group by inw, dd")
 	public Page<DeliveryDetails> findAllDeliveries(@Param("searchText") String searchText,
-			@Param("partyIds") List<Integer> partyIds, @Param("userIds") List<Integer> userIds, Pageable pageable);
+			@Param("partyIds") List<Integer> partyIds,   Pageable pageable);
     
     @Query("select dd from DeliveryDetails dd join dd.instructions ins join ins.inwardId inw where dd.createdBy in (:userIds) and dd.isDeleted is false and ins.deliveryDetails is not null and "
     		+ " ( inw.coilNumber like %:searchText% or inw.customerBatchId like %:searchText% or "
     		+ " inw.customerInvoiceNo like %:searchText% or inw.party.partyName like %:searchText% ) group by inw, dd")
-    public Page<DeliveryDetails> findAllDeliveries(@Param("searchText") String searchText, @Param("userIds") List<Integer> userIds, Pageable pageable);
+    public Page<DeliveryDetails> findAllDeliveries(@Param("searchText") String searchText, Pageable pageable);
 
     @Query("select dd from DeliveryDetails dd join dd.instructions ins join ins.inwardId inw where dd.isDeleted is false and ins.deliveryDetails is not null group by inw, dd")
     public List<DeliveryDetails> findAllDeliveries();
