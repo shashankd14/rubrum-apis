@@ -108,7 +108,7 @@
                         <td id="process-date" th:text="${#dates.format(inward?.createdOn, 'dd/MM/yyyy')}"></td>
                     </tr>
                     <tr>
-                        <td>Customer Name:</td>
+                        <td>Location Name:</td>
                         <td id="customer-name" th:text="${inward?.partyName}"></td>
                     </tr>
                     <tr>
@@ -116,7 +116,7 @@
                         <td id="coil-number" th:text="${inward?.coilNumber}"></td>
                     </tr>
                     <tr>
-                        <td>Customer Batch No:</td>
+                        <td>SC Inward Id:</td>
                         <td th:text="${inward?.customerBatchId}"></td>
                     </tr>
                     <tr>

@@ -15,7 +15,6 @@ import com.steel.product.trading.request.DeleteRequest;
 import lombok.extern.log4j.Log4j2;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -96,7 +95,8 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 				partyIds = new ArrayList<>();
 			}
 		}
-		Page<Object[]> packetsList = salesOrderRepository.listAllPackets(searchListPageRequest.getSearchText(), partyIds, partyIdsFlag, commonUtil.getLoginWiseMappedUserIds(), pageable);
+		Page<Object[]> packetsList = salesOrderRepository.listAllPackets(searchListPageRequest.getSearchText(),
+				partyIds, partyIdsFlag, pageable);
 		return packetsList;
 	}
 
@@ -212,8 +212,7 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 			}
 		}
 		Page<Object[]> packetsList = salesOrderRepository.listAllSOIDs(listPageSearchRequest.getSearchText(),
-				listPageSearchRequest.getSoId(), commonUtil.getLoginWiseMappedUserIds(),
-				pageable);
+				listPageSearchRequest.getSoId(), pageable);
 
 		return packetsList;
 	}

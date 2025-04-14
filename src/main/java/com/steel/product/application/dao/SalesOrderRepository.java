@@ -32,7 +32,6 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrderEntity, In
 			+ " FROM product_tblinwardentry parent, product_instruction child, product_tblpartydetails party  "
 			+ " where child.isdeleted=0 and parent.isdeleted=0 and parent.inwardentryid = child.inwardid and party.npartyid = parent.npartyid "
 			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (parent.coilNumber like %:searchText% or parent.customerBatchId like %:searchText% or parent.customerInvoiceNo like %:searchText%) else 1=1 end " 
-			+ " and parent.createdby in (:userIds) "
 			+ " and case when :partyIdsFlag=true then parent.npartyid in :partyIds else 1=1 end"
 			+ ") a "
 			+ " where 1=1 AND CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END",
@@ -42,28 +41,27 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrderEntity, In
 			+ " FROM product_tblinwardentry parent, product_instruction child, product_tblpartydetails party "
 			+ " where child.isdeleted=0 and parent.isdeleted=0 and parent.inwardentryid = child.inwardid and party.npartyid = parent.npartyid "
 			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (parent.coilNumber like %:searchText% or parent.customerBatchId like %:searchText% or parent.customerInvoiceNo like %:searchText%) else 1=1 end " 
-			+ " and parent.createdby in (:userIds) "
 			+ " and case when :partyIdsFlag=true then parent.npartyid in :partyIds else 1=1 end "
 			+ ") a "
 			+ " where 1=1 AND CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END", nativeQuery = true)
 	Page<Object[]> listAllPackets(@Param("searchText") String searchText,
 			@Param("partyIds") List<Integer> partyIds, @Param("partyIdsFlag") boolean partyIdsFlag,
-			@Param("userIds") List<Integer> userIds, Pageable pageable);
+			 Pageable pageable);
 
 	@Query(value = "SELECT distinct so.so_number,inwardid "
 			+ " FROM product_tblinwardentry parent, product_instruction child, sales_order_child so_child, sales_order so, product_tblpartydetails party "
 			+ " where so.is_deleted = 0 and so_child.is_deleted = 0 and parent.inwardentryid = child.inwardid and parent.inwardentryid = so_child.inward_entry_d and so_child.so_id = so.so_id and so_child.instruction_id = child.instructionid and party.npartyid = parent.npartyid "
 			+ " and case when :soId is not null and LENGTH(:soId) >0 then so.so_id = :soId else so.so_id end " 
 			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (parent.coilNumber like %:searchText% or parent.customerBatchId like %:searchText% or so.so_number like %:searchText%) else 1=1 end " 
-			+ " and so_child.created_by in (:userIds) order by so.so_id desc",
+			+ " order by so.so_id desc",
 		countQuery = "SELECT count(distinct so.so_number) "
 			+ " FROM product_tblinwardentry parent, product_instruction child, sales_order_child so_child, sales_order so,product_tblpartydetails party "
 			+ " where so.is_deleted=0 and so_child.is_deleted = 0 and parent.inwardentryid = child.inwardid and parent.inwardentryid = so_child.inward_entry_d and so_child.so_id = so.so_id and so_child.instruction_id = child.instructionid and party.npartyid = parent.npartyid "
 			+ " and case when :soId is not null and LENGTH(:soId) >0 then so.so_id = :soId else so.so_id end " 
 			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (parent.coilNumber like %:searchText% or parent.customerBatchId like %:searchText% or so.so_number like %:searchText%) else 1=1 end " 
-			+ " and so_child.created_by in (:userIds) ", nativeQuery = true)
+			+ "  ", nativeQuery = true)
 	Page<Object[]> listAllSOIDs(@Param("searchText") String searchText, @Param("soId") Integer soId, 
-			@Param("userIds") List<Integer> userIds, Pageable pageable);
+			  Pageable pageable);
 	
 	@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, materialgrade, materialdesc, fthickness,  weight, npartyid,partyname,width, length, "
 			+ "process_status, instruction_status,(select so_number from sales_order so where so.so_id= a.so_id) sonumber, "

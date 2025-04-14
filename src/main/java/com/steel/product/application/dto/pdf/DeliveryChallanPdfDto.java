@@ -1,6 +1,7 @@
 package com.steel.product.application.dto.pdf;
 
 import com.steel.product.application.entity.*;
+import com.steel.product.jswone.service.MaterialMasterJswService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +28,8 @@ public class DeliveryChallanPdfDto {
     public DeliveryChallanPdfDto() {
     }
 
-    public DeliveryChallanPdfDto(CompanyDetails companyDetails, List<InwardEntry> inwardEntries){
+	public DeliveryChallanPdfDto(CompanyDetails companyDetails, List<InwardEntry> inwardEntries,
+			MaterialMasterJswService materialMasterJswService) {
         this.companyName = companyDetails.getCompanyName();
         this.gstN = companyDetails.getGstN();
         this.customerInvoiceNo = companyDetails.getGstN();
@@ -39,7 +41,7 @@ public class DeliveryChallanPdfDto {
             this.inwardPdfDtos = new ArrayList<>();
         }
         this.inwardPdfDtos = inwardEntries.stream().map(inw -> InwardEntry.valueOf(inw, inw.getInstructions()
-                .stream().map(ins -> Instruction.valueOfInstructionPdf(ins, inw)).collect(Collectors.toList()))).collect(Collectors.toList());
+                .stream().map(ins -> Instruction.valueOfInstructionPdf(ins, inw)).collect(Collectors.toList()), materialMasterJswService)).collect(Collectors.toList());
 
         this.totalDeliveryWeight = inwardPdfDtos.stream().flatMap(inw -> inw.getInstructions().stream())
                 .reduce(0f, (sum, ins) -> sum + (ins.getProcess().getProcessId() == 7 ? ins.getPlannedWeight(): (ins.getActualWeight() == null ? ins.getPlannedWeight():  ins.getActualWeight()) ) , Float::sum);

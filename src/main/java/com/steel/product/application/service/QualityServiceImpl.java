@@ -1494,7 +1494,12 @@ public class QualityServiceImpl implements QualityService {
 			
 			if ("PROCESSING".equals(entity.getStageName())) {
 
-				List<QIRPanDetailsJsonArrayDTO> planDetails = objectMapper.readValue(entity.getPlanDetails(), typeFactory.constructCollectionType(List.class, QIRPanDetailsJsonArrayDTO.class));
+				List<QIRPanDetailsJsonArrayDTO> planDetails = null;
+				try {
+					planDetails = objectMapper.readValue(entity.getPlanDetails(), typeFactory.constructCollectionType(List.class, QIRPanDetailsJsonArrayDTO.class));
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 				if (planDetails != null && planDetails.get(0) != null 
 						&& planDetails.get(0).getSlitInspectionData() != null
 						&& planDetails.get(0).getSlitInspectionData().size() > 0) {

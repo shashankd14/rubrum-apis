@@ -103,7 +103,7 @@ public class PdfService {
 		List<InwardEntry> inwardEntries = inwardEntryService.findDeliveryItemsByInstructionIds(deliveryPdfDto.getInstructionIds());
 		CompanyDetails companyDetails = companyDetailsService.findById(1);
 
-		DeliveryChallanPdfDto deliveryChallanPdfDto = new DeliveryChallanPdfDto(companyDetails, inwardEntries);
+		DeliveryChallanPdfDto deliveryChallanPdfDto = new DeliveryChallanPdfDto(companyDetails, inwardEntries, materialMasterJswService);
 		SalesOrderListResponse resp = salesOrderService.getSoNoAndCustCode(deliveryPdfDto.getInstructionIds());
 		if (resp != null) {
 			deliveryChallanPdfDto.setSoNumber(resp.getSoNumber());

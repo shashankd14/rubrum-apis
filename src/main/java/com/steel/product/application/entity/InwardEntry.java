@@ -577,6 +577,49 @@ public class InwardEntry {
         return inwardEntryPdfDto;
     }
 
+	public static InwardEntryPdfDto valueOf(InwardEntry inwardEntry,
+			List<InstructionResponsePdfDto> instructionResponsePdfDtos,
+			MaterialMasterJswService materialService) {
+        InwardEntryPdfDto inwardEntryPdfDto = new InwardEntryPdfDto();
+        inwardEntryPdfDto.setInwardEntryId(inwardEntry.getInwardEntryId());
+        inwardEntryPdfDto.setPartyName(inwardEntry.getParty() != null ? inwardEntry.getParty().getPartyName() : "");
+        inwardEntryPdfDto.setCoilNumber(inwardEntry.getCoilNumber());
+        inwardEntryPdfDto.setBatchNumber(inwardEntry.getBatchNumber());
+        inwardEntryPdfDto.setCustomerBatchId(inwardEntry.getCustomerBatchId());
+        inwardEntryPdfDto.setFQuantity(inwardEntry.getfQuantity());
+        inwardEntryPdfDto.setMatDescription(inwardEntry.getMmId()!= null ? materialService.getProductName( inwardEntry.getMmId()).getDescription() : null);
+        inwardEntryPdfDto.setMaterialGradeName(inwardEntry.getMmId()!= null ? materialService.getGradeName(inwardEntry.getMmId()).getGradeName() : null);
+        //inwardEntryPdfDto.setMatDescription(inwardEntry.getMaterial() != null ? inwardEntry.getMaterial().getDescription() : "");
+       // inwardEntryPdfDto.setMaterialGradeName(inwardEntry.getMaterialGrade() != null ? inwardEntry.getMaterialGrade().getGradeName() : "");
+        inwardEntryPdfDto.setFThickness(inwardEntry.getfThickness());
+        inwardEntryPdfDto.setFWidth(inwardEntry.getfWidth());
+        inwardEntryPdfDto.setGrossWeight(inwardEntry.getGrossWeight());
+        inwardEntryPdfDto.setCreatedOn(inwardEntry.getCreatedOn());
+        if (instructionResponsePdfDtos != null) {
+            Map<Float, List<InstructionResponsePdfDto>> instructionsMap = instructionResponsePdfDtos.stream()
+                    .collect(Collectors.groupingBy(InstructionResponsePdfDto::getPlannedWeight));
+            inwardEntryPdfDto.setInstructionsMap(instructionsMap);
+            inwardEntryPdfDto.setInstructions(instructionResponsePdfDtos);
+//            inwardEntryPdfDto.setTotalWeight(instructionResponsePdfDtos.stream().
+//                    map(ins -> ins.getPlannedWeight())
+//                    .reduce(0f, Float::sum));
+        }
+        inwardEntryPdfDto.setPurposeType(inwardEntry.getPurposeType());
+        inwardEntryPdfDto.setDReceivedDate(inwardEntry.getdReceivedDate());
+        inwardEntryPdfDto.setVLorryNo(inwardEntry.getvLorryNo());
+        inwardEntryPdfDto.setVInvoiceNo(inwardEntry.getvInvoiceNo());
+        inwardEntryPdfDto.setTestCertificateNumber(inwardEntry.getTestCertificateNumber());
+        inwardEntryPdfDto.setRemarks(inwardEntry.getRemarks());
+        inwardEntryPdfDto.setDInvoiceDate(inwardEntry.getdInvoiceDate());
+        inwardEntryPdfDto.setValueOfGoods(inwardEntry.getValueOfGoods());
+        inwardEntryPdfDto.setPartyCgst(inwardEntry.getParty().getGstNumber());
+        inwardEntryPdfDto.setCustomerInvoiceNo(inwardEntry.getCustomerInvoiceNo());
+        inwardEntryPdfDto.setBilledWeight(inwardEntry.getBilledweight());
+        inwardEntryPdfDto.setFLength(inwardEntry.getfLength());
+
+        return inwardEntryPdfDto;
+    }
+
 	public static InwardEntryPdfDto valueOf(InwardEntry inwardEntry, List<InstructionResponsePdfDto> instructionsCut, List<InstructionResponsePdfDto> instructionsSlit) {
         InwardEntryPdfDto inwardEntryPdfDto = new InwardEntryPdfDto();
         inwardEntryPdfDto.setInwardEntryId(inwardEntry.getInwardEntryId());

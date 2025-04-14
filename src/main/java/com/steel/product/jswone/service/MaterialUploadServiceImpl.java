@@ -613,6 +613,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 				inwardEntry.setfThickness(mmObj.getThickness().floatValue());
 				inwardEntry.setfLength(mmObj.getLength().floatValue());
 				inwardEntry.setfQuantity(Float.valueOf(inward.getPresentweight()));
+				inwardEntry.setInStockWeight( Float.valueOf(inward.getPresentweight()));
 				inwardEntry.setFpresent( Float.valueOf(inward.getPresentweight()));
 				inwardEntry.setGrossWeight(Float.valueOf(inward.getGrossweight()));
 
