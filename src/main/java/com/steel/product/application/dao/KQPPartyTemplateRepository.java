@@ -100,16 +100,15 @@ public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTempla
 			+ " FROM product_tbl_delivery_details deli, product_instruction ins, product_tblinwardentry inward "
 			+ " WHERE deli.deliveryid = ins.deliveryid and ins.inwardid = inward.inwardentryid and "
 			+ " case when :searchText is not null and LENGTH(:searchText) >0 then ( deli.deliveryid  like %:searchText% or inward.coilNumber like %:searchText% or inward.customerBatchId like %:searchText% or inward.customerInvoiceNo like %:searchText%) else 1=1 end "
-			+ " and inward.createdby in (:userIds) "
 			+ " and case when :partyIdsFlag=true then npartyid in :partyIds else 1=1 end "
 			+ " order by deli.deliveryid desc", 
 			countQuery = "SELECT count(distinct coilnumber) FROM product_tbl_delivery_details deli, product_instruction ins, product_tblinwardentry inward " + 
 					" WHERE deli.deliveryid = ins.deliveryid and ins.inwardid = inward.inwardentryid and "+
 					" case when :searchText is not null and LENGTH(:searchText) >0 then ( deli.deliveryid  like %:searchText% or inward.coilNumber like %:searchText% or inward.customerBatchId like %:searchText% or inward.customerInvoiceNo like %:searchText%) else 1=1 end " + 
-					" and inward.createdby in (:userIds) " +
 					" and case when :partyIdsFlag=true then npartyid in :partyIds else 1=1 end ", 
 			nativeQuery = true)
-	Page<Object[]> qirPreDispatchList(@Param("searchText") String searchText, @Param("partyIds") List<Integer> partyIds, @Param("partyIdsFlag") boolean partyIdsFlag, @Param("userIds") List<Integer> userIds, Pageable pageable);
+	Page<Object[]> qirPreDispatchList(@Param("searchText") String searchText, @Param("partyIds") List<Integer> partyIds,
+			@Param("partyIdsFlag") boolean partyIdsFlag, Pageable pageable);
 
 	@Query(value = "SELECT DISTINCT coilnumber, DATE_FORMAT(deli.createdon, '%d/%m/%Y'), "
 			+ " deli.deliveryid, customerbatchid, totalweight, vehicleno, inward.customerinvoiceno, "
@@ -123,16 +122,16 @@ public interface KQPPartyTemplateRepository extends JpaRepository<KQPPartyTempla
 			+ " FROM product_tbl_delivery_details deli, product_instruction ins, product_tblinwardentry inward "
 			+ " WHERE deli.deliveryid = ins.deliveryid and ins.inwardid = inward.inwardentryid and"
 			+ " case when :searchText is not null and LENGTH(:searchText) >0 then ( deli.deliveryid  like %:searchText% or inward.coilNumber like %:searchText% or inward.customerBatchId like %:searchText% or inward.customerInvoiceNo like %:searchText%) else 1=1 end " 
-			+ " and inward.createdby in (:userIds) "
 			+ " and case when :partyIdsFlag=true then npartyid in :partyIds else 1=1 end "
 			+" order by deli.deliveryid desc",
 			countQuery = "SELECT count(distinct coilnumber) FROM product_tbl_delivery_details deli, product_instruction ins, product_tblinwardentry inward " + 
 					" WHERE deli.deliveryid = ins.deliveryid and ins.inwardid = inward.inwardentryid and " + 
 					" case when :searchText is not null and LENGTH(:searchText) >0 then ( deli.deliveryid  like %:searchText% or inward.coilNumber like %:searchText% or inward.customerBatchId like %:searchText% or inward.customerInvoiceNo like %:searchText%) else 1=1 end " + 
-				    " and inward.createdby in (:userIds) "+
 					" and case when :partyIdsFlag=true then npartyid in :partyIds else 1=1 end ", 
 			nativeQuery = true)
-	Page<Object[]> qirPostDispatchList(@Param("searchText") String searchText, @Param("partyIds") List<Integer> partyIds, @Param("partyIdsFlag") boolean partyIdsFlag, @Param("userIds") List<Integer> userIds, Pageable pageable);
+	Page<Object[]> qirPostDispatchList(@Param("searchText") String searchText,
+			@Param("partyIds") List<Integer> partyIds, @Param("partyIdsFlag") boolean partyIdsFlag,
+			  Pageable pageable);
 
 	@Query(value = "SELECT ins FROM Instruction ins where ins.isDeleted is false and ins.inwardId.coilNumber = :coilNo and ins.deliveryDetails.deliveryId = :partDetailsId ")
 	List<Instruction> getDispatchDetails(@Param("coilNo") String coilNo, @Param("partDetailsId") Integer partDetailsId);

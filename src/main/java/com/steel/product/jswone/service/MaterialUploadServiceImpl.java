@@ -212,7 +212,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 					destEntity.setLeafcategoryId(setLeafCategoryMaster(sourceEntity.getLeafcategory(), destEntity.getSubcategoryId()));
 					destEntity.setBrandId( setBrandNameMaster(sourceEntity.getBrand(), destEntity.getLeafcategoryId()));
 					// Product Master 
-					destEntity.setProducttypeId(setProductMaster(sourceEntity.getSubgrade(), destEntity));
+					destEntity.setProducttypeId(setProductMaster(sourceEntity.getProducttype(), destEntity));
 					destEntity.setGradeId(setGradeMaster(sourceEntity.getGrade(), destEntity.getProducttypeId()));
 					destEntity.setSubgradeId(setSubGradeMaster(sourceEntity.getSubgrade(), destEntity.getGradeId()));
 					destEntity.setCoatingtypeId(setCoatingtypeMaster( sourceEntity.getCoatingtype(), destEntity.getProducttypeId() ));
@@ -297,13 +297,13 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 			if (leafcategoryName != null && leafcategoryName.length() > 0) {
 				List<LeafCategoryJswEntity> oldList = leafCategoryJswRepository.findByLeafcategoryName(leafcategoryName);
 				if(oldList!=null && oldList.size() > 0) {
-					pk = oldList.get(0).getSubcategoryId();
+					pk = oldList.get(0).getLeafcategoryId();
 				} else {
 					LeafCategoryJswEntity entity = new LeafCategoryJswEntity();
 					entity.setLeafcategoryName(leafcategoryName);
 					entity.setSubcategoryId( subCategoryId);
 					leafCategoryJswRepository.save(entity);
-					pk = entity.getSubcategoryId();
+					pk = entity.getLeafcategoryId();
 				}
 			}
 		} catch (Exception e) {

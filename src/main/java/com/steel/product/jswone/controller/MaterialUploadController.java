@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.steel.product.jswone.entity.MaterialMasterJswEntity;
 import com.steel.product.jswone.request.MaterialSearchPageRequest;
 import com.steel.product.jswone.request.MaterialUploadRequest;
+import com.steel.product.jswone.response.MaterialResponseWithUniqueData;
 import com.steel.product.jswone.response.MaterialSearchPageResponse;
 import com.steel.product.jswone.service.MaterialMasterJswService;
 import com.steel.product.jswone.service.MaterialUploadService;
@@ -128,6 +130,94 @@ public class MaterialUploadController {
 		response.put("totalItems", packetsList.getTotalElements());
 		response.put("totalPages", packetsList.getTotalPages());
 		return new ResponseEntity<Object>(response, HttpStatus.OK);
+	}
+	
+	@PostMapping(value = "/listwithuniquedata", produces = "application/json")
+	public ResponseEntity<Object> listwithuniquedata(@RequestBody MaterialSearchPageRequest materialSearchPageRequest) {
+		Map<Integer, String> productMap = new HashMap<>();
+		Map<Integer, String> categoryMap = new HashMap<>();
+		Map<Integer, String> subCategoryMap = new HashMap<>();
+		Map<Integer, String> leafCategoryMap = new HashMap<>();
+		Map<Integer, String> brandMap = new HashMap<>();
+		Map<Integer, String> gradeMap = new HashMap<>();
+		Map<Integer, String> subGradeMap = new HashMap<>();
+		Map<Integer, String> formMap = new HashMap<>();
+		Map<Integer, String> uomMap = new HashMap<>();
+		Map<Integer, String> surfaceMap = new HashMap<>();
+		Map<Integer, String> coatingMap = new HashMap<>();
+		
+		Map<Integer, String> productMapNew = new TreeMap<>();
+		Map<Integer, String> categoryMapNew = new TreeMap<>();
+		Map<Integer, String> subCategoryMapNew = new TreeMap<>();
+		Map<Integer, String> leafCategoryMapNew = new TreeMap<>();
+		Map<Integer, String> brandMapNew = new TreeMap<>();
+		Map<Integer, String> gradeMapNew = new TreeMap<>();
+		Map<Integer, String> subGradeMapNew = new TreeMap<>();
+		Map<Integer, String> formMapNew = new TreeMap<>();
+		Map<Integer, String> uomMapNew = new TreeMap<>();
+		Map<Integer, String> surfaceMapNew = new TreeMap<>();
+		Map<Integer, String> coatingMapNew = new TreeMap<>();
+		Map<BigDecimal, BigDecimal> thicknessMapNew = new TreeMap<>();
+		Map<BigDecimal, BigDecimal> oDiameterMapNew = new TreeMap<>();
+		Map<BigDecimal, BigDecimal> widthMapNew = new TreeMap<>();
+		Map<BigDecimal, BigDecimal> iDiameterMapNew = new TreeMap<>();
+		Map<BigDecimal, BigDecimal> nbMapNew = new TreeMap<>();
+		
+		materialSearchPageRequest.setPageNo(1);
+		materialSearchPageRequest.setPageSize(1000000);
+		
+		Page<MaterialMasterJswEntity> packetsList = materialUploadService.materialSearch(materialSearchPageRequest);
+
+		if (packetsList != null && packetsList.getSize() > 0) {
+			productMap = materialService.getProductsMap();
+			categoryMap = materialService.getCategoryMap();
+			subCategoryMap = materialService.getSubCategoryMap();
+			leafCategoryMap = materialService.getLeafCategoryMap();
+			brandMap = materialService.getBrandMap();
+			gradeMap = materialService.getGradeMap();
+			subGradeMap = materialService.getSubGradeMap();
+			formMap = materialService.getFormMap();
+			uomMap = materialService.getUomMap();
+			surfaceMap = materialService.getSurfaceMap();
+			coatingMap = materialService.getCoatingMap();
+		}
+		
+		MaterialResponseWithUniqueData resp = new MaterialResponseWithUniqueData();
+		for (MaterialMasterJswEntity result : packetsList) {
+			productMapNew.put(result.getProducttypeId(), productMap.get(result.getProducttypeId()));
+			categoryMapNew.put(result.getCategoryId(), categoryMap.get(result.getCategoryId()));
+			subCategoryMapNew.put(result.getSubcategoryId(), subCategoryMap.get(result.getSubcategoryId()));
+			leafCategoryMapNew.put(result.getLeafcategoryId(), leafCategoryMap.get(result.getLeafcategoryId()));
+			brandMapNew.put(result.getBrandId(), brandMap.get(result.getBrandId()));
+			gradeMapNew.put(result.getGradeId(), gradeMap.get(result.getGradeId()));			
+			subGradeMapNew.put(result.getSubgradeId(), subGradeMap.get(result.getSubgradeId()));
+			formMapNew.put(result.getFormId(), formMap.get(result.getFormId()));
+			uomMapNew.put(result.getUomId(), uomMap.get(result.getUomId()));
+			surfaceMapNew.put(result.getSurfacetypeId(), surfaceMap.get(result.getSurfacetypeId()));
+			coatingMapNew.put(result.getCoatingtypeId(), coatingMap.get(result.getCoatingtypeId()));
+			thicknessMapNew.put(result.getThickness(), result.getThickness());
+			widthMapNew.put(result.getWidth(), result.getWidth());
+			oDiameterMapNew.put(result.getODiameter(), result.getODiameter());
+			iDiameterMapNew.put(result.getIDiameter(), result.getIDiameter());
+			nbMapNew.put(result.getNb(), result.getNb());
+		}
+		resp.setProductMap(productMapNew);
+		resp.setCategoryMap(categoryMapNew);
+		resp.setSubCategoryMap(subCategoryMapNew);
+		resp.setLeafCategoryMap(leafCategoryMapNew);
+		resp.setBrandMap(brandMapNew);
+		resp.setGradeMap(gradeMapNew);
+		resp.setSubGradeMap(subGradeMapNew);
+		resp.setFormMap(formMapNew);
+		resp.setUomMap(uomMapNew);
+		resp.setSurfaceMap(surfaceMapNew);
+		resp.setCoatingMap(coatingMapNew);
+		resp.setThicknessMap(thicknessMapNew);
+		resp.setWidthMap(widthMapNew);
+		resp.setODiameterMap(oDiameterMapNew);
+		resp.setIDiameterMap(iDiameterMapNew);
+		resp.setNbMap(nbMapNew); 
+		return new ResponseEntity<Object>(resp, HttpStatus.OK);
 	}
 	
 	@PostMapping(value = "/mmid", produces = "application/json")

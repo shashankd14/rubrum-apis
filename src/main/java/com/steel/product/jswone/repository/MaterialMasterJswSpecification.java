@@ -43,6 +43,7 @@ public class MaterialMasterJswSpecification implements Specification<MaterialMas
 		Path<Integer> surfacetypeId = root.get("surfacetypeId");
 		Path<Integer> coatingtypeId = root.get("coatingtypeId");
 		Path<Integer> uomId = root.get("uomId");
+		Path<String> mmId = root.get("mmId");
 
 		final List<Predicate> predicates = new ArrayList<>();
 
@@ -75,6 +76,9 @@ public class MaterialMasterJswSpecification implements Specification<MaterialMas
 		}
 		if (criteria.getCoatingtypeId() != 0) {
 			predicates.add(cb.equal(coatingtypeId, criteria.getCoatingtypeId()));
+		}
+		if (criteria.getMmid() != null && criteria.getMmid().length()>0) {
+			predicates.add(cb.equal(mmId, criteria.getMmid()));
 		}
 		if (criteria.getUomId() != 0) {
 			predicates.add(cb.equal(uomId, criteria.getUomId()));

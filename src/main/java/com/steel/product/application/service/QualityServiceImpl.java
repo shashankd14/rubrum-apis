@@ -910,7 +910,7 @@ public class QualityServiceImpl implements QualityService {
 				partyIds = new ArrayList<>();
 			}
 		}
-		Page<Object[]> packetsList = kqpPartyTemplateRepository.qirPreDispatchList(listPageSearchRequest.getSearchText(), partyIds, partyIdsFlag, commonUtil.getLoginWiseMappedUserIds(), pageable);
+		Page<Object[]> packetsList = kqpPartyTemplateRepository.qirPreDispatchList(listPageSearchRequest.getSearchText(), partyIds, partyIdsFlag, pageable);
 		return packetsList;
 	}
 
@@ -935,7 +935,7 @@ public class QualityServiceImpl implements QualityService {
 				partyIds = new ArrayList<>();
 			}
 		}
-		Page<Object[]> packetsList = kqpPartyTemplateRepository.qirPostDispatchList(listPageSearchRequest.getSearchText(), partyIds, partyIdsFlag, commonUtil.getLoginWiseMappedUserIds(), pageable);
+		Page<Object[]> packetsList = kqpPartyTemplateRepository.qirPostDispatchList(listPageSearchRequest.getSearchText(), partyIds, partyIdsFlag, pageable);
 		return packetsList;
 	}
 
