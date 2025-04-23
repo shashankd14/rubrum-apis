@@ -9,6 +9,9 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
+
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -703,6 +706,17 @@ public class InwardEntry {
 		inwardEntryResponseDto.setCustomerInvoiceNo(inwardEntry.getCustomerInvoiceNo());
 		inwardEntryResponseDto.setParentCoilNumber(inwardEntry.getParentCoilNumber());
 		inwardEntryResponseDto.setScrapWeight( inwardEntry.getScrapWeight() );
+		
+		 // Today's date
+        LocalDate today = LocalDate.now();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(inwardEntry.getCreatedOn()); // convert Date to Calendar
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH) + 1; // 0-based, so add 1
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        LocalDate oldDate = LocalDate.of(year,month, day);
+        long daysBetween = ChronoUnit.DAYS.between(oldDate, today);
+		inwardEntryResponseDto.setAgeing(daysBetween);
 		return inwardEntryResponseDto;
 	}
 

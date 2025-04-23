@@ -92,6 +92,8 @@ public class InwardEntryResponseDto {
     private Float availableLength;
 
 	private Float scrapWeight;
+
+	private long ageing;
     
     public Integer getInwardEntryId() {
         return inwardEntryId;
@@ -419,5 +421,15 @@ public class InwardEntryResponseDto {
 
 	public void setTdcNo(String tdcNo) {
 		this.tdcNo = tdcNo;
+	}
+
+	public long getAgeing() {
+		return ageing;
+	}
+
+	public void setAgeing(long ageing) {
+		this.ageing = ageing;
 	} 
+	
+	
 }
