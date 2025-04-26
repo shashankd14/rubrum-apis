@@ -98,5 +98,7 @@ public interface InstructionService {
 	public void updateS3FGLabelPDF(String partDetailsId, String string);
 
 	public ResponseEntity<Object> updateClassification(UpdateClassificationDTO updateClassificationDTO);
+
+	public void updateAdditionalWeight(int instructionId, Float additionalWeight);
 }
 

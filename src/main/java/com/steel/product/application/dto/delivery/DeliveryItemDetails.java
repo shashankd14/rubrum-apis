@@ -7,6 +7,8 @@ public class DeliveryItemDetails {
     private String remarks;
 
     private Float weight;
+    
+    private Float additionalWeight;
 
     public int getInstructionId() {
         return instructionId;
@@ -31,4 +33,15 @@ public class DeliveryItemDetails {
     public void setWeight(Float weight) {
         this.weight = weight;
     }
+
+	public Float getAdditionalWeight() {
+		return additionalWeight;
+	}
+
+	public void setAdditionalWeight(Float additionalWeight) {
+		this.additionalWeight = additionalWeight;
+	}
+    
+    
+    
 }

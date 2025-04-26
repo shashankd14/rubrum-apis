@@ -166,4 +166,10 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
 	public void updateClassification(@Param("instructionId") Integer instructionId, @Param("inwardId") Integer inwardId,
 			@Param("classificationId") Integer classificationId);
 
+	@Modifying
+	@Transactional
+	@Query(value = "update product_instruction set additional_weight= :additionalWeight where instructionid= :instructionId", nativeQuery = true)
+	public void updateAdditionalWeight(@Param("instructionId") Integer instructionId,
+			@Param("additionalWeight") Float additionalWeight);
+
 }

@@ -1449,4 +1449,9 @@ public class InstructionServiceImpl implements InstructionService {
 		return response;
 	}
 
+	@Override
+	public void updateAdditionalWeight(int instructionId, Float additionalWeight) {
+		instructionRepository.updateAdditionalWeight(instructionId, additionalWeight);
+	}
+
 }

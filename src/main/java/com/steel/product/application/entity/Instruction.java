@@ -55,7 +55,10 @@ public class Instruction {
 	
 	@Column(name = "plannedweight")
 	private Float plannedWeight;
-
+	
+	@Column(name = "additional_weight")
+	private Float additionalWeight;
+	
 	@Column(name = "actualweight")
 	private Float actualWeight;
 	
@@ -205,6 +208,10 @@ public class Instruction {
 		instructionResponsePdfDto.setActualLength(instruction.getActualLength());
 		instructionResponsePdfDto.setActualNoOfPieces(instruction.getActualNoOfPieces());
 		instructionResponsePdfDto.setActualWeight(instruction.getActualWeight());
+		if (instruction.getAdditionalWeight() != null && instruction.getAdditionalWeight() > 0) {
+			Float actualTotalWeight = instructionResponsePdfDto.getActualWeight() + instruction.getAdditionalWeight();
+			instructionResponsePdfDto.setActualWeight(actualTotalWeight);
+		}
 		instructionResponsePdfDto.setActualWidth(instruction.getActualWidth());
 		instructionResponsePdfDto.setInstructionDate( instruction.getInstructionDate());
 		instructionResponsePdfDto.setInstructionId( instruction.getInstructionId());

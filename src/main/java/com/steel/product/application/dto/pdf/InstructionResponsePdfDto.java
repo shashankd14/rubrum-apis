@@ -33,6 +33,8 @@ public class InstructionResponsePdfDto {
 
     private Float actualWeight;
 
+    private Float additionalWeight;
+
     private Integer actualNoOfPieces;
 
     private String remarks;
@@ -44,6 +46,9 @@ public class InstructionResponsePdfDto {
     private DeliveryResponseDto deliveryDetails;
 
     private Float valueOfGoods;
+    
+    
+    
 
     private Long countOfWeight;
     

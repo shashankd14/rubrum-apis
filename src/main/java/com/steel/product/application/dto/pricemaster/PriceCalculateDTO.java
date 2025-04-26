@@ -20,6 +20,8 @@ public class PriceCalculateDTO {
 	
 	private Float actualWeight;
 
+	private Float additionalWeight;
+
 	private BigDecimal basePrice = new BigDecimal(BigInteger.ZERO,  2);
 
 	private BigDecimal packingPrice = new BigDecimal(BigInteger.ZERO,  2);

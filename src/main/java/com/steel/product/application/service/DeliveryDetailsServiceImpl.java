@@ -487,6 +487,11 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
         try {
 			LOGGER.info("in validatePriceMapping delivery api");
 			List<DeliveryItemDetails> deliveryItemDetails = deliveryDto.getDeliveryItemDetails();
+			for (DeliveryItemDetails instructionslist : deliveryItemDetails) {
+				if(instructionslist.getAdditionalWeight()!=null && instructionslist.getAdditionalWeight()>0) {
+					instructionService.updateAdditionalWeight(instructionslist.getInstructionId(), instructionslist.getAdditionalWeight());
+				}
+			}
 			boolean mainStts = false;
 			List<PriceCalculateDTO> priceDetailsList=new ArrayList<>();
 			List<Integer> statusIdList=new ArrayList<>();
@@ -514,7 +519,11 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 				priceCalculateDTO.setThickness(BigDecimal.valueOf(inwardEntry.getfThickness()));
 				priceCalculateDTO.setMatGradeName(materialGradeDto.getMaterialGrade().getGradeName());
 				priceCalculateDTO.setActualWeight((instruction.getActualWeight()==null ? instruction.getPlannedWeight() : instruction.getActualWeight()));
-
+				Float actualTotalWeight = priceCalculateDTO.getActualWeight();
+				if (instruction.getAdditionalWeight() != null && instruction.getAdditionalWeight() > 0) {
+					priceCalculateDTO.setAdditionalWeight(instruction.getAdditionalWeight());
+					actualTotalWeight = priceCalculateDTO.getActualWeight() + priceCalculateDTO.getAdditionalWeight();
+				}
 				BigDecimal amount =new BigDecimal("0.00");
 				
 				if(priceCalculateDTO!=null && priceCalculateDTO.getBasePrice() !=null) {
@@ -532,7 +541,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 				if(amount!=null ) {
 					priceCalculateDTO.setRate(amount.setScale(3, RoundingMode.HALF_EVEN));
 					BigDecimal totalAmount = new BigDecimal(BigInteger.ZERO,  2);
-					totalAmount = (amount.multiply(BigDecimal.valueOf(priceCalculateDTO.getActualWeight())));
+					totalAmount = (amount.multiply(BigDecimal.valueOf(actualTotalWeight)));
 					totalAmount = totalAmount.divide(BigDecimal.valueOf(1000));
 					priceCalculateDTO.setTotalPrice(totalAmount.setScale(3, RoundingMode.HALF_EVEN));
 				}
