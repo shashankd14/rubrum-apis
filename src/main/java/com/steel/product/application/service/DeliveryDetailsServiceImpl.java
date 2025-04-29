@@ -596,6 +596,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 
 			for (Integer inwardId  : inwardList) {
 				InwardEntry inwardEntry =  inwardEntryService.getByEntryId(inwardId);
+		        MaterialResponseDto materialGradeDto = materialMasterJswService.getGradeProductName(inwardEntry.getMmId());
 					 
 				boolean innerStts = false;
 				
@@ -605,7 +606,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 				priceCalculateDTO.setCustomerBatchNo(inwardEntry.getCustomerBatchId());
 				priceCalculateDTO.setInstructionId(inwardEntry.getInwardEntryId());
 				priceCalculateDTO.setThickness(BigDecimal.valueOf(inwardEntry.getfThickness()));
-				priceCalculateDTO.setMatGradeName(inwardEntry.getMaterialGrade().getGradeName());
+				priceCalculateDTO.setMatGradeName(materialGradeDto.getMaterialGrade().getGradeName());
 				priceCalculateDTO.setActualWeight(inwardEntry.getFpresent());
 
 				BigDecimal amount =new BigDecimal("0.00");
