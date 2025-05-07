@@ -487,51 +487,12 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 	@Override
 	public Page<MaterialMasterJswEntity> materialSearch(MaterialSearchPageRequest request) {
 		Pageable pageable = PageRequest.of((request.getPageNo() - 1), request.getPageSize());
-
+		request.setFormId(22);
 		MaterialMasterJswSpecification spec = new MaterialMasterJswSpecification(request);
-
 		Page<MaterialMasterJswEntity> pageResult = materialMasterRepository.findAll(spec, pageable);
-
 		return pageResult;
 	}
 	
-
-	@Override
-	public Page<Object[]> materialSearch1(MaterialSearchPageRequest request) {
-		Pageable pageable = PageRequest.of((request.getPageNo() - 1), request.getPageSize());
-		
-		if(!(request.getLength() !=null && request.getLength().compareTo(BigDecimal.ZERO) > 0)) {
-			request.setLength(BigDecimal.ZERO);
-		}	
-		if(!(request.getWidth() !=null && request.getWidth().compareTo(BigDecimal.ZERO) > 0)) {
-			request.setWidth(BigDecimal.ZERO);
-		}	
-		if(!(request.getThickness()!=null && request.getThickness().compareTo(BigDecimal.ZERO) > 0)) {
-			request.setThickness(BigDecimal.ZERO);
-		} 
-		Page<Object[]> packetsList = materialMasterRepository.materialSearch(
-				//request.getSearchText(), 
-				request.getLength(), 
-				request.getWidth(),
-				request.getThickness(),
-				//request.getNb(), 
-				//request.getIDiameter(),
-				//request.getODiameter(),
-				request.getCategoryId(), 
-				request.getSubcategoryId(), 
-				request.getLeafcategoryId(), 
-				request.getBrandId(), 
-				request.getProducttypeId(), 
-				request.getGradeId(), 
-				request.getSubgradeId(), 
-				request.getFormId(), 
-				request.getUomId(), 
-				request.getSurfacetypeId(), 
-				request.getCoatingtypeId(), 
-				pageable);
-		return packetsList;
-	}
-
 	@Override
 	public ResponseEntity<Object> uploadInwardData(MaterialUploadRequest request) throws Exception, FileNotFoundException {
 		log.info("******MaterialUploadService.uploadInwardData*****");
@@ -580,7 +541,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 		try {
 
 			List<MaterialMasterJswEntity> mmList = materialMasterRepository.findByMmId(inward.getMmid());
-			if (mmList != null && mmList.size() > 0) {
+			if (mmList != null && mmList.size() > 0 && mmList.get(0).getFormId() == 22 ) {
 				mmObj = mmList.get(0);
 
 				int userId = 1;
