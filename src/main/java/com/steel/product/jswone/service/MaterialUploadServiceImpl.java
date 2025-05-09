@@ -13,7 +13,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -523,7 +525,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 			if (request.isMasterData()) {
 				List<InwardFileDataEntity> listFileData = inwardFiledataRepository.findAll();
 				for (InwardFileDataEntity sourceEntity : listFileData) {
-					saveInwardEntry(sourceEntity);
+					saveInwardEntry(sourceEntity, request.getLocationName());
 				}
 			}
 			return new ResponseEntity<Object>("{\"status\": \"success\", \"message\": \"File Uploaded Successfully.\"}", new HttpHeaders(), HttpStatus.OK);
@@ -533,12 +535,26 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 		}
 	}
 
-	public Integer saveInwardEntry(InwardFileDataEntity inward) {
+	public Integer saveInwardEntry(InwardFileDataEntity inward, String locationName) {
 		InwardEntry inwardEntry = new InwardEntry();
 		Integer inwardEnrtyId = 0;
 		System.out.println("DTO details " + inward);
 		MaterialMasterJswEntity mmObj = null;
 		try {
+			
+			Map<String, Integer> partyIdsMap = new HashMap<>();
+			partyIdsMap.put("JSW - JSI", 1);
+			partyIdsMap.put("JSW - VANSH", 2);
+			partyIdsMap.put("Taloja", 3);
+			partyIdsMap.put("Ratneesh Engg", 4);
+			partyIdsMap.put("Ratnesh Ispat", 5);
+			partyIdsMap.put("MITA", 6);
+			partyIdsMap.put("ASPEN", 7);
+			partyIdsMap.put("BANSAL Industiries", 8);
+			partyIdsMap.put("RCC", 9);
+			partyIdsMap.put("SME", 10);
+			partyIdsMap.put("AKEYEM", 11);
+			partyIdsMap.put("G2", 12);
 
 			List<MaterialMasterJswEntity> mmList = materialMasterRepository.findByMmId(inward.getMmid());
 			if (mmList != null && mmList.size() > 0 && mmList.get(0).getFormId() == 22 ) {
@@ -547,13 +563,13 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 				int userId = 1;
 				inwardEntry.setInwardEntryId(0);
 				inwardEntry.setPurposeType("STEEL SERVICE CENTRE");
-				inwardEntry.setParty(this.partyDetailsService.getPartyById(2));
+				inwardEntry.setParty(this.partyDetailsService.getPartyById(partyIdsMap.get(locationName)));
 				inwardEntry.setCoilNumber(inward.getCoilno());
 				inwardEntry.setBatchNumber(inward.getBatchnumber());
 
 				if (inward.getReceiveddate() != null && inward.getReceiveddate().length()>0) {
 					System.out.println("date is == " + inward.getReceiveddate());
-					DateFormat sourceFormat = new SimpleDateFormat("dd/MM/yyyy");
+					DateFormat sourceFormat = new SimpleDateFormat("dd-MM-yyyy");
 					Date date = sourceFormat.parse(inward.getReceiveddate());
 					inwardEntry.setdReceivedDate(date);
 				} else {
@@ -594,7 +610,11 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 
 				inwardEntry.setvProcess("");
 				inwardEntry.setTdcNo(inward.getTdcno());
-				inwardEntry.setValueOfGoods(Float.valueOf(inward.getValueofgoods()));
+				try {
+					inwardEntry.setValueOfGoods(Float.valueOf(inward.getValueofgoods()));
+				} catch (Exception e) {
+					inwardEntry.setValueOfGoods(0f);
+				}
 				inwardEntry.setBilledweight(0);
 				inwardEntry.setParentCoilNumber(null);
 				inwardEntry.setvParentBundleNumber(0);
