@@ -706,17 +706,25 @@ public class InwardEntry {
 		inwardEntryResponseDto.setCustomerInvoiceNo(inwardEntry.getCustomerInvoiceNo());
 		inwardEntryResponseDto.setParentCoilNumber(inwardEntry.getParentCoilNumber());
 		inwardEntryResponseDto.setScrapWeight( inwardEntry.getScrapWeight() );
-		
-		 // Today's date
-        LocalDate today = LocalDate.now();
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(inwardEntry.getCreatedOn()); // convert Date to Calendar
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH) + 1; // 0-based, so add 1
-        int day = calendar.get(Calendar.DAY_OF_MONTH);
-        LocalDate oldDate = LocalDate.of(year,month, day);
-        long daysBetween = ChronoUnit.DAYS.between(oldDate, today);
-		inwardEntryResponseDto.setAgeing(daysBetween);
+		long daysBetween = 0;
+		try {
+			// Today's date
+			LocalDate today = LocalDate.now();
+			Calendar calendar = Calendar.getInstance();
+			Date date = inwardEntry.getCreatedOn();
+			if (inwardEntry.getdReceivedDate() != null) {
+				date = inwardEntry.getdReceivedDate();
+			}
+			calendar.setTime(date); // convert Date to Calendar
+			int year = calendar.get(Calendar.YEAR);
+			int month = calendar.get(Calendar.MONTH) + 1; // 0-based, so add 1
+			int day = calendar.get(Calendar.DAY_OF_MONTH);
+			LocalDate oldDate = LocalDate.of(year, month, day);
+			daysBetween = ChronoUnit.DAYS.between(oldDate, today);
+			inwardEntryResponseDto.setAgeing(daysBetween);
+		} catch (Exception e) {
+			inwardEntryResponseDto.setAgeing(daysBetween);
+		}
 		return inwardEntryResponseDto;
 	}
 
