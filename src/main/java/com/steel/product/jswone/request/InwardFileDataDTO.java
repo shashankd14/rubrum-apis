@@ -8,50 +8,41 @@ import lombok.Data;
 public class InwardFileDataDTO {
 
 	@CsvBindByPosition(position = 0)
-	private String scinwardid;
+	private String sno;
 
 	@CsvBindByPosition(position = 1)
-	private String purchaseinvoiceio;
+	private String coilno;
 
 	@CsvBindByPosition(position = 2)
 	private String receiveddate;
 
 	@CsvBindByPosition(position = 3)
-	private String inwardid;
-
-	@CsvBindByPosition(position = 4)
-	private String testcertificateno;
-
-	@CsvBindByPosition(position = 5)
-	private String coilno;
-
-	@CsvBindByPosition(position = 6)
 	private String custbatchno;
 
-	@CsvBindByPosition(position = 7)
+	@CsvBindByPosition(position = 4)
 	private String batchnumber;
 
-	@CsvBindByPosition(position = 8)
+	@CsvBindByPosition(position = 5)
 	private String presentweight;
 
-	@CsvBindByPosition(position = 9)
+	@CsvBindByPosition(position = 6)
 	private String grossweight;
 
-	@CsvBindByPosition(position = 10)
+	@CsvBindByPosition(position = 7)
 	private String valueofgoods;
 
-	@CsvBindByPosition(position = 11)
+	@CsvBindByPosition(position = 8)
 	private String tdcno;
 
-	@CsvBindByPosition(position = 12)
+	@CsvBindByPosition(position = 9)
 	private String vehicleno;
 
-	@CsvBindByPosition(position = 13)
+	@CsvBindByPosition(position = 10)
 	private String invoicenumber;
 
-	@CsvBindByPosition(position = 14)
+	@CsvBindByPosition(position = 11)
 	private String mmid;
 
-	@CsvBindByPosition(position = 15)
+	@CsvBindByPosition(position = 12)
 	private String locationname;
 }

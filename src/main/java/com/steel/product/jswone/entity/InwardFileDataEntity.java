@@ -17,20 +17,8 @@ public class InwardFileDataEntity {
 	@Column(name = "inwarddtlsid")
 	private Integer inwarddtlsid;
 
-	@Column(name = "scinwardid")
-	private String scinwardid;
-
-	@Column(name = "purchaseinvoiceio")
-	private String purchaseinvoiceio;
-
 	@Column(name = "receiveddate")
 	private String receiveddate;
-
-	@Column(name = "inwardid")
-	private String inwardid;
-
-	@Column(name = "testcertificateno")
-	private String testcertificateno;
 
 	@Column(name = "coilno")
 	private String coilno;

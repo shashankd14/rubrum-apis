@@ -624,7 +624,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 				inwardEntry.setUpdatedOn(new Date());
 				inwardEntry.setCreatedBy(userId);
 				inwardEntry.setUpdatedBy(userId);
-				inwardEntry.setTestCertificateNumber(inward.getTestcertificateno());
+				inwardEntry.setTestCertificateNumber("");
 				InwardEntry savedInwardEntry = inwdEntrySvc.saveEntry(inwardEntry);
 				if (savedInwardEntry != null && savedInwardEntry.getInwardEntryId() > 0) {
 					try {
