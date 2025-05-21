@@ -13,6 +13,7 @@ public class MaterialResponseDto {
 
     private int matId;
     private String description;
+    private String mmDescConcatenated;
     private MaterialGradeDto materialGrade;
     private String hsnCode;
     private String materialCode;

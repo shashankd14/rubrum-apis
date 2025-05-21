@@ -293,6 +293,7 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 			productName = new MaterialResponseDto();
 			productName.setMatId(result[0] != null ? (Integer) result[0] : null);
 			productName.setDescription(result[1] != null ? (String) result[1] : null);
+			productName.setMmDescConcatenated(result[2] != null ? (String) result[2] : null);
 		}
 		return productName;
 	}

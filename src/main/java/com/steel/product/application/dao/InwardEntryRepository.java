@@ -26,8 +26,11 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
     @Query(nativeQuery = true, value = "select * from product_tblinwardentry where nPartyId= :partyId order by dReceivedDate ")
     List<InwardEntry> getInwardEntriesByPartyId(@Param("partyId") Integer paramInteger);
 
-    @Query("select inw from InwardEntry inw where inw.createdBy in (:userIds) and (inw.coilNumber like %:searchText% or "
-    		+ " inw.customerBatchId like %:searchText% or inw.customerInvoiceNo like %:searchText% or inw.party.partyName like %:searchText% ) ")
+    @Query("select inw from InwardEntry inw JOIN MaterialMasterJswEntity mm on mm.mmId=inw.mmId "
+    		+ " where inw.createdBy in (:userIds) and "
+    		+ " (inw.coilNumber like %:searchText% or inw.customerBatchId like %:searchText% or "
+    		+ " mm.mmDescription like %:searchText% or inw.customerInvoiceNo like %:searchText% or "
+    		+ " inw.party.partyName like %:searchText% ) ")
     Page<InwardEntry> findAllWithSearch(@Param("searchText") String searchText, @Param("userIds") List<Integer> userIds, Pageable pageable);
 
     @Query("select inw from InwardEntry inw where inw.createdBy in ( :userIds) and inw.status.statusId in (1,2,3) and inStockWeight > 0 ")
@@ -36,8 +39,10 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
     @Query("select inw from InwardEntry inw where 1=1 ")
     Page<InwardEntry> findAllInwardList( Pageable pageable);
     
-	@Query("select inw from InwardEntry inw where (inw.coilNumber like %:searchText% or "
-			+ " inw.customerBatchId like %:searchText% or inw.customerInvoiceNo like %:searchText% or inw.party.partyName like %:searchText% ) "
+	@Query("select inw from InwardEntry inw JOIN MaterialMasterJswEntity mm on mm.mmId=inw.mmId "
+			+ " where (inw.coilNumber like %:searchText% or "
+			+ " inw.customerBatchId like %:searchText% or inw.customerInvoiceNo like %:searchText% or "
+			+ " mm.mmDescription like %:searchText% or inw.party.partyName like %:searchText% ) "
 			+ " and inw.party.nPartyId in :partyIds")
 	Page<InwardEntry> findAll(@Param("searchText") String searchText, @Param("partyIds") List<Integer> partyIds, Pageable pageable);
 
