@@ -754,6 +754,7 @@ public class InwardEntry {
 		inwardEntryResponseDto.setdReceivedDate(inwardEntry.getdReceivedDate());
 		inwardEntryResponseDto.setvLorryNo(inwardEntry.getvLorryNo());
 		inwardEntryResponseDto.setvInvoiceNo(inwardEntry.getvInvoiceNo());
+		inwardEntryResponseDto.setMmId (inwardEntry.getMmId());
 		inwardEntryResponseDto.setTestCertificateNumber(inwardEntry.getTestCertificateNumber());
 		inwardEntryResponseDto.setRemarks(inwardEntry.getRemarks());
 		inwardEntryResponseDto.setdInvoiceDate(inwardEntry.getdInvoiceDate());

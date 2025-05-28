@@ -596,7 +596,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 
 				float fLength;
 				try {
-					float fConstant = 7.85f;
+					float fConstant = 8.10f;
 					fLength = (Float.valueOf(inwardEntry.getFpresent()) / 
 							(inwardEntry.getfThickness() * fConstant *  ( inwardEntry.getfWidth() /1000 ))) * 1000;
 					System.out.println("Hi Kanak == "+fLength);

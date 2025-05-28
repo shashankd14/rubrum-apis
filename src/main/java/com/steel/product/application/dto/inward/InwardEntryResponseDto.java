@@ -19,6 +19,8 @@ public class InwardEntryResponseDto {
 
     private String batchNumber;
 
+    private String mmId;
+
     private Date dReceivedDate;
 
     private Date dBillDate;
@@ -429,6 +431,14 @@ public class InwardEntryResponseDto {
 
 	public void setAgeing(long ageing) {
 		this.ageing = ageing;
+	}
+
+	public String getMmId() {
+		return mmId;
+	}
+
+	public void setMmId(String mmId) {
+		this.mmId = mmId;
 	} 
 	
 	
