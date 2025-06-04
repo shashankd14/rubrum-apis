@@ -525,7 +525,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 			if (request.isMasterData()) {
 				List<InwardFileDataEntity> listFileData = inwardFiledataRepository.findAll();
 				for (InwardFileDataEntity sourceEntity : listFileData) {
-					saveInwardEntry(sourceEntity, request.getLocationName());
+					saveInwardEntry(sourceEntity);
 				}
 			}
 			return new ResponseEntity<Object>("{\"status\": \"success\", \"message\": \"File Uploaded Successfully.\"}", new HttpHeaders(), HttpStatus.OK);
@@ -535,7 +535,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 		}
 	}
 
-	public Integer saveInwardEntry(InwardFileDataEntity inward, String locationName) {
+	public Integer saveInwardEntry(InwardFileDataEntity inward ) {
 		InwardEntry inwardEntry = new InwardEntry();
 		Integer inwardEnrtyId = 0;
 		System.out.println("DTO details " + inward);
@@ -563,7 +563,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 				int userId = 1;
 				inwardEntry.setInwardEntryId(0);
 				inwardEntry.setPurposeType("STEEL SERVICE CENTRE");
-				inwardEntry.setParty(this.partyDetailsService.getPartyById(partyIdsMap.get(locationName)));
+				inwardEntry.setParty(this.partyDetailsService.getPartyById(partyIdsMap.get(inward.getLocationname())));
 				inwardEntry.setCoilNumber(inward.getCoilno());
 				inwardEntry.setBatchNumber(inward.getBatchnumber());
 

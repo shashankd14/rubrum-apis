@@ -1,0 +1,68 @@
+package com.steel.product.jswone.entity;
+
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import com.steel.product.application.entity.Status;
+
+import javax.persistence.*;
+
+import java.math.BigDecimal;
+import java.util.Date;
+
+@Entity
+@Getter
+@Setter
+@Table(name = "jsw_sales_order_child")
+public class SalesOrderPacketsJswEntity {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "so_child_id")
+	private Integer soChildId;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "so_id")
+	private SalesOrderJswEntity soId;
+
+	@Column(name = "mm_id")
+	private String mmId;
+
+	@Column(name = "soqty")
+	private BigDecimal soqty;
+	
+	@Column(name = "allocated_soqty")
+	private BigDecimal allocatedSoqty;
+
+	@Column(name = "allocated_stts")
+	private String allocatedStts;
+
+	@Column(name = "instruction_id")
+	private Integer instructionId;
+
+	@Column(name = "inward_entry_d")
+	private Integer inwardEntryId;
+	
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "status")
+	private Status status;
+
+	@Column(name = "created_by")
+	private Integer createdBy;
+
+	@Column(name = "updated_by")
+	private Integer updatedBy;
+
+	@CreationTimestamp
+	@Column(name = "created_on", nullable = false, updatable = false)
+	private Date createdOn;
+
+	@UpdateTimestamp
+	@Column(name = "updated_on")
+	private Date updatedOn;
+
+	@Column(name = "is_deleted", columnDefinition = "BIT")
+	private Boolean isDeleted;
+
+}
