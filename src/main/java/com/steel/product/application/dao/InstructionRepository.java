@@ -10,6 +10,8 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import javax.transaction.Transactional;
+
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -171,5 +173,11 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
 	@Query(value = "update product_instruction set additional_weight= :additionalWeight where instructionid= :instructionId", nativeQuery = true)
 	public void updateAdditionalWeight(@Param("instructionId") Integer instructionId,
 			@Param("additionalWeight") Float additionalWeight);
+	
+	@Modifying
+	@Transactional
+	@Query(value = "update product_instruction set allocated_soqty = :allocatedSoqty where instructionid= :instructionId", nativeQuery = true)
+	public void consolidatePlanner(@Param("instructionId") Integer instructionId,
+			@Param("allocatedSoqty") Float totalAllocatedQty);
 
 }

@@ -4,8 +4,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import com.steel.product.application.entity.Status;
-
 import javax.persistence.*;
 
 import java.math.BigDecimal;
@@ -44,9 +42,8 @@ public class SalesOrderPacketsJswEntity {
 	@Column(name = "inward_entry_d")
 	private Integer inwardEntryId;
 	
-	@ManyToOne(fetch = FetchType.EAGER)
-	@JoinColumn(name = "status")
-	private Status status;
+	@Column(name = "item_status")
+	private String itemStatus;
 
 	@Column(name = "created_by")
 	private Integer createdBy;
@@ -57,6 +54,15 @@ public class SalesOrderPacketsJswEntity {
 	@CreationTimestamp
 	@Column(name = "created_on", nullable = false, updatable = false)
 	private Date createdOn;
+
+	@Column(name = "allocation_date", nullable = false, updatable = false)
+	private Date allocationDate;
+
+	@Column(name = "allocation_by")
+	private Integer allocationBy;
+
+	@Column(name = "approved_date", nullable = false, updatable = false)
+	private Date approvedDate;
 
 	@UpdateTimestamp
 	@Column(name = "updated_on")

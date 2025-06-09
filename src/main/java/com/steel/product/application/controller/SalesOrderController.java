@@ -33,7 +33,7 @@ import com.steel.product.trading.request.DeleteRequest;
 @RestController
 @CrossOrigin
 @Tag(name = "Sales Order", description = "Sales Order")
-@RequestMapping({ "/so_old" })
+@RequestMapping({ "/so" })
 public class SalesOrderController {
 
 	private SalesOrderService salesOrderService;

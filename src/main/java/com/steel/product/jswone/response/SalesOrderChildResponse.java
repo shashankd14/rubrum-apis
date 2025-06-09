@@ -1,14 +1,14 @@
-package com.steel.product.jswone.request;
+package com.steel.product.jswone.response;
 
 import java.math.BigDecimal;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
-public class SalesOrderChildRequest {
+@Getter
+@Setter
+public class SalesOrderChildResponse {
 
 	private Integer soChildId;
-
-	private Integer soId;
 
 	private String mmId;
 
@@ -16,8 +16,12 @@ public class SalesOrderChildRequest {
 
 	private BigDecimal allocatedSoqty;
 
+	private String allocatedStts;
+
 	private Integer instructionId;
 
 	private Integer inwardEntryId;
+
+	private String itemStatus;
 
 }

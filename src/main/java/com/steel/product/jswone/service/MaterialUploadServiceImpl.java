@@ -548,10 +548,10 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 			partyIdsMap.put("Taloja", 3);
 			partyIdsMap.put("Ratneesh Engg", 4);
 			partyIdsMap.put("Ratnesh Ispat", 5);
-			partyIdsMap.put("MITA", 6);
+			partyIdsMap.put("Mita Engineering", 6);
 			partyIdsMap.put("ASPEN", 7);
 			partyIdsMap.put("BANSAL Industiries", 8);
-			partyIdsMap.put("RCC", 9);
+			partyIdsMap.put("Rameshwar Coil Cutter LLP", 9);
 			partyIdsMap.put("SME", 10);
 			partyIdsMap.put("AKEYEM", 11);
 			partyIdsMap.put("G2", 12);
@@ -568,8 +568,8 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 				inwardEntry.setBatchNumber(inward.getBatchnumber());
 
 				if (inward.getReceiveddate() != null && inward.getReceiveddate().length()>0) {
-					System.out.println("date is == " + inward.getReceiveddate());
-					DateFormat sourceFormat = new SimpleDateFormat("dd-MM-yyyy");
+					//System.out.println("date is == " + inward.getReceiveddate());
+					DateFormat sourceFormat = new SimpleDateFormat("dd-MMM-yyyy");
 					Date date = sourceFormat.parse(inward.getReceiveddate());
 					inwardEntry.setdReceivedDate(date);
 				} else {
@@ -599,7 +599,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 					float fConstant = 8.10f;
 					fLength = (Float.valueOf(inwardEntry.getFpresent()) / 
 							(inwardEntry.getfThickness() * fConstant *  ( inwardEntry.getfWidth() /1000 ))) * 1000;
-					System.out.println("Hi Kanak == "+fLength);
+					//System.out.println("Hi Kanak == "+fLength);
 				} catch (Exception e) {
 					fLength=mmObj.getLength().floatValue();
 				}
@@ -643,6 +643,8 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 						ex.printStackTrace();
 					}
 				}
+			} else {
+				System.out.println("=============== MMID not exists ===  "+inward.getMmid());
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

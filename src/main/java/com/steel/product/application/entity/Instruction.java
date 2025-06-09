@@ -104,6 +104,9 @@ public class Instruction {
     @Column(name = "packingweight")
     private Float packingWeight;
 
+    @Column(name = "allocated_soqty")
+    private Float allocatedSoqty;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "rateid")
     private Rates rates;

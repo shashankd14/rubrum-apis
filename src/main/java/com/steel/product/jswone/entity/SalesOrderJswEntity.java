@@ -2,8 +2,6 @@ package com.steel.product.jswone.entity;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import com.steel.product.application.entity.Status;
-
 import lombok.Data;
 
 import javax.persistence.*;
@@ -71,9 +69,11 @@ public class SalesOrderJswEntity {
 	@Column(name = "allocated_stts")
 	private String allocatedStts;
 
-	@ManyToOne(fetch = FetchType.EAGER)
-	@JoinColumn(name = "status")
-	private Status status;
+	@Column(name = "party_id")
+	private Integer partyId;
+
+	@Column(name = "so_status")
+	private String soStatus;
 
 	@Column(name = "created_by")
 	private Integer createdBy;
@@ -85,6 +85,12 @@ public class SalesOrderJswEntity {
 	@Column(name = "created_on", nullable = false, updatable = false)
 	private Date createdOn;
 
+	@Column(name = "approved_date", nullable = false, updatable = false)
+	private Date approvedDate;
+
+	@Column(name = "allocation_date", nullable = false, updatable = false)
+	private Date allocationDate;
+
 	@UpdateTimestamp
 	@Column(name = "updated_on")
 	private Date updatedOn;
@@ -93,15 +99,15 @@ public class SalesOrderJswEntity {
 	private Boolean isDeleted;
 
 	@OneToMany(mappedBy = "soId", cascade = { CascadeType.PERSIST, CascadeType.MERGE }, orphanRemoval = true)
-	private Set<SalesOrderPacketsJswEntity> itemslist  ;
+	private Set<SalesOrderPacketsJswEntity> itemslist;
 
 	public void removeItem(SalesOrderPacketsJswEntity instruction) {
 		this.getItemslist().remove(instruction);
 		instruction.setSoId(null);
 	}
-	
-	public void addItem(SalesOrderPacketsJswEntity instruction){
-		if(this.itemslist == null){
+
+	public void addItem(SalesOrderPacketsJswEntity instruction) {
+		if (this.itemslist == null) {
 			this.itemslist = new LinkedHashSet<>();
 		}
 		this.getItemslist().add(instruction);
