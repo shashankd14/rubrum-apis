@@ -549,12 +549,13 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 			partyIdsMap.put("Ratneesh Engg", 4);
 			partyIdsMap.put("Ratnesh Ispat", 5);
 			partyIdsMap.put("Mita Engineering", 6);
-			partyIdsMap.put("ASPEN", 7);
+			partyIdsMap.put("ASPEN - UNIT 1", 7);
 			partyIdsMap.put("BANSAL Industiries", 8);
 			partyIdsMap.put("Rameshwar Coil Cutter LLP", 9);
 			partyIdsMap.put("SME", 10);
 			partyIdsMap.put("AKEYEM", 11);
 			partyIdsMap.put("G2", 12);
+			partyIdsMap.put("ASPEN - UNIT 3", 13);
 
 			List<MaterialMasterJswEntity> mmList = materialMasterRepository.findByMmId(inward.getMmid());
 			if (mmList != null && mmList.size() > 0 && mmList.get(0).getFormId() == 22 ) {

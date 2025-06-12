@@ -682,7 +682,7 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 	public Page<PriceMasterEntity> findAllWithPagination(PriceMasterListPageRequest request) {
 		Pageable pageable = PageRequest.of((request.getPageNo() - 1), request.getPageSize());
 		Page<PriceMasterEntity> pageResult = priceMasterRepository.findAll(request.getSearchText(),
-				request.getThicknessRange(), commonUtil.getLocationWiseMappedUserIds(), pageable);
+				request.getThicknessRange(),  pageable);
 		return pageResult;
 	}
 

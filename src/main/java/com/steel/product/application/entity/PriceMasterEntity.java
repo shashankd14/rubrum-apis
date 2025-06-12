@@ -24,13 +24,13 @@ public class PriceMasterEntity {
 	@Column(name = "price_id")
 	private Integer id;
 
-	@ManyToOne(fetch = FetchType.EAGER)
-	@JoinColumn(name = "process_id")
-	private Process process;
-
 	@Column(name = "location_id")
 	private Integer locationId;
 
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "process_id")
+	private Process process; 
+	
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "product_id")
 	private ProductMasterJswEntity product;

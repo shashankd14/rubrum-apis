@@ -54,6 +54,18 @@ public class MaterialUploadController {
 		}
 	}
 	
+	@PostMapping(value = "/importinwarddata", produces = "application/json")
+	@Operation
+	public ResponseEntity<Object> importinwarddata(@RequestBody MaterialUploadRequest request)
+			throws Exception, FileNotFoundException {
+		log.info("******MaterialUploadController.uploadInwardData*****");
+		if (request.isFileData() || request.isMasterData() ) {
+			return materialUploadService.uploadInwardData(request);
+		} else {
+			return new ResponseEntity<Object>("{\"status\": \"failed\", \"message\": \"Invalid Request to Uploaded a file.\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
 	@PostMapping(value = "/list", produces = "application/json")
 	public ResponseEntity<Object> materialSearch(@RequestBody MaterialSearchPageRequest materialSearchPageRequest) {
 		Map<String, Object> response = new HashMap<>();
@@ -263,17 +275,4 @@ public class MaterialUploadController {
 		response.put("totalPages", packetsList.getTotalPages());
 		return new ResponseEntity<Object>(response, HttpStatus.OK);
 	}
-	
-	@PostMapping(value = "/importinwarddata", produces = "application/json")
-	@Operation
-	public ResponseEntity<Object> importinwarddata(@RequestBody MaterialUploadRequest request)
-			throws Exception, FileNotFoundException {
-		log.info("******MaterialUploadController.uploadInwardData*****");
-		if (request.isFileData() || request.isMasterData() ) {
-			return materialUploadService.uploadInwardData(request);
-		} else {
-			return new ResponseEntity<Object>("{\"status\": \"failed\", \"message\": \"Invalid Request to Uploaded a file.\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-	}
-
 }

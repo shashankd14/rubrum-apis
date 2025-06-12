@@ -26,7 +26,7 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
     @Query(nativeQuery = true, value = "select * from product_tblinwardentry where nPartyId= :partyId order by dReceivedDate ")
     List<InwardEntry> getInwardEntriesByPartyId(@Param("partyId") Integer paramInteger);
 
-    @Query("select inw from InwardEntry inw JOIN MaterialMasterJswEntity mm on mm.mmId=inw.mmId "
+    @Query("select inw from InwardEntry inw left outer JOIN MaterialMasterJswEntity mm on mm.mmId=inw.mmId "
     		+ " where inw.createdBy in (:userIds) and "
     		+ " (inw.coilNumber like %:searchText% or inw.customerBatchId like %:searchText% or "
     		+ " mm.mmDescription like %:searchText% or inw.customerInvoiceNo like %:searchText% or "
@@ -39,7 +39,7 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
     @Query("select inw from InwardEntry inw where 1=1 ")
     Page<InwardEntry> findAllInwardList( Pageable pageable);
     
-	@Query("select inw from InwardEntry inw JOIN MaterialMasterJswEntity mm on mm.mmId=inw.mmId "
+	@Query("select inw from InwardEntry inw left outer JOIN MaterialMasterJswEntity mm on mm.mmId=inw.mmId "
 			+ " where (inw.coilNumber like %:searchText% or "
 			+ " inw.customerBatchId like %:searchText% or inw.customerInvoiceNo like %:searchText% or "
 			+ " mm.mmDescription like %:searchText% or inw.party.partyName like %:searchText% ) "
@@ -76,7 +76,7 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
    // @Query("select inw from InwardEntry inw join fetch inw.party join fetch inw.material join fetch inw.materialGrade where inw.inwardEntryId = :inwardId")
     //public Optional<InwardEntry> findById(@Param("inwardId")Integer inwardId);
 
-    @Query("select inw from InwardEntry inw join fetch inw.party join fetch MaterialMasterJswEntity mat on mat.mmId=inw.mmId where inw.inwardEntryId = :inwardId")
+    @Query("select inw from InwardEntry inw join fetch inw.party left outer join fetch MaterialMasterJswEntity mat on mat.mmId=inw.mmId where inw.inwardEntryId = :inwardId")
     public Optional<InwardEntry> findById(@Param("inwardId")Integer inwardId);
 
     @Query("select inw from InwardEntry inw join fetch inw.party join fetch inw.material join fetch inw.materialGrade join fetch inw.instructions ins join fetch ins.childInstructions")
