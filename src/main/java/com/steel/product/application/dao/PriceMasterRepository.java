@@ -74,9 +74,9 @@ public interface PriceMasterRepository extends JpaRepository<PriceMasterEntity, 
 	@Query("select pc from PriceMasterEntity pc where "
 			+ " ( pc.thicknessFrom = CASE WHEN :thicknesRange IS NOT NULL THEN :thicknesRange ELSE pc.thicknessFrom END or "
 			+ " pc.thicknessTo = CASE WHEN :thicknesRange IS NOT NULL THEN :thicknesRange ELSE pc.thicknessTo END )  "
-			+ " and ( pc.process.processName like %:searchText% or "
+			+ " and pc.locationId in ( :locationIds) and ( pc.process.processName like %:searchText% or "
 			+ " pc.grade.gradeName like %:searchText% ) order by id desc ")
 	Page<PriceMasterEntity> findAll(@Param("searchText") String searchText, 
-			@Param("thicknesRange") BigDecimal thicknesRange, Pageable pageable);
+			@Param("thicknesRange") BigDecimal thicknesRange, @Param("locationIds") List<Integer> locationIds, Pageable pageable);
 
 }

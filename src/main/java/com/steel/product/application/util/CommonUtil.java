@@ -18,10 +18,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.steel.product.application.dao.UserLocationMappingRepository;
+import com.steel.product.application.dao.UserPartyMappingRepository;
 import com.steel.product.application.dao.UserRepository;
 import com.steel.product.application.entity.AdminUserEntity;
 import com.steel.product.application.entity.UserLocationMappingEntity;
+import com.steel.product.application.entity.UserPartyMap;
 import com.steel.product.application.service.AWSS3Service;
 
 @Service
@@ -38,7 +39,7 @@ public class CommonUtil {
     private UserRepository userDetailsRepository;
 
     @Autowired
-    private UserLocationMappingRepository locationMappingRepository;
+    private UserPartyMappingRepository userPartyMap;
     
 	public String persistFiles(String applicationJarPath, String stageName, String templateName,
 			MultipartFile file) throws IOException {
@@ -73,15 +74,28 @@ public class CommonUtil {
 		return userId;
 	}
 
+	public List<Integer> getAllLocationIds() {
+		List<Integer> locationIds = new ArrayList<>();
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		UserDetails userDetail = (UserDetails) authentication.getPrincipal();
+		Optional<AdminUserEntity> userEntity = userDetailsRepository.findByUserName(userDetail.getUsername());
+		if (userEntity.isPresent()) {
+			for (UserPartyMap obj : userEntity.get().getUserPartyMap()) {
+				locationIds.add(obj.getPartyId());
+			}
+		}
+		return locationIds;
+	}
+
 	public List<Integer> getLocationWiseMappedUserIds() {
 		List<Integer> userIds = new ArrayList<>();
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		UserDetails userDetail = (UserDetails) authentication.getPrincipal();
 		Optional<AdminUserEntity> userEntity = userDetailsRepository.findByUserName(userDetail.getUsername());
 		if (userEntity.isPresent()) {
-			for (UserLocationMappingEntity obj : userEntity.get().getUserLocationMap()) {
-				List<UserLocationMappingEntity> mm = locationMappingRepository.findByLocationId(obj.getLocationId());
-				for (UserLocationMappingEntity obj1 : mm) {
+			for (UserPartyMap obj : userEntity.get().getUserPartyMap() ) {
+				List<UserPartyMap> mm = userPartyMap.findByPartyId(obj.getPartyId() );
+				for (UserPartyMap obj1 : mm) {
 					userIds.add(obj1.getUserId());
 				}
 			}

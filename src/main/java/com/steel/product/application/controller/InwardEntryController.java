@@ -16,6 +16,7 @@ import net.minidev.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -77,6 +78,9 @@ public class InwardEntryController {
 		System.out.println("DTO details " + inward);
 		try {
 			int userId = commonUtil.getUserId();
+			if(!(inward.getMmId()!=null && inward.getMmId().length() >0 )) {
+				return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid MMID\"}", new HttpHeaders(), HttpStatus.BAD_REQUEST);
+			}
 			inwardEntry.setInwardEntryId(0);
 			inwardEntry.setPurposeType(inward.getPurposeType());
 			inwardEntry.setParty(this.partyDetailsService.getPartyById(inward.getPartyId()));

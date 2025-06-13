@@ -564,7 +564,7 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 						totalPrice = totalPrice.add(priceCalculateDTO.getBasePrice()); 
 					} 
 				} else {
-					if (materialGradeDto.getMaterialGrade().getGradeId() == priceMasterResponse.getGradeId()
+					if (materialGradeDto.getMaterialGrade().getGradeId().equals( priceMasterResponse.getGradeId())
 							&& materialGradeDto.getMatId() ==  priceMasterResponse.getProductId ()
 							&& processId == priceMasterResponse.getProcessId()
 							&& BigDecimal.valueOf(ins.getInwardId().getfThickness()).compareTo(priceMasterResponse.getThicknessFrom()) >= 0
@@ -681,8 +681,10 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 	@Override
 	public Page<PriceMasterEntity> findAllWithPagination(PriceMasterListPageRequest request) {
 		Pageable pageable = PageRequest.of((request.getPageNo() - 1), request.getPageSize());
+		List<Integer>  kk = commonUtil.getAllLocationIds() ;
+		System.out.println("Hi kanak == "+kk);
 		Page<PriceMasterEntity> pageResult = priceMasterRepository.findAll(request.getSearchText(),
-				request.getThicknessRange(),  pageable);
+				request.getThicknessRange(), commonUtil.getAllLocationIds(), pageable);
 		return pageResult;
 	}
 
