@@ -704,7 +704,7 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 						
 			for (PriceMasterResponse priceMasterResponse : basePriceList) {
 				if(processId==8 || processId==7) {
-					if (inwardEntity.getMaterialGrade().getGradeId() == priceMasterResponse.getGradeId()
+					if (materialGradeDto.getMaterialGrade().getGradeId().equals(priceMasterResponse.getGradeId())
 							&& inwardEntity.getParty().getnPartyId() == priceMasterResponse.getPartyId()
 							&& processId == priceMasterResponse.getProcessId()) {
 
