@@ -3,6 +3,8 @@ package com.steel.product.application.dto.delivery;
 public class DeliveryItemDetails {
 
     private int instructionId;
+    
+    private int inwardId;
 
     private String remarks;
 
@@ -40,6 +42,14 @@ public class DeliveryItemDetails {
 
 	public void setAdditionalWeight(Float additionalWeight) {
 		this.additionalWeight = additionalWeight;
+	}
+
+	public int getInwardId() {
+		return inwardId;
+	}
+
+	public void setInwardId(int inwardId) {
+		this.inwardId = inwardId;
 	}
     
     

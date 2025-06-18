@@ -10,7 +10,7 @@ public class ValidatePriceMappingDTO {
     
     private Integer laminationId;
 
-    private List<Integer> inwardList;
+    private List<DeliveryItemDetails> inwardList;
 
 	public String getVehicleNo() {
 		return vehicleNo;
@@ -36,11 +36,11 @@ public class ValidatePriceMappingDTO {
 		this.laminationId = laminationId;
 	}
 
-	public List<Integer> getInwardList() {
+	public List<DeliveryItemDetails> getInwardList() {
 		return inwardList;
 	}
 
-	public void setInwardList(List<Integer> inwardList) {
+	public void setInwardList(List<DeliveryItemDetails> inwardList) {
 		this.inwardList = inwardList;
 	}
 

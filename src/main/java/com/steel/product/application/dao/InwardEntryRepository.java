@@ -77,7 +77,7 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
     //public Optional<InwardEntry> findById(@Param("inwardId")Integer inwardId);
 
     @Query("select inw from InwardEntry inw join fetch inw.party left outer join fetch MaterialMasterJswEntity mat on mat.mmId=inw.mmId where inw.inwardEntryId = :inwardId")
-    public Optional<InwardEntry> findById(@Param("inwardId")Integer inwardId);
+    public Optional<InwardEntry> findById(@Param("inwardId") Integer inwardId);
 
     @Query("select inw from InwardEntry inw join fetch inw.party join fetch inw.material join fetch inw.materialGrade join fetch inw.instructions ins join fetch ins.childInstructions")
     List<InwardEntry> findAllInwards();
@@ -194,4 +194,8 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 		nativeQuery = true)
 	Page<Object[]> findAllEndUserTagWiseData(@Param("endUserTagId") Integer endUserTagId, Pageable pageable);
 
+	@Modifying
+	@Transactional
+	@Query(value = "update product_tblinwardentry set allocated_soqty = :allocatedSoqty where inwardentryid= :inwardentryid", nativeQuery = true)
+	public void consolidatePlanner(@Param("inwardentryid") Integer inwardentryid, @Param("allocatedSoqty") Float totalAllocatedQty);
 }

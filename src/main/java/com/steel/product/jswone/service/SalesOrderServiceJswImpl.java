@@ -1,9 +1,11 @@
 package com.steel.product.jswone.service;
 
 import com.steel.product.application.dao.InstructionRepository;
+import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.dto.quality.ListPageSearchRequest;
 import com.steel.product.application.entity.AdminUserEntity;
 import com.steel.product.application.entity.Instruction;
+import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.entity.UserPartyMap;
 import com.steel.product.application.util.CommonUtil;
 import com.steel.product.jswone.entity.SalesOrderJswEntity;
@@ -43,14 +45,18 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 	private CommonUtil commonUtil;
 	
     private InstructionRepository instructionRepository;
+	
+    private InwardEntryRepository inwardEntryRepository;
 
 	@Autowired
 	public SalesOrderServiceJswImpl(SalesOrderJswRepository salesOrderRepository, CommonUtil commonUtil,
-			SalesOrderChildJswRepository childRepository,  InstructionRepository instructionRepository) {
+			SalesOrderChildJswRepository childRepository, InstructionRepository instructionRepository,
+			InwardEntryRepository inwardEntryRepository) {
 		this.childRepository = childRepository;
 		this.salesOrderRepository = salesOrderRepository;
 		this.commonUtil = commonUtil;
 		this.instructionRepository = instructionRepository;
+		this.inwardEntryRepository = inwardEntryRepository;
 	}
 
 	@Override
@@ -142,16 +148,29 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 	
 	@Override
 	public ResponseEntity<Object> consolidatePlanner(List<SalesOrderChildRequest> salesOrderPacketsListNew) {
-		log.info("");
+		log.info("inside consolidatePlanner ");
 		ResponseEntity<Object> responseEntity = null;
 		String message = "Consolidate planner created successfully..!";
 		try {
 			for (SalesOrderChildRequest request : salesOrderPacketsListNew) {
 				BigDecimal balanceQtyRequired = new BigDecimal("0.00");
 				BigDecimal totalAllocatedQty = new BigDecimal("0.00");
+				
 				SalesOrderPacketsJswEntity oldEntity = childRepository.findBySoChildId(request.getSoChildId());
-				balanceQtyRequired = oldEntity.getSoqty().subtract(oldEntity.getAllocatedSoqty());
-				totalAllocatedQty = request.getAllocatedSoqty().add(oldEntity.getAllocatedSoqty());
+				BigDecimal allocatedQty = (oldEntity.getAllocatedSoqty() == null? BigDecimal.ZERO : oldEntity.getAllocatedSoqty());
+
+				if (request.getAllocatedSoqty() == null) {
+					return new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"Please entered valid value in allocation quantity\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+				}
+				if (request.getAllocatedSoqty().compareTo(BigDecimal.ZERO) <= 0) {
+					return new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"Please entered valid value in allocation quantity\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+				}
+				if (request.getAllocatedSoqty().compareTo(oldEntity.getSoqty()) > 0) {
+					return new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"Entered quantity should be less than required quantity\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+				}
+				
+				balanceQtyRequired = oldEntity.getSoqty().subtract(allocatedQty);
+				totalAllocatedQty = request.getAllocatedSoqty().add(allocatedQty);
 
 				if (balanceQtyRequired.compareTo(BigDecimal.ZERO) == 0 && "COMPLETED".equals(oldEntity.getAllocatedStts())) {
 					return new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"This item has already been allocated.\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -171,24 +190,30 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 						request.getInwardEntryId(), 
 						commonUtil.getUserId());
 				
-			    Optional<Instruction> instructionList = instructionRepository.findInstructionById(request.getInstructionId());
-				if (instructionList != null && instructionList.isPresent()) {
-					Instruction instruction = instructionList.get();
-					BigDecimal balanceQtyRequired1 = new BigDecimal("0.00");
+				if (request.getInstructionId() != null && request.getInstructionId() > 0 && request.getInwardEntryId() != null && request.getInwardEntryId() > 0 ) {
+					Optional<Instruction> instructionList = instructionRepository.findInstructionById(request.getInstructionId());
+					if (instructionList != null && instructionList.isPresent()) {
+						Instruction instruction = instructionList.get();
+						float instructionAllocatedQty = (instruction.getAllocatedSoqty() == null? 0.0f : instruction.getAllocatedSoqty());
+						Float totalAllocatedItemQty = instructionAllocatedQty + request.getAllocatedSoqty().floatValue();
+						instructionRepository.consolidatePlanner(request.getInstructionId(), totalAllocatedItemQty);
+					}
+				} else {
+					Optional<InwardEntry> inwardList = inwardEntryRepository.findById(request.getInwardEntryId());
+					if (inwardList != null && inwardList.isPresent()) {
+						InwardEntry inwardEntry = inwardList.get();
+						float inwardAllocatedQty = (inwardEntry.getAllocatedSoqty() == null? 0.0f : inwardEntry.getAllocatedSoqty());
 
-					Float totalAllocatedItemQty = instruction.getActualWeight() - instruction.getAllocatedSoqty();
-					instructionRepository.consolidatePlanner(request.getInstructionId(), totalAllocatedItemQty);
-
+						Float totalAllocatedItemQty = inwardAllocatedQty + request.getAllocatedSoqty().floatValue();
+						inwardEntryRepository.consolidatePlanner(request.getInwardEntryId(), totalAllocatedItemQty);
+					}
 				}
-				
 			}
+			responseEntity = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"" + message + "\"}", new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
-			responseEntity = new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"" + e.getMessage() + "\"}",
-					new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+			responseEntity = new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"" + e.getMessage() + "\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		responseEntity = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"" + message + "\"}",
-				new HttpHeaders(), HttpStatus.OK);
 		return responseEntity;
 	}
 

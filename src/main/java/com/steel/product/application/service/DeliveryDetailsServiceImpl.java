@@ -101,7 +101,12 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
     @Transactional
     public DeliveryDetails save(DeliveryDto deliveryDto, int userId) {
         LOGGER.info("in save delivery api");
-        List<DeliveryItemDetails> deliveryItemDetails;
+        List<DeliveryItemDetails> deliveryItemDetails = deliveryDto.getDeliveryItemDetails();
+		for (DeliveryItemDetails instructionslist : deliveryItemDetails) {
+			if(instructionslist.getAdditionalWeight()!=null && instructionslist.getAdditionalWeight()>0) {
+				instructionService.updateAdditionalWeight(instructionslist.getInstructionId(), instructionslist.getAdditionalWeight());
+			}
+		}
         DeliveryDetails delivery;
         if(deliveryDto.getDeliveryId() != null){
             LOGGER.info("Updating delivery with id "+deliveryDto.getDeliveryId());
@@ -124,7 +129,6 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
         delivery.setTallyStatus("PENDING");
         delivery.setPackingRateId( deliveryDto.getPackingRateId());
         delivery.setLaminationId( deliveryDto.getLaminationId() );
-        deliveryItemDetails = deliveryDto.getDeliveryItemDetails();
         float inStockWeight = 0f, weightToDeliver = 0f, parentWeight = 0f;
         Integer deliveredStatusId = 4;
         Status deliveredStatus = statusService.getStatusById(deliveredStatusId);
@@ -590,16 +594,16 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 		PriceCalculateResponseDTO priceCalculateResponseDTO= new PriceCalculateResponseDTO();
         try {
 			LOGGER.info("in validatePriceMapping delivery api");
-			List<Integer> inwardList = deliveryDto.getInwardList();
+			//List<DeliveryItemDetails> inwardList = deliveryDto.getInwardList();
 			boolean mainStts = false;
 			List<PriceCalculateDTO> priceDetailsList=new ArrayList<>();
 
-			for (Integer inwardId  : inwardList) {
+			for (DeliveryItemDetails req : deliveryDto.getInwardList()) {
+				Integer inwardId  =  req.getInwardId();
 				InwardEntry inwardEntry =  inwardEntryService.getByEntryId(inwardId);
 		        MaterialResponseDto materialGradeDto = materialMasterJswService.getGradeProductName(inwardEntry.getMmId());
 					 
 				boolean innerStts = false;
-				
 				PriceCalculateDTO priceCalculateDTO = priceMasterService.calculateInwardWisePrice(inwardEntry, deliveryDto.getPackingRateId(), deliveryDto.getLaminationId());
 
 				priceCalculateDTO.setCoilNo(inwardEntry.getCoilNumber());
@@ -608,7 +612,12 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 				priceCalculateDTO.setThickness(BigDecimal.valueOf(inwardEntry.getfThickness()));
 				priceCalculateDTO.setMatGradeName(materialGradeDto.getMaterialGrade().getGradeName());
 				priceCalculateDTO.setActualWeight(inwardEntry.getFpresent());
-
+				Float actualTotalWeight = priceCalculateDTO.getActualWeight();
+				if (req.getAdditionalWeight() != null && req.getAdditionalWeight() > 0) {
+					priceCalculateDTO.setAdditionalWeight(req.getAdditionalWeight());
+					actualTotalWeight = priceCalculateDTO.getActualWeight() + priceCalculateDTO.getAdditionalWeight();
+				}
+				
 				BigDecimal amount =new BigDecimal("0.00");
 				
 				if(priceCalculateDTO!=null && priceCalculateDTO.getBasePrice() !=null) {
@@ -626,7 +635,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 				if(amount!=null ) {
 					priceCalculateDTO.setRate(amount.setScale(3, RoundingMode.HALF_EVEN));
 					BigDecimal totalAmount = new BigDecimal(BigInteger.ZERO,  2);
-					totalAmount = (amount.multiply(BigDecimal.valueOf(priceCalculateDTO.getActualWeight())));
+					totalAmount = (amount.multiply(BigDecimal.valueOf(actualTotalWeight)));
 					totalAmount = totalAmount.divide(BigDecimal.valueOf(1000));
 					priceCalculateDTO.setTotalPrice(totalAmount.setScale(3, RoundingMode.HALF_EVEN));
 				}

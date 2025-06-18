@@ -155,12 +155,9 @@ public class InwardEntry {
     @Column(name = "pdf_s3_url")
     private String pdfS3Url;
 
-    //@Column(name = "qrcode_s3_url")
-    //private String qrcodeS3Url;
-
-    //@Column(name = "qrcode_editfinish_s3_url")
-    //private String qrcodeEditfinishS3Url;
-
+    @Column(name = "allocated_soqty")
+    private Float allocatedSoqty;
+    
     @Column(name = "labelpdf_s3_url")
     private String labelpdfS3Url;
 
@@ -539,6 +536,14 @@ public class InwardEntry {
 
 	public void setMmId(String mmId) {
 		this.mmId = mmId;
+	}
+
+	public Float getAllocatedSoqty() {
+		return allocatedSoqty;
+	}
+
+	public void setAllocatedSoqty(Float allocatedSoqty) {
+		this.allocatedSoqty = allocatedSoqty;
 	}
 
 	public static InwardEntryPdfDto valueOf(InwardEntry inwardEntry, List<InstructionResponsePdfDto> instructionResponsePdfDtos){
