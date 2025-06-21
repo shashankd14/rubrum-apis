@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -186,6 +187,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				childRepository.consolidatePlanner(request.getSoChildId(), 
 						totalAllocatedQty,
 						allocationStts,
+						request.getSpecialInstructions(),
 						request.getInstructionId(), 
 						request.getInwardEntryId(), 
 						commonUtil.getUserId());
@@ -217,5 +219,43 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 		return responseEntity;
 	}
 
+	@Override
+	public Page<Object[]> findInventory(ListPageSearchRequest listPageSearchRequest) {
+		Pageable pageable = null;
+		if (listPageSearchRequest.getSortColumn() != null && listPageSearchRequest.getSortColumn().length() > 0
+				&& listPageSearchRequest.getSortOrder() != null && listPageSearchRequest.getSortOrder().length() > 0
+				&& "ASC".equalsIgnoreCase(listPageSearchRequest.getSortOrder())) {
+			pageable = PageRequest.of((listPageSearchRequest.getPageNo()-1), listPageSearchRequest.getPageSize(), Sort.by(listPageSearchRequest.getSortColumn()).ascending());
+		}else if (listPageSearchRequest.getSortColumn() != null && listPageSearchRequest.getSortColumn().length() > 0
+				&& listPageSearchRequest.getSortOrder() != null && listPageSearchRequest.getSortOrder().length() > 0
+				&& "DESC".equalsIgnoreCase(listPageSearchRequest.getSortOrder())) {
+			pageable = PageRequest.of((listPageSearchRequest.getPageNo()-1), listPageSearchRequest.getPageSize(), Sort.by(listPageSearchRequest.getSortColumn()).descending());
+		} else {
+			pageable = PageRequest.of((listPageSearchRequest.getPageNo()-1), listPageSearchRequest.getPageSize(), Sort.by("inwardid").descending());
+		}		
+				
+		List<Integer> partyIds = new ArrayList<>();
+		boolean partyIdsFlag = false;
+		if (listPageSearchRequest.getPartyId() != null && listPageSearchRequest.getPartyId() > 0) {
+			partyIds.add(listPageSearchRequest.getPartyId());
+			partyIdsFlag = true;
+		} else {
+			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
+			if (adminUserEntity.getUserPartyMap() != null && adminUserEntity.getUserPartyMap().size() > 0) {
+				partyIds = new ArrayList<>();
+				//for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
+					//partyIds.add(userPartyMap.getPartyId());
+					//partyIdsFlag = true;
+				//}
+				log.info("In partyIds === " + partyIds);
+			} else {
+				partyIdsFlag = false;
+				partyIds = new ArrayList<>();
+			}
+		}
+		Page<Object[]> packetsList = salesOrderRepository.findInventory(listPageSearchRequest.getSearchText(), partyIds,
+				partyIdsFlag, pageable);
+		return packetsList;
+	}
 
 }

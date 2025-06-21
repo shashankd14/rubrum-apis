@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import com.steel.product.application.dto.quality.ListPageSearchRequest;
 import com.steel.product.jswone.request.SalesOrderChildRequest;
 import com.steel.product.jswone.request.SalesOrderMainRequest;
+import com.steel.product.jswone.response.InwardEntryResponseDto;
 import com.steel.product.jswone.response.SalesOrderChildResponse;
 import com.steel.product.jswone.response.SalesOrderMainResponse;
 import com.steel.product.jswone.service.SalesOrderJswService;
@@ -120,8 +121,33 @@ public class SalesOrderJswController {
 		return new ResponseEntity<Object>(response, HttpStatus.OK);
 	}
 	
-	
-	
+	@PostMapping(value = "/findinventory", produces = "application/json")
+	public ResponseEntity<Object> findInventory(@RequestBody ListPageSearchRequest listPageSearchRequest) {
+		Map<String, Object> response = new HashMap<>();
+		Page<Object[]> packetsList1 = salesOrderService.findInventory(listPageSearchRequest);
+		List<InwardEntryResponseDto> list = new ArrayList<>();
+
+		for (Object[] result : packetsList1) {
+			InwardEntryResponseDto resp = new InwardEntryResponseDto();
+			resp.setInstructionId(result[0] != null ? Integer.parseInt(result[0].toString()) : null);
+			resp.setInwardEntryId(result[1] != null ? Integer.parseInt(result[1].toString()) : null);
+			resp.setCoilNumber(result[2] != null ? (String) result[2] : null);
+			resp.setCustomerBatchId(result[3] != null ? (String) result[3] : null);
+			resp.setMmId(result[4] != null ? (String) result[4] : null);
+			resp.setMaterial(result[5] != null ? (String) result[5] : null);
+			resp.setMaterialGrade(result[6] != null ? (String) result[6] : null);
+			resp.setFThickness(result[7] != null ? (float) result[7] : null);
+			resp.setFLength(result[8] != null ? (float) result[8] : null);
+			resp.setFQuantity(result[9] != null ? (float) result[9] : null);
+			resp.setLocationName( result[10] != null ? (String) result[10] : null);
+			list.add(resp);
+		}
+		response.put("content", list);
+		response.put("currentPage", packetsList1.getNumber());
+		response.put("totalItems", packetsList1.getTotalElements());
+		response.put("totalPages", packetsList1.getTotalPages());
+		return new ResponseEntity<Object>(response, HttpStatus.OK);
+	}
 	
 
 }

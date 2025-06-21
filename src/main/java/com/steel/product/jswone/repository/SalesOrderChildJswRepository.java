@@ -17,15 +17,17 @@ public interface SalesOrderChildJswRepository extends JpaRepository<SalesOrderPa
 	@Modifying
 	@Transactional
 	@Query("update SalesOrderPacketsJswEntity inw set inw.allocatedStts = :allocatedStts, "
-			+ " inw.allocatedSoqty=:allocatedSoqty, "
-			+ " inw.instructionId=:instructionId, "
-			+ " inw.inwardEntryId=:inwardEntryId, "
-			+ " inw.allocationBy=:userId, "
-			+ " inw.allocationDate=CURRENT_TIMESTAMP "
+			+ " inw.allocatedSoqty = :allocatedSoqty,"
+			+ " inw.specialInstructions = :specialInstructions, "
+			+ " inw.instructionId = :instructionId, "
+			+ " inw.inwardEntryId = :inwardEntryId, "
+			+ " inw.allocationBy = :userId, "
+			+ " inw.allocationDate = CURRENT_TIMESTAMP "
 			+ " where inw.soChildId = :soChildId")
 	void consolidatePlanner(@Param("soChildId") Integer soChildId,
 			@Param("allocatedSoqty") BigDecimal allocatedSoqty,
-			@Param("allocatedStts") String allocatedStts, 
+			@Param("allocatedStts") String allocatedStts,
+			@Param("specialInstructions") String specialInstructions, 
 			@Param("instructionId") Integer instructionId, 
 			@Param("inwardEntryId") Integer inwardEntryId,
 			@Param("userId") int userId);

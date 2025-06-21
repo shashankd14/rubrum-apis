@@ -19,4 +19,6 @@ public interface SalesOrderJswService {
 
 	ResponseEntity<Object> consolidatePlanner(List<SalesOrderChildRequest> salesOrderMainRequest);
 
+	Page<Object[]> findInventory(ListPageSearchRequest listPageSearchRequest);
+
 }

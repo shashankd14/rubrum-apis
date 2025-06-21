@@ -20,4 +20,6 @@ public class SalesOrderChildRequest {
 
 	private Integer inwardEntryId;
 
+	private String specialInstructions;
+
 }

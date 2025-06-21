@@ -42,6 +42,9 @@ public class SalesOrderPacketsJswEntity {
 	@Column(name = "inward_entry_d")
 	private Integer inwardEntryId;
 	
+	@Column(name = "special_instructions")
+	private String specialInstructions;
+	
 	@Column(name = "item_status")
 	private String itemStatus;
 
