@@ -211,8 +211,8 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 				partyIds = new ArrayList<>();
 			}
 		}
-		Page<Object[]> packetsList = salesOrderRepository.listAllSOIDs(listPageSearchRequest.getSearchText(),
-				listPageSearchRequest.getSoId(), pageable);
+		Page<Object[]> packetsList = salesOrderRepository.listAllSOIDs(listPageSearchRequest.getSearchText(), partyIds,
+				partyIdsFlag, listPageSearchRequest.getSoId(), pageable);
 
 		return packetsList;
 	}
@@ -310,23 +310,22 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 			resp.setCustomerCode(result[18] != null ? (String) result[18] : null);
 			resp.setOrderDate(result[19] != null ? (String) result[19] : null);
 			resp.setCagtegoryName(result[20] != null ? (String) result[20] : null);
-			resp.setProcessCenter("RAMESHWAR COIL CUTTER LLP, Ahmedabad");
+			resp.setProcessCenter( resp.getPartyName());
 
 			child.setInstructionId(result[0] != null ? (Integer) result[0] : null);
 			child.setInwardEntryId(result[1] != null ? (Integer) result[1] : null);
 			child.setPlannedNoofPieces( result[21] != null ? (Integer) result[21] : null);
 			child.setCoilNo(result[2] != null ? (String) result[2] : null);
-			child.setCoilSKU("MS HR Coil E250A 2x1250");
-			child.setProcessing("CTL");
-			child.setFinalProcessingSKU("MS HR Sheet 2062:2011 E250A 2x1250x1710");
-			child.setPackingMode("Loose Bundle");
-			child.setSpecilaInstructions("Loose Bundle");
-			child.setDiagonal("Max. 3.00");
-			child.setEdgeBurr("Max 3% of Thick");
+			
 			child.setCustomerBatchNo(result[3] != null ? (String) result[3] : null);
 			child.setMaterialGrade(result[4] != null ? (String) result[4] : null);
 			child.setMaterialDesc(result[5] != null ? (String) result[5] : null);
 			child.setFthickness(result[6] != null ? (Float) result[6] : null);
+			child.setProcessing("CTL");
+			child.setPackingMode("Loose Bundle");
+			child.setSpecilaInstructions("Loose Bundle");
+			child.setDiagonal("Max. 3.00");
+			child.setEdgeBurr("Max 3% of Thick");
 
 			try {
 				Float dweight;
@@ -346,6 +345,13 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 				child.setFweight(dweight1.floatValue());
 				child.setFlenghth(dlength1.floatValue());
 			}
+			String formName = (result[22] != null ? (String) result[22] : null);
+			String coilSKU		= formName+" "+child.getMaterialGrade()+ " "+child.getFthickness() + " X  "+ child.getFwidth() + " X  "+ child.getFlenghth();
+			String packetSKU	= "Sheet"+" "+child.getMaterialGrade()+ " "+child.getFthickness() + " X  "+ child.getFwidth()  + " X  "+ child.getFlenghth();
+
+			child.setCoilSKU(coilSKU);
+			child.setFinalProcessingSKU(packetSKU);
+
 			dweightTotal=dweightTotal+child.getFweight();
 			child.setPacketStatus(result[13] != null ? (String) result[13] : null);
 			resp.getChildListResp().add(child);

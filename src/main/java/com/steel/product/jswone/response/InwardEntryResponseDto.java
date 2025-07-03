@@ -29,16 +29,8 @@ public class InwardEntryResponseDto {
 
     private float fQuantity;
 
-    private float grossWeight;
-
-    private String vProcess;
-
     private Float fpresent;
 
     private Float inStockWeight;
 
-    private Float availableLength;
-
-    
-    
 }

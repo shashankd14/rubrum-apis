@@ -543,19 +543,20 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 		try {
 			
 			Map<String, Integer> partyIdsMap = new HashMap<>();
-			partyIdsMap.put("JSW - JSI", 1);
-			partyIdsMap.put("JSW - VANSH", 2);
-			partyIdsMap.put("Taloja", 3);
-			partyIdsMap.put("Ratneesh Engg", 4);
-			partyIdsMap.put("Ratnesh Ispat", 5);
-			partyIdsMap.put("Mita Engineering", 6);
-			partyIdsMap.put("ASPEN - UNIT 1", 7);
-			partyIdsMap.put("BANSAL Industiries", 8);
-			partyIdsMap.put("Rameshwar Coil Cutter LLP", 9);
-			partyIdsMap.put("SME", 10);
-			partyIdsMap.put("AKEYEM", 11);
-			partyIdsMap.put("G2", 12);
-			partyIdsMap.put("ASPEN - UNIT 3", 13);
+			partyIdsMap.put("JSI", 1);
+			partyIdsMap.put("Vansh Ispat", 2);
+			partyIdsMap.put("TSSC", 3);
+			partyIdsMap.put("REPL", 4);
+			partyIdsMap.put("RISP", 5);
+			partyIdsMap.put("Mita Engg", 6);
+			partyIdsMap.put("Aspen Unit - 1", 7);
+			partyIdsMap.put("Bansal Ispat", 8);
+			partyIdsMap.put("RCCL", 9);
+			partyIdsMap.put("SMEPL", 10);
+			partyIdsMap.put("ASMFPL", 11);
+			partyIdsMap.put("G2 Steel", 12);
+			partyIdsMap.put("Aspen Unit - 3", 13);
+			partyIdsMap.put("SSI", 14); 
 
 			List<MaterialMasterJswEntity> mmList = materialMasterRepository.findByMmId(inward.getMmid());
 			if (mmList != null && mmList.size() > 0 && mmList.get(0).getFormId() == 22 ) {
@@ -570,7 +571,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 
 				if (inward.getReceiveddate() != null && inward.getReceiveddate().length()>0) {
 					//System.out.println("date is == " + inward.getReceiveddate());
-					DateFormat sourceFormat = new SimpleDateFormat("dd-MMM-yyyy");
+					DateFormat sourceFormat = new SimpleDateFormat("dd-MMM-yy");
 					Date date = sourceFormat.parse(inward.getReceiveddate());
 					inwardEntry.setdReceivedDate(date);
 				} else {

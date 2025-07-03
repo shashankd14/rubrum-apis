@@ -52,15 +52,19 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrderEntity, In
 			+ " FROM product_tblinwardentry parent, product_instruction child, sales_order_child so_child, sales_order so, product_tblpartydetails party "
 			+ " where so.is_deleted = 0 and so_child.is_deleted = 0 and parent.inwardentryid = child.inwardid and parent.inwardentryid = so_child.inward_entry_d and so_child.so_id = so.so_id and so_child.instruction_id = child.instructionid and party.npartyid = parent.npartyid "
 			+ " and case when :soId is not null and LENGTH(:soId) >0 then so.so_id = :soId else so.so_id end " 
-			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (parent.coilNumber like %:searchText% or parent.customerBatchId like %:searchText% or so.so_number like %:searchText%) else 1=1 end " 
+			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (parent.coilNumber like %:searchText% or parent.customerBatchId like %:searchText% or so.so_number =:searchText) else 1=1 end " 
+			+ " and case when :partyIdsFlag=true then parent.npartyid in :partyIds else 1=1 end "
 			+ " order by so.so_id desc",
 		countQuery = "SELECT count(distinct so.so_number) "
 			+ " FROM product_tblinwardentry parent, product_instruction child, sales_order_child so_child, sales_order so,product_tblpartydetails party "
 			+ " where so.is_deleted=0 and so_child.is_deleted = 0 and parent.inwardentryid = child.inwardid and parent.inwardentryid = so_child.inward_entry_d and so_child.so_id = so.so_id and so_child.instruction_id = child.instructionid and party.npartyid = parent.npartyid "
 			+ " and case when :soId is not null and LENGTH(:soId) >0 then so.so_id = :soId else so.so_id end " 
-			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (parent.coilNumber like %:searchText% or parent.customerBatchId like %:searchText% or so.so_number like %:searchText%) else 1=1 end " 
+			+ " and case when :partyIdsFlag=true then parent.npartyid in :partyIds else 1=1 end "
+			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (parent.coilNumber like %:searchText% or parent.customerBatchId like %:searchText% or so.so_number =:searchText) else 1=1 end " 
 			+ "  ", nativeQuery = true)
-	Page<Object[]> listAllSOIDs(@Param("searchText") String searchText, @Param("soId") Integer soId, 
+	Page<Object[]> listAllSOIDs(@Param("searchText") String searchText,
+			@Param("partyIds") List<Integer> partyIds, @Param("partyIdsFlag") boolean partyIdsFlag,
+			@Param("soId") Integer soId, 
 			  Pageable pageable);
 	
 	@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, materialgrade, materialdesc, fthickness,  weight, npartyid,partyname,width, length, "
@@ -86,7 +90,7 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrderEntity, In
 	
 	@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, materialgrade, materialdesc, fthickness, plannedweight, npartyid,partyname,plannedwidth, plannedlength, "
 			+ "process_status, instruction_status,(select so_number from sales_order so where so.so_id= a.so_id) sonumber, "
-			+ " a.so_id, classification_tag, enduser_tag_name, customer_code, order_date,category_name, plannednoofpieces"
+			+ " a.so_id, classification_tag, enduser_tag_name, customer_code, order_date,category_name, plannednoofpieces,formname"
 			+ " from ( SELECT inwardid,  coilnumber, customerbatchid, "
 			+ " (SELECT product_name FROM jsw_product_master product, jsw_material_master mat where product.product_id=mat.producttype_id and mat.mm_id=parent.mm_id limit 1) as  materialdesc,"
 			+ " (SELECT grade_name FROM jsw_grade_master grade, jsw_material_master mat where grade.grade_id=mat.grade_id and mat.mm_id=parent.mm_id limit 1) as  materialgrade,"
@@ -100,7 +104,8 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrderEntity, In
 			+ " parent.npartyid, so_child.so_id,  "
 			+ " (select tag_name from product_enduser_tags tags where so.customer_code_id=tags.tag_id) as customer_code,"
 			+ " DATE_FORMAT(so.created_on, '%d-%m-%Y') AS order_date, "
-			+ " (SELECT category_name FROM jsw_category_master grade, jsw_material_master mat where grade.category_id=mat.category_id and mat.mm_id=parent.mm_id limit 1) as  category_name "
+			+ " (SELECT category_name FROM jsw_category_master grade, jsw_material_master mat where grade.category_id=mat.category_id and mat.mm_id=parent.mm_id limit 1) as  category_name, "
+			+ " (SELECT form_name FROM jsw_form_master form, jsw_material_master mat where form.form_id=mat.form_id and mat.mm_id=parent.mm_id limit 1) as formname "
 			+ " FROM product_tblinwardentry parent, product_instruction child, sales_order_child so_child, sales_order so, product_tblpartydetails party "
 			+ " where so.is_deleted = 0 and so_child.is_deleted = 0 and parent.inwardentryid = child.inwardid and parent.inwardentryid = so_child.inward_entry_d and so_child.so_id = so.so_id and so_child.instruction_id = child.instructionid and party.npartyid = parent.npartyid "
 			+ " and  so.so_id = :soId ) a "

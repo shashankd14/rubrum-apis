@@ -8,9 +8,11 @@ import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.entity.UserPartyMap;
 import com.steel.product.application.util.CommonUtil;
+import com.steel.product.jswone.entity.SalesOrderAllocationEntity;
 import com.steel.product.jswone.entity.SalesOrderJswEntity;
 import com.steel.product.jswone.entity.SalesOrderPacketsJswEntity;
 import com.steel.product.jswone.entity.StatusType;
+import com.steel.product.jswone.repository.SalesOrderAllocationJswRepository;
 import com.steel.product.jswone.repository.SalesOrderChildJswRepository;
 import com.steel.product.jswone.repository.SalesOrderJswRepository;
 import com.steel.product.jswone.request.SalesOrderChildRequest;
@@ -39,26 +41,23 @@ import org.springframework.stereotype.Service;
 @Log4j2
 public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 
+    @Autowired
 	private SalesOrderJswRepository salesOrderRepository;
 
+    @Autowired
 	private SalesOrderChildJswRepository childRepository;
 
+    @Autowired
+	private SalesOrderAllocationJswRepository soAllocationRepository;
+
+    @Autowired
 	private CommonUtil commonUtil;
 	
+    @Autowired
     private InstructionRepository instructionRepository;
 	
+    @Autowired
     private InwardEntryRepository inwardEntryRepository;
-
-	@Autowired
-	public SalesOrderServiceJswImpl(SalesOrderJswRepository salesOrderRepository, CommonUtil commonUtil,
-			SalesOrderChildJswRepository childRepository, InstructionRepository instructionRepository,
-			InwardEntryRepository inwardEntryRepository) {
-		this.childRepository = childRepository;
-		this.salesOrderRepository = salesOrderRepository;
-		this.commonUtil = commonUtil;
-		this.instructionRepository = instructionRepository;
-		this.inwardEntryRepository = inwardEntryRepository;
-	}
 
 	@Override
 	public ResponseEntity<Object> save(SalesOrderMainRequest salesOrderMainRequest, String option) {
@@ -187,10 +186,18 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				childRepository.consolidatePlanner(request.getSoChildId(), 
 						totalAllocatedQty,
 						allocationStts,
-						request.getSpecialInstructions(),
-						request.getInstructionId(), 
-						request.getInwardEntryId(), 
+						request.getSpecialInstructions(), 
 						commonUtil.getUserId());
+				
+				SalesOrderAllocationEntity allocation = new SalesOrderAllocationEntity();
+				allocation.setInstructionId(request.getInstructionId());
+				allocation.setInwardEntryId(request.getInwardEntryId());
+				allocation.setSoChildId(request.getSoChildId());
+				allocation.setSoId(request.getSoId());
+				allocation.setAllocatedSoqty(request.getAllocatedSoqty());
+				allocation.setAllocatedStts(allocationStts);
+				allocation.setAllocationBy(commonUtil.getUserId());
+				soAllocationRepository.save(allocation);
 				
 				if (request.getInstructionId() != null && request.getInstructionId() > 0 && request.getInwardEntryId() != null && request.getInwardEntryId() > 0 ) {
 					Optional<Instruction> instructionList = instructionRepository.findInstructionById(request.getInstructionId());
