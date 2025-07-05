@@ -78,4 +78,6 @@ public interface MaterialMasterJswService {
 
 	List<GradeMasterJswEntity> getGradesList();
 
+	MaterialGradeDto getSubGradeName(String mmId);
+
 }

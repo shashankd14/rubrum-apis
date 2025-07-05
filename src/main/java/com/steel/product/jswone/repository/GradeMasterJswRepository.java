@@ -21,6 +21,11 @@ public interface GradeMasterJswRepository extends JpaRepository<GradeMasterJswEn
 			+ " where product.grade_id=material.grade_id and mm_id=:mmId limit 1", nativeQuery = true)
 	List<Object[]> getGradeName(String mmId);
 
+	@Query(value = "select product.subgrade_id, subgrade_name "
+			+ " from jsw_material_master material, jsw_subgrade_master product  "
+			+ " where product.subgrade_id=material.subgrade_id and mm_id=:mmId limit 1", nativeQuery = true)
+	List<Object[]> getSubGradeName(String mmId);
+
 	@Query(value = "select product_name, grade_name,product.product_id,grade.grade_id "
 			+ " from jsw_material_master material, jsw_product_master product, jsw_grade_master grade   "
 			+ " where product.product_id=material.producttype_id and grade.grade_id=material.grade_id and mm_id=:mmId limit 1", nativeQuery = true)

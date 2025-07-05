@@ -48,6 +48,8 @@ public class InwardEntryPdfDto {
 
 	private String materialGradeName;
 
+	private String subGradeName;
+
 	private float fWidth;
 
 	private float fThickness;

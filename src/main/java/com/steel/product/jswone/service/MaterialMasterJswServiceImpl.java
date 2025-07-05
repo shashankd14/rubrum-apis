@@ -299,6 +299,19 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	}
 	
 	@Override
+	public MaterialGradeDto getSubGradeName(String mmId) {
+		log.info("In getSubGradeName page ");
+		MaterialGradeDto productName = null;
+		List<Object[]> productNameList = gradeRepository.getSubGradeName(mmId) ;
+		for (Object[] result : productNameList) {
+			productName = new MaterialGradeDto();
+			productName.setGradeId( result[0] != null ? (Integer) result[0] : null);
+			productName.setSubGradeName( result[1] != null ? (String) result[1] : null);
+		}
+		return productName;
+	}
+	
+	@Override
 	public MaterialGradeDto getGradeName(String mmId) {
 		log.info("In getGradeName page ");
 		MaterialGradeDto productName = null;

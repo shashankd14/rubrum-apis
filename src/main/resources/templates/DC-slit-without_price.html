@@ -141,7 +141,7 @@
                 <th class="t-head font-size-small" >Coil No</th>
                 <th class="t-head font-size-small" >Cust Batch No</th>
                 <th class="t-head font-size-small" >TxWxL (mm)</th>
-                <th class="t-head font-size-small" >Inward Dt</th>
+                <th class="t-head font-size-small" >Sub Grade</th>
                 <th class="t-head font-size-small" >Material Grade</th>
                 <th class="t-head font-size-small" >Material Desc</th>
           		<th class="t-head font-size-small" >No'of PCs</th>
@@ -153,7 +153,7 @@
                     <td class="font-size-x-small" th:text="${inw.coilNumber}"></td>
                     <td class="font-size-x-small" th:text="${inw?.customerBatchId}"></td>
                     <td class="font-size-x-small" th:text="${inw?.fThickness + ' x ' + ins?.actualWidth + ' x ' + ins?.actualLength}"></td>
-                    <td class="font-size-x-small" th:text="${#dates.format(inw?.createdOn,'dd/MM/yyyy')}"></td>
+                    <td class="font-size-x-small" th:text="${inw?.subGradeName}"></td>
                     <td class="font-size-x-small" th:text="${inw?.materialGradeName}"></td>
                     <td class="font-size-x-small" th:text="${inw?.matDescription}"></td>
                     <td class="font-size-x-small" th:text="${ins?.actualNoOfPieces}"></td>
