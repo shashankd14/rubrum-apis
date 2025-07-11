@@ -84,6 +84,8 @@ public class InwardEntryPdfDto {
 
 	private Date updatedOn;
 
+	private Date processedDate;
+
 	private Boolean isDeleted;
 
 	private List<InwardDoc> docs;
