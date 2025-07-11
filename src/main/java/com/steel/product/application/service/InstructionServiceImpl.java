@@ -732,9 +732,11 @@ public class InstructionServiceImpl implements InstructionService {
         float totalWeightCut = 0f;
         BigDecimal plannedYieldLossRatio = new BigDecimal("0.00");
         String cutPartDetailsId = null;
+        Date processedDate=new Date();
         Map<PartDetailsPdfResponse, List<InstructionResponsePdfDto>> partDetailsSlitMap = null, partDetailsCutMap = null;
         for (Object[] obj : objects) {
             PartDetails partDetails = (PartDetails) obj[0];
+            processedDate=  partDetails.getCreatedOn() ;
             plannedYieldLossRatio = partDetails.getPlannedYieldLossRatio();
             Instruction instruction = (Instruction) obj[1];
             instructions.add(Instruction.valueOfInstructionPdf(instruction, null));
@@ -775,6 +777,7 @@ public class InstructionServiceImpl implements InstructionService {
         inwardEntryPdfDto = InwardEntry.valueOf(inwardEntry, null);
         inwardEntryPdfDto.setPartDetailsCutMap(partDetailsCutMap);
         inwardEntryPdfDto.setPartDetailsSlitMap(partDetailsSlitMap);
+        inwardEntryPdfDto.setProcessedDate(processedDate);
         inwardEntryPdfDto.setInstructions( instructions);
         inwardEntryPdfDto.setTotalWeightCut(partDetailsSlitMap == null ? totalWeightCut : 0f);
 		inwardEntryPdfDto.setTotalWeightSlit(totalWeightSlit);
