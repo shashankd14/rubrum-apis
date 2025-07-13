@@ -11,4 +11,6 @@ public interface OutwardReportViewRepository extends JpaRepository<OutwardReport
 
 	List<OutwardReportViewEntity> findByPartyIdAndMnthAndYer(int partyId, Integer mnth, Integer year);
 
+	List<OutwardReportViewEntity> findByPartyId(Integer partyId);
+
 }

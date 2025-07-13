@@ -64,6 +64,12 @@ public class InwardReportViewEntity {
 	@Column(name = "customerinvoicedate")
 	private String customerinvoicedate;
 
+	@Column(name = "vehicleno")
+	private String vehicleno;
+	
+	@Column(name = "remarks")
+	private String remarks;
+
 	@Column(name = "party_id")
 	private int partyId;
 

@@ -10,4 +10,6 @@ public interface InwardReportViewRepository extends JpaRepository<InwardReportVi
 
 	List<InwardReportViewEntity> findByPartyIdAndMnthAndYer(int partyId, Integer mnth, Integer yer);
 
+	List<InwardReportViewEntity> findByPartyId(int partyId);
+
 }

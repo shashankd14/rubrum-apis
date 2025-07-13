@@ -64,33 +64,50 @@ public class MailSender {
 			MimeMessage message = javaMailSender.createMimeMessage();
 			MimeMessageHelper helper = new MimeMessageHelper(message, true);
 			
-			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0 && party.getDailyReportsList().contains("STOCKREPORT")) {
+			/* Below Reports are not required for JSWONE*/
+			/* 
+			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0
+					&& party.getDailyReportsList().contains("STOCKREPORT")) {
 				mailStts = true;
 				reportsService.createStockReport(party.getnPartyId(), strDate, helper);
 				reportsService.createStockDetailsReport(party.getnPartyId(), strDate, helper);
 			}
-			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0	&& party.getDailyReportsList().contains("FGREPORT")) {
-				mailStts = true;
-				reportsService.createFGReport(party.getnPartyId(), strDate, helper);
-				reportsService.createEndUserTagWiseFGReport(party.getnPartyId(), strDate, helper);
-			}
-			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0	&& party.getDailyReportsList().contains("WIPREPORT")) {
-				mailStts = true;
-				reportsService.createWIPReport(party.getnPartyId(), strDate, helper);
-				reportsService.createWIPReportEndusertagwise(party.getnPartyId(), strDate, helper);
-			}
-			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0 && party.getDailyReportsList().contains("STOCKSUMMARYREPORT")) {
-				mailStts = true;
-				reportsService.createStockSummaryReport(party.getnPartyId(), strDate, helper);
-			}
-			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0	&& party.getDailyReportsList().contains("RMREPORT")) {
+			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0
+					&& party.getDailyReportsList().contains("RMREPORT")) {
 				mailStts = true;
 				reportsService.createRMReport(party.getnPartyId(), strDate, helper);
 			}
-			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0	&& party.getDailyReportsList().contains("MONTHWISE_PLAN_TRACKER")) {
+			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0
+					&& party.getDailyReportsList().contains("MONTHWISE_PLAN_TRACKER")) {
 				mailStts = true;
-				reportsService.createMonthwisePlanTrackerReport( party.getnPartyId(), strDate, helper);
+				reportsService.createMonthwisePlanTrackerReport(party.getnPartyId(), strDate, helper);
+			}*/
+			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0
+					&& party.getDailyReportsList().contains("FGREPORT")) {
+				mailStts = true;
+				reportsService.createFGReport(party.getnPartyId(), strDate, helper);
+				//reportsService.createEndUserTagWiseFGReport(party.getnPartyId(), strDate, helper);
 			}
+			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0
+					&& party.getDailyReportsList().contains("WIPREPORT")) {
+				mailStts = true;
+				reportsService.createWIPReport(party.getnPartyId(), strDate, helper);
+				//reportsService.createWIPReportEndusertagwise(party.getnPartyId(), strDate, helper);
+			}
+			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0
+					&& party.getDailyReportsList().contains("STOCKREPORT")) {
+				mailStts = true;
+				reportsService.createStockSummaryReport(party.getnPartyId(), strDate, helper);
+			}
+			if (party.getMonthlyReportsList().contains("INWARDREPORT")) {
+				mailStts = true;
+				reportsService.createInwardMonthlyReport(party.getnPartyId(), strDate, helper);
+			} 
+			if (party.getMonthlyReportsList().contains("OUTWARDREPORT")) {
+				mailStts = true;
+				reportsService.createOutwardMonthlyReport(party.getnPartyId(), strDate, helper);
+			}
+			
 			helper.setFrom(fromMailId);			
 			if (party.getEmail1() != null && party.getEmail1().length() > 0) {
 				StringTokenizer st = new StringTokenizer(party.getEmail1(), ",");
@@ -118,7 +135,7 @@ public class MailSender {
 			logger.info("MailSender.Fail1: "+e.getMessage());
 		}
 	}
-	
+	/*
 	public void sendMonthlyReportsMail(Party party, Integer month, Integer year) {
 
 		logger.info("******MailSender.sendMonthlyReportsMail**************");
@@ -192,6 +209,6 @@ public class MailSender {
 			e.printStackTrace();
 			logger.info("MailSender.sendMonthlyReportsMail: "+e.getMessage());
 		}
-	}
+	}*/
 
 }

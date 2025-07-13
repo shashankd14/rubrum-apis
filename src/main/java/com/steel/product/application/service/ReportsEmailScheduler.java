@@ -49,7 +49,10 @@ public class ReportsEmailScheduler {
 
 			List<Party> partyList = partyRepo.findAll();
 			for (Party party : partyList) {
-				if (party.getEmail1() != null && party.getEmail1().length() > 0 && party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0) {
+				party.setEmail1("kanakadri@gmail.com");
+				party.setEmail2("kanakadri32@gmail.com");
+				if (party.getEmail1() != null && party.getnPartyId() == 1 && party.getEmail1().length() > 0
+						&& party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0) {
 					mailSender.sendMail(party, strDate);
 					Thread.sleep(200);
 				}
@@ -57,6 +60,7 @@ public class ReportsEmailScheduler {
 		}
 	}
 
+	/*
 	@Scheduled(cron = "${email.reportsMonthlyScheduleTime}")
 	public void sendMonthlyNotifications() throws InterruptedException {
 		if (apiAlertRequired) {
@@ -79,6 +83,6 @@ public class ReportsEmailScheduler {
 				}
 			}
 		}
-	}
+	}*/
 
 }

@@ -31,6 +31,9 @@ public class StockSummaryReportViewEntity {
 	@Column(name = "materialgrade")
 	private String materialGrade;
 
+	@Column(name = "coilage")
+	private int coilage;
+
 	@Column(name = "fthickness")
 	private String fthickness;
 

@@ -26,10 +26,9 @@ public interface ReportsService {
 
 	boolean createRMReport(int partyId, String strDate, MimeMessageHelper helper);
 
-	boolean createInwardMonthlyReport(Integer partyId, MimeMessageHelper helper, Integer month,
-			Map<Integer, String> months, Integer year);
+	boolean createInwardMonthlyReport(int partyId, String strDate, MimeMessageHelper helper);
 
-	boolean createOutwardMonthlyReport(Integer partyId, MimeMessageHelper helper, Integer month,
+	boolean createInwardMonthlyReport(Integer partyId, MimeMessageHelper helper, Integer month,
 			Map<Integer, String> months, Integer year);
 
 	boolean createStockMonthlyReport(Integer partyId, MimeMessageHelper helper, Integer month,
@@ -45,6 +44,11 @@ public interface ReportsService {
 
 	boolean createMonthwisePlanTrackerReport(int partyId, String strDate, MimeMessageHelper helper);
 
-	boolean createWIPReportEndusertagwise(Integer getnPartyId, String strDate, MimeMessageHelper helper);
+	boolean createOutwardMonthlyReport(Integer partyId, String strDate, MimeMessageHelper helper);
+
+	boolean createOutwardMonthlyReport(Integer getnPartyId, MimeMessageHelper helper, Integer month,
+			Map<Integer, String> months, Integer year);
+
+	//boolean createWIPReportEndusertagwise(Integer getnPartyId, String strDate, MimeMessageHelper helper);
 
 }

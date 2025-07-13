@@ -22,6 +22,9 @@ public class FGReportViewEntity {
 	@Column(name = "coilnumber")
 	private String coilNumber;
 
+	@Column(name = "orderid")
+	private String orderid;
+
 	@Column(name = "customerbatchid")
 	private String customerBatchId;
 
@@ -36,6 +39,9 @@ public class FGReportViewEntity {
 
 	@Column(name = "material_desc")
 	private String materialDesc;
+
+	@Column(name = "noofpieces")
+	private String noofpieces;
 
 	@Column(name = "material_grade")
 	private String materialGrade;

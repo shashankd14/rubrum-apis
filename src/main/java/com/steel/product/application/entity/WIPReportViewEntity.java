@@ -12,7 +12,7 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Data
 @Entity
-@Table(name = "wip_report_vw")
+@Table(name = "wip_report_jswone_vw")
 public class WIPReportViewEntity {
 
 	@Id
@@ -21,6 +21,9 @@ public class WIPReportViewEntity {
 
 	@Column(name = "coilnumber")
 	private String coilNumber;
+
+	@Column(name = "orderid")
+	private String orderid;
 
 	@Column(name = "customerbatchid")
 	private String customerBatchId;
@@ -55,6 +58,9 @@ public class WIPReportViewEntity {
 	@Column(name = "in_stock_weight")
 	private String inStockWeight;
 
+	@Column(name = "noofpieces")
+	private String noofpieces;
+
 	@Column(name = "wip_weight")
 	private String wipWeight;
 
@@ -82,8 +88,8 @@ public class WIPReportViewEntity {
 	@Column(name = "classification_tag")
 	private String classificationTag;
 
-	@Column(name = "enduser_tag_name")
-	private String enduserTagName;
+	//@Column(name = "enduser_tag_name")
+	//private String orderid;
 	
 	@Column(name = "partyId")
 	private int partyId;
