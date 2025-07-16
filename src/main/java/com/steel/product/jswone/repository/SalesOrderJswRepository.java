@@ -32,7 +32,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " so.destinationcode, so.refno, so.joplsorefno, so.bizsegment, so.ecommerce, so.supplysource, so.typeofsupply, "
 			+ " so.incomingpayment, so.paymentmode, so.terms, so.customerid, so.total_soqty, so.total_allocated_soqty, "
 			+ " so.allocated_stts as soallstts, so.so_status, so_child.so_child_id,  "
-			+ " so_child.mm_id, so_child.instruction_id, so_child.inward_entry_d, so_child.soqty, so_child.allocated_soqty, "
+			+ " so_child.mm_id, '' instruction_id, '' inward_entry_d, so_child.soqty, so_child.allocated_soqty, "
 			+ " so_child.allocated_stts, so_child.item_status " + 
 			" FROM jsw_sales_order so, jsw_sales_order_child so_child" + 
 			" where so.is_deleted = 0 and so_child.is_deleted = 0 and so_child.so_id = so.so_id" + 

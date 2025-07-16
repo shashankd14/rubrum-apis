@@ -31,8 +31,8 @@ public class FGReportViewEntity {
 	@Column(name = "finishing_date")
 	private String finishingDate;
 
-	@Column(name = "currentdate")
-	private String currentdate;
+	@Column(name = "processing_plan_date")
+	private String processingPlanDate;
 
 	@Column(name = "coilage")
 	private String coilage;
@@ -54,13 +54,13 @@ public class FGReportViewEntity {
 
 	@Column(name = "thickness")
 	private String thickness;
-	
+
 	@Column(name = "actualwidth")
 	private String actualwidth;
-	
+
 	@Column(name = "actuallength")
 	private String actuallength;
-	
+
 	@Column(name = "actualweight")
 	private String actualweight;
 

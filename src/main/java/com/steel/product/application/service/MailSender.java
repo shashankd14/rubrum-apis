@@ -1,7 +1,5 @@
 package com.steel.product.application.service;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.annotation.PostConstruct;
@@ -101,11 +99,11 @@ public class MailSender {
 			}
 			if (party.getMonthlyReportsList().contains("INWARDREPORT")) {
 				mailStts = true;
-				reportsService.createInwardMonthlyReport(party.getnPartyId(), strDate, helper);
+				reportsService.createInwardReport(party.getnPartyId(), strDate, helper);
 			} 
 			if (party.getMonthlyReportsList().contains("OUTWARDREPORT")) {
 				mailStts = true;
-				reportsService.createOutwardMonthlyReport(party.getnPartyId(), strDate, helper);
+				reportsService.createOutwardReport(party.getnPartyId(), strDate, helper);
 			}
 			
 			helper.setFrom(fromMailId);			

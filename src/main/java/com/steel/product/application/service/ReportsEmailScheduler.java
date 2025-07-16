@@ -2,8 +2,6 @@ package com.steel.product.application.service;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -49,17 +47,14 @@ public class ReportsEmailScheduler {
 
 			List<Party> partyList = partyRepo.findAll();
 			for (Party party : partyList) {
-				party.setEmail1("kanakadri@gmail.com");
-				party.setEmail2("kanakadri32@gmail.com");
-				if (party.getEmail1() != null && party.getnPartyId() == 1 && party.getEmail1().length() > 0
-						&& party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0) {
+				if (party.getEmail1() != null && party.getEmail1().length() > 0 && party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0) {
 					mailSender.sendMail(party, strDate);
 					Thread.sleep(200);
 				}
 			}
 		}
 	}
-
+    
 	/*
 	@Scheduled(cron = "${email.reportsMonthlyScheduleTime}")
 	public void sendMonthlyNotifications() throws InterruptedException {

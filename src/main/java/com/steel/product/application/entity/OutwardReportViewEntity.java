@@ -18,27 +18,24 @@ public class OutwardReportViewEntity {
 	@Id
 	@Column(name = "id")
 	private Integer id;
-	
+
 	@Column(name = "mnth")
 	private Integer mnth;
-	
+
 	@Column(name = "yer")
 	private Integer yer;
-	
-	@Column(name = "customer_name")
-	private String customerName;
 
 	@Column(name = "coilnumber")
 	private String coilnumber;
 
 	@Column(name = "customerbatchid")
 	private String customerbatchid;
-	
-	@Column(name = "material_desc")
+
+	@Column(name = "materialdesc")
 	private String materialdesc;
 
-	@Column(name = "material_grade")
-	private String materialGrade;
+	@Column(name = "materialgrade")
+	private String materialgrade;
 
 	@Column(name = "fthickness")
 	private String fthickness;
@@ -58,11 +55,11 @@ public class OutwardReportViewEntity {
 	@Column(name = "createdon")
 	private String createdon;
 
+	@Column(name = "noofpieces")
+	private String noofpieces;
+
 	@Column(name = "vehicleno")
 	private String vehicleno;
-
-	@Column(name = "endusertagname")
-	private String endusertagname;
 
 	@Column(name = "party_id")
 	private int partyId;

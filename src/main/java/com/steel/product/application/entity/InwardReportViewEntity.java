@@ -25,8 +25,8 @@ public class InwardReportViewEntity {
 	@Column(name = "yer")
 	private Integer yer;
 	
-	@Column(name = "customer_name")
-	private String customerName;
+	@Column(name = "testcertificatenumber")
+	private String testcertificatenumber;
 
 	@Column(name = "coilnumber")
 	private String coilnumber;

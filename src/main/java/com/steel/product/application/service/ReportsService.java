@@ -1,8 +1,6 @@
 package com.steel.product.application.service;
 
 import java.util.List;
-import java.util.Map;
-
 import org.springframework.mail.javamail.MimeMessageHelper;
 
 import com.steel.product.application.dto.report.StockReportRequest;
@@ -12,10 +10,6 @@ public interface ReportsService {
 
 	String generateAndMailStockReport(StockReportRequest stockReportRequest);
 
-	boolean createStockReport(int partyId, String strDate, MimeMessageHelper helper);
-	
-	boolean createStockDetailsReport(int partyId, String strDate, MimeMessageHelper helper);
-
 	boolean createFGReport(int partyId, String strDate, MimeMessageHelper helper);
 
 	boolean createWIPReport(int partyId, String strDate, MimeMessageHelper helper);
@@ -24,30 +18,29 @@ public interface ReportsService {
 
 	List<StockSummaryReportViewEntity> reconcileReport(String coilNumber);
 
-	boolean createRMReport(int partyId, String strDate, MimeMessageHelper helper);
+	boolean createOutwardReport(Integer partyId, String strDate, MimeMessageHelper helper);
 
-	boolean createInwardMonthlyReport(int partyId, String strDate, MimeMessageHelper helper);
+	boolean createInwardReport(int partyId, String strDate, MimeMessageHelper helper);
 
-	boolean createInwardMonthlyReport(Integer partyId, MimeMessageHelper helper, Integer month,
-			Map<Integer, String> months, Integer year);
-
-	boolean createStockMonthlyReport(Integer partyId, MimeMessageHelper helper, Integer month,
-			Map<Integer, String> months);
+	//boolean createStockReport(int partyId, String strDate, MimeMessageHelper helper);
 	
-	boolean createProcessingMonthlyReport(Integer partyId, MimeMessageHelper helper, Integer month,
-			Map<Integer, String> months, Integer year);
+	//boolean createStockDetailsReport(int partyId, String strDate, MimeMessageHelper helper);
 
-	boolean createFinishingMonthlyReport(Integer getnPartyId, MimeMessageHelper helper, Integer month,
-			Map<Integer, String> months, Integer year);
+	//boolean createRMReport(int partyId, String strDate, MimeMessageHelper helper);
 
-	boolean createEndUserTagWiseFGReport(Integer getnPartyId, String strDate, MimeMessageHelper helper);
+	//boolean createInwardMonthlyReport(Integer partyId, MimeMessageHelper helper, Integer month, Map<Integer, String> months, Integer year);
 
-	boolean createMonthwisePlanTrackerReport(int partyId, String strDate, MimeMessageHelper helper);
+	//boolean createStockMonthlyReport(Integer partyId, MimeMessageHelper helper, Integer month,Map<Integer, String> months);
+	
+	//boolean createProcessingMonthlyReport(Integer partyId, MimeMessageHelper helper, Integer month, Map<Integer, String> months, Integer year);
 
-	boolean createOutwardMonthlyReport(Integer partyId, String strDate, MimeMessageHelper helper);
+	//boolean createFinishingMonthlyReport(Integer getnPartyId, MimeMessageHelper helper, Integer month, Map<Integer, String> months, Integer year);
 
-	boolean createOutwardMonthlyReport(Integer getnPartyId, MimeMessageHelper helper, Integer month,
-			Map<Integer, String> months, Integer year);
+	//boolean createEndUserTagWiseFGReport(Integer getnPartyId, String strDate, MimeMessageHelper helper);
+
+	//boolean createMonthwisePlanTrackerReport(int partyId, String strDate, MimeMessageHelper helper);
+
+	//boolean createOutwardMonthlyReport(Integer getnPartyId, MimeMessageHelper helper, Integer month, Map<Integer, String> months, Integer year);
 
 	//boolean createWIPReportEndusertagwise(Integer getnPartyId, String strDate, MimeMessageHelper helper);
 
