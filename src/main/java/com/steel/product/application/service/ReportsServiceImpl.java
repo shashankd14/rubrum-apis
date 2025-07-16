@@ -208,19 +208,19 @@ public class ReportsServiceImpl implements ReportsService {
 			List<StockReportViewEntity> partyList = stockReportViewRepository.findByPartyId(partyId);
 
 			acctStatementMap.put("1",
-					new Object[] { "CoilNumber", "CustomerBatchId", "MaterialDesc", "MaterialGrade", "Thickness",
-							"Width", "Length", "NetWeight", "UnprocessedWeight", "InStockWeight", "Remarks",
-							"InwardStatus" });
+			new Object[] { "CoilNumber", "CustomerBatchId", "Coil Age", "MaterialDesc", "MaterialGrade",
+					"Thickness", "Width", "Length", "NetWeight", "UnprocessedWeight", "InStockWeight",
+					"Remarks", "InwardStatus" });
 
 			int cnt = 1;
 			for (StockReportViewEntity kk : partyList) {
 				cnt++;
 
 				acctStatementMap.put("" + cnt,
-						new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getMaterialDesc(),
-								kk.getMaterialGrade(), kk.getFthickness(), kk.getFwidth(), kk.getFlength(),
-								kk.getNetWeight(), kk.getUnProcessedWeight(), kk.getInStockWeight(), kk.getRemarks(),
-								kk.getInwardStatus() });
+				new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getCoilage(),
+						kk.getMaterialDesc(), kk.getMaterialGrade(), kk.getFthickness(), kk.getFwidth(),
+						kk.getFlength(), kk.getNetWeight(), kk.getUnProcessedWeight(), kk.getInStockWeight(),
+						kk.getRemarks(), kk.getInwardStatus() });
 			}
 		} catch (Exception e) {
 			LOGGER.error("Error at getStockReportDetails " + e.getMessage());

@@ -52,6 +52,9 @@ public class StockReportViewEntity {
 	@Column(name = "Unprocessed_Weight")
 	private String unProcessedWeight;
 	
+	@Column(name = "coilage")
+	private Integer coilage;
+	
 	@Column(name = "mnth")
 	private Integer mnth;
 	
