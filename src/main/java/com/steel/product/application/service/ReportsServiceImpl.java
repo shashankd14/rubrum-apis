@@ -239,9 +239,10 @@ public class ReportsServiceImpl implements ReportsService {
 				cnt++;
 				acctStatementMap.put("" + cnt,
 				new Object[] { kk.getPacketId(), kk.getOrderid(), kk.getCoilNumber(), kk.getCustomerBatchId(),
-				kk.getProcessingPlanDate(), kk.getFinishingDate(), kk.getCoilage(), kk.getMaterialDesc(),
-				kk.getMaterialGrade(), kk.getThickness(), kk.getActualwidth(), kk.getActuallength(),
-				kk.getActualweight(), kk.getClassificationTag(), kk.getRemarks() });
+				kk.getProcessingPlanDate(), kk.getFinishingDate(), kk.getCoilage(),
+				kk.getMaterialDesc(), kk.getMaterialGrade(), kk.getThickness(), kk.getActualwidth(),
+				kk.getActuallength(), kk.getCoilage(), kk.getActualweight(), kk.getClassificationTag(),
+				kk.getRemarks() });
 			}
 		} catch (Exception e) {
 			LOGGER.error("Error at getFGReportDetails " + e.getMessage());
