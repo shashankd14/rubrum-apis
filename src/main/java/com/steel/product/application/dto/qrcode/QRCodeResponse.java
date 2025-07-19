@@ -53,6 +53,8 @@ public class QRCodeResponse {
 
 	private Integer processId;
 
+	private String processName;
+
 	private Boolean isSlitAndCut;
 
 	private String companyName;

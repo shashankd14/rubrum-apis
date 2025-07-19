@@ -54,6 +54,7 @@ public class PdfService {
 	}
 
     public File generatePdf(PdfDto pdfDto) throws IOException, org.dom4j.DocumentException, DocumentException {
+    	log.info ("download plan PDF");
         Context context = getContext(pdfDto);
         String html = loadAndFillTemplate(context, pdfDto.getProcessId());
         return renderPdfInstruction(html, "inward", ""+pdfDto.getInwardId(), "INWARD_PDF");

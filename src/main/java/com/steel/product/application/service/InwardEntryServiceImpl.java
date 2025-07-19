@@ -13,11 +13,11 @@ import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.entity.UserPartyMap;
 import com.steel.product.application.util.CommonUtil;
+
+import lombok.extern.log4j.Log4j2;
+
 import org.springframework.data.domain.Sort;
 import net.minidev.json.JSONObject;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,9 +31,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@Log4j2
 public class InwardEntryServiceImpl implements InwardEntryService {
 
-	private final static Logger LOGGER = LoggerFactory.getLogger("InwardEntryServiceImpl");
 	private final UserRepository userRepository;
 	private final InwardEntryRepository inwdEntryRepo;
 	private AWSS3Service awsS3Service;
@@ -119,7 +119,7 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 
 	@Override
 	public Page<InwardEntry> inwardList( SearchListPageRequest searchListPageRequest) {
-		LOGGER.info("In findAllWithPagination page ");
+		log.info("In findAllWithPagination page ");
 		Pageable pageable = null;
 		if (searchListPageRequest.getSortColumn() != null && searchListPageRequest.getSortColumn().length() > 0
 				&& searchListPageRequest.getSortOrder() != null && searchListPageRequest.getSortOrder().length() > 0
@@ -146,7 +146,7 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 				List<Integer> partyIds=new ArrayList<>();
 				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
 					partyIds.add(userPartyMap.getPartyId());
-					LOGGER.info("In partyIds === "+partyIds);
+					log.info("In partyIds === "+partyIds);
 				}
 				Page<InwardEntry> pageResult = inwdEntryRepo.findAll(searchListPageRequest.getSearchText(), partyIds, pageable);
 				return pageResult;
@@ -164,7 +164,7 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 
 	@Override
 	public Page<InwardEntry> partywiselist( SearchListPageRequest searchListPageRequest) {
-		LOGGER.info("In findAllPartyWiseWithPagination page ");
+		log.info("In findAllPartyWiseWithPagination page ");
 		Pageable pageable = null;
 		if (searchListPageRequest.getSortColumn() != null && searchListPageRequest.getSortColumn().length() > 0
 				&& searchListPageRequest.getSortOrder() != null && searchListPageRequest.getSortOrder().length() > 0
@@ -195,7 +195,7 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 				List<Integer> partyIds=new ArrayList<>();
 				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
 					partyIds.add(userPartyMap.getPartyId());
-					LOGGER.info("In partyIds === "+partyIds);
+					log.info("In partyIds === "+partyIds);
 				}
 				Page<InwardEntry> pageResult = inwdEntryRepo.findAll(searchListPageRequest.getSearchText(), partyIds, pageable);
 				return pageResult;
@@ -213,7 +213,7 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 	
 	@Override
 	public Page<Object[]> partywiselistEndUserTagWise(SearchListPageRequest searchListPageRequest) {
-		LOGGER.info("In partywiselistEndUserTagWise page ");
+		log.info("In partywiselistEndUserTagWise page ");
 		Pageable pageable = PageRequest.of((searchListPageRequest.getPageNo() - 1), searchListPageRequest.getPageSize());
 		int userId = commonUtil.getUserId();
 		Integer endUserTagId = 0;
@@ -228,7 +228,7 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 	
 	@Override
 	public Page<InwardEntry> findAllWIPlistWithPagination(int pageNo, int pageSize, String searchText, String partyId) {
-		LOGGER.info("In findAllWithPagination page ");
+		log.info("In findAllWithPagination page ");
 		Pageable pageable = PageRequest.of((pageNo-1), pageSize);
 		
 		if(partyId!=null && partyId.length()>0) {
@@ -240,7 +240,7 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 				List<Integer> partyIds=new ArrayList<>();
 				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
 					partyIds.add(userPartyMap.getPartyId());
-					LOGGER.info("In partyIds === "+partyIds);
+					log.info("In partyIds === "+partyIds);
 				}
 				Page<InwardEntry> pageResult = inwdEntryRepo.findAllWIP(searchText, partyIds, pageable);
 				return pageResult;

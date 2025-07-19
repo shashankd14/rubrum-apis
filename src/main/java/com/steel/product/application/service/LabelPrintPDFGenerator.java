@@ -318,15 +318,23 @@ public class LabelPrintPDFGenerator {
 					PdfPCell companyNameCell = new PdfPCell(new Phrase(response.getCompanyName(), font11u));
 					companyNameCell.setHorizontalAlignment( Element.ALIGN_CENTER );
 					companyNameCell.setBorder(Rectangle.LEFT | Rectangle.RIGHT | Rectangle.TOP);
-					companyNameCell.setColspan(4);
+					companyNameCell.setColspan(2);
 					coilDetailsTab.addCell(companyNameCell);	
+	
+					PdfPCell processName = new PdfPCell(new Phrase("PROCESS: "+response.getProcessName(), font7b));
+					processName.setHorizontalAlignment( Element.ALIGN_CENTER );
+					processName.setBorder(  Rectangle.RIGHT | Rectangle.TOP);
+					processName.setVerticalAlignment( Element.ALIGN_MIDDLE);
+					processName.setColspan(2);
+					processName.setRowspan(2);
+					coilDetailsTab.addCell(processName);		
 	
 					PdfPCell addressCell2 = new PdfPCell(new Phrase("Email : "+response.getCompanyEmail(), font5));
 					addressCell2.setHorizontalAlignment( Element.ALIGN_CENTER);
 					addressCell2.setVerticalAlignment( Element.ALIGN_TOP);
 					addressCell2.setFixedHeight(9);
 					addressCell2.setBorder(Rectangle.LEFT | Rectangle.RIGHT);
-					addressCell2.setColspan(4);
+					addressCell2.setColspan(2);
 					coilDetailsTab.addCell(addressCell2);
 	
 					PdfPTable unitDetailsTab = new PdfPTable(3);
@@ -427,6 +435,8 @@ public class LabelPrintPDFGenerator {
 					PdfPCell companyNameCell7 = null;
 					if(response.getProcessId() == 1 || response.getProcessId() == 3 ) {
 						companyNameCell7 = new PdfPCell(new Phrase("T: "+response.getFthickness()+"        "+"W: "+response.getFwidth()+"       "+"L: "+response.getFlength()+"    Qty : "+response.getPlannedNoOfPieces(), font11b));
+					} else if(response.getProcessId() == 2 ) {
+						companyNameCell7 = new PdfPCell(new Phrase("T: "+response.getFthickness()+"        "+"W: "+response.getFwidth()+"       "+"L: COIL", font11b));
 					} else {
 						companyNameCell7 = new PdfPCell(new Phrase("T: "+response.getFthickness()+"        "+"W: "+response.getFwidth()+"       "+"L: "+response.getFlength(), font11b));
 					}
@@ -642,6 +652,7 @@ public class LabelPrintPDFGenerator {
 			resp.setFinishedDate( result[20] != null ? (String) result[20] : "");
 			resp.setCompanyName(result[21] != null ? (String) result[21] : "");
 			resp.setCompanyEmail(result[22] != null ? (String) result[22] : "");
+			resp.setProcessName( result[23] != null ? (String) result[23] : "");
 			qirList.add(resp);
 		}
 		return qirList;
@@ -682,15 +693,23 @@ public class LabelPrintPDFGenerator {
 					PdfPCell companyNameCell = new PdfPCell(new Phrase(response.getCompanyName(), font11u));
 					companyNameCell.setHorizontalAlignment( Element.ALIGN_CENTER );
 					companyNameCell.setBorder(Rectangle.LEFT | Rectangle.RIGHT | Rectangle.TOP);
-					companyNameCell.setColspan(4);
+					companyNameCell.setColspan(2);
 					coilDetailsTab.addCell(companyNameCell);	
+	
+					PdfPCell processName = new PdfPCell(new Phrase("PROCESS: "+response.getProcessName(), font7b));
+					processName.setHorizontalAlignment( Element.ALIGN_CENTER );
+					processName.setBorder(Rectangle.RIGHT | Rectangle.TOP);
+					processName.setVerticalAlignment( Element.ALIGN_MIDDLE);
+					processName.setColspan(2);
+					processName.setRowspan(2);
+					coilDetailsTab.addCell(processName);	
 	
 					PdfPCell addressCell2 = new PdfPCell(new Phrase("Email : "+response.getCompanyEmail(), font5));
 					addressCell2.setHorizontalAlignment( Element.ALIGN_CENTER);
 					addressCell2.setVerticalAlignment( Element.ALIGN_TOP);
 					addressCell2.setFixedHeight(9);
 					addressCell2.setBorder(Rectangle.LEFT | Rectangle.RIGHT);
-					addressCell2.setColspan(4);
+					addressCell2.setColspan(2);
 					coilDetailsTab.addCell(addressCell2);
 	
 					PdfPTable unitDetailsTab = new PdfPTable(3);
@@ -791,6 +810,8 @@ public class LabelPrintPDFGenerator {
 					PdfPCell companyNameCell7 = null;
 					if(response.getProcessId() == 1 || response.getProcessId() == 3 ) {
 						companyNameCell7 = new PdfPCell(new Phrase("T: "+response.getFthickness()+"        "+"W: "+response.getActualwidth()+"       "+"L: "+response.getActuallength()+"    Qty : "+response.getPlannedNoOfPieces(), font11b));
+					} else if(response.getProcessId() == 2 ) {
+						companyNameCell7 = new PdfPCell(new Phrase("T: "+response.getFthickness()+"        "+"W: "+response.getFwidth()+"       "+"L: COIL", font11b));
 					} else {
 						companyNameCell7 = new PdfPCell(new Phrase("T: "+response.getFthickness()+"        "+"W: "+response.getActualwidth()+"       "+"L: "+response.getActuallength(), font11b));
 					}

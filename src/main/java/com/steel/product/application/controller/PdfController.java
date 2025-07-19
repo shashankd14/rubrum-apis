@@ -11,8 +11,7 @@ import com.steel.product.application.dto.pdf.PdfResponseDto;
 import com.steel.product.application.service.PdfService;
 import com.steel.product.application.service.QualityService;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,9 +28,8 @@ import java.util.Base64;
 @RestController
 @CrossOrigin
 @RequestMapping("/pdf")
+@Log4j2
 public class PdfController {
-	
-	private final static Logger logger = LoggerFactory.getLogger("PdfController");
 	
     private QualityService qualityService;
 
@@ -45,6 +43,7 @@ public class PdfController {
 
     @PostMapping("/inward")
     public ResponseEntity<PdfResponseDto> downloadInwardPDF(@RequestBody PdfDto pdfDto, HttpServletResponse response) {
+    	log.info ("downloadInwardPDF");
         Path file = null;
         byte[] bytes = null;
         StringBuilder builder = new StringBuilder();
@@ -62,6 +61,7 @@ public class PdfController {
 
     @PostMapping("/delivery")
     public ResponseEntity<PdfResponseDto> downloadDeliveryPDF(@RequestBody DeliveryPdfDto deliveryPdfDto, HttpServletResponse response) {
+    	log.info ("downloadDeliveryPDF");
         Path file = null;
         byte[] bytes = null;
         StringBuilder builder = new StringBuilder();
@@ -89,6 +89,7 @@ public class PdfController {
 
     @PostMapping
     public ResponseEntity<PdfResponseDto> downloadPDF(@RequestBody PartDto partDto) {
+    	log.info ("download plan PDF");
         Path file;
         byte[] bytes;
         StringBuilder builder = new StringBuilder();
@@ -106,6 +107,7 @@ public class PdfController {
 
 	@PostMapping("/qirpdf/{qirId}")
 	public ResponseEntity<PdfResponseDto> qirpdf(@PathVariable("qirId") Integer qirId) {
+    	log.info ("qirpdf");
         Path file;
         byte[] bytes;
         StringBuilder builder = new StringBuilder();
