@@ -146,8 +146,8 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 				List<Integer> partyIds=new ArrayList<>();
 				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
 					partyIds.add(userPartyMap.getPartyId());
-					LOGGER.info("In partyIds === "+partyIds);
 				}
+				LOGGER.info("In partyIds === "+partyIds);
 				Page<InwardEntry> pageResult = inwdEntryRepo.findAll(searchListPageRequest.getSearchText(), partyIds, pageable);
 				return pageResult;
 			} else {
@@ -195,8 +195,8 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 				List<Integer> partyIds=new ArrayList<>();
 				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
 					partyIds.add(userPartyMap.getPartyId());
-					LOGGER.info("In partyIds === "+partyIds);
 				}
+				LOGGER.info("In partyIds === "+partyIds);
 				Page<InwardEntry> pageResult = inwdEntryRepo.findAll(searchListPageRequest.getSearchText(), partyIds, pageable);
 				return pageResult;
 			} else {
@@ -240,8 +240,8 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 				List<Integer> partyIds=new ArrayList<>();
 				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
 					partyIds.add(userPartyMap.getPartyId());
-					LOGGER.info("In partyIds === "+partyIds);
 				}
+				LOGGER.info("In partyIds === "+partyIds);
 				Page<InwardEntry> pageResult = inwdEntryRepo.findAllWIP(searchText, partyIds, pageable);
 				return pageResult;
 			} else {

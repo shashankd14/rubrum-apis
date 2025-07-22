@@ -12,6 +12,7 @@ import com.steel.product.application.util.CommonUtil;
 import com.steel.product.jswone.service.MaterialMasterJswService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.extern.log4j.Log4j2;
 import net.minidev.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,7 @@ import javax.servlet.http.HttpServletRequest;
 @CrossOrigin
 @Tag(name = "Inward Entry", description = "Inward Entry")
 @RequestMapping({ "/inwardEntry" })
+@Log4j2
 public class InwardEntryController {
 	
 	private InwardEntryService inwdEntrySvc;
@@ -75,19 +77,27 @@ public class InwardEntryController {
 	@PostMapping("/addNew")
 	public ResponseEntity<Object> saveInwardEntry(@ModelAttribute InwardDto inward, HttpServletRequest request) {
 		InwardEntry inwardEntry = new InwardEntry();
-		System.out.println("DTO details " + inward);
+		log.info("in saveInwardEntry ");
 		try {
 			int userId = commonUtil.getUserId();
+			log.info("Entered MMID IS  = "+inward.getMmId()+", Location is "+inward.getPartyId());
 			if(!(inward.getMmId()!=null && inward.getMmId().length() >0 )) {
+				log.error("Invalid INWARD ID ");
 				return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid MMID\"}", new HttpHeaders(), HttpStatus.BAD_REQUEST);
 			}
 			inwardEntry.setInwardEntryId(0);
 			inwardEntry.setPurposeType(inward.getPurposeType());
-			inwardEntry.setParty(this.partyDetailsService.getPartyById(inward.getPartyId()));
+			try {
+				inwardEntry.setParty(this.partyDetailsService.getPartyById(inward.getPartyId()));
+			} catch (Exception e) {
+				log.error("Invalid Party Id ");
+				return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please select valid Location \"}", new HttpHeaders(), HttpStatus.BAD_REQUEST);
+			}
 			inwardEntry.setCoilNumber(inward.getCoilNumber());
 			inwardEntry.setBatchNumber(inward.getBatchNumber());
 			inwardEntry.setdReceivedDate(Timestamp.valueOf(inward.getInwardDate()));
 			if (inward.getPresentWeight() <= 0) {
+				log.error("inward.getPresentWeight() is invalid");
 				return new ResponseEntity<Object>("Invalid present weight entered.", HttpStatus.BAD_REQUEST);
 			}
 			inwardEntry.setInStockWeight(inward.getPresentWeight());
@@ -135,7 +145,6 @@ public class InwardEntryController {
 			inwardEntry.setUpdatedBy(userId);
 
 			if (inward.getTestCertificateFile() != null) {
-
 				String fileUrl = awsS3Service.uploadFile(inward.getTestCertificateFile());
 				inwardEntry.setTestCertificateFileUrl(fileUrl);
 			}
@@ -153,6 +162,7 @@ public class InwardEntryController {
 			}
 			return new ResponseEntity<Object>(InwardEntry.valueOfResponse(inwardEntry), HttpStatus.OK);
 		} catch (Exception e) {
+			log.error("Error while creating the INWARD "+e.getMessage());
 			e.printStackTrace();
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -161,7 +171,7 @@ public class InwardEntryController {
 	@PutMapping({ "/update" })
 	public ResponseEntity<Object> updateEntry(@RequestBody InwardDto inward, HttpServletRequest request) {
 		InwardEntry inwardEntry = new InwardEntry();
-		System.out.println("DTO details " + inward);
+		log.info("in updateEntry ");
 		try {
 			int userId = commonUtil.getUserId();
 			inwardEntry = inwdEntrySvc.getByEntryId(inward.getInwardId());
@@ -233,6 +243,7 @@ public class InwardEntryController {
 
 	@PostMapping({ "/inwardlist" })
 	public ResponseEntity<Object> inwardList(@RequestBody SearchListPageRequest searchListPageRequest) {
+		log.info("in inwardList ");
 		Map<String, Object> response = new HashMap<>();
 		Page<InwardEntry> pageResult = inwdEntrySvc.inwardList(searchListPageRequest);
 		List<Object> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponse(inw)).collect(Collectors.toList());
@@ -246,7 +257,7 @@ public class InwardEntryController {
 	@PostMapping({ "/partywiselist" })
 	public ResponseEntity<Object> partywiselist(@RequestBody SearchListPageRequest searchListPageRequest) {
 		Map<String, Object> response = new HashMap<>();
-
+		log.info("in partywiselist ");
 		if ("ENDUSER".equals(searchListPageRequest.getLoginType())) {
 			Page<Object[]> pageResult = inwdEntrySvc.partywiselistEndUserTagWise(searchListPageRequest);
 			List<EndUserTagWisePacketsDTO> responseList = new ArrayList<>();
@@ -271,7 +282,6 @@ public class InwardEntryController {
 			response.put("totalPages", pageResult.getTotalPages());
 			return new ResponseEntity<Object>(response, HttpStatus.OK);
 		} else {
-
 			Page<InwardEntry> pageResult = inwdEntrySvc.partywiselist(searchListPageRequest);
 			List<Object> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponse(inw, materialService)).collect(Collectors.toList());
 			response.put("content", inwardList);

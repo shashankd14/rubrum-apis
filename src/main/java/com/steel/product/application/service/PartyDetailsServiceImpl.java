@@ -168,8 +168,8 @@ public class PartyDetailsServiceImpl implements PartyDetailsService {
 			List<Integer> partyIds=new ArrayList<>();
 			for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
 				partyIds.add(userPartyMap.getPartyId());
-				LOGGER.info("In partyIds === "+partyIds);
 			}
+			LOGGER.info("In partyIds === "+partyIds);
 			Page<Party> pageResult = partyRepo.findAllParties(pageable, partyIds);
 			return pageResult;
 		} else {
@@ -186,8 +186,8 @@ public class PartyDetailsServiceImpl implements PartyDetailsService {
 			List<Integer> partyIds=new ArrayList<>();
 			for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
 				partyIds.add(userPartyMap.getPartyId());
-				LOGGER.info("In partyIds === "+partyIds);
 			}
+			LOGGER.info("In partyIds === "+partyIds);
 			List<Party> parties = partyRepo.findAllParties(partyIds);
 			return partyMapper.toResponseList(parties);
 		} else {

@@ -877,8 +877,8 @@ public class QualityServiceImpl implements QualityService {
 				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
 					partyIds.add(userPartyMap.getPartyId());
 					partyIdsFlag=true;
-					log.info("In partyIds === "+partyIds);
 				}
+				log.info("In partyIds === "+partyIds);
 			} else {
 				partyIdsFlag=false;
 				partyIds = new ArrayList<>();
