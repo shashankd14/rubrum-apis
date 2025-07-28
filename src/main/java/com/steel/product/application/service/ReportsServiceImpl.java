@@ -1013,16 +1013,16 @@ public class ReportsServiceImpl implements ReportsService {
 
 			acctStatementMap.put("1",
 			new Object[] { "Order ID", "DC No", "Dispatch Date", "CoilNumber", "SC Inward ID", "MaterialDesc",
-					"MaterialGrade", "Thickness", "Width", "Length", "Qty_Sheets", "Delivery Weight",
+					"MaterialGrade", "Thickness", "Width", "Length", "Qty_Sheets", "Delivery Weight","Additional  Weight",
 					"Vehicle No", "Processing Rate", "Quality Remarks" });
 			int cnt = 1;
 			for (OutwardReportViewEntity kk : partyList) {
 				cnt++;
 				acctStatementMap.put("" + cnt,
 				new Object[] { "", kk.getDeliveryid(), kk.getCreatedon(), kk.getCoilnumber(),
-						kk.getCustomerbatchid(), kk.getMaterialdesc(), kk.getMaterialgrade(),
-						kk.getFthickness(), kk.getFwidth(), kk.getFlength(), kk.getNoofpieces(),
-						kk.getDeliveryWeight(), kk.getVehicleno(),"", "" });
+				kk.getCustomerbatchid(), kk.getMaterialdesc(), kk.getMaterialgrade(),
+				kk.getFthickness(), kk.getFwidth(), kk.getFlength(), kk.getNoofpieces(),
+				kk.getDeliveryWeight(), kk.getAdditionalWeight(), kk.getVehicleno(), "", "" });
 			}
 		} catch (Exception e) {
 			LOGGER.error("Error at getMonthlyOutwardReportDetails " + e.getMessage());

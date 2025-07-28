@@ -49,6 +49,9 @@ public class OutwardReportViewEntity {
 	@Column(name = "delivery_weight")
 	private String deliveryWeight;
 
+	@Column(name = "additional_weight")
+	private String additionalWeight;
+
 	@Column(name = "deliveryid")
 	private String deliveryid;
 

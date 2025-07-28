@@ -184,16 +184,20 @@ public class DeliveryDetails {
         DeliveryResponseDto deliveryResponseDto = new DeliveryResponseDto();
         deliveryResponseDto.setDeliveryId(deliveryDetails.getDeliveryId());
         deliveryResponseDto.setCustomerInvoiceDate(deliveryDetails.getCustomerInvoiceDate());
-        deliveryResponseDto.setCustomerInvoiceNo(deliveryDetails.getCustomerInvoiceNo());
-        deliveryResponseDto.setTotalWeight(deliveryDetails.getTotalWeight());
-        deliveryResponseDto.setCreatedBy(deliveryDetails.getCreatedBy());
-        deliveryResponseDto.setDeleted(deliveryDetails.getDeleted());
+		deliveryResponseDto.setCustomerInvoiceNo(deliveryDetails.getCustomerInvoiceNo());
+		Double additionalWeight = deliveryDetails.getInstructions().stream()
+				.filter(d -> d.getAdditionalWeight() != null).mapToDouble(d -> d.getAdditionalWeight().floatValue())
+				.sum();
+		deliveryResponseDto.setTotalWeight(deliveryDetails.getTotalWeight() + additionalWeight.floatValue());
+		deliveryResponseDto.setCreatedBy(deliveryDetails.getCreatedBy());
+		deliveryResponseDto.setDeleted(deliveryDetails.getDeleted());
         deliveryResponseDto.setCreatedOn(deliveryDetails.getCreatedOn());
         deliveryResponseDto.setUpdatedBy(deliveryDetails.getUpdatedBy());
         deliveryResponseDto.setUpdatedOn(deliveryDetails.getUpdatedOn());
         deliveryResponseDto.setVehicleNo(deliveryDetails.getVehicleNo());
         deliveryResponseDto.setPackingRateId( deliveryDetails.getPackingRateId());
         deliveryResponseDto.setLaminationId( deliveryDetails.getLaminationId() );
+  
 //        deliveryResponseDto.setInstruction(deliveryDetails.getInstruction().stream().map(i -> Instruction.valueOf(i)).collect(Collectors.toList()));
         return deliveryResponseDto;
     }

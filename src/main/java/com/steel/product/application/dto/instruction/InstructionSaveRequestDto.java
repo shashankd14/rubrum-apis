@@ -11,9 +11,11 @@ import java.util.List;
 public class InstructionSaveRequestDto {
 
 	private PartDetailsRequest PartDetailsRequest;
-	
+
 	private List<InstructionRequestDto> instructionRequestDTOs;
-	
+
 	private ParentInstructionDTO parentInstructionIds;
+
+	private String approvalComments;
 
 }

@@ -19,15 +19,15 @@ import com.steel.product.application.exception.MockException;
 import com.steel.product.application.mapper.InstructionMapper;
 import com.steel.product.application.mapper.PartDetailsMapper;
 import com.steel.product.application.mapper.TotalLengthAndWeight;
+import com.steel.product.jswone.entity.SalesOrderAllocationEntity;
+import com.steel.product.jswone.repository.SalesOrderAllocationJswRepository;
 import com.steel.product.jswone.service.MaterialMasterJswService;
 
 import lombok.extern.log4j.Log4j2;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,8 +47,6 @@ public class InstructionServiceImpl implements InstructionService {
     Integer inProgressStatusId = 2;
 
     private static final DecimalFormat decfor = new DecimalFormat("0.00");  
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(InstructionServiceImpl.class);
 
     private InstructionRepository instructionRepository;
 
@@ -77,7 +75,9 @@ public class InstructionServiceImpl implements InstructionService {
     private InstructionMapper instructionMapper;
     
     private MaterialMasterJswService materialMasterJswService;
-
+    
+    private SalesOrderAllocationJswRepository salesOrderAllocationJswRepository;
+    
 	@Autowired
 	public InstructionServiceImpl(InstructionRepository instructionRepository,
 			InwardEntryRepository inwardEntryRepository, InwardEntryService inwardService,
@@ -86,7 +86,7 @@ public class InstructionServiceImpl implements InstructionService {
 			PartDetailsService partDetailsService, PartDetailsMapper partDetailsMapper,
 			InstructionMapper instructionMapper, DeliveryDetailsRepository deliveryDetailsRepository,
 			QualityService qualityService, PartDetailsRepository partDetailsRepository,
-			MaterialMasterJswService materialMasterJswService) {
+			MaterialMasterJswService materialMasterJswService, SalesOrderAllocationJswRepository salesOrderAllocationJswRepository) {
 		this.instructionRepository = instructionRepository;
 		this.inwardEntryRepository = inwardEntryRepository;
 		this.deliveryDetailsRepository = deliveryDetailsRepository;
@@ -101,6 +101,7 @@ public class InstructionServiceImpl implements InstructionService {
 		this.qualityService = qualityService;
 		this.partDetailsRepository = partDetailsRepository;
 		this.materialMasterJswService = materialMasterJswService;
+		this.salesOrderAllocationJswRepository = salesOrderAllocationJswRepository;
 	}
 
 	@Override
@@ -138,8 +139,8 @@ public class InstructionServiceImpl implements InstructionService {
 //    @Override
 //    @Transactional
 //    public ResponseEntity<Object> addCutInstruction(List<InstructionSaveRequestDto> cutInstructionSaveRequestDtos) {
-//        LOGGER.info("inside save cut instruction method");
-//        LOGGER.info("no of requests " + cutInstructionSaveRequestDtos.size());
+//        log.info("inside save cut instruction method");
+//        log.info("no of requests " + cutInstructionSaveRequestDtos.size());
 //        Map<PartDetails, List<InstructionRequestDto>> instructionPlanAndListMap = new HashMap<>();
 //        partDetailsRequest partDetailsRequest;
 //        InstructionRequestDto instructionRequestDto = cutInstructionSaveRequestDtos.get(0).getInstructionRequestDTOs().get(0);
@@ -157,34 +158,34 @@ public class InstructionServiceImpl implements InstructionService {
 //        double incomingLength = 0f, availableLength = 0f, existingLength = 0f, remainingLength = 0f;
 //
 //        if (inwardId != null && groupId != null) {
-//            LOGGER.info("adding instructions from inward "+ inwardId +", group id " + groupId);
+//            log.info("adding instructions from inward "+ inwardId +", group id " + groupId);
 //            inwardEntry = inwardService.getByInwardEntryId(inwardId);
 //            TotalLengthAndWeight totalLengthAndWeight = this.sumOfPlannedLengthAndWeightOfInstructionsHavingGroupId(groupId);
 //            availableWeight = totalLengthAndWeight.getTotalWeight();
 //            availableLength = totalLengthAndWeight.getTotalLength();
-//            LOGGER.info("available length,weight for instructions with group id "+groupId+ " is "+availableLength+", "+availableWeight);
+//            log.info("available length,weight for instructions with group id "+groupId+ " is "+availableLength+", "+availableWeight);
 //            process = processService.getById(this.slitAndCutProcessId);
 //            partDetailsId = null;
 //            fromGroup = true;
 //        } else if (inwardId != null) {
-//            LOGGER.info("adding instructions from inward id " + inwardId);
+//            log.info("adding instructions from inward id " + inwardId);
 //            inwardEntry = inwardService.getByInwardEntryId(inwardId);
 //            availableWeight = inwardEntry.getFpresent();
 //            availableLength = inwardEntry.getAvailableLength();
-//            LOGGER.info("available length,weight of inward "+inwardEntry.getInwardEntryId()+" is "+availableLength+", "+availableWeight);
+//            log.info("available length,weight of inward "+inwardEntry.getInwardEntryId()+" is "+availableLength+", "+availableWeight);
 //            process = processService.getById(cutProcessId);
 //            partDetailsId = "DOC_" + System.nanoTime();
 //            fromInward = true;
 //        } else if (parentInstructionId != null) {
-//                LOGGER.info("adding instructions from parent instruction id " + parentInstructionId);
+//                log.info("adding instructions from parent instruction id " + parentInstructionId);
 //                TotalLengthAndWeight totalLengthAndWeight = this.sumOfPlannedLengthAndWeightOfInstructionsHavingParentInstructionId(parentInstructionId);
 //                existingLength = totalLengthAndWeight.getTotalLength();
 //                existingWeight = totalLengthAndWeight.getTotalWeight();
-//                LOGGER.info("existing length,weight is " +existingLength+", " +existingWeight);
+//                log.info("existing length,weight is " +existingLength+", " +existingWeight);
 //                parentInstruction = this.findInstructionById(parentInstructionId);
 //                inwardEntry = parentInstruction.getInwardId();
 //                availableWeight = parentInstruction.getPlannedWeight();
-//                LOGGER.info("available length,weight is" + availableLength+", "+availableWeight);
+//                log.info("available length,weight is" + availableLength+", "+availableWeight);
 //                process = processService.getById(cutProcessId);
 //                partDetailsId = "DOC_" + System.nanoTime();
 //                fromParentInstruction = true;
@@ -193,7 +194,7 @@ public class InstructionServiceImpl implements InstructionService {
 //                return new ResponseEntity<Object>("Invalid request.", HttpStatus.BAD_REQUEST);
 //            }
 //        if (inwardEntry.getFpresent() < 0) {
-//            LOGGER.error("inward has negative fPresent value "+inwardEntry.getFpresent());
+//            log.error("inward has negative fPresent value "+inwardEntry.getFpresent());
 //            return new ResponseEntity<Object>("Inward with id " + inwardId + " has invalid fpresent value " + inwardEntry.getFpresent(), HttpStatus.BAD_REQUEST);
 //        }
 //
@@ -213,19 +214,19 @@ public class InstructionServiceImpl implements InstructionService {
 //
 //        remainingWeight = availableWeight - existingWeight - incomingWeight;
 //        remainingLength = availableLength - existingLength - incomingLength;
-//        LOGGER.info("remaining length,weight is "+remainingLength+", "+remainingWeight);
+//        log.info("remaining length,weight is "+remainingLength+", "+remainingWeight);
 //        if (fromGroup && Math.abs(remainingWeight) > 1f) {
 //            return new ResponseEntity<Object>("Input instructions total weight must be equal to instructions with group id " + groupId, HttpStatus.BAD_REQUEST);
 //        } else if (!fromGroup && remainingWeight < 0f) {
-//            LOGGER.error("remaining weight is invalid " + remainingWeight);
+//            log.error("remaining weight is invalid " + remainingWeight);
 //            return new ResponseEntity<Object>("inward " + inwardId + " has no available weight for processing.", HttpStatus.BAD_REQUEST);
 //        }
 //        if(remainingLength < 0f){
-//            LOGGER.error("remaining length is invalid "+ remainingLength);
+//            log.error("remaining length is invalid "+ remainingLength);
 //            return new ResponseEntity<Object>("inward " + inwardId + " has no available length for processing.", HttpStatus.BAD_REQUEST);
 //        }
 //        if (fromInward) {
-//            LOGGER.info("setting fPresent for inward " + inwardEntry.getInwardEntryId() + " to " + remainingWeight);
+//            log.info("setting fPresent for inward " + inwardEntry.getInwardEntryId() + " to " + remainingWeight);
 //            inwardEntry.setFpresent((float) remainingWeight);
 //            inwardEntry.setAvailableLength((float)remainingLength);
 //        }
@@ -251,7 +252,7 @@ public class InstructionServiceImpl implements InstructionService {
 //                savedInstructionList.add(instruction);
 //            }
 //        }
-//        LOGGER.info("saving " + instructionPlanAndListMap.keySet().size() + " part details objects");
+//        log.info("saving " + instructionPlanAndListMap.keySet().size() + " part details objects");
 //        if(fromGroup) {
 //            savedInstructionList = saveAll(savedInstructionList);
 //            return new ResponseEntity<>(savedInstructionList.stream().map(i -> Instruction.valueOf(i)), HttpStatus.OK);
@@ -270,7 +271,7 @@ public class InstructionServiceImpl implements InstructionService {
     @Override
     @Transactional
     public void deleteById(Integer instructionId) {
-        LOGGER.info("inside delete instruction method");
+        log.info("inside delete instruction method");
         Instruction deleteInstruction = instructionRepository.getOne(instructionId);
         Integer inProgressStatusId = 2, readyToDeliverStatusId = 3, receivedStatusId = 1, despatchedStatusId = 4, statusId = 0;
 
@@ -336,7 +337,7 @@ public class InstructionServiceImpl implements InstructionService {
     @Override
     @Transactional
     public ResponseEntity<Object> updateInstruction(InstructionFinishDto instructionFinishDto, int userId) {
-        LOGGER.info("in finish instruction method");
+        log.info("in finish instruction method");
         List<InstructionRequestDto> InstructionRequestDtos = instructionFinishDto.getInstructionDtos();
         List<Instruction> updatedInstructionList = new ArrayList<Instruction>();
         Instruction instruction;
@@ -362,7 +363,7 @@ public class InstructionServiceImpl implements InstructionService {
         
         Map<Integer, Instruction> instructionsMap = instructions.stream().collect(Collectors.toMap(ins -> ins.getInstructionId(), ins -> ins));
         if(instructionsMap.isEmpty()){
-        	LOGGER.error("no instructions found in progress status");
+        	log.error("no instructions found in progress status");
 			return new ResponseEntity<Object>("{\"status\": \"failure\", \"message\":\"All Instructions were already finished\"}", new HttpHeaders(), HttpStatus.UNPROCESSABLE_ENTITY);
 		}
         Map<Integer, PacketClassification> packetClassificationMap = packetClassificationService.findAllByPacketClassificationIdIn(InstructionRequestDtos.stream()
@@ -401,7 +402,7 @@ public class InstructionServiceImpl implements InstructionService {
             updatedInstructionList.add(instruction);
         }
         instructionRepository.saveAll(updatedInstructionList);
-        LOGGER.info("saved all instructions");
+        log.info("saved all instructions");
         boolean isAnyInstructionInProgress = false;
         Instruction savedInstruction = updatedInstructionList.get(0);
         InwardEntry inwardEntry = savedInstruction.getInwardId();
@@ -427,42 +428,42 @@ public class InstructionServiceImpl implements InstructionService {
         List<Instruction> groupInstructions;
 
         if (inwardEntry != null && parentGroupId != null) {
-            LOGGER.info("instruction has group id " + parentGroupId);
+            log.info("instruction has group id " + parentGroupId);
             parentGroupInstructions = instructionRepository.findByParentGroupId(parentGroupId);
             isAnyInstructionInProgress = parentGroupInstructions.stream().anyMatch(gin -> gin.getStatus().equals(inProgressStatus));
             if (!isAnyInstructionInProgress) {
-                LOGGER.info("group instructions with group id " + parentGroupId + " ready to deliver");
+                log.info("group instructions with group id " + parentGroupId + " ready to deliver");
                 groupInstructions = instructionRepository.findByGroupId(parentGroupId);
                 groupInstructions.forEach(in -> in.setStatus(readyToDeliverStatus));
                 instructionRepository.saveAll(groupInstructions);
             }
-            LOGGER.info("group instructions with group id " + parentGroupId + " is in progress");
+            log.info("group instructions with group id " + parentGroupId + " is in progress");
         } else if (inwardEntry != null) {
-            LOGGER.info("instruction has inward " + savedInstruction.getInwardId().getInwardEntryId());
+            log.info("instruction has inward " + savedInstruction.getInwardId().getInwardEntryId());
             isAnyInstructionInProgress = inwardEntry.getInstructions().stream().anyMatch(cin -> cin.getStatus().equals(inProgressStatus));
             if (!isAnyInstructionInProgress) {
-                LOGGER.info("inward " + inwardEntry + " ready to deliver");
+                log.info("inward " + inwardEntry + " ready to deliver");
                 inwardEntry.setStatus(readyToDeliverStatus);
                 inwardService.saveEntry(inwardEntry);
             }
-            LOGGER.info("inward " + inwardEntry + " is in progress");
+            log.info("inward " + inwardEntry + " is in progress");
         } else if (parentInstruction != null) {
-            LOGGER.info("instruction has parent instruction " + savedInstruction.getParentInstruction().getInstructionId());
+            log.info("instruction has parent instruction " + savedInstruction.getParentInstruction().getInstructionId());
             Set<Instruction> childrenInstructions = parentInstruction.getChildInstructions();
-            LOGGER.info("parent instruction has children "+childrenInstructions.size());
+            log.info("parent instruction has children "+childrenInstructions.size());
             isAnyInstructionInProgress = childrenInstructions.stream().anyMatch(cin -> cin.getStatus().equals(inProgressStatus));
             if (!isAnyInstructionInProgress) {
-                LOGGER.info("parent instruction " + parentInstruction.getInstructionId() + " ready to deliver");
+                log.info("parent instruction " + parentInstruction.getInstructionId() + " ready to deliver");
                 Float parentActualWeight = childrenInstructions.stream().map(in -> in.getActualWeight()).reduce(0f, Float::sum);
-                LOGGER.info("parent actual weight "+parentActualWeight);
+                log.info("parent actual weight "+parentActualWeight);
                 parentInstruction.setActualWeight(parentActualWeight);
                 parentInstruction.setStatus(readyToDeliverStatus);
                 parentInstruction.setFinishedDate(new Date());
-                LOGGER.info("saving parent instruction id " + parentInstruction.getInstructionId());
+                log.info("saving parent instruction id " + parentInstruction.getInstructionId());
                 instructionRepository.save(parentInstruction);
             }
         } else {
-            LOGGER.error("no inwardId, parentInstructionId or parentGroupId found");
+            log.error("no inwardId, parentInstructionId or parentGroupId found");
             throw new RuntimeException("Invalid request");
         }
 
@@ -548,7 +549,7 @@ public class InstructionServiceImpl implements InstructionService {
 
     @Override
     public List<InstructionResponseDto>  saveFullHandlingDispatch(List<Integer> inwardList, int userId) throws MockException {
-        LOGGER.info("inside saveUnprocessedForDelivery method");
+        log.info("inside saveUnprocessedForDelivery method");
 
         List<InstructionResponseDto> totalList=new ArrayList<>(); 
         		
@@ -557,7 +558,7 @@ public class InstructionServiceImpl implements InstructionService {
         Date date = new Date();
         Instruction unprocessedInstruction = new Instruction();
         InwardEntry inward = inwardService.getByInwardEntryId(inwardId);
-        LOGGER.info("inward with id " + inwardId + " has fPresent " + inward.getFpresent());
+        log.info("inward with id " + inwardId + " has fPresent " + inward.getFpresent());
         Integer handlingProcessId = 8, readyToDeliverStatusId = 4;
         Process handlingProcess = processService.getById(handlingProcessId);
         Status readyToDeliverStatus = statusService.getStatusById(readyToDeliverStatusId);
@@ -572,7 +573,7 @@ public class InstructionServiceImpl implements InstructionService {
 
         float denominator = inward.getfThickness() * (inward.getfWidth() / 1000f) * 7.85f;
         float lengthUnprocessed = inward.getFpresent() / denominator;
-        LOGGER.info("calculated length of instruction " + lengthUnprocessed);
+        log.info("calculated length of instruction " + lengthUnprocessed);
 
         unprocessedInstruction.setPlannedLength(lengthUnprocessed);
         unprocessedInstruction.setPlannedWidth(inward.getfWidth());
@@ -604,18 +605,18 @@ public class InstructionServiceImpl implements InstructionService {
 
     @Override
     public InstructionResponseDto saveUnprocessedForDelivery(Integer inwardId, int userId) {
-        LOGGER.info("inside saveUnprocessedForDelivery method");
+        log.info("inside saveUnprocessedForDelivery method");
         Date date = new Date();
         Instruction unprocessedInstruction = new Instruction();
         InwardEntry inward = inwardService.getByInwardEntryId(inwardId);
-        LOGGER.info("inward with id " + inwardId + " has fPresent " + inward.getFpresent());
+        log.info("inward with id " + inwardId + " has fPresent " + inward.getFpresent());
         Integer handlingProcessId = 7, readyToDeliverStatusId = 3;
         Process handlingProcess = processService.getById(handlingProcessId);
         Status readyToDeliverStatus = statusService.getStatusById(readyToDeliverStatusId);
 
         float denominator = inward.getfThickness() * (inward.getfWidth() / 1000f) * 7.85f;
         float lengthUnprocessed = inward.getFpresent() / denominator;
-        LOGGER.info("calculated length of instruction " + lengthUnprocessed);
+        log.info("calculated length of instruction " + lengthUnprocessed);
 
         unprocessedInstruction.setPlannedLength(lengthUnprocessed);
         unprocessedInstruction.setPlannedWidth(inward.getfWidth());
@@ -649,13 +650,13 @@ public class InstructionServiceImpl implements InstructionService {
         Integer processId = null;
         Integer cutProcessId = 1;
         if(partDetailsId !=null && groupIds != null) {
-            LOGGER.info("partDetailsid: "+partDetailsId+", groupIds not null");
+            log.info("partDetailsid: "+partDetailsId+", groupIds not null");
             objects = instructionRepository.findPartDetailsJoinFetchInstructionsByPartDetailsIdOrGroupIds(partDetailsId,groupIds);
         }else if(partDetailsId != null) {
-            LOGGER.info("partDetailsId: "+partDetailsId);
+            log.info("partDetailsId: "+partDetailsId);
             objects = instructionRepository.findPartDetailsJoinFetchInstructions(partDetailsId);
         }else {
-            LOGGER.info("total groupIds "+groupIds.size());
+            log.info("total groupIds "+groupIds.size());
             objects = instructionRepository.findPartDetailsJoinFetchInstructionsAndGroupIds(groupIds);
         }
         Integer inwardId = null;
@@ -717,13 +718,13 @@ public class InstructionServiceImpl implements InstructionService {
         Integer processId = null;
         Integer cutProcessId = 1;
         if(partDetailsId !=null && groupIds != null) {
-            LOGGER.info("partDetailsid: "+partDetailsId+", groupIds not null");
+            log.info("partDetailsid: "+partDetailsId+", groupIds not null");
             objects = instructionRepository.findPartDetailsJoinFetchInstructionsByPartDetailsIdOrGroupIds(partDetailsId,groupIds);
         }else if(partDetailsId != null) {
-            LOGGER.info("partDetailsId: "+partDetailsId);
+            log.info("partDetailsId: "+partDetailsId);
             objects = instructionRepository.findPartDetailsJoinFetchInstructions(partDetailsId);
         }else {
-            LOGGER.info("total groupIds "+groupIds.size());
+            log.info("total groupIds "+groupIds.size());
             objects = instructionRepository.findPartDetailsJoinFetchInstructionsAndGroupIds(groupIds);
         }
         Integer inwardId = null;
@@ -963,20 +964,20 @@ public class InstructionServiceImpl implements InstructionService {
 
     @Override
     public ResponseEntity<Object> deleteCut(CutInstructionDeleteRequest cutInstructionDeleteRequest) {
-        LOGGER.info("inside delete cut method for instruction id "+ cutInstructionDeleteRequest.getInstructionId());
+        log.info("inside delete cut method for instruction id "+ cutInstructionDeleteRequest.getInstructionId());
         Instruction instruction = this.findInstructionById(cutInstructionDeleteRequest.getInstructionId());
         if(instruction.getIsDeleted()){
-            LOGGER.error("instruction with id "+instruction.getInstructionId()+" already deleted");
+            log.error("instruction with id "+instruction.getInstructionId()+" already deleted");
             return new ResponseEntity<>("instruction with id "+instruction.getInstructionId()+" is already deleted",HttpStatus.BAD_REQUEST);
         }
         if(!instruction.getStatus().getStatusName().equals("IN PROGRESS")){
-            LOGGER.error("instruction is not in in progress status");
+            log.error("instruction is not in in progress status");
             throw new RuntimeException("Instruction cannot be deleted as it is not in progress status");
         }
         if(instruction.getParentGroupId() != null){
-            LOGGER.info("instruction has parent group id "+ instruction.getParentGroupId());
+            log.info("instruction has parent group id "+ instruction.getParentGroupId());
             List<Instruction> slitAndCutInstructions = this.findAllByGroupIdOrParentGroupId(instruction.getParentGroupId(),instruction.getParentGroupId());
-            LOGGER.info("no of slit-and-cut instructions "+slitAndCutInstructions.size());
+            log.info("no of slit-and-cut instructions "+slitAndCutInstructions.size());
             for(Instruction ins:slitAndCutInstructions){
                 if(ins.getGroupId() != null){
                     ins.setGroupId(null);
@@ -984,13 +985,13 @@ public class InstructionServiceImpl implements InstructionService {
                     ins.setIsDeleted(true);
                 }
             }
-            LOGGER.info("updating slit-and-cut instructions after removing group id");
+            log.info("updating slit-and-cut instructions after removing group id");
             instructionRepository.saveAll(slitAndCutInstructions);
         }else if(instruction.getParentInstruction() != null){
             Instruction parentInstruction = instruction.getParentInstruction();
-            LOGGER.info("instruction has parent instruction id "+parentInstruction.getInstructionId());
+            log.info("instruction has parent instruction id "+parentInstruction.getInstructionId());
             Set<Instruction> childrenInstructions = parentInstruction.getChildInstructions();
-            LOGGER.info("total children instructions are "+childrenInstructions.size());
+            log.info("total children instructions are "+childrenInstructions.size());
             for(Instruction ins:childrenInstructions){
                 parentInstruction.removeChildInstruction(ins);
                 ins.setIsDeleted(true);
@@ -998,18 +999,18 @@ public class InstructionServiceImpl implements InstructionService {
             instructionRepository.saveAll(childrenInstructions);
         }else {
             InwardEntry inwardEntry = instruction.getInwardId();
-            LOGGER.info("instruction created from inward "+inwardEntry.getInwardEntryId());
+            log.info("instruction created from inward "+inwardEntry.getInwardEntryId());
             Float availableLength = inwardEntry.getAvailableLength();
             Float fPresent = inwardEntry.getFpresent();
-            LOGGER.info("inward available length,fPresent " + availableLength + ", " + fPresent);
-            LOGGER.info("instruction length,noOfCuts,weight: "+instruction.getPlannedLength()+", "+instruction.getPlannedNoOfPieces()+", "+instruction.getPlannedWeight());
+            log.info("inward available length,fPresent " + availableLength + ", " + fPresent);
+            log.info("instruction length,noOfCuts,weight: "+instruction.getPlannedLength()+", "+instruction.getPlannedNoOfPieces()+", "+instruction.getPlannedWeight());
             availableLength += (instruction.getPlannedLength()*instruction.getPlannedNoOfPieces());
             fPresent += instruction.getPlannedWeight();
-            LOGGER.info("setting inward available length,fPresent after delete to " + availableLength + ", " + fPresent);
+            log.info("setting inward available length,fPresent after delete to " + availableLength + ", " + fPresent);
             inwardEntry.setAvailableLength(availableLength);
             inwardEntry.setFpresent(fPresent);
             instruction.setIsDeleted(true);
-            LOGGER.info("updating inward "+inwardEntry.getInwardEntryId());
+            log.info("updating inward "+inwardEntry.getInwardEntryId());
             inwardService.saveEntry(inwardEntry);
         }
         
@@ -1025,24 +1026,24 @@ public class InstructionServiceImpl implements InstructionService {
 
     @Override
     public ResponseEntity<Object> deleteSlit(SlitInstructionDeleteRequest slitInstructionDeleteRequest) {
-        LOGGER.info("inside delete slit method for part id "+ slitInstructionDeleteRequest.getPartId());
+        log.info("inside delete slit method for part id "+ slitInstructionDeleteRequest.getPartId());
         Integer slitProcessId = 2;
         List<Instruction> instructions = instructionRepository.findInstructionsByPartIdAndProcessId(slitInstructionDeleteRequest.getPartId(),slitProcessId);
-        LOGGER.info("no of slit instructions to be deleted "+instructions.size());
+        log.info("no of slit instructions to be deleted "+instructions.size());
         PartDetails partDetails = instructions.get(0).getPartDetails();
-        LOGGER.info("part id "+partDetails.getId()+" length,weight "+partDetails.getLength()+", "+partDetails.getTargetWeight());
+        log.info("part id "+partDetails.getId()+" length,weight "+partDetails.getLength()+", "+partDetails.getTargetWeight());
         InwardEntry inwardEntry = null;
         Integer groupId = null;
         for(Instruction instruction: instructions){
             if(!instruction.getStatus().getStatusName().equals("IN PROGRESS")){
-                LOGGER.error("instruction is not in in progress status");
+                log.error("instruction is not in in progress status");
                 throw new RuntimeException("Instruction cannot be deleted as it is not in progress status");
             }
             if(groupId == null) {
                 groupId = instruction.getGroupId();
             }
             if(instruction.getIsDeleted()){
-                LOGGER.error("instruction with id "+instruction.getInstructionId()+" already deleted");
+                log.error("instruction with id "+instruction.getInstructionId()+" already deleted");
                 return new ResponseEntity<>("instruction with id "+instruction.getInstructionId()+" is already deleted",HttpStatus.BAD_REQUEST);
             }
             instruction.setIsDeleted(true);
@@ -1051,28 +1052,28 @@ public class InstructionServiceImpl implements InstructionService {
             }
         }
         if(groupId != null){
-            LOGGER.info("slit Instructions have group id "+groupId);
+            log.info("slit Instructions have group id "+groupId);
             List<Instruction> cutInstructions = this.findAllByParentGroupId(groupId);
-            LOGGER.info("no of cut cutInstructions "+cutInstructions.size());
+            log.info("no of cut cutInstructions "+cutInstructions.size());
             for(Instruction ins:cutInstructions){
                 if(!ins.getIsDeleted()){
-                    LOGGER.error("cut instruction with id "+ins.getInstructionId()+" is not deleted");
+                    log.error("cut instruction with id "+ins.getInstructionId()+" is not deleted");
                     return new ResponseEntity<>("part cannot be deleted as it has "+cutInstructions.size()+" parent group instructions(cut)",HttpStatus.BAD_REQUEST);
                 }
             }
         }
         Float availableLength = inwardEntry.getAvailableLength();
         Float fPresent = inwardEntry.getFpresent();
-        LOGGER.info("inward available length,fPresent "+availableLength+", "+fPresent);
+        log.info("inward available length,fPresent "+availableLength+", "+fPresent);
         availableLength += partDetails.getLength();
         fPresent += partDetails.getTargetWeight();
-        LOGGER.info("setting inward available length,fPresent after delete to "+availableLength+", "+fPresent);
+        log.info("setting inward available length,fPresent after delete to "+availableLength+", "+fPresent);
         inwardEntry.setAvailableLength(availableLength);
         inwardEntry.setFpresent(fPresent);
         partDetails.setIsDeleted(true);
-        LOGGER.info("updating part "+partDetails.getId());
+        log.info("updating part "+partDetails.getId());
         partDetailsService.save(partDetails);
-        LOGGER.info("updating inward "+inwardEntry.getInwardEntryId());
+        log.info("updating inward "+inwardEntry.getInwardEntryId());
         inwardService.saveEntry(inwardEntry);
 
         InwardEntry inwardEntity1  = inwardService.getByInwardEntryId(inwardEntry.getInwardEntryId());
@@ -1123,15 +1124,42 @@ public class InstructionServiceImpl implements InstructionService {
     @Override
     @Transactional
     public ResponseEntity<Object> addInstruction(List<InstructionSaveRequestDto> instructionSaveRequestDtos, int userId) {
-            LOGGER.info("no of requests " + instructionSaveRequestDtos.size());
+    	
+    		for (InstructionSaveRequestDto instructionSaveRequestDTO : instructionSaveRequestDtos) {
+				int inwardEntryId = instructionSaveRequestDTO.getInstructionRequestDTOs().get(0).getInwardId();
+				log.info("getInwardId =============== "+ inwardEntryId);
+				List<SalesOrderAllocationEntity> allocatedSOList = salesOrderAllocationJswRepository.findByInwardEntryId(inwardEntryId);
+				for (InstructionRequestDto instructionRequestDto : instructionSaveRequestDTO.getInstructionRequestDTOs()) {
+					for (SalesOrderAllocationEntity soEntity : allocatedSOList) {
+						if(instructionRequestDto.getInwardId().equals(soEntity.getInwardEntryId())) {
+							if(instructionRequestDto.getPlannedWeight() <= soEntity.getAllocatedSoqty().floatValue()) {
+								log.info("data matching ");
+							} else {
+								if(instructionSaveRequestDTO.getApprovalComments() !=null && instructionSaveRequestDTO.getApprovalComments().length()>0 ) {
+									
+								} else {
+									HttpHeaders headers = new HttpHeaders();
+							    	headers.setContentType(MediaType.APPLICATION_JSON);
+									//return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \""+soEntity.getAllocatedSoqty()+" Qty is allocated for SO. create the packet with "+soEntity.getAllocatedSoqty()+" OR enter the Approval Comments\"}", headers, HttpStatus.BAD_REQUEST);
+								}
+							}
+							
+						}
+						log.info("getInwardEntryId == " + soEntity.getInwardEntryId() +", allocated weight "+soEntity.getAllocatedSoqty());
+					}
+					log.info("getPlannedWeight == " + instructionRequestDto.getPlannedWeight());
+				}
+			}
+    		
+            log.info("no of requests " + instructionSaveRequestDtos.size());
             Map<PartDetails, List<InstructionRequestDto>> instructionPlanAndListMap = new HashMap<>();
-            LOGGER.info("inside save instruction method");
+            log.info("inside save instruction method");
             PartDetailsRequest PartDetailsRequest;
             PartDetails slitPartDetails = null;
             InstructionRequestDto instructionRequestDto = instructionSaveRequestDtos.get(0).getInstructionRequestDTOs().get(0);
             Integer inwardId = instructionRequestDto.getInwardId();
             Integer processId = instructionRequestDto.getProcessId();
-            LOGGER.info("saving instructions for process id "+processId);
+            log.info("saving instructions for process id "+processId);
             Integer parentInstructionId = instructionRequestDto.getParentInstructionId();
             Integer groupId = instructionRequestDto.getGroupId();
             List<Integer> groupIds = null;
@@ -1150,38 +1178,38 @@ public class InstructionServiceImpl implements InstructionService {
             }
 			
             if (inwardId != null && groupId != null) {
-                LOGGER.info("adding instructions from inward "+ inwardId +", group id " + groupId);
+                log.info("adding instructions from inward "+ inwardId +", group id " + groupId);
                 inwardEntry = inwardService.getByInwardEntryId(inwardId);
                 groupIds = instructionSaveRequestDtos.stream().flatMap(dto -> dto.getInstructionRequestDTOs().stream())
                         .map(ins -> ins.getGroupId()).distinct().collect(Collectors.toList());
-                LOGGER.info("no of groups are "+groupIds.size());
+                log.info("no of groups are "+groupIds.size());
                 TotalLengthAndWeight totalLengthAndWeight = sumOfPlannedLengthAndWeightOfInstructionsHavingGroupId(groupIds);
                 availableWeight = totalLengthAndWeight.getTotalWeight();
                 availableLength = inwardEntry.getfLength();
                 Instruction groupInstruction = this.findFirstByGroupIdAndIsDeletedFalse(groupIds.get(0));
                 slitPartDetails = groupInstruction.getPartDetails();
                 partDetailsId = slitPartDetails.getPartDetailsId();
-                LOGGER.info("available length,weight for instructions with group id "+groupIds.stream().map(g -> g+", ").collect(Collectors.joining())+" is "+availableLength+", "+availableWeight);
+                log.info("available length,weight for instructions with group id "+groupIds.stream().map(g -> g+", ").collect(Collectors.joining())+" is "+availableLength+", "+availableWeight);
                 fromGroup = true;
             } else if (inwardId != null && parentInstructionId != null) {
-                LOGGER.info("adding instructions from parent instruction id " + parentInstructionId);
+                log.info("adding instructions from parent instruction id " + parentInstructionId);
                 parentInstruction = this.findInstructionById(parentInstructionId);
                 inwardEntry = parentInstruction.getInwardId();
                 existingLength = inwardEntry.getAvailableLength();
                 existingWeight = this.sumOfPlannedWeightOfInstructionHavingParentInstructionId(parentInstructionId);
-                LOGGER.info("existing length,weight is " +existingLength+", " +existingWeight);
+                log.info("existing length,weight is " +existingLength+", " +existingWeight);
                 availableWeight = parentInstruction.getPlannedWeight();
                 availableLength = parentInstruction.getPlannedLength();
-                LOGGER.info("available length,weight is" + availableLength+", "+availableWeight);
+                log.info("available length,weight is" + availableLength+", "+availableWeight);
                 //partDetailsId = null;
                 partDetailsId = "DOC_" + System.nanoTime(); // added by Kanakadri for parent child instruction
                 fromParentInstruction = true;
             } else if (inwardId != null) {
-                LOGGER.info("adding instructions from inward id " + inwardId);
+                log.info("adding instructions from inward id " + inwardId);
                 inwardEntry = inwardService.getByInwardEntryId(inwardId);
                 availableWeight = inwardEntry.getFpresent();
                 availableLength = inwardEntry.getAvailableLength();
-                LOGGER.info("available length,weight of inward "+inwardEntry.getInwardEntryId()+" is "+availableLength+", "+availableWeight);
+                log.info("available length,weight of inward "+inwardEntry.getInwardEntryId()+" is "+availableLength+", "+availableWeight);
                 partDetailsId = "DOC_" + System.nanoTime();
                 fromInward = true;
             } 
@@ -1233,30 +1261,30 @@ public class InstructionServiceImpl implements InstructionService {
 				}
 			}
            
-            LOGGER.info("incoming length,weight "+incomingLength+","+incomingWeight);
+            log.info("incoming length,weight "+incomingLength+","+incomingWeight);
             remainingWeight = availableWeight - existingWeight - Math.floor(incomingWeight);
             remainingLength = availableLength - existingLength - incomingLength;
 
-            LOGGER.info("remaining length,weight is "+remainingLength+", "+remainingWeight);
+            log.info("remaining length,weight is "+remainingLength+", "+remainingWeight);
             if (fromGroup && Math.abs(remainingWeight) > 1f) {
-                LOGGER.error("remaining weight exceeds available weight");
+                log.error("remaining weight exceeds available weight");
                 return new ResponseEntity<Object>("Cut instructions total weight must be equal to slit instructions with group ids " + groupIds.stream().map(g -> g + ", ").collect(Collectors.joining()), HttpStatus.BAD_REQUEST);
             }else if(!fromGroup && remainingWeight < 0f){
-                LOGGER.error("remaining weight exceeds available weight");
+                log.error("remaining weight exceeds available weight");
                 return new ResponseEntity<Object>("no available weight left for processing", HttpStatus.BAD_REQUEST);
             }
             if(!fromGroup && remainingLength < 0f){
-                LOGGER.error("remaining length exceeds available length "+ remainingLength);
+                log.error("remaining length exceeds available length "+ remainingLength);
                 return new ResponseEntity<Object>("inward " + inwardId + " has no available length for processing.", HttpStatus.BAD_REQUEST);
             }
             if (fromInward) {
-                LOGGER.info("setting fPresent for inward " + inwardId + " to " + remainingWeight);
+                log.info("setting fPresent for inward " + inwardId + " to " + remainingWeight);
                 inwardEntry.setFpresent((float) remainingWeight);
 //                if (remainingWeight <= 1f){
-//                    LOGGER.info("setting available length to 0");
+//                    log.info("setting available length to 0");
 //                    remainingLength = 0f;
 //            }
-                LOGGER.info("setting available length for inward " + inwardId + " to " + remainingLength);
+                log.info("setting available length for inward " + inwardId + " to " + remainingLength);
                 inwardEntry.setAvailableLength((float)remainingLength);
             }
             Process process = processService.getById(processId);
@@ -1298,7 +1326,7 @@ public class InstructionServiceImpl implements InstructionService {
                     }
                 }
             }
-            LOGGER.info("saving " + instructionPlanAndListMap.keySet().size() + " part details objects");
+            log.info("saving " + instructionPlanAndListMap.keySet().size() + " part details objects");
             List<PartDetails> partDetailsList = partDetailsService.saveAll(instructionPlanAndListMap.keySet());
             List<PartDetailsResponse> partDetailsResponseList = partDetailsMapper.toResponseDto(partDetailsList);
 
@@ -1368,7 +1396,7 @@ public class InstructionServiceImpl implements InstructionService {
 				inwardEntryRepository.updateInwardStatus(inwardEntryId, status);
 			}
 		} catch (Exception e) {
-			LOGGER.info(e.getMessage());
+			log.info(e.getMessage());
 		}
 	}
 

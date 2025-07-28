@@ -1,6 +1,7 @@
 package com.steel.product.jswone.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -36,8 +37,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " so_child.allocated_stts, so_child.item_status " + 
 			" FROM jsw_sales_order so, jsw_sales_order_child so_child" + 
 			" where so.is_deleted = 0 and so_child.is_deleted = 0 and so_child.so_id = so.so_id" + 
-			" and so.so_id in :soIDsList" + 
-			"", nativeQuery = true)
+			" and so.so_id in :soIDsList order by so.so_id desc", nativeQuery = true)
 	List<Object[]> listIdWisedetails (@Param("soIDsList") List<Integer> soIDsList);
 	
 	@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, mm_id, materialdesc, materialgrade,fthickness, flength,fquantity,  partyname,fweight,fWidth, "
@@ -74,5 +74,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 	Page<Object[]> findInventory(@Param("searchText") String searchText,
 			@Param("partyIds") List<Integer> partyIds, @Param("partyIdsFlag") boolean partyIdsFlag,
 			 Pageable pageable);
+
+	Optional<SalesOrderJswEntity> findBySoNumberIgnoreCase(String soNumber);
 	
 }

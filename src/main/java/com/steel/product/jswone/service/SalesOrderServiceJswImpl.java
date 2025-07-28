@@ -65,6 +65,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 		ResponseEntity<Object> responseEntity = null;
 		String message = "Sales Order created successfully..!";
 		try {
+			
 			BigDecimal totalqty = new BigDecimal("0.00");
 			SalesOrderJswEntity salesOrderEntity = new SalesOrderJswEntity();
 			BeanUtils.copyProperties(salesOrderEntity, salesOrderMainRequest);
@@ -72,13 +73,22 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			salesOrderEntity.setAllocatedStts("PENDING");
 			salesOrderEntity.setIsDeleted(false);
 			salesOrderEntity.setSoStatus(StatusType.SO_CREATED.getType());
+			
+			if ("create".equals(option)) {
+				Optional<SalesOrderJswEntity> kk = salesOrderRepository.findBySoNumberIgnoreCase(salesOrderMainRequest.getSoNumber());
+				if(kk.isPresent()) {
+					return new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"Entered SO Number already exists.\"}", new HttpHeaders(),
+							HttpStatus.INTERNAL_SERVER_ERROR);
+				}
+			}
+			
 			if("approve".equals(option)){
 				salesOrderEntity.setSoStatus(StatusType.SO_APPROVED.getType());
 				salesOrderEntity.setApprovedDate(new Date());
 				message = "Sales Order approved successfully..!";
 			}
 			if("update".equals(option)){
-				salesOrderEntity.setSoStatus(StatusType.SO_APPROVED.getType());
+				salesOrderEntity.setSoStatus(StatusType.SO_CREATED.getType());
 				salesOrderEntity.setUpdatedOn( new Date());
 				salesOrderEntity.setUpdatedBy(commonUtil.getUserId());
 				message = "Sales Order updated successfully..!";
