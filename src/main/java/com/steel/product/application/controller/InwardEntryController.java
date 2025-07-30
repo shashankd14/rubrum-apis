@@ -80,6 +80,18 @@ public class InwardEntryController {
 		log.info("in saveInwardEntry ");
 		try {
 			int userId = commonUtil.getUserId();
+			
+			boolean isPresent = this.inwdEntrySvc.isCoilNumberPresent(inward.getCoilNumber());
+			if(isPresent) {
+				log.error("duplicate coil number ");
+				return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Coil Number already exists\"}", new HttpHeaders(), HttpStatus.BAD_REQUEST);
+			}
+			
+			boolean isBatchPresent = this.inwdEntrySvc.isCustomerBatchIdPresent(inward.getCustomerBatchId());
+			if(isBatchPresent) {
+				log.error("duplicate Customer BatchId ");
+				return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Customer BatchId already exists\"}", new HttpHeaders(), HttpStatus.BAD_REQUEST);
+			}
 			log.info("Entered MMID IS  = "+inward.getMmId()+", Location is "+inward.getPartyId());
 			if(!(inward.getMmId()!=null && inward.getMmId().length() >0 )) {
 				log.error("Invalid INWARD ID ");

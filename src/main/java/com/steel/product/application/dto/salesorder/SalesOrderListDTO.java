@@ -1,5 +1,7 @@
 package com.steel.product.application.dto.salesorder;
 
+import java.util.Date;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -37,6 +39,12 @@ public class SalesOrderListDTO {
 
 	private String materialDesc;
 
+	private String subGrade;
+
+	private String brand;
+
+	private Date instructionDate;
+
 	private String diagonal;
 
 	private String edgeBurr;
@@ -51,7 +59,7 @@ public class SalesOrderListDTO {
 	
 	private Integer partyId;
 
-	private Integer plannedNoofPieces;
+	private int plannedNoofPieces;
 	
 	
 

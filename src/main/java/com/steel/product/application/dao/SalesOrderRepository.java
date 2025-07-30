@@ -16,7 +16,7 @@ import javax.transaction.Transactional;
 public interface SalesOrderRepository extends JpaRepository<SalesOrderEntity, Integer> {
 
 	@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, materialgrade, materialdesc, fthickness, fweight, npartyid,partyname,fWidth, flength,fquantity, "
-			+ "inStockWeight, actualNoOfPieces , process_status, instruction_status, classification_tag, enduser_tag_name,sono,customer_code "
+			+ "inStockWeight, actualNoOfPieces , process_status, instruction_status, classification_tag, enduser_tag_name,sono,customer_code, subgrade,brandname,createdon "
 			+ " from ( SELECT inwardid,  coilnumber, customerbatchid, "
 			+ " (SELECT product_name FROM jsw_product_master a, jsw_material_master mat where a.product_id=mat.producttype_id and mat.mm_id=parent.mm_id limit 1) as  materialdesc,"
 			+ " (SELECT grade_name FROM jsw_grade_master grade, jsw_material_master mat where grade.grade_id=mat.grade_id and mat.mm_id=parent.mm_id limit 1) as  materialgrade,"
@@ -28,7 +28,10 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrderEntity, In
 			+ " (select tag_name from product_enduser_tags where tag_id=child.enduser_tag_id) as enduser_tag_name,	 "
 			+ " (SELECT count(distinct a.instructionid) cnt FROM product_instruction a where a.inwardid=parent.inwardentryid and status!=4 and a.parentgroupid=child.groupid) as siltcutcnt, parent.npartyid, "
 			+ " (SELECT so.so_number from sales_order so, sales_order_child sochild where so.so_id=sochild.so_id and sochild.instruction_id = child.instructionid limit 1) as sono,"
-			+ " (SELECT so.customer_code_id from sales_order so, sales_order_child sochild where so.so_id=sochild.so_id and sochild.instruction_id = child.instructionid limit 1) as customer_code"
+			+ " (SELECT so.customer_code_id from sales_order so, sales_order_child sochild where so.so_id=sochild.so_id and sochild.instruction_id = child.instructionid limit 1) as customer_code,"
+			+ " (SELECT subgrade.subgrade_name FROM jsw_subgrade_master subgrade, jsw_material_master mat where subgrade.subgrade_id=mat.subgrade_id and mat.mm_id=parent.mm_id limit 1) as  subgrade,"
+			+ " (SELECT brand.brand_name FROM jsw_brand_master brand, jsw_material_master mat where brand.brand_id=mat.brand_id and mat.mm_id=parent.mm_id limit 1) as brandname,"
+			+ " child.createdon as createdon "
 			+ " FROM product_tblinwardentry parent, product_instruction child, product_tblpartydetails party  "
 			+ " where child.isdeleted=0 and parent.isdeleted=0 and parent.inwardentryid = child.inwardid and party.npartyid = parent.npartyid "
 			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (parent.coilNumber like %:searchText% or parent.customerBatchId like %:searchText% or parent.customerInvoiceNo like %:searchText%) else 1=1 end " 
@@ -69,7 +72,7 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrderEntity, In
 	
 	@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, materialgrade, materialdesc, fthickness,  weight, npartyid,partyname,width, length, "
 			+ "process_status, instruction_status,(select so_number from sales_order so where so.so_id= a.so_id) sonumber, "
-			+ " a.so_id, classification_tag, enduser_tag_name, customer_code"
+			+ " a.so_id, classification_tag, enduser_tag_name, customer_code, plannednoofpieces"
 			+ " from ( SELECT inwardid,  coilnumber, customerbatchid, "
 			+ " (SELECT product_name FROM jsw_product_master product, jsw_material_master mat where product.product_id=mat.producttype_id and mat.mm_id=parent.mm_id limit 1) as  materialdesc,"
 			+ " (SELECT grade_name FROM jsw_grade_master grade, jsw_material_master mat where grade.grade_id=mat.grade_id and mat.mm_id=parent.mm_id limit 1) as  materialgrade,"

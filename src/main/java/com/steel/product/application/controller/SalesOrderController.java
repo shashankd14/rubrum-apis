@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -66,6 +67,10 @@ public class SalesOrderController {
 				BigInteger ok = result[20] != null ? (BigInteger) result[20] : null;
 				resp.setCustomerCodeId(ok.intValue());
 			}
+			resp.setSubGrade( result[21] != null ? (String) result[21] : null);
+			resp.setBrand(result[22] != null ? (String) result[22] : null);
+			resp.setInstructionDate( result[23] != null ? (Date) result[23] : null);
+
 			Float dweight;
 			Float dwidth;
 			Float dlength;
@@ -170,6 +175,7 @@ public class SalesOrderController {
 				child.setFlenghth(dlength1.floatValue());
 			}
 			child.setPacketStatus( result[13] != null ? (String) result[13] : null);
+			child.setPlannedNoofPieces(result[19] != null ? Integer.parseInt(result[19].toString()) : 0);
 			resp.getChildListResp().add(child);
 			
 			if (soMap != null && soMap.get(resp.getSoId()) != null) {
