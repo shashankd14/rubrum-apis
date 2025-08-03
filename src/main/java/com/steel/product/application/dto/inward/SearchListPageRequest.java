@@ -18,4 +18,29 @@ public class SearchListPageRequest {
 	private String sortColumn;
 
 	private String sortOrder;
+
+	private int materialFilterValue;
+
+	private int gradeFilterValue;
+
+	private int subgradeFilterValue;
+
+	private int brandFilterValue;
+
+	private float thicknessMinValue;
+
+	private float thicknessMaxValue;
+
+	private float lengthMaxValue;
+
+	private float lengthMinValue;
+
+	private float widthMaxValue;
+
+	private float widthMinValue;
+
+	private int ageingMinValue;
+
+	private int ageingMaxValue;
+
 }

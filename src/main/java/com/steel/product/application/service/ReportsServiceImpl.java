@@ -951,7 +951,7 @@ public class ReportsServiceImpl implements ReportsService {
 			borderStyle.setAlignment(HorizontalAlignment.CENTER);
 			
 			// Create a blank sheet
-			XSSFSheet spreadsheet = workbook.createSheet("Outward_Report");
+			XSSFSheet spreadsheet = workbook.createSheet("OutwardSummary_Report");
 
 			// Create row object
 			XSSFRow row;
@@ -984,7 +984,7 @@ public class ReportsServiceImpl implements ReportsService {
 			File outputPojoDirectory = new File(baseDirectory);
 			outputPojoDirectory.mkdirs();
 			
-			File fullPath = new File(baseDirectory +File.separator+"OutwardReport_"+strDate+".xlsx");
+			File fullPath = new File(baseDirectory +File.separator+"OutwardSummary_Report"+strDate+".xlsx");
 			
 			FileOutputStream out = new FileOutputStream(fullPath);
 			workbook.write(out);
@@ -992,7 +992,7 @@ public class ReportsServiceImpl implements ReportsService {
 			FileSystemResource file = new FileSystemResource(fullPath);
 			if(acctStatementMap!=null && acctStatementMap.size()>1) {
 				attachmentRequired=false;
-				helper.addAttachment("OutwardReport_"+strDate+".xlsx", file);
+				helper.addAttachment("OutwardSummary_Report"+strDate+".xlsx", file);
 			}
 			
 			out.close();

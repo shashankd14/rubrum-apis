@@ -678,7 +678,8 @@ public class InwardEntry {
 		inwardEntryResponseDto.setCustomerBatchId(inwardEntry.getCustomerBatchId());
 		inwardEntryResponseDto.setfQuantity(inwardEntry.getfQuantity());
 		inwardEntryResponseDto.setMaterial(inwardEntry.getMmId()!= null ? materialService.getProductName( inwardEntry.getMmId()) : null);
-		inwardEntryResponseDto.setMaterialGrade(inwardEntry.getMaterialGrade() != null ? MaterialGrade.valueOf(inwardEntry.getMaterialGrade()) : null);
+		inwardEntryResponseDto.setMaterialGrade(inwardEntry.getMmId()!= null ? materialService.getGradeName(inwardEntry.getMmId()) : null);
+		//inwardEntryResponseDto.setMaterialGrade(inwardEntry.getMaterialGrade() != null ? MaterialGrade.valueOf(inwardEntry.getMaterialGrade()) : null);
 		inwardEntryResponseDto.setfThickness(inwardEntry.getfThickness());
 		inwardEntryResponseDto.setfWidth(inwardEntry.getfWidth());
 		inwardEntryResponseDto.setGrossWeight(inwardEntry.getGrossWeight());
@@ -712,6 +713,7 @@ public class InwardEntry {
 		inwardEntryResponseDto.setCustomerInvoiceNo(inwardEntry.getCustomerInvoiceNo());
 		inwardEntryResponseDto.setParentCoilNumber(inwardEntry.getParentCoilNumber());
 		inwardEntryResponseDto.setScrapWeight( inwardEntry.getScrapWeight() );
+		inwardEntryResponseDto.setMmId( inwardEntry.getMmId()  );
 		long daysBetween = 0;
 		try {
 			// Today's date

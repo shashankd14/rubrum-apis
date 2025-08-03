@@ -669,7 +669,7 @@ public class QualityServiceImpl implements QualityService {
 	@Override
 	public List<KQPResponse> kqpGetByAll() {
 
-		List<KQPResponse> instructionList = kqpRepository.findAll().stream().map(i -> KQPEntity.valueOf(i))
+		List<KQPResponse> instructionList = kqpRepository.findAllByOrderByKqpIdDesc().stream().map(i -> KQPEntity.valueOf(i))
 				.collect(Collectors.toList());
 
 		return instructionList;

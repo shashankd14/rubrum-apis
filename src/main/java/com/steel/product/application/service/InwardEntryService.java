@@ -67,4 +67,8 @@ public interface InwardEntryService {
 
 	public Page<Object[]> partywiselistEndUserTagWise(SearchListPageRequest searchListPageRequest);
 
+	Page<Object[]> listAllLocationWiseInwards(SearchListPageRequest searchListPageRequest);
+
+	List<InwardEntry> locationWiseListByInwardId(List<Integer> inwardList);
+
 }

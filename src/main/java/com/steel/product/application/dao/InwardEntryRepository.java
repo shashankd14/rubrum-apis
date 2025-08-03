@@ -198,4 +198,64 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 	@Transactional
 	@Query(value = "update product_tblinwardentry set allocated_soqty = :allocatedSoqty where inwardentryid= :inwardentryid", nativeQuery = true)
 	public void consolidatePlanner(@Param("inwardentryid") Integer inwardentryid, @Param("allocatedSoqty") Float totalAllocatedQty);
+
+	@Query(value = "select inwardentryid, coilnumber, coilage, fthickness, flength, fwidth, material, gradename, subgradename,brandname from ("
+			+ " select distinct inw.inwardentryid ,inw.coilnumber, DATEDIFF(curdate(), date_format(inw.dreceiveddate, '%Y-%m-%d')) coilage,"
+			+ " inw.fthickness, inw.fLength, inw.fWidth,"
+			+ " (select product.product_name from jsw_product_master product where product.product_id=mat.producttype_id limit 1 ) as material, " 
+			+ " (select grade.grade_name from jsw_grade_master grade where grade.grade_id=mat.grade_id limit 1) as gradename, " 
+			+ " (select subgrade.subgrade_name from jsw_subgrade_master subgrade where subgrade.subgrade_id=mat.subgrade_id limit 1) as subgradename, " 
+			+ " (select brand.brand_name from jsw_brand_master brand where brand.brand_id=mat.brand_id limit 1) as brandname " 
+			+ " from product_tblinwardentry inw, jsw_material_master mat, product_tblpartydetails party"
+			+ " where inw.isdeleted=0 and mat.mm_id=inw.mm_id and inw.npartyid=party.npartyid "
+			+ " and (case when :materialFilterValue >0 then mat.producttype_id=:materialFilterValue else 1=1 end ) "
+			+ " and (case when :gradeFilterValue >0 then mat.grade_id=:gradeFilterValue else 1=1 end ) "
+			+ " and (case when :subgradeFilterValue >0 then mat.subgrade_id=:subgradeFilterValue else 1=1 end ) "
+			+ " and (case when :brandFilterValue >0 then mat.brand_id=:brandFilterValue else 1=1 end ) "
+			+ " and (case when :partyIdsFlag=true then inw.npartyid in :partyIds else 1=1 end ) "
+			+ " and (case when :thicknessMinValue > 0 then inw.fthickness between :thicknessMinValue and :thicknessMaxValue else 1=1 end )"
+			+ " and (case when :lengthMinValue > 0 then inw.fLength between :lengthMinValue and :lengthMaxValue else 1=1 end )"
+			+ " and (case when :widthMinValue > 0 then inw.fWidth between :widthMinValue and :widthMaxValue else 1=1 end )"
+			+ " and (case when :ageingMinValue > 0 then  DATEDIFF(curdate(), date_format(inw.dreceiveddate, '%Y-%m-%d'))  between :ageingMinValue and :ageingMaxValue else 1=1 end )"
+			+ " and (inw.coilnumber like %:searchText% or inw.customerbatchid like %:searchText% "
+			+ " or mat.mm_description like %:searchText% or inw.customerinvoiceno like %:searchText% or  party.partyname like %:searchText% ) "
+			+ " ) product where 1=1 ", 
+		countQuery = "SELECT count(distinct inw.inwardentryid) "
+			+ " from product_tblinwardentry inw, jsw_material_master mat, product_tblpartydetails party"
+			+ " where inw.isdeleted=0 and mat.mm_id=inw.mm_id and inw.npartyid=party.npartyid "
+			+ " and (case when :materialFilterValue >0 then mat.producttype_id=:materialFilterValue else 1=1 end ) "
+			+ " and (case when :gradeFilterValue >0 then mat.grade_id=:gradeFilterValue else 1=1 end ) "
+			+ " and (case when :subgradeFilterValue >0 then mat.subgrade_id=:subgradeFilterValue else 1=1 end ) "
+			+ " and (case when :brandFilterValue >0 then mat.brand_id=:brandFilterValue else 1=1 end ) "
+			+ " and (case when :partyIdsFlag=true then inw.npartyid in :partyIds else 1=1 end ) "
+			+ " and (case when :thicknessMinValue > 0 then inw.fthickness between :thicknessMinValue and :thicknessMaxValue else 1=1 end )"
+			+ " and (case when :lengthMinValue > 0 then inw.fLength between :lengthMinValue and :lengthMaxValue else 1=1 end )"
+			+ " and (case when :widthMinValue > 0 then inw.fWidth between :widthMinValue and :widthMaxValue else 1=1 end )"
+			+ " and (case when :ageingMinValue > 0 then  DATEDIFF(curdate(), date_format(inw.dreceiveddate, '%Y-%m-%d'))  between :ageingMinValue and :ageingMaxValue else 1=1 end )"
+			+ " and (inw.coilnumber like %:searchText% or inw.customerbatchid like %:searchText% "
+			+ " or mat.mm_description like %:searchText% or inw.customerinvoiceno like %:searchText% or "
+			+ " party.partyname like %:searchText% ) ", 
+		nativeQuery = true)
+	Page<Object[]> listAllLocationWiseInwards(
+			@Param("searchText") String searchText,
+			@Param("partyIds") List<Integer> partyIds, 
+			@Param("partyIdsFlag") boolean partyIdsFlag,
+			@Param("materialFilterValue") int materialFilterValue, 
+			@Param("gradeFilterValue") int gradeFilterValue, 
+			@Param("subgradeFilterValue") int subgradeFilterValue, 
+			@Param("brandFilterValue") int brandFilterValue, 
+			@Param("thicknessMinValue") float thicknessMinValue, 
+			@Param("thicknessMaxValue") float thicknessMaxValue,
+			@Param("lengthMinValue") float lengthMinValue, 
+			@Param("lengthMaxValue") float lengthMaxValue,
+			@Param("widthMinValue") float widthMinValue, 
+			@Param("widthMaxValue") float widthMaxValue,
+			@Param("ageingMinValue") int ageingMinValue, 
+			@Param("ageingMaxValue") int ageingMaxValue,
+			Pageable pageable);
+
+	@Query("select inw from InwardEntry inw where inw.inwardEntryId in ( :inwardEntryIds) ORDER BY FIELD(inw.inwardEntryId, :inwardEntryIds)" + 
+			" ")
+	List<InwardEntry> listAllInwards(@Param("inwardEntryIds") List<Integer> soIDsList);
+
 }

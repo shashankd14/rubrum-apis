@@ -14,6 +14,7 @@ import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.entity.UserPartyMap;
 import com.steel.product.application.util.CommonUtil;
 import org.springframework.data.domain.Sort;
+
 import net.minidev.json.JSONObject;
 
 import org.slf4j.Logger;
@@ -181,8 +182,8 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 			pageable = PageRequest.of((searchListPageRequest.getPageNo()-1), searchListPageRequest.getPageSize(), Sort.by("inwardEntryId").descending());
 		}
 		
-		if(searchListPageRequest.getPartyId()!=null && searchListPageRequest.getPartyId().length() > 0) {			
-			if(searchListPageRequest.getSearchText() !=null && searchListPageRequest.getSearchText().length()>0) {
+		if (searchListPageRequest.getPartyId() != null && searchListPageRequest.getPartyId().length() > 0) {
+			if (searchListPageRequest.getSearchText() != null && searchListPageRequest.getSearchText().length() > 0) {
 				Page<InwardEntry> pageResult = inwdEntryRepo.findAllWithSearchTextAndPartyId(searchListPageRequest.getSearchText(), Integer.parseInt(searchListPageRequest.getPartyId()), pageable);
 				return pageResult;
 			} else {
@@ -460,4 +461,70 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 		inwdEntryRepo.updateS3InwardLabelPDF(inwardId, url);
 	}
 
+	@Override
+	public Page<Object[]> listAllLocationWiseInwards(SearchListPageRequest searchListPageRequest) {
+
+		LOGGER.info("In listAllLocationWiseInwards page ");
+		Pageable pageable = null;
+		if (searchListPageRequest.getSortColumn() != null && searchListPageRequest.getSortColumn().length() > 0
+				&& searchListPageRequest.getSortOrder() != null && searchListPageRequest.getSortOrder().length() > 0
+				&& "ASC".equalsIgnoreCase(searchListPageRequest.getSortOrder())) {
+			pageable = PageRequest.of((searchListPageRequest.getPageNo()-1), searchListPageRequest.getPageSize(), Sort.by(searchListPageRequest.getSortColumn()).ascending());
+		}else if (searchListPageRequest.getSortColumn() != null && searchListPageRequest.getSortColumn().length() > 0
+				&& searchListPageRequest.getSortOrder() != null && searchListPageRequest.getSortOrder().length() > 0
+				&& "DESC".equalsIgnoreCase(searchListPageRequest.getSortOrder())) {
+			pageable = PageRequest.of((searchListPageRequest.getPageNo()-1), searchListPageRequest.getPageSize(), Sort.by(searchListPageRequest.getSortColumn()).descending());
+		} else {
+			if(searchListPageRequest.getPageNo() == null ) {
+				searchListPageRequest.setPageNo(1);
+			}
+			pageable = PageRequest.of((searchListPageRequest.getPageNo()-1), searchListPageRequest.getPageSize(), Sort.by("inwardentryid").descending());
+		}
+		
+		List<Integer> partyIds = new ArrayList<>();
+		boolean partyIdsFlag = false;
+		if (searchListPageRequest.getPartyId() != null && searchListPageRequest.getPartyId().length() > 0) {
+			partyIds.add(Integer.parseInt(searchListPageRequest.getPartyId()));
+			partyIdsFlag = true;
+		} else {
+			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
+			if (adminUserEntity.getUserPartyMap() != null && adminUserEntity.getUserPartyMap().size() > 0) {
+				partyIds = new ArrayList<>();
+				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
+					partyIds.add(userPartyMap.getPartyId());
+					partyIdsFlag = true;
+				}
+				LOGGER.info("In partyIds === " + partyIds);
+			} else {
+				partyIdsFlag = false;
+				partyIds = new ArrayList<>();
+			}
+		}
+		
+		Page<Object[]> pageResult = inwdEntryRepo.listAllLocationWiseInwards(
+				searchListPageRequest.getSearchText(),  
+				partyIds,
+				partyIdsFlag,   
+				searchListPageRequest.getMaterialFilterValue(),
+				searchListPageRequest.getGradeFilterValue(),
+				searchListPageRequest.getSubgradeFilterValue() ,
+				searchListPageRequest.getBrandFilterValue(),
+				searchListPageRequest.getThicknessMinValue(),
+				searchListPageRequest.getThicknessMaxValue(), 
+				searchListPageRequest.getLengthMinValue(),
+				searchListPageRequest.getLengthMaxValue(), 
+				searchListPageRequest.getWidthMinValue(),
+				searchListPageRequest.getWidthMaxValue(), 
+				searchListPageRequest.getAgeingMinValue(),
+				searchListPageRequest.getAgeingMaxValue(),
+				pageable);
+		 
+		return pageResult;
+	}
+
+	@Override
+	public List<InwardEntry> locationWiseListByInwardId(List<Integer> inwardList) {
+		List<InwardEntry> packetsList = inwdEntryRepo.listAllInwards(inwardList);
+		return packetsList;
+	}
 }

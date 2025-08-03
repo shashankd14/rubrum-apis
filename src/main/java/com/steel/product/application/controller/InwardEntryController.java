@@ -86,12 +86,6 @@ public class InwardEntryController {
 				log.error("duplicate coil number ");
 				return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Coil Number already exists\"}", new HttpHeaders(), HttpStatus.BAD_REQUEST);
 			}
-			
-			boolean isBatchPresent = this.inwdEntrySvc.isCustomerBatchIdPresent(inward.getCustomerBatchId());
-			if(isBatchPresent) {
-				log.error("duplicate Customer BatchId ");
-				return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Customer BatchId already exists\"}", new HttpHeaders(), HttpStatus.BAD_REQUEST);
-			}
 			log.info("Entered MMID IS  = "+inward.getMmId()+", Location is "+inward.getPartyId());
 			if(!(inward.getMmId()!=null && inward.getMmId().length() >0 )) {
 				log.error("Invalid INWARD ID ");
@@ -294,12 +288,23 @@ public class InwardEntryController {
 			response.put("totalPages", pageResult.getTotalPages());
 			return new ResponseEntity<Object>(response, HttpStatus.OK);
 		} else {
-			Page<InwardEntry> pageResult = inwdEntrySvc.partywiselist(searchListPageRequest);
-			List<Object> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponse(inw, materialService)).collect(Collectors.toList());
+			Page<Object[]> packetsList1 = inwdEntrySvc.listAllLocationWiseInwards(searchListPageRequest);
+
+			List<Integer> inwardIdList = new ArrayList<>(); 
+			for (Object[] result : packetsList1) {
+				Integer inwardId =  (result[0] != null ? (Integer) result[0] : null);
+				inwardIdList.add(inwardId);
+			}
+			log.info("In inwardIdList === " + inwardIdList);
+			//List<Object[]> packetsList = salesOrderService.listAllSOs(soIDsList);
+			//Page<InwardEntry> pageResult = inwdEntrySvc.partywiselist(searchListPageRequest);
+			List<InwardEntry> pageResult = inwdEntrySvc.locationWiseListByInwardId(inwardIdList);
+			
+			List<InwardEntryResponseDto> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponse(inw, materialService)).collect(Collectors.toList());
 			response.put("content", inwardList);
-			response.put("currentPage", pageResult.getNumber());
-			response.put("totalItems", pageResult.getTotalElements());
-			response.put("totalPages", pageResult.getTotalPages());
+			response.put("currentPage", packetsList1.getNumber());
+			response.put("totalItems", packetsList1.getTotalElements());
+			response.put("totalPages", packetsList1.getTotalPages());
 			return new ResponseEntity<Object>(response, HttpStatus.OK);
 		}
 	}
@@ -309,7 +314,7 @@ public class InwardEntryController {
 			@RequestParam(required = false, name = "searchText") String searchText,
 			@RequestParam(required = false, name = "partyId") String partyId) {
 		SearchListPageRequest searchListPageRequest = new SearchListPageRequest();
-		searchListPageRequest.setPageNo( pageNo);
+		searchListPageRequest.setPageNo(pageNo);
 		searchListPageRequest.setPageSize(pageSize);
 		searchListPageRequest.setSearchText( searchText);
 		searchListPageRequest.setPartyId( partyId);

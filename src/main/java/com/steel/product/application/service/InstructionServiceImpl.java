@@ -379,7 +379,8 @@ public class InstructionServiceImpl implements InstructionService {
                 continue;
             }
             if(instruction.getChildInstructions().stream().anyMatch(ins1 -> ins1.getStatus().equals(inProgressStatus))){
-                throw new RuntimeException("instruction with id "+instruction.getInstructionId()+" has children with in progress status");
+                return new ResponseEntity<Object>("instruction with id "+instruction.getInstructionId()+" has children with in progress status", HttpStatus.OK);
+                //throw new RuntimeException("instruction with id "+instruction.getInstructionId()+" has children with in progress status");
             }
             instruction.setActualLength(ins.getActualLength());
             instruction.setActualWidth(ins.getActualWidth());
@@ -464,7 +465,8 @@ public class InstructionServiceImpl implements InstructionService {
             }
         } else {
             log.error("no inwardId, parentInstructionId or parentGroupId found");
-            throw new RuntimeException("Invalid request");
+            return new ResponseEntity<Object>("Invalid request", HttpStatus.OK);
+            //throw new RuntimeException("Invalid request");
         }
 
 		if (partDetailsId != null && partDetailsId > 0 && instructionFinishDto.getActualYieldLossRatio() != null) {
@@ -968,11 +970,12 @@ public class InstructionServiceImpl implements InstructionService {
         Instruction instruction = this.findInstructionById(cutInstructionDeleteRequest.getInstructionId());
         if(instruction.getIsDeleted()){
             log.error("instruction with id "+instruction.getInstructionId()+" already deleted");
-            return new ResponseEntity<>("instruction with id "+instruction.getInstructionId()+" is already deleted",HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("instruction with id "+instruction.getInstructionId()+" is already deleted", HttpStatus.BAD_REQUEST);
         }
         if(!instruction.getStatus().getStatusName().equals("IN PROGRESS")){
             log.error("instruction is not in in progress status");
-            throw new RuntimeException("Instruction cannot be deleted as it is not in progress status");
+            return new ResponseEntity<>("Instruction cannot be deleted as it is not in progress status", HttpStatus.BAD_REQUEST);
+            //throw new RuntimeException("Instruction cannot be deleted as it is not in progress status");
         }
         if(instruction.getParentGroupId() != null){
             log.info("instruction has parent group id "+ instruction.getParentGroupId());
@@ -1037,7 +1040,8 @@ public class InstructionServiceImpl implements InstructionService {
         for(Instruction instruction: instructions){
             if(!instruction.getStatus().getStatusName().equals("IN PROGRESS")){
                 log.error("instruction is not in in progress status");
-                throw new RuntimeException("Instruction cannot be deleted as it is not in progress status");
+                return new ResponseEntity<>("Instruction cannot be deleted as it is not in progress status", HttpStatus.BAD_REQUEST);
+                //throw new RuntimeException("Instruction cannot be deleted as it is not in progress status");
             }
             if(groupId == null) {
                 groupId = instruction.getGroupId();
