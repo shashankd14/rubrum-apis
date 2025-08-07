@@ -6,6 +6,7 @@ import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.dao.PartDetailsRepository;
 import com.steel.product.application.dto.instruction.*;
 import com.steel.product.application.dto.material.MaterialResponseDto;
+import com.steel.product.application.dto.materialGradeDto.MaterialGradeDto;
 import com.steel.product.application.dto.partDetails.PartDetailsResponse;
 import com.steel.product.application.dto.partDetails.PartDetailsRequest;
 import com.steel.product.application.dto.pdf.InstructionResponsePdfDto;
@@ -790,6 +791,8 @@ public class InstructionServiceImpl implements InstructionService {
 		MaterialResponseDto materialGradeDto = materialMasterJswService.getGradeProductName(inwardEntry.getMmId());
 		inwardEntryPdfDto.setMaterialGradeName(materialGradeDto.getMaterialGrade().getGradeName());
 		inwardEntryPdfDto.setMatDescription(materialGradeDto.getDescription());
+		MaterialGradeDto materialGradeDtos = materialMasterJswService.getSubGradeName( inwardEntry.getMmId());
+		inwardEntryPdfDto.setSubGradeName(materialGradeDtos.getSubGradeName());
 
         Map<Integer, String> kqpParamsList;
 		try {

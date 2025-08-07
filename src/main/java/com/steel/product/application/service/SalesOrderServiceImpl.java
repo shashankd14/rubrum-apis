@@ -73,7 +73,7 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 				&& "DESC".equalsIgnoreCase(searchListPageRequest.getSortOrder())) {
 			pageable = PageRequest.of((searchListPageRequest.getPageNo()-1), searchListPageRequest.getPageSize(), Sort.by(searchListPageRequest.getSortColumn()).descending());
 		} else {
-			pageable = PageRequest.of((searchListPageRequest.getPageNo()-1), searchListPageRequest.getPageSize(), Sort.by("packet_id").descending());
+			pageable = PageRequest.of((searchListPageRequest.getPageNo()-1), searchListPageRequest.getPageSize(), Sort.by("planid").descending());
 		}		
 		
 		List<Integer> partyIds = new ArrayList<>();
@@ -95,8 +95,14 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 				partyIds = new ArrayList<>();
 			}
 		}
-		Page<Object[]> packetsList = salesOrderRepository.listAllPackets(searchListPageRequest.getSearchText(),
-				partyIds, partyIdsFlag, pageable);
+		Page<Object[]> packetsList = salesOrderRepository.listAllPackets(
+				searchListPageRequest.getSearchText(),
+				partyIds, 
+				partyIdsFlag, 
+				searchListPageRequest.getPlanId(),
+				searchListPageRequest.getBatchNo(),
+				searchListPageRequest.getLocation(),				
+				pageable);
 		return packetsList;
 	}
 

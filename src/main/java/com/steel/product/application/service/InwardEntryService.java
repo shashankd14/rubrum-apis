@@ -1,7 +1,6 @@
 package com.steel.product.application.service;
 
 import com.steel.product.application.dto.delivery.DeliveryPDFRequestDTO;
-import com.steel.product.application.dto.inward.EndUserTagWisePacketsDTO;
 import com.steel.product.application.dto.inward.InwardEntryResponseDto;
 import com.steel.product.application.dto.inward.SearchListPageRequest;
 import com.steel.product.application.dto.qrcode.QRCodeResponse;
@@ -70,5 +69,7 @@ public interface InwardEntryService {
 	Page<Object[]> listAllLocationWiseInwards(SearchListPageRequest searchListPageRequest);
 
 	List<InwardEntry> locationWiseListByInwardId(List<Integer> inwardList);
+
+	List<Object[]> wipListNewQuery(List<Integer> inwardIdList);
 
 }

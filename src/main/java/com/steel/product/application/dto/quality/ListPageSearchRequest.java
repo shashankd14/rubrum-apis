@@ -14,11 +14,17 @@ public class ListPageSearchRequest {
 	private String searchText;
 
 	private Integer partyId;
-	
+
 	private Integer soId;
 
 	private String sortColumn;
 
 	private String sortOrder;
+
+	private int planId;
+
+	private int location;
+
+	private String batchNo;
 
 }

@@ -199,15 +199,17 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 	@Query(value = "update product_tblinwardentry set allocated_soqty = :allocatedSoqty where inwardentryid= :inwardentryid", nativeQuery = true)
 	public void consolidatePlanner(@Param("inwardentryid") Integer inwardentryid, @Param("allocatedSoqty") Float totalAllocatedQty);
 
-	@Query(value = "select inwardentryid, coilnumber, coilage, fthickness, flength, fwidth, material, gradename, subgradename,brandname from ("
+	@Query(value = "select inwardentryid, coilnumber, coilage, fthickness, flength, fwidth, material, "
+			+ " gradename, subgradename,brandname, partyname,customerbatchid from ("
 			+ " select distinct inw.inwardentryid ,inw.coilnumber, DATEDIFF(curdate(), date_format(inw.dreceiveddate, '%Y-%m-%d')) coilage,"
-			+ " inw.fthickness, inw.fLength, inw.fWidth,"
-			+ " (select product.product_name from jsw_product_master product where product.product_id=mat.producttype_id limit 1 ) as material, " 
-			+ " (select grade.grade_name from jsw_grade_master grade where grade.grade_id=mat.grade_id limit 1) as gradename, " 
-			+ " (select subgrade.subgrade_name from jsw_subgrade_master subgrade where subgrade.subgrade_id=mat.subgrade_id limit 1) as subgradename, " 
-			+ " (select brand.brand_name from jsw_brand_master brand where brand.brand_id=mat.brand_id limit 1) as brandname " 
+			+ " inw.fthickness, inw.fLength, inw.fWidth,party.partyname, customerbatchid,"
+			+ " (select product.product_name from jsw_product_master product where product.product_id=mat.producttype_id limit 1 ) as material, "
+			+ " (select grade.grade_name from jsw_grade_master grade where grade.grade_id=mat.grade_id limit 1) as gradename, "
+			+ " (select subgrade.subgrade_name from jsw_subgrade_master subgrade where subgrade.subgrade_id=mat.subgrade_id limit 1) as subgradename, "
+			+ " (select brand.brand_name from jsw_brand_master brand where brand.brand_id=mat.brand_id limit 1) as brandname "
 			+ " from product_tblinwardentry inw, jsw_material_master mat, product_tblpartydetails party"
 			+ " where inw.isdeleted=0 and mat.mm_id=inw.mm_id and inw.npartyid=party.npartyid "
+			+ " and (case when :status >0 then inw.vstatus=:status else 1=1 end ) "
 			+ " and (case when :materialFilterValue >0 then mat.producttype_id=:materialFilterValue else 1=1 end ) "
 			+ " and (case when :gradeFilterValue >0 then mat.grade_id=:gradeFilterValue else 1=1 end ) "
 			+ " and (case when :subgradeFilterValue >0 then mat.subgrade_id=:subgradeFilterValue else 1=1 end ) "
@@ -217,12 +219,15 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 			+ " and (case when :lengthMinValue > 0 then inw.fLength between :lengthMinValue and :lengthMaxValue else 1=1 end )"
 			+ " and (case when :widthMinValue > 0 then inw.fWidth between :widthMinValue and :widthMaxValue else 1=1 end )"
 			+ " and (case when :ageingMinValue > 0 then  DATEDIFF(curdate(), date_format(inw.dreceiveddate, '%Y-%m-%d'))  between :ageingMinValue and :ageingMaxValue else 1=1 end )"
+			+ " and (case when :scInwardIdFilter is not null and LENGTH(:scInwardIdFilter) >0 then inw.customerbatchid=:scInwardIdFilter else 1=1 end ) " 
+			+ " and (case when :batchNoFilter is not null and LENGTH(:batchNoFilter) >0 then inw.coilnumber=:batchNoFilter else 1=1 end ) " 
 			+ " and (inw.coilnumber like %:searchText% or inw.customerbatchid like %:searchText% "
 			+ " or mat.mm_description like %:searchText% or inw.customerinvoiceno like %:searchText% or  party.partyname like %:searchText% ) "
 			+ " ) product where 1=1 ", 
 		countQuery = "SELECT count(distinct inw.inwardentryid) "
 			+ " from product_tblinwardentry inw, jsw_material_master mat, product_tblpartydetails party"
 			+ " where inw.isdeleted=0 and mat.mm_id=inw.mm_id and inw.npartyid=party.npartyid "
+			+ " and (case when :status >0 then inw.vstatus=:status else 1=1 end ) "
 			+ " and (case when :materialFilterValue >0 then mat.producttype_id=:materialFilterValue else 1=1 end ) "
 			+ " and (case when :gradeFilterValue >0 then mat.grade_id=:gradeFilterValue else 1=1 end ) "
 			+ " and (case when :subgradeFilterValue >0 then mat.subgrade_id=:subgradeFilterValue else 1=1 end ) "
@@ -232,12 +237,14 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 			+ " and (case when :lengthMinValue > 0 then inw.fLength between :lengthMinValue and :lengthMaxValue else 1=1 end )"
 			+ " and (case when :widthMinValue > 0 then inw.fWidth between :widthMinValue and :widthMaxValue else 1=1 end )"
 			+ " and (case when :ageingMinValue > 0 then  DATEDIFF(curdate(), date_format(inw.dreceiveddate, '%Y-%m-%d'))  between :ageingMinValue and :ageingMaxValue else 1=1 end )"
-			+ " and (inw.coilnumber like %:searchText% or inw.customerbatchid like %:searchText% "
-			+ " or mat.mm_description like %:searchText% or inw.customerinvoiceno like %:searchText% or "
+			+ " and (case when :scInwardIdFilter is not null and LENGTH(:scInwardIdFilter) >0 then inw.customerbatchid=:scInwardIdFilter else 1=1 end ) " 
+			+ " and (case when :batchNoFilter is not null and LENGTH(:batchNoFilter) >0 then inw.coilnumber=:batchNoFilter else 1=1 end ) " 
+			+ " and (inw.coilnumber like %:searchText% or inw.customerbatchid like %:searchText% or mat.mm_description like %:searchText% or inw.customerinvoiceno like %:searchText% or "
 			+ " party.partyname like %:searchText% ) ", 
 		nativeQuery = true)
 	Page<Object[]> listAllLocationWiseInwards(
 			@Param("searchText") String searchText,
+			@Param("status") int status, 
 			@Param("partyIds") List<Integer> partyIds, 
 			@Param("partyIdsFlag") boolean partyIdsFlag,
 			@Param("materialFilterValue") int materialFilterValue, 
@@ -252,10 +259,36 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 			@Param("widthMaxValue") float widthMaxValue,
 			@Param("ageingMinValue") int ageingMinValue, 
 			@Param("ageingMaxValue") int ageingMaxValue,
+			@Param("scInwardIdFilter") String scInwardIdFilter,
+			@Param("batchNoFilter") String batchNoFilter,
 			Pageable pageable);
 
-	@Query("select inw from InwardEntry inw where inw.inwardEntryId in ( :inwardEntryIds) ORDER BY FIELD(inw.inwardEntryId, :inwardEntryIds)" + 
-			" ")
+	@Query("select inw from InwardEntry inw where inw.inwardEntryId in ( :inwardEntryIds) ORDER BY FIELD(inw.inwardEntryId, :inwardEntryIds)")
 	List<InwardEntry> listAllInwards(@Param("inwardEntryIds") List<Integer> soIDsList);
+
+	@Query(value = "select instructionid, inwardentryid, coilnumber, customerbatchid, coilage, partyname,inwardstatus, material, gradename, subgradename, mm_id, flength, fthickness, fwidth, fpresent,grossweight, "
+			+ " actuallength, actualnoofpieces, actualweight, actualwidth, createdon, instructiondate, plannedlength, "
+			+ " plannednoofpieces, plannedweight, plannedwidth, additional_weight, classification_tag, "
+			+ " enduser_tag_name, packetstatus, processname, sono"
+			+ " from ( "
+			+ " select distinct  parent.inwardentryid ,customerbatchid, parent.mm_id, party.partyname,parent.coilnumber, DATEDIFF(curdate(), date_format(parent.dreceiveddate, '%Y-%m-%d')) coilage, "
+			+ " (select stts.statusname from product_status stts where stts.statusid=parent.vstatus limit 1 ) as inwardstatus, "
+			+ " (select product.product_name from jsw_product_master product where product.product_id=mat.producttype_id limit 1 ) as material,  "
+			+ " (select grade.grade_name from jsw_grade_master grade where grade.grade_id=mat.grade_id limit 1) as gradename,"
+			+ " (select subgrade.subgrade_name from jsw_subgrade_master subgrade where subgrade.subgrade_id=mat.subgrade_id limit 1) as subgradename ,"
+			+ " flength, fquantity, fthickness, fwidth, fpresent, grossweight, "
+			+ " instructionid, actuallength, actualnoofpieces, actualweight, actualwidth, child.createdon, "
+			+ " child.instructiondate, plannedlength, plannednoofpieces, plannedweight, plannedwidth, additional_weight, "
+			+ " (select classification_name from product_packet_classification where classification_id=child.packet_classification_id) as classification_tag, "
+			+ " (select tag_name from product_enduser_tags where tag_id=child.enduser_tag_id) as enduser_tag_name,	"
+			+ " (select stts.statusname from product_status stts where stts.statusid=child.status limit 1 ) as packetstatus, "
+			+ " (select process.processname from product_process process where process.processid=child.processid  ) as processname, "
+			+ " (SELECT so.so_number from sales_order so, sales_order_child sochild where so.so_id=sochild.so_id and sochild.instruction_id = child.instructionid limit 1) as sono,"
+			+ " (SELECT count(distinct a.instructionid) cnt FROM product_instruction a where a.inwardid=parent.inwardentryid and status!=4 and a.parentgroupid=child.groupid) as siltcutcnt "
+			+ " FROM product_tblinwardentry parent, jsw_material_master mat, product_instruction child, product_tblpartydetails party  "
+			+ " where child.isdeleted=0 and parent.isdeleted=0 and parent.inwardentryid = child.inwardid and parent.mm_id= mat.mm_id and party.npartyid = parent.npartyid "
+			+ " and parent.inwardentryid in :inwardIdList ORDER BY FIELD(inwardentryid, :inwardIdList)" + " ) a "
+			+ " where 1=1 AND CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END", nativeQuery = true)
+	List<Object[]> wipListNewQuery(@Param("inwardIdList") List<Integer> inwardIdList);
 
 }

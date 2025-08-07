@@ -100,7 +100,7 @@
             <table>
                 <tbody>
                 <tr>
-                    <td>Document id:</td>
+                    <td>Document Id:</td>
                     <td id="doc-id" th:text="${inward?.partDetailsId}"></td>
                 </tr>
                 <tr>
@@ -160,6 +160,10 @@
                     <td>Material Grade:</td>
                     <td th:text="${inward?.materialGradeName}"></td>
                 </tr>
+                    <tr>
+                        <td>Material SubGrade:</td>
+                        <td th:text="${inward?.subGradeName}"></td>
+                    </tr>
                 <tr>
                     <td>Thickness:</td>
                     <td th:text="${inward?.fThickness}"></td>
@@ -191,6 +195,7 @@
             <table class="m_des">
                 <tbody>
                 <tr class="m_tp">
+                    <th class="m_DesTable">Plan ID</th>
                     <th class="m_DesTable">Length</th>
                     <th class="m_DesTable">Thickness</th>
                     <th class="m_DesTable">Width</th>
@@ -199,6 +204,7 @@
                     <th class="m_DesTable">End User Tags</th>
                 </tr>
                 <tr class="m_tp" th:each="ins: ${list}">
+               		<td class="m_DesTable" th:text="${ins?.instructionId}"></td> 
                     <td class="m_DesTable" th:text="${ins?.plannedLength}"></td>
                     <td class="m_DesTable" th:text="${inward?.fThickness}"></td>
                     <td class="m_DesTable" th:text="${ins?.plannedWidth}"></td>

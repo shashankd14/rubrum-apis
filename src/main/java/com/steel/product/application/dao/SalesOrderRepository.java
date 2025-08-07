@@ -15,18 +15,18 @@ import javax.transaction.Transactional;
 @Repository
 public interface SalesOrderRepository extends JpaRepository<SalesOrderEntity, Integer> {
 
-	@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, materialgrade, materialdesc, fthickness, fweight, npartyid,partyname,fWidth, flength,fquantity, "
+	@Query(value = "select planid, inwardid, batchno, customerbatchid, materialgrade, materialdesc, fthickness, fweight, locationid, partyname,fWidth, flength,fquantity, "
 			+ "inStockWeight, actualNoOfPieces , process_status, instruction_status, classification_tag, enduser_tag_name,sono,customer_code, subgrade,brandname,createdon "
-			+ " from ( SELECT inwardid,  coilnumber, customerbatchid, "
+			+ " from ( SELECT inwardid,  coilnumber as batchno, customerbatchid, "
 			+ " (SELECT product_name FROM jsw_product_master a, jsw_material_master mat where a.product_id=mat.producttype_id and mat.mm_id=parent.mm_id limit 1) as  materialdesc,"
 			+ " (SELECT grade_name FROM jsw_grade_master grade, jsw_material_master mat where grade.grade_id=mat.grade_id and mat.mm_id=parent.mm_id limit 1) as  materialgrade,"
-			+ "	fthickness, instructionid as packet_id,  coalesce(actualwidth, plannedwidth) fWidth, coalesce( actuallength,plannedlength) flength, "
+			+ "	fthickness, instructionid as planid,  coalesce(actualwidth, plannedwidth) fWidth, coalesce( actuallength,plannedlength) flength, "
 			+ " coalesce(actualweight, plannedweight) fweight, fquantity,in_stock_weight inStockWeight, plannednoofpieces actualNoOfPieces,"
 			+ " (select processname from product_process where processid=child.processid) as process_status ,"
 			+ " (select statusname from product_status where statusid=child.status) as instruction_status,partyname, "
 			+ " (select classification_name from product_packet_classification where classification_id=child.packet_classification_id) as classification_tag, "
 			+ " (select tag_name from product_enduser_tags where tag_id=child.enduser_tag_id) as enduser_tag_name,	 "
-			+ " (SELECT count(distinct a.instructionid) cnt FROM product_instruction a where a.inwardid=parent.inwardentryid and status!=4 and a.parentgroupid=child.groupid) as siltcutcnt, parent.npartyid, "
+			+ " (SELECT count(distinct a.instructionid) cnt FROM product_instruction a where a.inwardid=parent.inwardentryid and status!=4 and a.parentgroupid=child.groupid) as siltcutcnt, parent.npartyid locationid, "
 			+ " (SELECT so.so_number from sales_order so, sales_order_child sochild where so.so_id=sochild.so_id and sochild.instruction_id = child.instructionid limit 1) as sono,"
 			+ " (SELECT so.customer_code_id from sales_order so, sales_order_child sochild where so.so_id=sochild.so_id and sochild.instruction_id = child.instructionid limit 1) as customer_code,"
 			+ " (SELECT subgrade.subgrade_name FROM jsw_subgrade_master subgrade, jsw_material_master mat where subgrade.subgrade_id=mat.subgrade_id and mat.mm_id=parent.mm_id limit 1) as  subgrade,"
@@ -34,7 +34,10 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrderEntity, In
 			+ " child.createdon as createdon "
 			+ " FROM product_tblinwardentry parent, product_instruction child, product_tblpartydetails party  "
 			+ " where child.isdeleted=0 and parent.isdeleted=0 and parent.inwardentryid = child.inwardid and party.npartyid = parent.npartyid "
-			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (parent.coilNumber like %:searchText% or parent.customerBatchId like %:searchText% or parent.customerInvoiceNo like %:searchText%) else 1=1 end " 
+			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (parent.coilnumber like %:searchText% or parent.customerBatchId like %:searchText% or parent.customerInvoiceNo like %:searchText%) else 1=1 end " 
+			+ " and (case when :planId > 0 then child.instructionid = :planId else 1=1 end )"
+			+ " and (case when :locationId > 0 then parent.npartyid = :locationId else 1=1 end )"
+			+ " and (case when :batchNo is not null and LENGTH(:batchNo) >0 then parent.coilnumber = :batchNo else 1=1 end) " 
 			+ " and case when :partyIdsFlag=true then parent.npartyid in :partyIds else 1=1 end"
 			+ ") a "
 			+ " where 1=1 AND CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END",
@@ -43,13 +46,20 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrderEntity, In
 			+ " (SELECT count(distinct inss.instructionid) cnt FROM product_instruction inss where inss.inwardid=parent.inwardentryid  and status!=4 and inss.parentgroupid=child.groupid) as siltcutcnt"
 			+ " FROM product_tblinwardentry parent, product_instruction child, product_tblpartydetails party "
 			+ " where child.isdeleted=0 and parent.isdeleted=0 and parent.inwardentryid = child.inwardid and party.npartyid = parent.npartyid "
-			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (parent.coilNumber like %:searchText% or parent.customerBatchId like %:searchText% or parent.customerInvoiceNo like %:searchText%) else 1=1 end " 
+			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (parent.coilnumber like %:searchText% or parent.customerBatchId like %:searchText% or parent.customerInvoiceNo like %:searchText%) else 1=1 end " 
+			+ " and (case when :planId > 0 then child.instructionid = :planId else 1=1 end )"
+			+ " and (case when :locationId > 0 then parent.npartyid = :locationId else 1=1 end )"
+			+ " and (case when :batchNo is not null and LENGTH(:batchNo) >0 then parent.coilnumber = :batchNo else 1=1 end) " 
 			+ " and case when :partyIdsFlag=true then parent.npartyid in :partyIds else 1=1 end "
 			+ ") a "
 			+ " where 1=1 AND CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END", nativeQuery = true)
 	Page<Object[]> listAllPackets(@Param("searchText") String searchText,
-			@Param("partyIds") List<Integer> partyIds, @Param("partyIdsFlag") boolean partyIdsFlag,
-			 Pageable pageable);
+			@Param("partyIds") List<Integer> partyIds,
+			@Param("partyIdsFlag") boolean partyIdsFlag,
+			@Param("planId") int planId,
+			@Param("batchNo") String batchNo,
+			@Param("locationId") int locationId,
+			Pageable pageable);
 
 	@Query(value = "SELECT distinct so.so_number,inwardid "
 			+ " FROM product_tblinwardentry parent, product_instruction child, sales_order_child so_child, sales_order so, product_tblpartydetails party "

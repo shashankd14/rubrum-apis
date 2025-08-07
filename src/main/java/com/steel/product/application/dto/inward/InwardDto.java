@@ -66,6 +66,14 @@ public class InwardDto {
 
 	private String parentCoilNumber;
 
+	private Float ys;
+
+	private Float uts;
+
+	private Float el;
+	
+	private MultipartFile invoiceCopy;
+	
 	public int getInwardId() {
 		return this.inwardId;
 	}
@@ -305,6 +313,38 @@ public class InwardDto {
 
 	public void setMmId(String mmId) {
 		this.mmId = mmId;
+	}
+
+	public Float getYs() {
+		return ys;
+	}
+
+	public void setYs(Float ys) {
+		this.ys = ys;
+	}
+
+	public Float getUts() {
+		return uts;
+	}
+
+	public void setUts(Float uts) {
+		this.uts = uts;
+	}
+
+	public Float getEl() {
+		return el;
+	}
+
+	public void setEl(Float el) {
+		this.el = el;
+	}
+
+	public MultipartFile getInvoiceCopy() {
+		return invoiceCopy;
+	}
+
+	public void setInvoiceCopy(MultipartFile invoiceCopy) {
+		this.invoiceCopy = invoiceCopy;
 	}
 	
 	

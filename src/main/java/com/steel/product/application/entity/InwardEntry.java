@@ -7,9 +7,7 @@ import com.steel.product.jswone.service.MaterialMasterJswService;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-
 import javax.persistence.*;
-
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -160,6 +158,18 @@ public class InwardEntry {
     
     @Column(name = "labelpdf_s3_url")
     private String labelpdfS3Url;
+    
+    @Column(name = "ys")
+	private Float ys;
+
+    @Column(name = "uts")
+	private Float uts;
+
+    @Column(name = "el")
+	private Float el;
+	
+	@Column(name = "invoicecopy_fileurl")
+	private String invoicecopyFileurl;
 
 	public void addInstruction(Instruction instruction){
 		if(this.instructions == null){
@@ -545,6 +555,38 @@ public class InwardEntry {
 	public void setAllocatedSoqty(Float allocatedSoqty) {
 		this.allocatedSoqty = allocatedSoqty;
 	}
+	
+	public Float getYs() {
+		return ys;
+	}
+
+	public void setYs(Float ys) {
+		this.ys = ys;
+	}
+
+	public Float getUts() {
+		return uts;
+	}
+
+	public void setUts(Float uts) {
+		this.uts = uts;
+	}
+
+	public Float getEl() {
+		return el;
+	}
+
+	public void setEl(Float el) {
+		this.el = el;
+	}
+
+	public String getInvoicecopyFileurl() {
+		return invoicecopyFileurl;
+	}
+
+	public void setInvoicecopyFileurl(String invoicecopyFileurl) {
+		this.invoicecopyFileurl = invoicecopyFileurl;
+	}
 
 	public static InwardEntryPdfDto valueOf(InwardEntry inwardEntry, List<InstructionResponsePdfDto> instructionResponsePdfDtos){
         InwardEntryPdfDto inwardEntryPdfDto = new InwardEntryPdfDto();
@@ -757,15 +799,18 @@ public class InwardEntry {
 		if(inwardEntryResponseDto.getInstruction()!=null && inwardEntryResponseDto.getInstruction().size()>0) {
 			Collections.sort(inwardEntryResponseDto.getInstruction(), new MyInstructionIdComp());
 		}
-		
+
 		inwardEntryResponseDto.setPurposeType(inwardEntry.getPurposeType());
 		inwardEntryResponseDto.setdReceivedDate(inwardEntry.getdReceivedDate());
 		inwardEntryResponseDto.setvLorryNo(inwardEntry.getvLorryNo());
 		inwardEntryResponseDto.setvInvoiceNo(inwardEntry.getvInvoiceNo());
-		inwardEntryResponseDto.setMmId (inwardEntry.getMmId());
+		inwardEntryResponseDto.setMmId(inwardEntry.getMmId());
 		inwardEntryResponseDto.setTestCertificateNumber(inwardEntry.getTestCertificateNumber());
 		inwardEntryResponseDto.setRemarks(inwardEntry.getRemarks());
 		inwardEntryResponseDto.setdInvoiceDate(inwardEntry.getdInvoiceDate());
+		inwardEntryResponseDto.setValueOfGoods(inwardEntry.getValueOfGoods());
+		inwardEntryResponseDto.setYs(inwardEntry.getYs());
+		inwardEntryResponseDto.setUts(inwardEntry.getUts());
 		inwardEntryResponseDto.setValueOfGoods(inwardEntry.getValueOfGoods());
 		inwardEntryResponseDto.setCreatedBy(inwardEntry.getCreatedBy());
 		inwardEntryResponseDto.setCreatedOn(inwardEntry.getCreatedOn());
@@ -780,7 +825,7 @@ public class InwardEntry {
 		inwardEntryResponseDto.setAvailableLength(inwardEntry.getAvailableLength());
 		inwardEntryResponseDto.setCustomerInvoiceNo(inwardEntry.getCustomerInvoiceNo());
 		inwardEntryResponseDto.setParentCoilNumber(inwardEntry.getParentCoilNumber());
-		inwardEntryResponseDto.setScrapWeight( inwardEntry.getScrapWeight() );
+		inwardEntryResponseDto.setScrapWeight(inwardEntry.getScrapWeight());
 		return inwardEntryResponseDto;
 	}
 }

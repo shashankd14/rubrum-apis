@@ -503,6 +503,7 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 		
 		Page<Object[]> pageResult = inwdEntryRepo.listAllLocationWiseInwards(
 				searchListPageRequest.getSearchText(),  
+				searchListPageRequest.getStatus(),
 				partyIds,
 				partyIdsFlag,   
 				searchListPageRequest.getMaterialFilterValue(),
@@ -517,6 +518,8 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 				searchListPageRequest.getWidthMaxValue(), 
 				searchListPageRequest.getAgeingMinValue(),
 				searchListPageRequest.getAgeingMaxValue(),
+				searchListPageRequest.getScInwardIdFilter(),
+				searchListPageRequest.getBatchNoFilter(),
 				pageable);
 		 
 		return pageResult;
@@ -525,6 +528,12 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 	@Override
 	public List<InwardEntry> locationWiseListByInwardId(List<Integer> inwardList) {
 		List<InwardEntry> packetsList = inwdEntryRepo.listAllInwards(inwardList);
+		return packetsList;
+	}
+
+	@Override
+	public List<Object[]> wipListNewQuery(List<Integer> inwardIdList) {
+		List<Object[]> packetsList = inwdEntryRepo.wipListNewQuery(inwardIdList);
 		return packetsList;
 	}
 }

@@ -97,6 +97,14 @@ public class InwardEntryResponseDto {
 
 	private long ageing;
     
+	private Float ys;
+
+	private Float uts;
+
+	private Float el;
+	
+	private String invoicecopyFileurl;
+    
     public Integer getInwardEntryId() {
         return inwardEntryId;
     }
@@ -439,6 +447,38 @@ public class InwardEntryResponseDto {
 
 	public void setMmId(String mmId) {
 		this.mmId = mmId;
+	}
+
+	public Float getYs() {
+		return ys;
+	}
+
+	public void setYs(Float ys) {
+		this.ys = ys;
+	}
+
+	public Float getUts() {
+		return uts;
+	}
+
+	public void setUts(Float uts) {
+		this.uts = uts;
+	}
+
+	public Float getEl() {
+		return el;
+	}
+
+	public void setEl(Float el) {
+		this.el = el;
+	}
+
+	public String getInvoicecopyFileurl() {
+		return invoicecopyFileurl;
+	}
+
+	public void setInvoicecopyFileurl(String invoicecopyFileurl) {
+		this.invoicecopyFileurl = invoicecopyFileurl;
 	} 
 	
 	

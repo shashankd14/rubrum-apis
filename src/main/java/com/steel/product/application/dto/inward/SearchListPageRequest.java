@@ -9,6 +9,8 @@ public class SearchListPageRequest {
 
 	private Integer pageSize;
 
+	private int status;
+
 	private String partyId;
 
 	private String loginType;
@@ -42,5 +44,9 @@ public class SearchListPageRequest {
 	private int ageingMinValue;
 
 	private int ageingMaxValue;
+
+	private String batchNoFilter;
+
+	private String scInwardIdFilter;
 
 }
