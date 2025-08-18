@@ -67,4 +67,17 @@ public interface MaterialMasterJswRepository
 	Page<Object[]> materialSearchBymmid(@Param("mmid") String mmid,  Pageable pageable);
 
 	List<MaterialMasterJswEntity> findByMmId(String mmid);
+	
+	@Query(value = "select producttype_id, grade_id, subgrade_id, brand_id, material, gradename, subgradename,brandname from ("
+			+ " select distinct mat.producttype_id, mat.grade_id, mat.subgrade_id, mat.brand_id, "
+			+ " (select product.product_name from jsw_product_master product where product.product_id=mat.producttype_id limit 1 ) as material, "
+			+ " (select grade.grade_name from jsw_grade_master grade where grade.grade_id=mat.grade_id limit 1) as gradename, "
+			+ " (select subgrade.subgrade_name from jsw_subgrade_master subgrade where subgrade.subgrade_id=mat.subgrade_id limit 1) as subgradename, "
+			+ " (select brand.brand_name from jsw_brand_master brand where brand.brand_id=mat.brand_id limit 1) as brandname "
+			+ " from product_tblinwardentry inw, jsw_material_master mat, product_tblpartydetails party"
+			+ " where inw.isdeleted=0 and mat.mm_id=inw.mm_id and inw.npartyid=party.npartyid "
+			+ "and (case when :status >0 then inw.vstatus=:status else 1=1 end ) "
+			+ " ) product where 1=1 ", 
+		nativeQuery = true)
+	List<Object[]> listAllLocationWiseInwards(@Param("status") int status); 
 }

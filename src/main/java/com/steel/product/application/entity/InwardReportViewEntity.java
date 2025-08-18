@@ -19,11 +19,6 @@ public class InwardReportViewEntity {
 	@Column(name = "id")
 	private Integer id;
 	
-	@Column(name = "mnth")
-	private Integer mnth;
-	
-	@Column(name = "yer")
-	private Integer yer;
 	
 	@Column(name = "testcertificatenumber")
 	private String testcertificatenumber;

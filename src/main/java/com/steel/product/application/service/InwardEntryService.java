@@ -72,4 +72,8 @@ public interface InwardEntryService {
 
 	List<Object[]> wipListNewQuery(List<Integer> inwardIdList);
 
+	List<Object[]> wipListNewQueryWithPlanId(String searchText);
+
+	Page<Object[]> wipInwardIdListPlanId(SearchListPageRequest searchListPageRequest);
+
 }

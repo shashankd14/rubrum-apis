@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.steel.product.jswone.entity.MaterialMasterJswEntity;
 import com.steel.product.jswone.request.MaterialSearchPageRequest;
 import com.steel.product.jswone.request.MaterialUploadRequest;
+import com.steel.product.jswone.response.MaterialResponseWithInwardUniqueData;
 import com.steel.product.jswone.response.MaterialResponseWithUniqueData;
 import com.steel.product.jswone.response.MaterialSearchPageResponse;
 import com.steel.product.jswone.service.MaterialMasterJswService;
@@ -229,6 +230,42 @@ public class MaterialUploadController {
 		resp.setODiameterMap(oDiameterMapNew);
 		resp.setIDiameterMap(iDiameterMapNew);
 		resp.setNbMap(nbMapNew); 
+		return new ResponseEntity<Object>(resp, HttpStatus.OK);
+	}
+	
+	@PostMapping(value = "/mmidmasterusedinward", produces = "application/json")
+	public ResponseEntity<Object> masterlistusedininward(@RequestBody MaterialSearchPageRequest request) {
+		Map<Integer, String> productMapNew = new TreeMap<>();
+		Map<Integer, String> brandMapNew = new TreeMap<>();
+		Map<Integer, String> gradeMapNew = new TreeMap<>();
+		Map<Integer, String> subGradeMapNew = new TreeMap<>();
+		
+		request.setPageNo(1);
+		request.setPageSize(1000000);
+
+		List<Object[]> packetsList = materialUploadService.mmidmasterusedinward(request);
+		MaterialResponseWithInwardUniqueData resp = new MaterialResponseWithInwardUniqueData();
+
+		for (Object[] result : packetsList) {
+			Integer productNameId = (result[0] != null ? (Integer) result[0] : null);
+			Integer gradeId = (result[1] != null ? (Integer) result[1] : null);
+			Integer subGradeId = (result[2] != null ? (Integer) result[2] : null);
+			Integer brandId = (result[3] != null ? (Integer) result[3] : null);
+
+			String productName = (result[4] != null ? (String) result[4] : null);
+			String gradeName = (result[5] != null ? (String) result[5] : null);
+			String subGradeName = (result[6] != null ? (String) result[6] : null);
+			String brandName = (result[7] != null ? (String) result[7] : null);
+
+			productMapNew.put(productNameId, productName);
+			gradeMapNew.put(gradeId, gradeName);
+			subGradeMapNew.put(subGradeId, subGradeName);
+			brandMapNew.put(brandId, brandName);
+		}
+		resp.setProductMap(productMapNew);
+		resp.setBrandMap(brandMapNew);
+		resp.setGradeMap(gradeMapNew);
+		resp.setSubGradeMap(subGradeMapNew);
 		return new ResponseEntity<Object>(resp, HttpStatus.OK);
 	}
 	

@@ -1,11 +1,11 @@
 package com.steel.product.application.service;
 
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,9 +13,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-
 import com.steel.product.application.dao.PartyDetailsRepository;
 import com.steel.product.application.entity.Party;
+import com.steel.product.jswone.service.JsonFileService;
 
 @Component
 public class ReportsEmailScheduler {
@@ -29,8 +29,17 @@ public class ReportsEmailScheduler {
 	@Value("${email.sendReportEmailRequired}")
 	private boolean apiAlertRequired;
 
+	@Value("${email.uploadfilestogcpRequiredFlag}")
+	private boolean uploadfilestogcpRequiredFlag;
+
+	@Value("${email.gcpreportspath}")
+	private String gcpReportsPath;
+
 	@Autowired
 	PartyDetailsRepository partyRepo;
+	
+	@Autowired
+	JsonFileService jsonFileService;
 
 	@Autowired
 	ReportsServiceImpl service;
@@ -54,7 +63,23 @@ public class ReportsEmailScheduler {
 			}
 		}
 	}
-    
+
+	@Scheduled(cron = "${email.uploadFilesToGCPTime}")
+	public void jsontofile() throws InterruptedException {
+		if (uploadfilestogcpRequiredFlag) {
+			try {
+				logger.info("sendDailyNotificationAlert apiAlertRequired == " + apiAlertRequired);
+				Calendar cal = Calendar.getInstance();
+				Date date = cal.getTime();
+				DateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy");
+				String strDate = dateFormat.format(date);
+				jsonFileService.writeJsonToFile(gcpReportsPath, strDate);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
 	/*
 	@Scheduled(cron = "${email.reportsMonthlyScheduleTime}")
 	public void sendMonthlyNotifications() throws InterruptedException {

@@ -350,19 +350,30 @@ public class InwardEntryController {
 	}
 	
 	@PostMapping({ "/wiplist" })
-	public ResponseEntity<Object> wiplist(@RequestBody SearchListPageRequest searchListPageRequest) {
-		log.info("in inwardList ");
+	public ResponseEntity<Object> wiplist(@RequestBody SearchListPageRequest request) {
+		log.info("in wiplist ");
 		Map<String, Object> response = new HashMap<>();
-		searchListPageRequest.setStatus(2);
-		Page<Object[]> packetsList1 = inwdEntrySvc.listAllLocationWiseInwards(searchListPageRequest);
-
+		request.setStatus(2);
+		Page<Object[]> packetsList1 = null;
+		if (request.getSearchText() != null && request.getSearchText().length() > 0) {
+			packetsList1 = inwdEntrySvc.wipInwardIdListPlanId(request);
+		} else {
+			packetsList1 = inwdEntrySvc.listAllLocationWiseInwards(request);
+		}
+ 
 		List<Integer> inwardIdList = new ArrayList<>();
 		for (Object[] result : packetsList1) {
 			Integer inwardId = (result[0] != null ? (Integer) result[0] : null);
 			inwardIdList.add(inwardId);
 		}
-		System.out.println("Hi inwardIdList == "+inwardIdList);
-		List<Object[]> packetsList = inwdEntrySvc.wipListNewQuery(inwardIdList);
+		System.out.println("inwardIdList == "+inwardIdList);
+		List<Object[]> packetsList= null;
+		if (request.getSearchText() != null && request.getSearchText().length() > 0) {
+			packetsList = inwdEntrySvc.wipListNewQueryWithPlanId(request.getSearchText());
+		} else {
+			packetsList = inwdEntrySvc.wipListNewQuery(inwardIdList);
+		}
+
 		Map<Integer, WIPListResponseDTO> inwardMap = new LinkedHashMap<>();
 		List<WIPChildListResponseDTO> childList = new ArrayList<WIPChildListResponseDTO>();
 		for (Object[] result : packetsList) {
@@ -375,9 +386,9 @@ public class InwardEntryController {
 			parent.setCoilAge( result[4] != null ? (Integer) result[4] : null);
 			parent.setPartyName(result[5] != null ? (String) result[5] : null);
 			parent.setInwardStatus( result[6] != null ? (String) result[6] : null);
-			parent.setMaterialGrade(result[7] != null ? (String) result[7] : null);
-			parent.setMaterialSubGrade(result[8] != null ? (String) result[8] : null);
-			parent.setMaterialDesc(result[9] != null ? (String) result[9] : null);
+			parent.setMaterialDesc(result[7] != null ? (String) result[7] : null);
+			parent.setMaterialGrade(result[8] != null ? (String) result[8] : null);
+			parent.setMaterialSubGrade(result[9] != null ? (String) result[9] : null);
 			parent.setMmId(result[10] != null ? (String) result[10] : null);
 			parent.setFLength(result[11] != null ? (Float) result[11] : null);
 			parent.setFThickness(result[12] != null ? (Float) result[12] : null);

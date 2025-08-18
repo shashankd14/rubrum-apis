@@ -13,6 +13,8 @@ public class MaterialSearchPageRequest {
 
 	private Integer pageSize;
 
+	private String param;
+
 	private BigDecimal length;
 
 	private BigDecimal width;

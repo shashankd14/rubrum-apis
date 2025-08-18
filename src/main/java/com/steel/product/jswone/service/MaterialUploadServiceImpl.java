@@ -32,8 +32,11 @@ import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
+import com.steel.product.application.dto.inward.SearchListPageRequest;
 import com.steel.product.application.dto.pdf.PdfDto;
+import com.steel.product.application.entity.AdminUserEntity;
 import com.steel.product.application.entity.InwardEntry;
+import com.steel.product.application.entity.UserPartyMap;
 import com.steel.product.application.service.InwardEntryService;
 import com.steel.product.application.service.PartyDetailsService;
 import com.steel.product.application.service.PdfService;
@@ -668,6 +671,19 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 				.withIgnoreLeadingWhiteSpace(true).withIgnoreEmptyLine(true).withType(InwardFileDataDTO.class)
 				.build();
 		return csvToBean.parse();
+	}
+	
+	@Override
+	public List<Object[]> mmidmasterusedinward(MaterialSearchPageRequest request) {
+		log.info("In mmidmasterusedinward page ");
+		int statusId=0;
+		if("WIP".equals(request.getParam() )) {
+			statusId=2;
+		}
+		
+		
+		List<Object[]> pageResult = materialMasterRepository.listAllLocationWiseInwards(statusId);
+		return pageResult;
 	}
 	
 }

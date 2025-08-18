@@ -526,6 +526,56 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 	}
 
 	@Override
+	public Page<Object[]> wipInwardIdListPlanId(SearchListPageRequest searchListPageRequest) {
+
+		LOGGER.info("In listAllLocationWiseInwards page ");
+		Pageable pageable = null;
+		if (searchListPageRequest.getSortColumn() != null && searchListPageRequest.getSortColumn().length() > 0
+				&& searchListPageRequest.getSortOrder() != null && searchListPageRequest.getSortOrder().length() > 0
+				&& "ASC".equalsIgnoreCase(searchListPageRequest.getSortOrder())) {
+			pageable = PageRequest.of((searchListPageRequest.getPageNo()-1), searchListPageRequest.getPageSize(), Sort.by(searchListPageRequest.getSortColumn()).ascending());
+		}else if (searchListPageRequest.getSortColumn() != null && searchListPageRequest.getSortColumn().length() > 0
+				&& searchListPageRequest.getSortOrder() != null && searchListPageRequest.getSortOrder().length() > 0
+				&& "DESC".equalsIgnoreCase(searchListPageRequest.getSortOrder())) {
+			pageable = PageRequest.of((searchListPageRequest.getPageNo()-1), searchListPageRequest.getPageSize(), Sort.by(searchListPageRequest.getSortColumn()).descending());
+		} else {
+			if(searchListPageRequest.getPageNo() == null ) {
+				searchListPageRequest.setPageNo(1);
+			}
+			pageable = PageRequest.of((searchListPageRequest.getPageNo()-1), searchListPageRequest.getPageSize(), Sort.by("inwardentryid").descending());
+		}
+		
+		List<Integer> partyIds = new ArrayList<>();
+		boolean partyIdsFlag = false;
+		if (searchListPageRequest.getPartyId() != null && searchListPageRequest.getPartyId().length() > 0) {
+			partyIds.add(Integer.parseInt(searchListPageRequest.getPartyId()));
+			partyIdsFlag = true;
+		} else {
+			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
+			if (adminUserEntity.getUserPartyMap() != null && adminUserEntity.getUserPartyMap().size() > 0) {
+				partyIds = new ArrayList<>();
+				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
+					partyIds.add(userPartyMap.getPartyId());
+					partyIdsFlag = true;
+				}
+				LOGGER.info("In partyIds === " + partyIds);
+			} else {
+				partyIdsFlag = false;
+				partyIds = new ArrayList<>();
+			}
+		}
+		
+		Page<Object[]> pageResult = inwdEntryRepo.wipInwardIdListPlanId(
+				searchListPageRequest.getSearchText(),  
+				searchListPageRequest.getStatus(),
+				partyIds,
+				partyIdsFlag,
+				pageable);
+		 
+		return pageResult;
+	}
+
+	@Override
 	public List<InwardEntry> locationWiseListByInwardId(List<Integer> inwardList) {
 		List<InwardEntry> packetsList = inwdEntryRepo.listAllInwards(inwardList);
 		return packetsList;
@@ -534,6 +584,12 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 	@Override
 	public List<Object[]> wipListNewQuery(List<Integer> inwardIdList) {
 		List<Object[]> packetsList = inwdEntryRepo.wipListNewQuery(inwardIdList);
+		return packetsList;
+	}
+
+	@Override
+	public List<Object[]> wipListNewQueryWithPlanId(String searchText) {
+		List<Object[]> packetsList = inwdEntryRepo.wipListNewQueryWithPlanId(searchText);
 		return packetsList;
 	}
 }

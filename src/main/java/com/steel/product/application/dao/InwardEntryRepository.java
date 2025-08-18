@@ -291,4 +291,83 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 			+ " where 1=1 AND CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END", nativeQuery = true)
 	List<Object[]> wipListNewQuery(@Param("inwardIdList") List<Integer> inwardIdList);
 
+	@Query(value = "select inwardentryid, coilnumber, coilage, fthickness, flength, fwidth, material, "
+			+ " gradename, subgradename,brandname, partyname,customerbatchid from ("
+			+ " select distinct inw.inwardentryid ,inw.coilnumber, DATEDIFF(curdate(), date_format(inw.dreceiveddate, '%Y-%m-%d')) coilage,"
+			+ " inw.fthickness, inw.fLength, inw.fWidth,party.partyname, customerbatchid,"
+			+ " (select product.product_name from jsw_product_master product where product.product_id=mat.producttype_id limit 1 ) as material, "
+			+ " (select grade.grade_name from jsw_grade_master grade where grade.grade_id=mat.grade_id limit 1) as gradename, "
+			+ " (select subgrade.subgrade_name from jsw_subgrade_master subgrade where subgrade.subgrade_id=mat.subgrade_id limit 1) as subgradename, "
+			+ " (select brand.brand_name from jsw_brand_master brand where brand.brand_id=mat.brand_id limit 1) as brandname "
+			+ " from product_tblinwardentry inw, product_instruction ins, jsw_material_master mat, product_tblpartydetails party"
+			+ " where inw.isdeleted=0 and mat.mm_id=inw.mm_id and ins.inwardid=inw.inwardentryid and inw.npartyid=party.npartyid "
+			+ " and (case when :partyIdsFlag=true then inw.npartyid in :partyIds else 1=1 end ) "
+			+ " and (case when :status >0 then inw.vstatus=:status else 1=1 end ) "
+			+ " and ins.instructionid=:searchText  "
+			+ " ) product where 1=1 ", 
+		countQuery = "SELECT count(distinct inw.inwardentryid) "
+			+ " from product_tblinwardentry inw, product_instruction ins, jsw_material_master mat, product_tblpartydetails party"
+			+ " where inw.isdeleted=0 and mat.mm_id=inw.mm_id and ins.inwardid=inw.inwardentryid and inw.npartyid=party.npartyid "
+			+ " and (case when :partyIdsFlag=true then inw.npartyid in :partyIds else 1=1 end ) "
+			+ " and (case when :status >0 then inw.vstatus=:status else 1=1 end ) "
+			+ " and ins.instructionid=:searchText ", 
+		nativeQuery = true)
+	Page<Object[]> wipInwardIdListPlanId(
+			@Param("searchText") String searchText,
+			@Param("status") int status, 
+			@Param("partyIds") List<Integer> partyIds, 
+			@Param("partyIdsFlag") boolean partyIdsFlag,
+			Pageable pageable);
+	
+
+	@Query(value = "select instructionid, inwardentryid, coilnumber, customerbatchid, coilage, partyname,inwardstatus, material, gradename, subgradename, mm_id, flength, fthickness, fwidth, fpresent,grossweight, "
+			+ " actuallength, actualnoofpieces, actualweight, actualwidth, createdon, instructiondate, plannedlength, "
+			+ " plannednoofpieces, plannedweight, plannedwidth, additional_weight, classification_tag, "
+			+ " enduser_tag_name, packetstatus, processname, sono"
+			+ " from ( "
+			+ " select distinct  parent.inwardentryid ,customerbatchid, parent.mm_id, party.partyname,parent.coilnumber, DATEDIFF(curdate(), date_format(parent.dreceiveddate, '%Y-%m-%d')) coilage, "
+			+ " (select stts.statusname from product_status stts where stts.statusid=parent.vstatus limit 1 ) as inwardstatus, "
+			+ " (select product.product_name from jsw_product_master product where product.product_id=mat.producttype_id limit 1 ) as material,  "
+			+ " (select grade.grade_name from jsw_grade_master grade where grade.grade_id=mat.grade_id limit 1) as gradename,"
+			+ " (select subgrade.subgrade_name from jsw_subgrade_master subgrade where subgrade.subgrade_id=mat.subgrade_id limit 1) as subgradename ,"
+			+ " flength, fquantity, fthickness, fwidth, fpresent, grossweight, "
+			+ " instructionid, actuallength, actualnoofpieces, actualweight, actualwidth, child.createdon, "
+			+ " child.instructiondate, plannedlength, plannednoofpieces, plannedweight, plannedwidth, additional_weight, "
+			+ " (select classification_name from product_packet_classification where classification_id=child.packet_classification_id) as classification_tag, "
+			+ " (select tag_name from product_enduser_tags where tag_id=child.enduser_tag_id) as enduser_tag_name,	"
+			+ " (select stts.statusname from product_status stts where stts.statusid=child.status limit 1 ) as packetstatus, "
+			+ " (select process.processname from product_process process where process.processid=child.processid  ) as processname, "
+			+ " (SELECT so.so_number from sales_order so, sales_order_child sochild where so.so_id=sochild.so_id and sochild.instruction_id = child.instructionid limit 1) as sono,"
+			+ " (SELECT count(distinct a.instructionid) cnt FROM product_instruction a where a.inwardid=parent.inwardentryid and status!=4 and a.parentgroupid=child.groupid) as siltcutcnt "
+			+ " FROM product_tblinwardentry parent, jsw_material_master mat, product_instruction child, product_tblpartydetails party  "
+			+ " where child.isdeleted=0 and parent.isdeleted=0 and parent.inwardentryid = child.inwardid and parent.mm_id= mat.mm_id and party.npartyid = parent.npartyid "
+			+ " and child.instructionid = :planId " + " ) a "
+			+ " where 1=1 AND CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END", nativeQuery = true)
+	List<Object[]> wipListNewQueryWithPlanId(@Param("planId") String planId);
+	
+	@Query(value = "select instructionid, inwardentryid, coilnumber, customerbatchid, coilage, partyname,inwardstatus, material, gradename, subgradename, mm_id, flength, fthickness, fwidth, fpresent,grossweight, "
+			+ " actuallength, actualnoofpieces, actualweight, actualwidth, createdon, instructiondate, plannedlength, "
+			+ " plannednoofpieces, plannedweight, plannedwidth, additional_weight, classification_tag, "
+			+ " enduser_tag_name, packetstatus, processname, sono"
+			+ " from ( "
+			+ " select distinct  parent.inwardentryid ,customerbatchid, parent.mm_id, party.partyname,parent.coilnumber, DATEDIFF(curdate(), date_format(parent.dreceiveddate, '%Y-%m-%d')) coilage, "
+			+ " (select stts.statusname from product_status stts where stts.statusid=parent.vstatus limit 1 ) as inwardstatus, "
+			+ " (select product.product_name from jsw_product_master product where product.product_id=mat.producttype_id limit 1 ) as material,  "
+			+ " (select grade.grade_name from jsw_grade_master grade where grade.grade_id=mat.grade_id limit 1) as gradename,"
+			+ " (select subgrade.subgrade_name from jsw_subgrade_master subgrade where subgrade.subgrade_id=mat.subgrade_id limit 1) as subgradename ,"
+			+ " flength, fquantity, fthickness, fwidth, fpresent, grossweight, "
+			+ " instructionid, actuallength, actualnoofpieces, actualweight, actualwidth, child.createdon, "
+			+ " child.instructiondate, plannedlength, plannednoofpieces, plannedweight, plannedwidth, additional_weight, "
+			+ " (select classification_name from product_packet_classification where classification_id=child.packet_classification_id) as classification_tag, "
+			+ " (select tag_name from product_enduser_tags where tag_id=child.enduser_tag_id) as enduser_tag_name,	"
+			+ " (select stts.statusname from product_status stts where stts.statusid=child.status limit 1 ) as packetstatus, "
+			+ " (select process.processname from product_process process where process.processid=child.processid  ) as processname, "
+			+ " (SELECT so.so_number from sales_order so, sales_order_child sochild where so.so_id=sochild.so_id and sochild.instruction_id = child.instructionid limit 1) as sono,"
+			+ " (SELECT count(distinct a.instructionid) cnt FROM product_instruction a where a.inwardid=parent.inwardentryid and status!=4 and a.parentgroupid=child.groupid) as siltcutcnt "
+			+ " FROM product_tblinwardentry parent, jsw_material_master mat, product_instruction child, product_tblpartydetails party  "
+			+ " where child.isdeleted=0 and parent.isdeleted=0 and parent.inwardentryid = child.inwardid and parent.mm_id= mat.mm_id and party.npartyid = parent.npartyid "
+			+ " ORDER BY inwardentryid ) a "
+			+ " where 1=1 AND CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END", nativeQuery = true)
+	List<Object[]> wipListNewQuery( );
+
 }
