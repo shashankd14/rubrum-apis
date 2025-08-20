@@ -97,13 +97,17 @@ public class MailSender {
 				mailStts = true;
 				reportsService.createStockSummaryReport(party.getnPartyId(), strDate, helper);
 			}
-			if (party.getMonthlyReportsList().contains("INWARDREPORT")) {
+			if (party.getDailyReportsList().contains("INWARDREPORT")) {
 				mailStts = true;
 				reportsService.createInwardReport(party.getnPartyId(), strDate, helper);
 			} 
-			if (party.getMonthlyReportsList().contains("OUTWARDREPORT")) {
+			if (party.getDailyReportsList().contains("OUTWARDREPORT_PACKETWISE")) {
 				mailStts = true;
 				reportsService.createOutwardReport(party.getnPartyId(), strDate, helper);
+			}
+			if (party.getDailyReportsList().contains("OUTWARDREPORT_SUMMARY")) {
+				mailStts = true;
+				reportsService.createOutwardSummaryReport(party.getnPartyId(), strDate, helper);
 			}
 			
 			helper.setFrom(fromMailId);			

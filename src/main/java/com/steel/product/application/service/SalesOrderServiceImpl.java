@@ -100,6 +100,7 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 				partyIds, 
 				partyIdsFlag, 
 				searchListPageRequest.getPlanId(),
+				searchListPageRequest.getMappingFlag(),
 				searchListPageRequest.getBatchNo(),
 				searchListPageRequest.getLocation(),				
 				pageable);

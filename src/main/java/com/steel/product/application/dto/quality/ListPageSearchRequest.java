@@ -23,6 +23,8 @@ public class ListPageSearchRequest {
 
 	private int planId;
 
+	private int mappingFlag;
+
 	private int location;
 
 	private String batchNo;

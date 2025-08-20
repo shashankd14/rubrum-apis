@@ -19,6 +19,8 @@ public interface ReportsService {
 	List<StockSummaryReportViewEntity> reconcileReport(String coilNumber);
 
 	boolean createOutwardReport(Integer partyId, String strDate, MimeMessageHelper helper);
+	
+	boolean createOutwardSummaryReport(Integer partyId, String strDate, MimeMessageHelper helper);
 
 	boolean createInwardReport(int partyId, String strDate, MimeMessageHelper helper);
 
