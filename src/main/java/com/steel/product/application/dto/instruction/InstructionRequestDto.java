@@ -50,9 +50,13 @@ public class InstructionRequestDto {
 
     private Float wastage;
 
+    private Float pt;
+
     private Float damage;
 
     private Float packingWeight;
+
+    private Float totalCoilWeight;
 
     private Integer createdBy;
 

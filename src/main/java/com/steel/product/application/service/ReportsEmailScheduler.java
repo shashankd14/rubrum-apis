@@ -15,7 +15,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import com.steel.product.application.dao.PartyDetailsRepository;
 import com.steel.product.application.entity.Party;
-import com.steel.product.jswone.service.JsonFileService;
+import com.steel.product.jswone.service.GCPUploadFileService;
 
 @Component
 public class ReportsEmailScheduler {
@@ -39,7 +39,7 @@ public class ReportsEmailScheduler {
 	PartyDetailsRepository partyRepo;
 	
 	@Autowired
-	JsonFileService jsonFileService;
+	GCPUploadFileService jsonFileService;
 
 	@Autowired
 	ReportsServiceImpl service;

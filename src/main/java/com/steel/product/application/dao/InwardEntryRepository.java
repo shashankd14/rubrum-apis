@@ -131,14 +131,19 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
     		+ " inw.customerBatchId like %:searchText% or inw.customerInvoiceNo like %:searchText% or inw.party.partyName like %:searchText% ) "
     		+ " order by inwardEntryId desc")
     Page<InwardEntry> findAllWIP(@Param("searchText") String searchText, Pageable pageable);
-    
-    @Modifying
+
+	@Modifying
 	@Transactional
 	@Query("update InwardEntry inw set inw.status.statusId=:status where inw.inwardEntryId= :inwardId ")
 	public void updateInwardStatus(@Param("inwardId") Integer inwardId, @Param("status") Integer status);
+
+    @Modifying
+	@Transactional
+	@Query("update InwardEntry inw set inw.fpresent=(inw.fQuantity - :usedWeightr) where inw.inwardEntryId= :inwardId ")
+	public void updateInwardAvailableWeight(@Param("inwardId") Integer inwardId, @Param("usedWeightr") Float usedWeightr);
     
-    public static final String GET_INWARD_DETAILS = " select min(stts) from ( "
-			+ " SELECT distinct inwardentryid as inwardid, child.status as stts, "
+    public static final String GET_INWARD_DETAILS = " select min(stts), CAST(sum(packetweight) AS DECIMAL(10,2))  from ( "
+			+ " SELECT distinct inwardentryid as inwardid, child.status as stts, IFNULL(actualweight, plannedweight) packetweight, "
 			+ " (SELECT count(distinct inss.instructionid) cnt FROM product_instruction inss where inss.inwardid=parent.inwardentryid  and status!=4 and inss.parentgroupid=child.groupid) as siltcutcnt  "
 			+ " FROM product_tblinwardentry parent, product_instruction child  "
 			+ " where child.isdeleted=0 and parent.inwardentryid = child.inwardid ) a  where 1=1 AND CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END and inwardid=:inwardId ";
@@ -345,18 +350,20 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 			+ " where 1=1 AND CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END", nativeQuery = true)
 	List<Object[]> wipListNewQueryWithPlanId(@Param("planId") String planId);
 	
-	@Query(value = "select instructionid, inwardentryid, coilnumber, customerbatchid, coilage, partyname,inwardstatus, material, gradename, subgradename, mm_id, flength, fthickness, fwidth, fpresent,grossweight, "
-			+ " actuallength, actualnoofpieces, actualweight, actualwidth, createdon, instructiondate, plannedlength, "
-			+ " plannednoofpieces, plannedweight, plannedwidth, additional_weight, classification_tag, "
-			+ " enduser_tag_name, packetstatus, processname, sono"
-			+ " from ( "
-			+ " select distinct  parent.inwardentryid ,customerbatchid, parent.mm_id, party.partyname,parent.coilnumber, DATEDIFF(curdate(), date_format(parent.dreceiveddate, '%Y-%m-%d')) coilage, "
+	@Query(value = "select * from ( "
+			+"  select distinct parent.mm_id, parent.inwardentryid, parent.coilnumber, parent.customerbatchid, parent.createdon , "
+			+ " parent.customerinvoiceno, parent.dbilldate, parent.dinvoicedate, "
+			+ " parent.dreceiveddate, parent.flength, parent.fquantity, parent.fthickness, parent.fwidth, parent.fpresent, "
+			+ " parent.grossweight, parent.in_stock_weight, parent.isdeleted, "
+			+ " parent.remarks, parent.testcertificatefileurl,parent.testcertificatenumber, parent.updatedon, "
+			+ " parent.tdc_no, parent.vinvoiceno, parent.vlorryno,parent.valueofgoods, "
 			+ " (select stts.statusname from product_status stts where stts.statusid=parent.vstatus limit 1 ) as inwardstatus, "
+			+ " parent.uts, parent.el, parent.ys, party.partyname, "
+			+ " DATEDIFF(curdate(), date_format(parent.dreceiveddate, '%Y-%m-%d')) coilage,  "
 			+ " (select product.product_name from jsw_product_master product where product.product_id=mat.producttype_id limit 1 ) as material,  "
 			+ " (select grade.grade_name from jsw_grade_master grade where grade.grade_id=mat.grade_id limit 1) as gradename,"
 			+ " (select subgrade.subgrade_name from jsw_subgrade_master subgrade where subgrade.subgrade_id=mat.subgrade_id limit 1) as subgradename ,"
-			+ " flength, fquantity, fthickness, fwidth, fpresent, grossweight, "
-			+ " instructionid, actuallength, actualnoofpieces, actualweight, actualwidth, child.createdon, "
+			+ " instructionid, actuallength, actualnoofpieces, actualweight, actualwidth, "
 			+ " child.instructiondate, plannedlength, plannednoofpieces, plannedweight, plannedwidth, additional_weight, "
 			+ " (select classification_name from product_packet_classification where classification_id=child.packet_classification_id) as classification_tag, "
 			+ " (select tag_name from product_enduser_tags where tag_id=child.enduser_tag_id) as enduser_tag_name,	"
@@ -367,7 +374,7 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 			+ " FROM product_tblinwardentry parent, jsw_material_master mat, product_instruction child, product_tblpartydetails party  "
 			+ " where child.isdeleted=0 and parent.isdeleted=0 and parent.inwardentryid = child.inwardid and parent.mm_id= mat.mm_id and party.npartyid = parent.npartyid "
 			+ " ORDER BY inwardentryid ) a "
-			+ " where 1=1 AND CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END", nativeQuery = true)
-	List<Object[]> wipListNewQuery( );
+			+ " where 1=1 AND CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END order by inwardentryid desc ", nativeQuery = true)
+	List<Object[]> inwardListDataforGCP ( );
 
 }

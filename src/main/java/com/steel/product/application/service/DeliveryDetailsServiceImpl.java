@@ -27,8 +27,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -202,9 +204,9 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
                     if (childrenInstructions != null && !childrenInstructions.isEmpty()) {
                         LOGGER.info("inward id" + inwardEntry.getInwardEntryId() + " is a parent instruction with " + childrenInstructions.size() + " children");
                         if (childrenInstructions.stream().anyMatch(ins -> !ins.getStatus().equals(deliveredStatus))) {
-                            throw new RuntimeException("instruction with id " + instruction.getInstructionId() + " has undelivered children instructions");
+                            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "instruction with id " + instruction.getInstructionId() + " has undelivered children instructions");
+                                                         //throw new RuntimeException("instruction with id " + instruction.getInstructionId() + " has undelivered children instructions");
                         }
-
                     }
                 }
 //                    else {
@@ -217,7 +219,8 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 //                }
                 if (weightToDeliver > inStockWeight) {
                     LOGGER.error("weight to deliver " + weightToDeliver + " exceeds in stock weight " + inStockWeight);
-                    throw new RuntimeException("weight to deliver " + weightToDeliver + " exceeds in stock weight " + inStockWeight);
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "weight to deliver " + weightToDeliver + " exceeds in stock weight ");
+                                                 //throw new RuntimeException("weight to deliver " + weightToDeliver + " exceeds in stock weight " + inStockWeight);
                 }
                 inwardEntry.setInStockWeight(inStockWeight - weightToDeliver);
                 if (Math.abs(inwardEntry.getInStockWeight()) < 1f) {
@@ -289,7 +292,8 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
             }
             else{
                 LOGGER.error("No inward id or parent instruction id found in instruction with id " + ins.getInstructionId());
-                throw new RuntimeException("No inward id or parent instruction id found in instruction with id " + ins.getInstructionId());
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No inward id or parent instruction id found in instruction with id " + ins.getInstructionId());
+                                             //throw new RuntimeException("No inward id or parent instruction id found in instruction with id " + ins.getInstructionId());
             }
             ins.setStatus(readyToDeliverStatus);
             Float inStockWeight = inwardEntry.getInStockWeight();

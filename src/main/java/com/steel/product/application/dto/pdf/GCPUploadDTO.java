@@ -1,16 +1,15 @@
 package com.steel.product.application.dto.pdf;
 
+import com.steel.product.application.dto.instruction.WIPChildListResponseDTO;
 import com.steel.product.application.entity.*;
 import lombok.Getter;
 import lombok.Setter;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Getter
 @Setter
-public class InwardEntryPdfDto {
+public class GCPUploadDTO {
 
 	private Integer inwardEntryId;
 
@@ -75,6 +74,8 @@ public class InwardEntryPdfDto {
 	private String parentCoilNumber;
 
 	private String tdcNo;
+	
+	private int coilage;
 
 	private int vParentBundleNumber;
 
@@ -99,20 +100,8 @@ public class InwardEntryPdfDto {
 	private Float el;
 
 	private String mmid;
-	
-	private List<InwardDoc> docs;
 
-	private List<InstructionResponsePdfDto> instructions;
-
-	private Map<Float, List<InstructionResponsePdfDto>> instructionsMap;
-
-	private Map<Float, List<InstructionResponsePdfDto>> instructionsSlitMap;
-
-	private Map<Long, List<InstructionResponsePdfDto>> instructionsCutMap;
-
-	private Map<PartDetailsPdfResponse, List<InstructionResponsePdfDto>> partDetailsSlitMap;
-
-	private Map<PartDetailsPdfResponse, List<InstructionResponsePdfDto>> partDetailsCutMap;
+	private List<WIPChildListResponseDTO> instructions;
 
 	private Float totalWeight;
 
@@ -123,8 +112,6 @@ public class InwardEntryPdfDto {
 	private Float inStockWeight;
 
 	private String partDetailsId;
-
-	private Map<Integer, String> kqpParamsList = new HashMap<>();
 
 	private String plannedYieldLossRatio;
 }

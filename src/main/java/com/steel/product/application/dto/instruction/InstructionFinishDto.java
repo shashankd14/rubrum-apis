@@ -14,4 +14,5 @@ public class InstructionFinishDto {
 
 	private BigDecimal actualYieldLossRatio;
 
+	private String positiveToleranceFlag;
 }

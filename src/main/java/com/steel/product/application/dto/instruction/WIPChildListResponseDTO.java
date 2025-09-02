@@ -9,6 +9,8 @@ import lombok.Setter;
 @Setter
 public class WIPChildListResponseDTO {
 
+	private Integer inwardEntryId;
+
 	private Integer instructionId;
 
 	private Float plannedLength;
