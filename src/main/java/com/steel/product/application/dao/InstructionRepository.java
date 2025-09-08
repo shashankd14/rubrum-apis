@@ -178,9 +178,10 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
 	public void consolidatePlanner(@Param("instructionId") Integer instructionId,
 			@Param("allocatedSoqty") Float totalAllocatedQty);
 	
-	@Query(value = "select inwardentryid, packet_id, CAST(weight AS DECIMAL(10,2)) weight, CAST(fquantity AS DECIMAL(10,2)) fquantity from"
+	@Query(value = "select inwardentryid, packet_id, CAST(weight AS DECIMAL(10,2)) weight, CAST(fquantity AS DECIMAL(10,2)) fquantity, classification_tag from"
 			+ " (SELECT parent.inwardentryid, parent.fquantity, instructionid packet_id, ifnull(actualweight, plannedweight) weight, "
-			+ " (SELECT count(distinct inss.instructionid) cnt FROM product_instruction inss where inss.inwardid=parent.inwardentryid  and status!=4 and inss.parentgroupid=child.groupid) as siltcutcnt "
+			+ " (SELECT count(distinct inss.instructionid) cnt FROM product_instruction inss where inss.inwardid=parent.inwardentryid  and status!=4 and inss.parentgroupid=child.groupid) as siltcutcnt, "
+			+ " (select classification_name from product_packet_classification where classification_id=child.packet_classification_id) as classification_tag "
 			+ " FROM product_tblinwardentry parent, product_instruction child "
 			+ " where child.isdeleted=0 and parent.inwardentryid = child.inwardid and child.status in (3,4) ) a "
 			+ " where inwardentryid= :inwardId and CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END order by packet_id asc", 

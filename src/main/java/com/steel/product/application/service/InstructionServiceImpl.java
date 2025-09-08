@@ -373,9 +373,8 @@ public class InstructionServiceImpl implements InstructionService {
 				HttpHeaders headers = new HttpHeaders();
 				headers.set("Content-Type", "application/json");
 				System.out.println("Hi pt == " + pt+", lastInstructionId == "+responseObj.getInstructionId());
-				return new ResponseEntity<Object>( "{\"status\": \"failure\", \"message\":\"This packet has a positive tolerance of " + pt+ " KG available.\"}", headers, HttpStatus.BAD_REQUEST);
+				return new ResponseEntity<Object>( "{\"status\": \"failure\", \"code\": \"PT_AVAILABLE\",\"pt\": \""+pt+"\",\"message\":\"This packet has a positive tolerance of " + pt+ " KG available.\"}", headers, HttpStatus.BAD_REQUEST);
 			}
-			//return new ResponseEntity<Object>( "{\"status\": \"failure\", \"message\":\"This packet has a positive tolerance of " + pt+ " KG available.\"}", new HttpHeaders(), HttpStatus.BAD_REQUEST);
 		}
          
 		if ("ACCEPTED".equals(instructionFinishDto.getPositiveToleranceFlag())) {
@@ -383,29 +382,25 @@ public class InstructionServiceImpl implements InstructionService {
 			pt = responseObj.getPt();
 			lastInstructionId = responseObj.getInstructionId();
 			
-			if (pt > (responseObj.getTotalCoilWeight() * ptMaxPercentage / 1000)) {
+			if (pt > (responseObj.getTotalCoilWeight() * ptMaxPercentage / 100)) {
 				HttpHeaders headers = new HttpHeaders();
 				headers.set("Content-Type", "application/json");
 				System.out.println("Hi pt == " + pt+", lastInstructionId == "+responseObj.getInstructionId());
-				return new ResponseEntity<Object>( "{\"status\": \"failure\", \"message\":\"Positive Tolerance shouldn't be more than 5% of coil weight\"}", headers, HttpStatus.BAD_REQUEST);
+				return new ResponseEntity<Object>( "{\"status\": \"failure\", \"code\": \"PT_UPPERLIMIT_REACHED\", \"message\":\"Positive Tolerance shouldn't be more than 5% of coil weight\"}", headers, HttpStatus.BAD_REQUEST);
 			}
 			
 			if (pt > 0) {
 				instructionRequestDtos = new ArrayList<InstructionRequestDto>();
-
 				for (InstructionRequestDto obj : instructionFinishDto.getInstructionDtos()) {
-					Float kk = obj.getActualWeight() - pt;
-					obj.setActualWeight(kk);
+					if(lastInstructionId == obj.getInstructionId()) {
+						Float kk = obj.getActualWeight() - pt;
+						obj.setActualWeight(kk);
+					}
 					instructionRequestDtos.add(obj);
 				}
 			}
-			
-			for (InstructionRequestDto ins : instructionRequestDtos) {
-				System.out.println("GetInstructionId == " + ins.getInstructionId()+", getPt == "+ins.getPt()+", ActualWeight == "+ins.getActualWeight());
-			}
-			//return new ResponseEntity<Object>( "{\"status\": \"failure\", \"message\":\"This packet has a positive tolerance of " + pt+ " KG available.\"}", new HttpHeaders(), HttpStatus.BAD_REQUEST);
 		}
-		
+		 
         List<Instruction> instructions = this.findAllByInstructionIdInAndStatus(instructionRequestDtos.stream().map(ins -> ins.getInstructionId()).collect(Collectors.toList()), statusId);
         
         Map<Integer, Instruction> instructionsMap = instructions.stream().collect(Collectors.toMap(ins -> ins.getInstructionId(), ins -> ins));
@@ -528,6 +523,7 @@ public class InstructionServiceImpl implements InstructionService {
 			partDetailsRepository.updateActualYLR(partDetailsId, instructionFinishDto.getActualYieldLossRatio());
 		}
         updateCoilStatus(savedInstruction.getInwardId().getInwardEntryId());
+         
         return new ResponseEntity<Object>(updatedInstructionList.stream().map(i -> Instruction.valueOf(i)), HttpStatus.OK);
     }
 
@@ -543,9 +539,9 @@ public class InstructionServiceImpl implements InstructionService {
             	inwardEntryId=instruction.getInwardId().getInwardEntryId();
             	break;
         	}
-			System.out.println("Hi instructionId == " + obj.getInstructionId() + ", Planned Weight == "+ obj.getPlannedWeight() + "" + ", Actual Weight == " + obj.getActualWeight());
+			//System.out.println("Hi instructionId == " + obj.getInstructionId() + ", Planned Weight == "+ obj.getPlannedWeight() + "" + ", Actual Weight == " + obj.getActualWeight());
 		}
-		System.out.println("Hi instructions size  == " + instructionRequestDtos.size());
+		//System.out.println("Hi instructions size  == " + instructionRequestDtos.size());
 		
 		//List<Instruction> instructions = this.findAllByInstructionIdInAndStatus(instructionRequestDtos.stream().map(ins -> ins.getInstructionId()).collect(Collectors.toList()), statusId);
 		//int inwardEntryId = instructions.get(0).getInwardId().getInwardEntryId();
@@ -556,25 +552,40 @@ public class InstructionServiceImpl implements InstructionService {
 			Integer instructionId = (result[1] != null ? (Integer) result[1] : null);
 			BigDecimal weight = (result[2] != null ? (BigDecimal) result[2] : null);
 			totalCoilWeight = (result[3] != null ? (BigDecimal) result[3] : null);
-			System.out.println("Hi instructionId == " + instructionId + ", Weight == " + weight);
-
 			for (InstructionRequestDto obj : instructionRequestDtos) {
 				Integer instructionId2 = obj.getInstructionId();
 				if(instructionId2.equals(instructionId)) {
 					weight = BigDecimal.valueOf(obj.getActualWeight());
-					System.out.println("matched instructionId == " + instructionId2 + ", Weight == " + weight);
+					//System.out.println("matched instructionId == " + instructionId2 + ", Weight == " + weight);
 				}
 			}
 			totalPacketWeight=totalPacketWeight.add(weight);
-			lastInstructionId = instructionId;
 		}
 
-		System.out.println("Hi totalPacketWeight == " + totalPacketWeight);
-		System.out.println("Hi totalCoilWeight == " + totalCoilWeight);
-		System.out.println("Hi lastInstructionId == " + lastInstructionId);
+		//System.out.println("Hi totalPacketWeight == " + totalPacketWeight);
+		//System.out.println("Hi totalCoilWeight == " + totalCoilWeight);
+		//System.out.println("Hi lastInstructionId == " + lastInstructionId);
 		if (totalPacketWeight.compareTo(totalCoilWeight) > 0) {
 			pt = totalPacketWeight.subtract(totalCoilWeight);
 		}
+		for (Object[] result : results) {
+			Integer instructionId = (result[1] != null ? (Integer) result[1] : null);
+			BigDecimal weight = (result[2] != null ? (BigDecimal) result[2] : null);
+			totalCoilWeight = (result[3] != null ? (BigDecimal) result[3] : null);
+			String classificationTag = (result[4] != null ? (String) result[4] : null);
+			totalPacketWeight=totalPacketWeight.add(weight);
+			//System.out.println("Hi weight == " + weight);
+			//System.out.println("Hi pt == " + pt);
+			//System.out.println("Hi classificationTag == " + classificationTag);
+			//System.out.println("Hi instructionId == " + instructionId);
+
+			if (weight.compareTo(pt) > 0) {
+				if (!("WIP(CUT ENDS)".equals(classificationTag) || "WIP(EDGE TRIM)".equals(classificationTag))) {
+					lastInstructionId = instructionId;
+				}
+			}
+		}
+		System.out.println("Hi lastInstructionId == " + lastInstructionId);
 		System.out.println("Hi pt == " + pt);
 		responseObj.setInstructionId(lastInstructionId);
 		responseObj.setPt(pt.floatValue());

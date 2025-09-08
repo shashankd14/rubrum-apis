@@ -24,4 +24,26 @@ public interface MaterialUploadService {
 
 	public List<Object[]> mmidmasterusedinward(MaterialSearchPageRequest materialSearchPageRequest);
 
+	Integer setCategoryMaster(String categoryName);
+
+	Integer setSubCategoryMaster(String subCategoryName, Integer categoryId);
+
+	Integer setLeafCategoryMaster(String leafcategoryName, Integer subCategoryId);
+
+	Integer setBrandNameMaster(String brandName, Integer leafcategoryId);
+
+	Integer setUomMaster(String uom, Integer producttypeId);
+
+	Integer setFormMaster(String form, Integer producttypeId);
+
+	Integer setGradeMaster(String grade, Integer producttypeId);
+
+	Integer setSubGradeMaster(String subgrade, Integer gradeId);
+
+	Integer setProductMaster(String productName, MaterialMasterJswEntity mmEntity);
+
+	Integer setSurfacetypeMaster(String surfacetype, Integer producttypeId);
+
+	Integer setCoatingtypeMaster(String coatingtype, Integer producttypeId);
+
 }

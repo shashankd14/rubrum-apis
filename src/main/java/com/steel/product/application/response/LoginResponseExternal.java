@@ -11,12 +11,7 @@
 
 package com.steel.product.application.response;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
-
-import com.steel.product.application.dto.admin.AdminMenuDto;
-
 import lombok.Builder;
 import lombok.Data;
 
@@ -27,7 +22,7 @@ import lombok.Data;
  */
 @Data
 @Builder
-public class LoginResponse {
+public class LoginResponseExternal {
 
 	private int userId;
 
@@ -42,7 +37,5 @@ public class LoginResponse {
 	private String token_type;
 
 	private long expires_in;
-
-	private List<AdminMenuDto> menusList = new ArrayList<>();
 
 }

@@ -14,6 +14,7 @@ import com.steel.product.application.dto.LoginRequest;
 import com.steel.product.application.exception.MockException;
 import com.steel.product.application.oauth.service.UserInfoService;
 import com.steel.product.application.response.LoginResponse;
+import com.steel.product.application.response.LoginResponseExternal;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.log4j.Log4j2;
@@ -36,8 +37,7 @@ public class LoginController {
 	}
 	
 	@RequestMapping(value = "/auth", method = { RequestMethod.GET, RequestMethod.POST })
-	public LoginResponse loginTally(@Valid @RequestBody LoginRequest loginReq) throws MockException {
-
+	public LoginResponseExternal loginTally(@Valid @RequestBody LoginRequest loginReq) throws MockException {
 		log.debug("*** loginTally Method Invoked ***");
 		return userService.loginTally(loginReq);
 	}

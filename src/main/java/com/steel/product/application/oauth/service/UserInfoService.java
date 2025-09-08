@@ -29,6 +29,7 @@ import com.steel.product.application.entity.UserPartyMap;
 import com.steel.product.application.entity.UserRoleMap;
 import com.steel.product.application.exception.MockException;
 import com.steel.product.application.response.LoginResponse;
+import com.steel.product.application.response.LoginResponseExternal;
 import com.steel.product.application.response.OAuthResponse;
 import lombok.extern.log4j.Log4j2;
 
@@ -225,11 +226,11 @@ public class UserInfoService
 		return response;
 	}
     
-	public LoginResponse loginTally(LoginRequest loginReq) throws MockException {
+	public LoginResponseExternal loginTally(LoginRequest loginReq) throws MockException {
 
 		log.info("*** login processing started ***" + loginReq.getUserName());
 
-		LoginResponse response = null;
+		LoginResponseExternal response = null;
 		OAuthResponse oauthResp = null;
 
 		try {
@@ -263,7 +264,7 @@ public class UserInfoService
 			user.setLastLoginTime(user.getCurrentLoginTime());
 			user.setCurrentLoginTime(loginDate);
 			userDetailsRepository.save(user);
-			response = LoginResponse.builder().userId(user.getUserId())
+			response = LoginResponseExternal.builder().userId(user.getUserId())
 					.userName(user.getUserName())
 					.lastLoginTime(user.getLastLoginTime())
 					.access_token(oauthResp.getAccessToken())

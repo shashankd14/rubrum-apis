@@ -32,11 +32,8 @@ import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
-import com.steel.product.application.dto.inward.SearchListPageRequest;
 import com.steel.product.application.dto.pdf.PdfDto;
-import com.steel.product.application.entity.AdminUserEntity;
 import com.steel.product.application.entity.InwardEntry;
-import com.steel.product.application.entity.UserPartyMap;
 import com.steel.product.application.service.InwardEntryService;
 import com.steel.product.application.service.PartyDetailsService;
 import com.steel.product.application.service.PdfService;
@@ -255,7 +252,8 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 		return csvToBean.parse();
 	}
 
-	private Integer setCategoryMaster(String categoryName) {
+	@Override
+	public Integer setCategoryMaster(String categoryName) {
 		Integer pk = 0;
 		try {
 			if (categoryName != null && categoryName.length() > 0) {
@@ -276,7 +274,8 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 		return pk;
 	}
 
-	private Integer setSubCategoryMaster(String subCategoryName, Integer categoryId) {
+	@Override
+	public Integer setSubCategoryMaster(String subCategoryName, Integer categoryId) {
 		Integer pk = 0;
 		try {
 			if (subCategoryName != null && subCategoryName.length() > 0) {
@@ -296,7 +295,8 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 		return pk;
 	}
 
-	private Integer setLeafCategoryMaster(String leafcategoryName, Integer subCategoryId) {
+	@Override
+	public Integer setLeafCategoryMaster(String leafcategoryName, Integer subCategoryId) {
 		Integer pk = 0;
 		try {
 			if (leafcategoryName != null && leafcategoryName.length() > 0) {
@@ -316,7 +316,8 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 		return pk;
 	}
 	
-	private Integer setBrandNameMaster(String brandName, Integer leafcategoryId) {
+	@Override
+	public Integer setBrandNameMaster(String brandName, Integer leafcategoryId) {
 		Integer pk = 0;
 		try {
 			if (brandName != null && brandName.length() > 0) {
@@ -336,7 +337,8 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 		return pk;
 	}
 
-	private Integer setUomMaster(String uom, Integer producttypeId) {
+	@Override
+	public Integer setUomMaster(String uom, Integer producttypeId) {
 		Integer pk = 0;
 		try {
 			if (uom != null && uom.length() > 0) {
@@ -357,7 +359,8 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 		return pk;
 	}
 
-	private Integer setFormMaster(String form, Integer producttypeId) {
+	@Override
+	public Integer setFormMaster(String form, Integer producttypeId) {
 		Integer pk = 0;
 		try {
 			if (form != null && form.length() > 0) {
@@ -378,7 +381,8 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 		return pk;
 	}
 
-	private Integer setGradeMaster(String grade, Integer producttypeId) {
+	@Override
+	public Integer setGradeMaster(String grade, Integer producttypeId) {
 		Integer pk = 0;
 		try {
 			if (grade != null && grade.length() > 0) {
@@ -398,7 +402,8 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 		return pk;
 	}
 
-	private Integer setSubGradeMaster(String subgrade, Integer gradeId) {
+	@Override
+	public Integer setSubGradeMaster(String subgrade, Integer gradeId) {
 		Integer pk = 0;
 		try {
 			if (subgrade != null && subgrade.length() > 0) {
@@ -419,7 +424,8 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 		return pk;
 	}
 	
-	private Integer setProductMaster(String productName, MaterialMasterJswEntity mmEntity) {
+	@Override
+	public Integer setProductMaster(String productName, MaterialMasterJswEntity mmEntity) {
 		Integer pk = 0;
 		try {
 			if (productName != null && productName.length() > 0) {
@@ -440,7 +446,8 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 		return pk;
 	}
 
-	private Integer setSurfacetypeMaster(String surfacetype, Integer producttypeId ) {
+	@Override
+	public Integer setSurfacetypeMaster(String surfacetype, Integer producttypeId ) {
 		Integer pk = 0;
 		try {
 			if (surfacetype != null && surfacetype.length() > 0) {
@@ -460,7 +467,9 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 		}
 		return pk;
 	}
-	private Integer setCoatingtypeMaster(String coatingtype, Integer producttypeId) {
+	
+	@Override
+	public Integer setCoatingtypeMaster(String coatingtype, Integer producttypeId) {
 		Integer pk = 0;
 		try {
 			if (coatingtype != null && coatingtype.length() > 0) {
@@ -471,7 +480,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 				} else {
 					CoatingtypeMasterJswEntity entity = new CoatingtypeMasterJswEntity();
 					entity.setCoatingtype(coatingtype);
-					entity.setProductId( producttypeId);
+					entity.setProductId(producttypeId);
 					coatingtypeRepository.save(entity);
 					pk = entity.getCoatingtypeId();
 				}
