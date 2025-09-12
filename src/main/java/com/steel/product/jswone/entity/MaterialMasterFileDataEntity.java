@@ -18,7 +18,7 @@ public class MaterialMasterFileDataEntity {
 	@Column(name = "material_id")
 	private Integer materaiId;
 
-	@Column(name = "mm_id")
+	@Column(name = "mm_id", updatable = true)
 	private String mmId;
 
 	@Column(name = "mm_description")

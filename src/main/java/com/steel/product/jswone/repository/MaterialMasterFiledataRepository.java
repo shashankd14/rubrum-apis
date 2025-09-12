@@ -1,7 +1,6 @@
 package com.steel.product.jswone.repository;
 
 import com.steel.product.jswone.entity.MaterialMasterFileDataEntity;
-
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,5 +12,7 @@ public interface MaterialMasterFiledataRepository extends JpaRepository<Material
 
 	@Query("select inw from MaterialMasterFileDataEntity inw where inw.mmId not in (select mm.mmId from MaterialMasterJswEntity mm)")
 	List<MaterialMasterFileDataEntity> findAll();
+
+	MaterialMasterFileDataEntity findFirstByMmId(String mmid);
 
 }

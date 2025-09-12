@@ -20,7 +20,7 @@ public class MaterialMasterJswEntity {
 	@Column(name = "material_id")
 	private Integer materialId;
 
-	@Column(name = "mm_id")
+    @Column(name = "mm_id")
 	private String mmId;
 
 	@Column(name = "mm_description")

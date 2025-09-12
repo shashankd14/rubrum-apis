@@ -67,6 +67,8 @@ public interface MaterialMasterJswRepository
 	Page<Object[]> materialSearchBymmid(@Param("mmid") String mmid,  Pageable pageable);
 
 	List<MaterialMasterJswEntity> findByMmId(String mmid);
+
+	MaterialMasterJswEntity findFirstByMmId(String mmid);
 	
 	@Query(value = "select producttype_id, grade_id, subgrade_id, brand_id, material, gradename, subgradename,brandname from ("
 			+ " select distinct mat.producttype_id, mat.grade_id, mat.subgrade_id, mat.brand_id, "
