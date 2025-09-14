@@ -16,10 +16,12 @@ import lombok.extern.log4j.Log4j2;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -173,7 +175,9 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 				} catch (Exception e) {
 					System.out.println("error while save --  "+e.getMessage());
 				}
-			}        
+			}else {
+				return new ResponseEntity<Object>("{\"status\": \"failed\", \"message\": \"Please enter valid MMID\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+			}
 			
 			HttpHeaders headers = new HttpHeaders();
 			headers.add("Content-Type", "application/json");
@@ -181,10 +185,15 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			ApiResponse response = new ApiResponse("success", message, mapper.readValue(json, Map.class));
 			return new ResponseEntity<Object>(response, HttpStatus.OK);
 		} catch( Exception e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 			return new ResponseEntity<Object>("{\"status\": \"failed\", \"message\": \"Failed to save the MMID details\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
-	
+	@Override
+	public List<Object[]> locationwisePOList(POIntegrationRequest request) {
+		List<Object[]> locationwisePOList = poReceiveDetailsRepository.locationwisePOList(request.getLocationId());
+		return locationwisePOList;
+	}
+
 }

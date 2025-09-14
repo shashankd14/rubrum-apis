@@ -3,15 +3,9 @@ package com.steel.product.jswone.request;
 import lombok.Data;
 
 @Data
-public class POIntegrationRequest {
+public class POListResponse {
 
 	private String poReference;
 
 	private String warehouseId;
-
-	private int locationId;
-
-	private String status;
-
-	private String ipAddress;
 }

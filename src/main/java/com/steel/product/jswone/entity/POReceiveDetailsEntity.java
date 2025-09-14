@@ -9,7 +9,7 @@ import java.util.Date;
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 @Data
 @Entity
-@Table(name = "po_receive_dtls")
+@Table(name = "jsw_po_receive_dtls")
 public class POReceiveDetailsEntity {
 
 	@Id
