@@ -95,6 +95,9 @@ public class MaterialMasterJswEntity {
 	@Column(name = "variant_key")
 	private String variantKey;
 
+	@Column(name = "mmid_status")
+	private String mmidStatus;
+
 	@Column(name = "filename")
 	private String filename;
 

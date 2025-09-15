@@ -8,7 +8,7 @@ import com.steel.product.jswone.repository.MaterialMasterFiledataRepository;
 import com.steel.product.jswone.repository.MaterialMasterJswRepository;
 import com.steel.product.jswone.repository.POReceiveDetailsRepository;
 import com.steel.product.jswone.request.ApiResponse;
-import com.steel.product.jswone.request.MMIDReceiveIntegrationRequest;
+import com.steel.product.jswone.request.MMIDReceiveMainRequest;
 import com.steel.product.jswone.request.MaterialMasterFileDataDTO;
 import com.steel.product.jswone.request.POIntegrationRequest;
 
@@ -21,7 +21,6 @@ import java.util.Map;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -43,6 +42,9 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 	
 	@Autowired
 	MaterialUploadService materialUploadService;
+	
+	@Autowired
+	ObjectMapper objectMapper;
 	
 	@Override
 	public ResponseEntity<Object> poReceive(POIntegrationRequest request) {
@@ -76,38 +78,42 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 
 	@Override
 	@Transactional
-	public ResponseEntity<Object> mmidreceive(MMIDReceiveIntegrationRequest request) {
+	public ResponseEntity<Object> mmidreceive(MMIDReceiveMainRequest request) {
 
 		log.info("******JSWIntegrationServiceImpl.mmidreceive*****");
 		String message="MMID details saved successfully.";
-		try {
-			ObjectMapper mapper = new ObjectMapper();
+		try { 
+			
+			String jsonReq = objectMapper.writeValueAsString(request);
+			System.out.println("full req is : "+jsonReq);
+
 			MaterialMasterJswEntity destEntity = new MaterialMasterJswEntity();
-			if (request.getMmid() != null && request.getMmid().length() > 0) {
+			if (request.getData().getMmid() != null && request.getData().getMmid().length() > 0) {
 
 				MaterialMasterFileDataDTO dummy = new MaterialMasterFileDataDTO();
-				dummy.setMmId(request.getMmid());
-				dummy.setMmDescription(request.getMmdesc());
-				dummy.setCategory(request.getMasterCategory());
-				dummy.setSubcategory(request.getSubCategory());
-				dummy.setBrand(request.getBrand());
-				dummy.setLeafcategory(request.getLeafCategory());
-				dummy.setForm(request.getForm());
-				dummy.setProducttype(request.getProductType());
-				dummy.setGrade(request.getGrade());
-				dummy.setSubgrade(request.getSubGrade());
-				dummy.setDiameter(request.getDiameter());
-				dummy.setThickness(request.getThickness());
-				dummy.setWidth(request.getWidth());
-				dummy.setLength(request.getLength());
-				dummy.setCoatingtype(request.getCoating_grade_gsm());
-				dummy.setSpangletype(request.getSpangleType());
-				dummy.setColour(request.getColour());
-				dummy.setUom(request.getUom());
+				dummy.setMmId(request.getData().getMmid());
+				dummy.setMmDescription(request.getData().getVariant().getMaterial_info());
+				dummy.setCategory(request.getData().getCategory().getMaster_category());
+				dummy.setSubcategory(request.getData().getCategory().getSub_category() );
+				dummy.setBrand(request.getData().getProduct().getBrand());
+				dummy.setLeafcategory(request.getData().getCategory().getLeaf_category() );
+				dummy.setForm(request.getData().getCategory().getForm() );
+				dummy.setProducttype(request.getData().getCategory().getProduct_type());
+				dummy.setGrade(request.getData().getProduct().getGrade() );
+				dummy.setSubgrade(request.getData().getProduct().getSub_grade());
+				dummy.setThickness( request.getData().getVariant().getThickness());
+				dummy.setWidth( request.getData().getVariant().getWidth());
+				dummy.setLength( request.getData().getVariant().getLength());
+				dummy.setCoatingtype( request.getData().getVariant().getCoating_grade_gsm());
+				dummy.setUom( request.getData().getCategory().getUom().get(0).getName());
+				dummy.setHsn(request.getData().getVariant().getHsn());
+				dummy.setVariantKey( request.getData().getVariant().getVariant_key());
+				dummy.setTax( request.getData().getVariant().getTax());
 				MaterialMasterFileDataEntity sourceEntity = new MaterialMasterFileDataEntity();
 				BeanUtils.copyProperties(dummy, sourceEntity);
 				sourceEntity.setFilename("Zoho_Integration");
 				sourceEntity.setCreatedOn(new Date());
+				sourceEntity.setMmidStatus( request.getData().getVariant().getStatus());
 				
 				MaterialMasterFileDataEntity dummyEntity= repository.findFirstByMmId(sourceEntity.getMmId());
 				if (dummyEntity != null && dummyEntity.getMateraiId() > 0) {
@@ -181,8 +187,8 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			
 			HttpHeaders headers = new HttpHeaders();
 			headers.add("Content-Type", "application/json");
-			String json = mapper.writeValueAsString(destEntity);
-			ApiResponse response = new ApiResponse("success", message, mapper.readValue(json, Map.class));
+			String json = objectMapper.writeValueAsString(destEntity);
+			ApiResponse response = new ApiResponse("success", message, objectMapper.readValue(json, Map.class));
 			return new ResponseEntity<Object>(response, HttpStatus.OK);
 		} catch( Exception e) {
 			//e.printStackTrace();

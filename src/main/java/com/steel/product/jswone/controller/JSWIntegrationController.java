@@ -12,10 +12,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.steel.product.jswone.request.MMIDReceiveIntegrationRequest;
+import com.steel.product.jswone.request.MMIDReceiveMainRequest;
 import com.steel.product.jswone.request.POIntegrationRequest;
 import com.steel.product.jswone.request.POListResponse;
-import com.steel.product.jswone.response.MaterialResponseWithInwardUniqueData;
 import com.steel.product.jswone.service.JSWIntegrationService;
 
 @RestController
@@ -35,10 +34,8 @@ public class JSWIntegrationController {
 	}
 
 	@PostMapping(value = "/xternal/mmidreceive", produces = "application/json")
-	public ResponseEntity<Object> mmidreceive(@RequestBody MMIDReceiveIntegrationRequest request,
+	public ResponseEntity<Object> mmidreceive(@RequestBody MMIDReceiveMainRequest request,
 			HttpServletRequest httprequest) {
-		String ipAddress = httprequest.getRemoteAddr();
-		request.setIpAddress(ipAddress);
 		return service.mmidreceive(request);
 	}
 
