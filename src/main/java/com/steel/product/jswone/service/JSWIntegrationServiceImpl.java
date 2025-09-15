@@ -1,16 +1,21 @@
 package com.steel.product.jswone.service;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.steel.product.application.util.CommonUtil;
 import com.steel.product.jswone.entity.MaterialMasterFileDataEntity;
 import com.steel.product.jswone.entity.MaterialMasterJswEntity;
 import com.steel.product.jswone.entity.POReceiveDetailsEntity;
 import com.steel.product.jswone.repository.MaterialMasterFiledataRepository;
 import com.steel.product.jswone.repository.MaterialMasterJswRepository;
 import com.steel.product.jswone.repository.POReceiveDetailsRepository;
+import com.steel.product.jswone.repository.PropertyRepository;
 import com.steel.product.jswone.request.ApiResponse;
 import com.steel.product.jswone.request.MMIDReceiveMainRequest;
 import com.steel.product.jswone.request.MaterialMasterFileDataDTO;
 import com.steel.product.jswone.request.POIntegrationRequest;
+import com.steel.product.jswone.response.PODetailsMainResponse;
+import com.steel.product.jswone.response.PODetailsResponse;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -21,11 +26,14 @@ import java.util.Map;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 @Log4j2
@@ -39,13 +47,19 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 
 	@Autowired
 	MaterialMasterJswRepository materialMasterRepository;
-	
+
 	@Autowired
 	MaterialUploadService materialUploadService;
-	
+
 	@Autowired
 	ObjectMapper objectMapper;
-	
+
+	@Autowired
+	PropertyRepository propertyRepository;
+
+	@Autowired
+	CommonUtil commonUtil;
+
 	@Override
 	public ResponseEntity<Object> poReceive(POIntegrationRequest request) {
 		log.info("******JSWIntegrationServiceImpl.poReceive*****");
@@ -70,9 +84,12 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			entity.setStatus(request.getStatus());
 			entity.setIpAddress(request.getIpAddress());
 			poReceiveDetailsRepository.save(entity);
-			return new ResponseEntity<Object>("{\"status\": \"success\",\"message\":\"" + message+ "\", \"referenceNo\":\"" + entity.getId() + "\"}", headers, HttpStatus.OK);
+			return new ResponseEntity<Object>("{\"status\": \"success\",\"message\":\"" + message
+					+ "\", \"referenceNo\":\"" + entity.getId() + "\"}", headers, HttpStatus.OK);
 		} catch (Exception e) {
-			return new ResponseEntity<Object>("{\"status\": \"fail\",\"message\":\"" + e.getMessage() + "\", \"referenceNo\":\"\"}", HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<Object>(
+					"{\"status\": \"fail\",\"message\":\"" + e.getMessage() + "\", \"referenceNo\":\"\"}",
+					HttpStatus.BAD_REQUEST);
 		}
 	}
 
@@ -81,11 +98,11 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 	public ResponseEntity<Object> mmidreceive(MMIDReceiveMainRequest request) {
 
 		log.info("******JSWIntegrationServiceImpl.mmidreceive*****");
-		String message="MMID details saved successfully.";
-		try { 
-			
+		String message = "MMID details saved successfully.";
+		try {
+
 			String jsonReq = objectMapper.writeValueAsString(request);
-			System.out.println("full req is : "+jsonReq);
+			System.out.println("full req is : " + jsonReq);
 
 			MaterialMasterJswEntity destEntity = new MaterialMasterJswEntity();
 			if (request.getData().getMmid() != null && request.getData().getMmid().length() > 0) {
@@ -94,52 +111,52 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 				dummy.setMmId(request.getData().getMmid());
 				dummy.setMmDescription(request.getData().getVariant().getMaterial_info());
 				dummy.setCategory(request.getData().getCategory().getMaster_category());
-				dummy.setSubcategory(request.getData().getCategory().getSub_category() );
+				dummy.setSubcategory(request.getData().getCategory().getSub_category());
 				dummy.setBrand(request.getData().getProduct().getBrand());
-				dummy.setLeafcategory(request.getData().getCategory().getLeaf_category() );
-				dummy.setForm(request.getData().getCategory().getForm() );
+				dummy.setLeafcategory(request.getData().getCategory().getLeaf_category());
+				dummy.setForm(request.getData().getCategory().getForm());
 				dummy.setProducttype(request.getData().getCategory().getProduct_type());
-				dummy.setGrade(request.getData().getProduct().getGrade() );
+				dummy.setGrade(request.getData().getProduct().getGrade());
 				dummy.setSubgrade(request.getData().getProduct().getSub_grade());
-				dummy.setThickness( request.getData().getVariant().getThickness());
-				dummy.setWidth( request.getData().getVariant().getWidth());
-				dummy.setLength( request.getData().getVariant().getLength());
-				dummy.setCoatingtype( request.getData().getVariant().getCoating_grade_gsm());
-				dummy.setUom( request.getData().getCategory().getUom().get(0).getName());
+				dummy.setThickness(request.getData().getVariant().getThickness());
+				dummy.setWidth(request.getData().getVariant().getWidth());
+				dummy.setLength(request.getData().getVariant().getLength());
+				dummy.setCoatingtype(request.getData().getVariant().getCoating_grade_gsm());
+				dummy.setUom(request.getData().getCategory().getUom().get(0).getName());
 				dummy.setHsn(request.getData().getVariant().getHsn());
-				dummy.setVariantKey( request.getData().getVariant().getVariant_key());
-				dummy.setTax( request.getData().getVariant().getTax());
+				dummy.setVariantKey(request.getData().getVariant().getVariant_key());
+				dummy.setTax(request.getData().getVariant().getTax());
 				MaterialMasterFileDataEntity sourceEntity = new MaterialMasterFileDataEntity();
 				BeanUtils.copyProperties(dummy, sourceEntity);
 				sourceEntity.setFilename("Zoho_Integration");
 				sourceEntity.setCreatedOn(new Date());
-				sourceEntity.setMmidStatus( request.getData().getVariant().getStatus());
-				
-				MaterialMasterFileDataEntity dummyEntity= repository.findFirstByMmId(sourceEntity.getMmId());
+				sourceEntity.setMmidStatus(request.getData().getVariant().getStatus());
+
+				MaterialMasterFileDataEntity dummyEntity = repository.findFirstByMmId(sourceEntity.getMmId());
 				if (dummyEntity != null && dummyEntity.getMateraiId() > 0) {
-					sourceEntity.setMateraiId( dummyEntity.getMateraiId() );
+					sourceEntity.setMateraiId(dummyEntity.getMateraiId());
 				}
 				repository.save(sourceEntity);
 				log.info("MMID saved into jsw_material_file_data table ");
 
 				BeanUtils.copyProperties(sourceEntity, destEntity);
-				MaterialMasterJswEntity oldEntity= materialMasterRepository.findFirstByMmId(sourceEntity.getMmId());
+				MaterialMasterJswEntity oldEntity = materialMasterRepository.findFirstByMmId(sourceEntity.getMmId());
 
 				if (oldEntity != null && oldEntity.getMaterialId() > 0) {
 					destEntity.setMaterialId(oldEntity.getMaterialId());
 					message = "MMID details updated successfully.";
 				}
-				if(sourceEntity.getLength()!=null && sourceEntity.getLength().length() >0 ) {
+				if (sourceEntity.getLength() != null && sourceEntity.getLength().length() > 0) {
 					destEntity.setLength(new BigDecimal(sourceEntity.getLength()));
 				} else {
 					destEntity.setLength(BigDecimal.ZERO);
 				}
-				if(sourceEntity.getWidth() !=null && sourceEntity.getWidth().length() >0 ) {
+				if (sourceEntity.getWidth() != null && sourceEntity.getWidth().length() > 0) {
 					destEntity.setWidth(new BigDecimal(sourceEntity.getWidth()));
 				} else {
 					destEntity.setWidth(BigDecimal.ZERO);
 				}
-				if(sourceEntity.getThickness() !=null && sourceEntity.getThickness().length() >0 ) {
+				if (sourceEntity.getThickness() != null && sourceEntity.getThickness().length() > 0) {
 					destEntity.setThickness(new BigDecimal(sourceEntity.getThickness()));
 				} else {
 					destEntity.setThickness(BigDecimal.ZERO);
@@ -159,40 +176,53 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 				} else {
 					destEntity.setIDiameter(BigDecimal.ZERO);
 				}
-				
-				if(!(sourceEntity.getBrand()!=null && sourceEntity.getBrand().length()>0)) {
+
+				if (!(sourceEntity.getBrand() != null && sourceEntity.getBrand().length() > 0)) {
 					sourceEntity.setBrand("UnBrand");
-				} 
-				// Brand Master 
+				}
+				// Brand Master
 				destEntity.setCategoryId(materialUploadService.setCategoryMaster(sourceEntity.getCategory()));
-				destEntity.setSubcategoryId(materialUploadService.setSubCategoryMaster(sourceEntity.getSubcategory(), destEntity.getCategoryId()));
-				destEntity.setLeafcategoryId(materialUploadService.setLeafCategoryMaster(sourceEntity.getLeafcategory(), destEntity.getSubcategoryId()));
-				destEntity.setBrandId(materialUploadService.setBrandNameMaster(sourceEntity.getBrand(), destEntity.getLeafcategoryId()));
-				// Product Master 
-				destEntity.setProducttypeId(materialUploadService.setProductMaster(sourceEntity.getProducttype(), destEntity));
-				destEntity.setGradeId(materialUploadService.setGradeMaster(sourceEntity.getGrade(), destEntity.getProducttypeId()));
-				destEntity.setSubgradeId(materialUploadService.setSubGradeMaster(sourceEntity.getSubgrade(), destEntity.getGradeId()));
-				destEntity.setCoatingtypeId(materialUploadService.setCoatingtypeMaster( sourceEntity.getCoatingtype(), destEntity.getProducttypeId() ));
-				destEntity.setSurfacetypeId(materialUploadService.setSurfacetypeMaster(sourceEntity.getSurfacetype(), destEntity.getProducttypeId()));
-				destEntity.setUomId(materialUploadService.setUomMaster(sourceEntity.getUom(), destEntity.getProducttypeId()));
-				destEntity.setFormId(materialUploadService.setFormMaster(sourceEntity.getForm(), destEntity.getProducttypeId()));
+				destEntity.setSubcategoryId(materialUploadService.setSubCategoryMaster(sourceEntity.getSubcategory(),
+						destEntity.getCategoryId()));
+				destEntity.setLeafcategoryId(materialUploadService.setLeafCategoryMaster(sourceEntity.getLeafcategory(),
+						destEntity.getSubcategoryId()));
+				destEntity.setBrandId(materialUploadService.setBrandNameMaster(sourceEntity.getBrand(),
+						destEntity.getLeafcategoryId()));
+				// Product Master
+				destEntity.setProducttypeId(
+						materialUploadService.setProductMaster(sourceEntity.getProducttype(), destEntity));
+				destEntity.setGradeId(
+						materialUploadService.setGradeMaster(sourceEntity.getGrade(), destEntity.getProducttypeId()));
+				destEntity.setSubgradeId(
+						materialUploadService.setSubGradeMaster(sourceEntity.getSubgrade(), destEntity.getGradeId()));
+				destEntity.setCoatingtypeId(materialUploadService.setCoatingtypeMaster(sourceEntity.getCoatingtype(),
+						destEntity.getProducttypeId()));
+				destEntity.setSurfacetypeId(materialUploadService.setSurfacetypeMaster(sourceEntity.getSurfacetype(),
+						destEntity.getProducttypeId()));
+				destEntity.setUomId(
+						materialUploadService.setUomMaster(sourceEntity.getUom(), destEntity.getProducttypeId()));
+				destEntity.setFormId(
+						materialUploadService.setFormMaster(sourceEntity.getForm(), destEntity.getProducttypeId()));
 				try {
 					destEntity = materialMasterRepository.save(destEntity);
 				} catch (Exception e) {
-					System.out.println("error while save --  "+e.getMessage());
+					System.out.println("error while save --  " + e.getMessage());
 				}
-			}else {
-				return new ResponseEntity<Object>("{\"status\": \"failed\", \"message\": \"Please enter valid MMID\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+			} else {
+				return new ResponseEntity<Object>("{\"status\": \"failed\", \"message\": \"Please enter valid MMID\"}",
+						new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 			}
-			
+
 			HttpHeaders headers = new HttpHeaders();
 			headers.add("Content-Type", "application/json");
 			String json = objectMapper.writeValueAsString(destEntity);
 			ApiResponse response = new ApiResponse("success", message, objectMapper.readValue(json, Map.class));
 			return new ResponseEntity<Object>(response, HttpStatus.OK);
-		} catch( Exception e) {
-			//e.printStackTrace();
-			return new ResponseEntity<Object>("{\"status\": \"failed\", \"message\": \"Failed to save the MMID details\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (Exception e) {
+			// e.printStackTrace();
+			return new ResponseEntity<Object>(
+					"{\"status\": \"failed\", \"message\": \"Failed to save the MMID details\"}", new HttpHeaders(),
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
@@ -200,6 +230,34 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 	public List<Object[]> locationwisePOList(POIntegrationRequest request) {
 		List<Object[]> locationwisePOList = poReceiveDetailsRepository.locationwisePOList(request.getLocationId());
 		return locationwisePOList;
+	}
+
+	@Override
+	public PODetailsMainResponse podetails(POIntegrationRequest requ) {
+		PODetailsMainResponse response = null;
+
+		try {
+			RestTemplate restTemplate = new RestTemplate();
+			Map<String, String> propertyMap = commonUtil.getAllProperties();
+
+			HttpHeaders headers = new HttpHeaders();
+			headers.set("Content-Type", "application/json");
+			headers.set("Authorization", propertyMap.get("podetails_Authorization"));
+			HttpEntity<String> request = new HttpEntity<>("{}", headers);
+			System.out.println("request is  == " + request);
+			ResponseEntity<String> res = restTemplate.exchange(propertyMap.get("podetails_url"), HttpMethod.POST, request, String.class);
+			System.out.println("response is == " + res);
+
+			if (res.getBody() != null) {
+				ObjectMapper om = new ObjectMapper();
+				om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+				response = om.readValue(res.getBody().toString(), PODetailsMainResponse.class);
+				System.out.println("response == " + response);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return response;
 	}
 
 }

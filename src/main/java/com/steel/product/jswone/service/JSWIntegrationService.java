@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import com.steel.product.jswone.request.MMIDReceiveMainRequest;
 import com.steel.product.jswone.request.POIntegrationRequest;
+import com.steel.product.jswone.response.PODetailsMainResponse;
+import com.steel.product.jswone.response.PODetailsResponse;
 
 public interface JSWIntegrationService {
 
@@ -13,5 +15,7 @@ public interface JSWIntegrationService {
 	ResponseEntity<Object> mmidreceive(MMIDReceiveMainRequest request);
 
 	List<Object[]> locationwisePOList(POIntegrationRequest request);
+
+	PODetailsMainResponse podetails(POIntegrationRequest request);
 
 }

@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +26,8 @@ import com.steel.product.application.entity.AdminUserEntity;
 import com.steel.product.application.entity.UserLocationMappingEntity;
 import com.steel.product.application.entity.UserPartyMap;
 import com.steel.product.application.service.AWSS3Service;
+import com.steel.product.jswone.entity.PropertyEntity;
+import com.steel.product.jswone.repository.PropertyRepository;
 
 @Service
 public class CommonUtil {
@@ -40,6 +44,9 @@ public class CommonUtil {
 
     @Autowired
     private UserPartyMappingRepository userPartyMap;
+
+	@Autowired
+	PropertyRepository propertyRepository;
     
 	public String persistFiles(String applicationJarPath, String stageName, String templateName,
 			MultipartFile file) throws IOException {
@@ -126,6 +133,13 @@ public class CommonUtil {
 			adminUserEntity = userEntity.get();
 		}
 		return adminUserEntity;
+	}
+
+	public Map<String, String> getAllProperties() {
+		List<PropertyEntity> properties = propertyRepository.findAll();
+		Map<String, String> map = properties.stream()
+				.collect(Collectors.toMap(PropertyEntity::getPropertyName, PropertyEntity::getPropertyValue));
+		return map;
 	}
 
 }

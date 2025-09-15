@@ -1,4 +1,4 @@
-package com.steel.product.jswone.request;
+package com.steel.product.jswone.response;
 
 import lombok.Data;
 

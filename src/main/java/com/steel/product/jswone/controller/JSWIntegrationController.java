@@ -14,7 +14,9 @@ import org.springframework.web.bind.annotation.*;
 
 import com.steel.product.jswone.request.MMIDReceiveMainRequest;
 import com.steel.product.jswone.request.POIntegrationRequest;
-import com.steel.product.jswone.request.POListResponse;
+import com.steel.product.jswone.response.PODetailsMainResponse;
+import com.steel.product.jswone.response.PODetailsResponse;
+import com.steel.product.jswone.response.POListResponse;
 import com.steel.product.jswone.service.JSWIntegrationService;
 
 @RestController
@@ -52,6 +54,12 @@ public class JSWIntegrationController {
 			locationwisePOList.add(resp);
 		}
 		return new ResponseEntity<Object>(locationwisePOList, HttpStatus.OK);
+	}
+
+	@PostMapping(value = "/xternal/podetails", produces = "application/json")
+	public ResponseEntity<Object> poDetails(@RequestBody POIntegrationRequest request, HttpServletRequest httprequest) {
+		PODetailsMainResponse resp =  service.podetails(request);
+		return new ResponseEntity<Object>(resp, HttpStatus.OK);
 	}
 
 }
