@@ -23,8 +23,11 @@ public class POReceiveDetailsEntity {
 	@Column(name = "warehouse_id")
 	private String warehouseId;
 
-	@Column(name = "status")
-	private String status;
+	@Column(name = "po_id")
+	private String poId;
+
+	@Column(name = "po_status")
+	private String poStatus;
 
 	@Column(name = "ip_address")
 	private String ipAddress;

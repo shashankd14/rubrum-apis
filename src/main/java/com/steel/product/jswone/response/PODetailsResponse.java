@@ -1,5 +1,7 @@
 package com.steel.product.jswone.response;
 
+import java.util.List;
+
 import lombok.Data;
 
 @Data
@@ -11,8 +13,6 @@ public class PODetailsResponse {
 
 	private String vendor_name;
 
-	private String mmid;
-
 	private String company_name;
 
 	private String order_status;
@@ -22,4 +22,6 @@ public class PODetailsResponse {
 	private String received_status;
 
 	private String status;
+
+	private List<PODetailsLineItemResponse> line_items;
 }

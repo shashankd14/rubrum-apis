@@ -501,7 +501,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 	@Override
 	public Page<MaterialMasterJswEntity> materialSearch(MaterialSearchPageRequest request) {
 		Pageable pageable = PageRequest.of((request.getPageNo() - 1), request.getPageSize());
-		request.setFormId(22);
+		//request.setFormId(22);
 		MaterialMasterJswSpecification spec = new MaterialMasterJswSpecification(request);
 		Page<MaterialMasterJswEntity> pageResult = materialMasterRepository.findAll(spec, pageable);
 		return pageResult;

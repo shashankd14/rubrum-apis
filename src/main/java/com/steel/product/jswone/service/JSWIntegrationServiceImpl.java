@@ -15,7 +15,6 @@ import com.steel.product.jswone.request.MMIDReceiveMainRequest;
 import com.steel.product.jswone.request.MaterialMasterFileDataDTO;
 import com.steel.product.jswone.request.POIntegrationRequest;
 import com.steel.product.jswone.response.PODetailsMainResponse;
-import com.steel.product.jswone.response.PODetailsResponse;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -81,7 +80,8 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			}
 			entity.setPoReference(request.getPoReference());
 			entity.setWarehouseId(request.getWarehouseId());
-			entity.setStatus(request.getStatus());
+			entity.setPoId(request.getPoId());
+			entity.setPoStatus(request.getStatus());
 			entity.setIpAddress(request.getIpAddress());
 			poReceiveDetailsRepository.save(entity);
 			return new ResponseEntity<Object>("{\"status\": \"success\",\"message\":\"" + message
@@ -244,15 +244,18 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			headers.set("Content-Type", "application/json");
 			headers.set("Authorization", propertyMap.get("podetails_Authorization"));
 			HttpEntity<String> request = new HttpEntity<>("{}", headers);
-			System.out.println("request is  == " + request);
-			ResponseEntity<String> res = restTemplate.exchange(propertyMap.get("podetails_url"), HttpMethod.POST, request, String.class);
+			String url = propertyMap.get("podetails_url") + "?purchaseorder_id=" + requ.getPoId();
+			System.out.println("request is  == " + request + ", url - " + url);
+			ResponseEntity<String> res = restTemplate.exchange(url, HttpMethod.GET, request, String.class);
 			System.out.println("response is == " + res);
-
 			if (res.getBody() != null) {
 				ObjectMapper om = new ObjectMapper();
 				om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 				response = om.readValue(res.getBody().toString(), PODetailsMainResponse.class);
-				System.out.println("response == " + response);
+			}
+			
+			if(response!=null && response.getPurchaseorder()!=null &&  response.getPurchaseorder ().getLine_items() != null ) {
+				System.out.println("Hi kanak  "+ response.getPurchaseorder ().getLine_items().size());
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -6,10 +6,10 @@ import lombok.Data;
 
 @Data
 public class PODetailsMainResponse {
-	
+
 	private String code;
-	
+
 	private String message;
-	
-	private List<PODetailsResponse> purchaseorders;
+
+	private PODetailsResponse purchaseorder;
 }

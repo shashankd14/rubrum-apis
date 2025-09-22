@@ -14,15 +14,14 @@ import org.springframework.web.bind.annotation.*;
 
 import com.steel.product.jswone.request.MMIDReceiveMainRequest;
 import com.steel.product.jswone.request.POIntegrationRequest;
+import com.steel.product.jswone.response.PODetailsLineItemResponse;
 import com.steel.product.jswone.response.PODetailsMainResponse;
-import com.steel.product.jswone.response.PODetailsResponse;
 import com.steel.product.jswone.response.POListResponse;
 import com.steel.product.jswone.service.JSWIntegrationService;
 
 @RestController
 @CrossOrigin
 @Tag(name = "Integration APIs", description = "Integration APIs")
-//@RequestMapping({ "/xternal" })
 public class JSWIntegrationController {
 
 	@Autowired
@@ -50,7 +49,7 @@ public class JSWIntegrationController {
 		for (Object[] result : locationwisePOList1) {
 			POListResponse resp = new POListResponse();
 			resp.setPoReference(result[0] != null ? (String) result[0] : null);
-			resp.setWarehouseId(result[1] != null ? (String) result[1] : null);
+			resp.setPoId(result[1] != null ? (String) result[1] : null);
 			locationwisePOList.add(resp);
 		}
 		return new ResponseEntity<Object>(locationwisePOList, HttpStatus.OK);
@@ -58,8 +57,12 @@ public class JSWIntegrationController {
 
 	@PostMapping(value = "/xternal/podetails", produces = "application/json")
 	public ResponseEntity<Object> poDetails(@RequestBody POIntegrationRequest request, HttpServletRequest httprequest) {
-		PODetailsMainResponse resp =  service.podetails(request);
-		return new ResponseEntity<Object>(resp, HttpStatus.OK);
+		PODetailsMainResponse response = service.podetails(request);
+		List<String> locationwisePOList = new ArrayList<String>();
+		for (PODetailsLineItemResponse result1 : response.getPurchaseorder().getLine_items()) {
+			locationwisePOList.add(result1.getSku());
+		}
+		return new ResponseEntity<Object>(locationwisePOList, HttpStatus.OK);
 	}
 
 }

@@ -20,13 +20,13 @@ import com.steel.product.application.exception.MockException;
 import com.steel.product.application.mapper.InstructionMapper;
 import com.steel.product.application.mapper.PartDetailsMapper;
 import com.steel.product.application.mapper.TotalLengthAndWeight;
+import com.steel.product.application.util.CommonUtil;
 import com.steel.product.jswone.entity.SalesOrderAllocationEntity;
 import com.steel.product.jswone.repository.SalesOrderAllocationJswRepository;
 import com.steel.product.jswone.service.MaterialMasterJswService;
 
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -47,9 +47,6 @@ public class InstructionServiceImpl implements InstructionService {
     Integer cutProcessId = 1;
     Integer slitAndCutProcessId = 3;
     Integer inProgressStatusId = 2;
-
-	@Value("${pt.maxpercentage}")
-	private int ptMaxPercentage;
 
     private static final DecimalFormat decfor = new DecimalFormat("0.00");  
 
@@ -82,6 +79,9 @@ public class InstructionServiceImpl implements InstructionService {
     private MaterialMasterJswService materialMasterJswService;
     
     private SalesOrderAllocationJswRepository salesOrderAllocationJswRepository;
+
+	@Autowired
+	CommonUtil commonUtil;
     
 	@Autowired
 	public InstructionServiceImpl(InstructionRepository instructionRepository,
@@ -378,6 +378,12 @@ public class InstructionServiceImpl implements InstructionService {
 		}
          
 		if ("ACCEPTED".equals(instructionFinishDto.getPositiveToleranceFlag())) {
+			Map<String, String> propertyMap = commonUtil.getAllProperties();
+			int ptMaxPercentage = 5;
+			if (propertyMap.get("pt.maxpercentage") != null) {
+				ptMaxPercentage = Integer.parseInt(propertyMap.get("pt.maxpercentage"));
+			}
+
 			InstructionRequestDto responseObj = calculatePT(instructionFinishDto);
 			pt = responseObj.getPt();
 			lastInstructionId = responseObj.getInstructionId();

@@ -9,6 +9,8 @@ public class POIntegrationRequest {
 
 	private String warehouseId;
 
+	private String poId;
+
 	private int locationId;
 
 	private String status;

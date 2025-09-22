@@ -462,7 +462,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 			if(priceCalculateDTO!=null && priceCalculateDTO.getLaminationCharges() != null) {
 				amount=amount.add(priceCalculateDTO.getLaminationCharges());
 			}
-			invoiceListDTO.setGstPercentage(new BigDecimal("12.00"));
+			invoiceListDTO.setGstPercentage(new BigDecimal("18.00"));
 
 			BigDecimal totalAmount = new BigDecimal(BigInteger.ZERO, 3);
 			if(amount!=null && amount.compareTo(BigDecimal.ZERO) > 0) {

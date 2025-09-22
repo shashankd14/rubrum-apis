@@ -7,5 +7,5 @@ public class POListResponse {
 
 	private String poReference;
 
-	private String warehouseId;
+	private String poId;
 }
