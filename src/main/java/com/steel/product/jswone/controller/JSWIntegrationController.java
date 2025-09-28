@@ -3,7 +3,9 @@ package com.steel.product.jswone.controller;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -56,13 +58,26 @@ public class JSWIntegrationController {
 	}
 
 	@PostMapping(value = "/xternal/podetails", produces = "application/json")
-	public ResponseEntity<Object> poDetails(@RequestBody POIntegrationRequest request, HttpServletRequest httprequest) {
-		PODetailsMainResponse response = service.podetails(request);
+	public ResponseEntity<Object> poDetails(@RequestBody POIntegrationRequest request,
+			HttpServletRequest httprequest) {
+		PODetailsMainResponse resp = service.podetails(request);
 		List<String> locationwisePOList = new ArrayList<String>();
-		for (PODetailsLineItemResponse result1 : response.getPurchaseorder().getLine_items()) {
-			locationwisePOList.add(result1.getSku());
+		Map<String, Object> response = new HashMap<>();
+		
+		if (resp != null && resp.getPurchaseorder() != null) {
+			for (PODetailsLineItemResponse result1 : resp.getPurchaseorder().getLine_items()) {
+				locationwisePOList.add(result1.getSku());
+			}
+			response.put("code", resp.getCode());
+			response.put("message", resp.getMessage());
+			response.put("data", locationwisePOList);
+			return new ResponseEntity<Object>(response, HttpStatus.OK);
+		} else {
+			response.put("code", resp.getCode());
+			response.put("message", resp.getMessage());
+			response.put("data", locationwisePOList);
+			return new ResponseEntity<Object>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		return new ResponseEntity<Object>(locationwisePOList, HttpStatus.OK);
 	}
 
 }

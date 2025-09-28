@@ -31,8 +31,14 @@ public class StockSummaryReportViewEntity {
 	@Column(name = "materialgrade")
 	private String materialGrade;
 
+	@Column(name = "subgrade")
+	private String subgrade;
+
 	@Column(name = "coilage")
 	private int coilage;
+
+	@Column(name = "valueofgoods")
+	private String valueofgoods;
 
 	@Column(name = "fthickness")
 	private String fthickness;
@@ -52,39 +58,24 @@ public class StockSummaryReportViewEntity {
 	@Column(name = "fgqty")
 	private String fgqty;
 
-	@Column(name = "fgclassification")
-	private String fgclassification;
-	
-	@Column(name = "edgetrimclassification")
-	private String edgetrimclassification;
-
 	@Column(name = "qualitydefects")
 	private String qualitydefects;
-	
-	@Column(name = "cutendsclassification")
-	private String cutendsclassification;
-	
-	@Column(name = "othersclassification")
-	private String othersclassification;
-	
-	@Column(name = "wipclassification")
-	private String wipclassification;
-	
-	@Column(name = "blankclassification")
-	private String blankclassification;
 
 	@Column(name = "unprocessedweight")
 	private String unprocessedweight;
-	
+
 	@Column(name = "wipqty")
 	private String wipqty;
-	
+
+	@Column(name = "mm_id")
+	private String mmId;;
+
 	@Column(name = "dispatchedweight")
 	private String dispatchedweight;
 
 	@Column(name = "inwardstatus")
 	private String inwardstatus;
-	
+
 	@Column(name = "remarks")
 	private String remarks;
 

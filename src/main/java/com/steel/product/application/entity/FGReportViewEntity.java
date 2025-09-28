@@ -46,6 +46,9 @@ public class FGReportViewEntity {
 	@Column(name = "material_grade")
 	private String materialGrade;
 
+	@Column(name = "subgrade")
+	private String subgrade;
+
 	@Column(name = "remarks")
 	private String remarks;
 

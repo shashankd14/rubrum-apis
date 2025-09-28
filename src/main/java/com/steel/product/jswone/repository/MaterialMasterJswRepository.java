@@ -49,7 +49,7 @@ public interface MaterialMasterJswRepository
 			+ " left outer join jsw_uom_master uom on uom.uom_id = material.uom_id  "
 			+ " left outer join jsw_surfacetype_master surface on surface.surfacetype_id = material.surfacetype_id  "
 			+ " left outer join jsw_coatingtype_master  coating on coating.coatingtype_id = material.coatingtype_id  "
-			+ " where 1=1 and material.form_id =22 and material.mm_id like %:mmid% order by material_id desc"  ,
+			+ " where 1=1 and material.mm_id like %:mmid% order by material_id desc"  ,
 		countQuery = "SELECT count(distinct material.material_id) "
 			+ " from jsw_material_master material    "
 			+ " left outer join jsw_category_master category on category.category_id=material.category_id  "
@@ -63,7 +63,7 @@ public interface MaterialMasterJswRepository
 			+ " left outer join jsw_uom_master uom on uom.uom_id = material.uom_id  "
 			+ " left outer join jsw_surfacetype_master surface on surface.surfacetype_id = material.surfacetype_id  "
 			+ " left outer join jsw_coatingtype_master  coating on coating.coatingtype_id = material.coatingtype_id  "
-			+ " where 1=1 and material.form_id =22 and material.mm_id like %:mmid% ", nativeQuery = true)
+			+ " where 1=1  and material.mm_id like %:mmid% ", nativeQuery = true)
 	Page<Object[]> materialSearchBymmid(@Param("mmid") String mmid,  Pageable pageable);
 
 	List<MaterialMasterJswEntity> findByMmId(String mmid);

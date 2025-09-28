@@ -234,7 +234,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 
 	@Override
 	public PODetailsMainResponse podetails(POIntegrationRequest requ) {
-		PODetailsMainResponse response = null;
+		PODetailsMainResponse response = new PODetailsMainResponse();
 
 		try {
 			RestTemplate restTemplate = new RestTemplate();
@@ -245,7 +245,9 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			headers.set("Authorization", propertyMap.get("podetails_Authorization"));
 			HttpEntity<String> request = new HttpEntity<>("{}", headers);
 			String url = propertyMap.get("podetails_url") + "?purchaseorder_id=" + requ.getPoId();
+			//String url = "https://tigios.techurate.com/mockapi/jsontoxml/execute/jswone/podetails/1.1";
 			System.out.println("request is  == " + request + ", url - " + url);
+			System.out.println(" url - " + url);
 			ResponseEntity<String> res = restTemplate.exchange(url, HttpMethod.GET, request, String.class);
 			System.out.println("response is == " + res);
 			if (res.getBody() != null) {

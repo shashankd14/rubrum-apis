@@ -58,7 +58,6 @@ public class MailSender {
 		boolean mailStts=false;
 		try {
 			logger.info("Party name is : "+party.getPartyName()+", DailyReportsList == "+party.getDailyReportsList());
-
 			MimeMessage message = javaMailSender.createMimeMessage();
 			MimeMessageHelper helper = new MimeMessageHelper(message, true);
 			
@@ -84,13 +83,11 @@ public class MailSender {
 					&& party.getDailyReportsList().contains("FGREPORT")) {
 				mailStts = true;
 				reportsService.createFGReport(party.getnPartyId(), strDate, helper);
-				//reportsService.createEndUserTagWiseFGReport(party.getnPartyId(), strDate, helper);
 			}
 			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0
 					&& party.getDailyReportsList().contains("WIPREPORT")) {
 				mailStts = true;
 				reportsService.createWIPReport(party.getnPartyId(), strDate, helper);
-				//reportsService.createWIPReportEndusertagwise(party.getnPartyId(), strDate, helper);
 			}
 			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0
 					&& party.getDailyReportsList().contains("STOCKREPORT")) {

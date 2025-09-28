@@ -43,6 +43,9 @@ public class WIPReportViewEntity {
 	@Column(name = "material_grade")
 	private String materialGrade;
 
+	@Column(name = "subgrade")
+	private String subgrade;
+
 	@Column(name = "fthickness")
 	private String fthickness;
 
@@ -84,13 +87,13 @@ public class WIPReportViewEntity {
 
 	@Column(name = "inward_status")
 	private String inwardStatus;
-	
+
 	@Column(name = "classification_tag")
 	private String classificationTag;
 
-	//@Column(name = "enduser_tag_name")
-	//private String orderid;
-	
+	// @Column(name = "enduser_tag_name")
+	// private String orderid;
+
 	@Column(name = "partyId")
 	private int partyId;
 
