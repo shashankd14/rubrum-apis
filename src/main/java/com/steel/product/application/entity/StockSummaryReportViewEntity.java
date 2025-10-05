@@ -68,7 +68,7 @@ public class StockSummaryReportViewEntity {
 	private String wipqty;
 
 	@Column(name = "mm_id")
-	private String mmId;;
+	private String mmId;
 
 	@Column(name = "dispatchedweight")
 	private String dispatchedweight;

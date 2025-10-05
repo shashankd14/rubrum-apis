@@ -1,11 +1,21 @@
 package com.steel.product.jswone.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.steel.product.application.dao.FGReportViewRepository;
 import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.dao.InwardReportViewRepository;
+import com.steel.product.application.dao.OutwardReportViewRepository;
+import com.steel.product.application.dao.StockSummaryReportViewRepository;
+import com.steel.product.application.dao.WIPReportViewRepository;
 import com.steel.product.application.dto.instruction.WIPChildListResponseDTO;
 import com.steel.product.application.dto.inward.SearchListPageRequest;
 import com.steel.product.application.dto.pdf.GCPUploadDTO;
+import com.steel.product.application.entity.FGReportViewEntity;
+import com.steel.product.application.entity.InwardReportViewEntity;
+import com.steel.product.application.entity.OutwardReportViewEntity;
+import com.steel.product.application.entity.StockSummaryReportViewEntity;
+import com.steel.product.application.entity.WIPReportViewEntity;
+
 import lombok.extern.log4j.Log4j2;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +50,18 @@ public class GCPUploadFileService {
 	InwardEntryRepository inwardEntryRepository;
 
 	@Autowired
+	FGReportViewRepository fgReportViewRepository;
+
+	@Autowired
+	OutwardReportViewRepository outwardReportViewRepository;
+	
+	@Autowired
+	WIPReportViewRepository wipReportViewRepository;
+	
+	@Autowired
+	StockSummaryReportViewRepository stockSummaryReportViewRepository;
+	
+	@Autowired
 	Environment env;
 
 	public void writeJsonToFile(String path, String date) throws IOException {
@@ -54,10 +76,43 @@ public class GCPUploadFileService {
 
 		try {
 			String path22 = exportInwardListToCsv(path, date);
-	        System.out.println("InwardDetails Written on "+path22);
+	        System.out.println("Inward and SKU details written to "+path22);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		try {
+			String fgReport = exportFGReport(path, date);
+	        System.out.println("fgReport Written on "+fgReport);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		try {
+			String wipReport = exportWIPReport( path, date);
+	        System.out.println("wipReport Written on "+wipReport);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		try {
+			String stockReport = exportStockReport(path, date);
+	        System.out.println("stockReport Written on "+stockReport);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		try {
+			String inwardReport = exportInwardReport(path, date);
+	        System.out.println("inwardReport Written on "+inwardReport);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		try {
+			String outwardReport = exportOutwardReport(path, date);
+	        System.out.println("outwardReport Written on "+outwardReport);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		
 		//objectMapper.writerWithDefaultPrettyPrinter().writeValue(new File(path+"/InwardDetails/InwardDetails_"+date+".csv"), kk);
 		//System.out.println("InwardDetails Written on "+date);
 	} 
@@ -72,7 +127,7 @@ public class GCPUploadFileService {
 		}
 		Map<Integer, GCPUploadDTO> inwardMap = inwardList();
 
-		String parentFilePath = coilFolderPath+File.separator+ "coildetails_" + date + ".csv";
+		String parentFilePath = coilFolderPath+File.separator+ "InwardDetails_" + date + ".csv";
 		try (PrintWriter writer = new PrintWriter(new FileWriter(parentFilePath))) {
 			writer.println("inwardentryid, BatchNumber, createdon, SCInwardId, customercoilid, PartyName, "
 					+ "customerinvoiceno, dbilldate, dinvoicedate, dreceiveddate, flength, fquantity, fthickness, "
@@ -136,12 +191,136 @@ public class GCPUploadFileService {
         return childFilePath; // return saved path
 	}
 
+	public String exportFGReport(String mainFolderPath, String date) throws Exception {
+
+		String folderPath = mainFolderPath + File.separator + "Reports" + File.separator + "fg";
+		// Ensure folder exists
+		Path path = Paths.get(folderPath);
+		if (!Files.exists(path)) {
+			Files.createDirectories(path);
+		}
+		String filePath = folderPath + File.separator + "fgreport_" + date + ".csv";
+		List<FGReportViewEntity> fgReportDetails = fgReportViewRepository.findAll();
+		try (PrintWriter writer = new PrintWriter(new FileWriter(filePath))) {
+			writer.println("Packet Id, Order Id, Coil Number, SC Inward ID,Plan Date,"
+			+ " Finishing Date, Processing TAT, MaterialDesc, MaterialGrade, subgrade,Thickness,"
+			+ "	Actual Width, Actual Length, Qty_Sheets, Actual Weight,Classification Tag, Remarks");
+			for (FGReportViewEntity kk : fgReportDetails) {
+				writer.println(kk.getPacketId() + "," + kk.getOrderid() + "," + kk.getCoilNumber() + ","
+						+ kk.getCustomerBatchId() + "," + kk.getProcessingPlanDate() + "," + kk.getFinishingDate() + ","
+						+ kk.getCoilage() + "," + kk.getMaterialDesc() + "," + kk.getMaterialGrade() + ","
+						+ kk.getSubgrade() + "," + kk.getThickness() + "," + kk.getActualwidth() + ","
+						+ kk.getActuallength() + "," + kk.getCoilage() + "," + kk.getActualweight() + ","
+						+ kk.getClassificationTag() + "," + kk.getRemarks());
+			}
+		}
+		return filePath;
+	}
+
+	public String exportWIPReport(String mainFolderPath, String date) throws Exception {
+
+		String folderPath = mainFolderPath + File.separator + "Reports" + File.separator + "wip";
+		// Ensure folder exists
+		Path path = Paths.get(folderPath);
+		if (!Files.exists(path)) {
+			Files.createDirectories(path);
+		}
+		String filePath = folderPath + File.separator + "wipreport_" + date + ".csv";
+		List<WIPReportViewEntity> wipReportDetails = wipReportViewRepository.findAll();
+		try (PrintWriter writer = new PrintWriter(new FileWriter(filePath))) {
+			writer.println( "Packet id, Order ID, Processing Plan Date, Coil Age(No'of Days),"
+					+ "CoilNumber, SC Inward ID, MaterialDesc, MaterialGrade, subgrade, Thickness, Width,"
+					+ "Net Weight, Planned Length, Planned Weight, Plan Qty_Sheets, Inward Status,Classification Tag");
+			for (WIPReportViewEntity kk : wipReportDetails) {
+				writer.println( kk.getPacketId()+ "," +kk.getOrderid()+ "," + kk.getProcessingPlanDate()+ "," +kk.getCoilage()+ "," +
+						kk.getCoilNumber()+ "," + kk.getCustomerBatchId()+ "," + kk.getMaterialDesc()+ "," +
+						kk.getMaterialGrade()+ "," + kk.getSubgrade()+ "," +kk.getFthickness()+ "," +kk.getFwidth()+ "," +kk.getNetWeight()+ "," +
+						kk.getPlannedLength()+ "," +kk.getPlannedWeight()+ "," + kk.getNoofpieces()+ "," +
+						kk.getInwardStatus()+ "," +kk.getClassificationTag() );
+			}
+		}
+		return filePath;
+	}
+
+	public String exportStockReport(String mainFolderPath, String date) throws Exception {
+
+		String folderPath = mainFolderPath + File.separator + "Reports" + File.separator + "stock";
+		// Ensure folder exists
+		Path path = Paths.get(folderPath);
+		if (!Files.exists(path)) {
+			Files.createDirectories(path);
+		}
+		String filePath = folderPath + File.separator + "stockreport_" + date + ".csv";
+		List<StockSummaryReportViewEntity> stockReportDetailsyList = stockSummaryReportViewRepository.findAll();
+		try (PrintWriter writer = new PrintWriter(new FileWriter(filePath))) {
+			writer.println( "Coil No,SC Inward ID,MMId,MaterialDesc,MaterialGrade,Subgrade,"
+					+ "Ageing,Thickness,Width,Value Of Goods,NetWeight,InStockWeight,WIP Qty,FG Qty,"
+					+ "Quality Defects,UnprocessedWeight,Dispatched Qty" );
+			for (StockSummaryReportViewEntity kk : stockReportDetailsyList) {
+				writer.println( kk.getCoilNumber()+","+kk.getCustomerBatchId()+","+kk.getMmId()+","+kk.getMaterialDesc()+","+
+						kk.getMaterialGrade()+","+kk.getSubgrade()+","+kk.getCoilage()+","+kk.getFthickness()+","+
+						kk.getFwidth()+","+kk.getValueofgoods()+","+kk.getNetweight()+","+kk.getInstockweight()+","+
+						kk.getWipqty()+","+ kk.getFgqty()+","+kk.getQualitydefects()+","+kk.getUnprocessedweight()+","+
+						kk.getDispatchedweight() );
+			}
+		}
+		return filePath;
+	}
+
+	public String exportInwardReport(String mainFolderPath, String date) throws Exception {
+
+		String folderPath = mainFolderPath + File.separator + "Reports" + File.separator + "inward";
+		// Ensure folder exists
+		Path path = Paths.get(folderPath);
+		if (!Files.exists(path)) {
+			Files.createDirectories(path);
+		}
+		String filePath = folderPath + File.separator + "inwardreport_" + date + ".csv";
+		List<InwardReportViewEntity> fgReportDetails = inwardReportViewRepository.findAll();
+		try (PrintWriter writer = new PrintWriter(new FileWriter(filePath))) {
+			writer.println( "CoilNumber,SC Inward ID,MaterialDesc,MaterialGrade,Subgrade,MMID,Thickness,Width,NetWeight,"
+					+ "Value of Goods,Invoice No,Invoice Date,ReceivedDate,Vehicle No,Inward Remarks,TC No");
+			for (InwardReportViewEntity kk : fgReportDetails) {
+				writer.println(kk.getCoilnumber() + "," + kk.getCustomerbatchid() + "," + kk.getMaterialdesc() + ","
+						+ kk.getMaterialGrade() + "," + kk.getSubgrade() + "," + kk.getMmId() + "," + kk.getFthickness()
+						+ "," + kk.getFwidth() + "," + kk.getNetWeight() + "," + kk.getValueofgoods() + ","
+						+ kk.getCustomerinvoiceno() + "," + kk.getCustomerinvoicedate() + "," + kk.getReceivedDate()
+						+ "," + kk.getVehicleno() + "," + kk.getRemarks() + "," + kk.getTestcertificatenumber());
+			}
+		}
+		return filePath;
+	}
+
+	public String exportOutwardReport(String mainFolderPath, String date) throws Exception {
+
+		String folderPath = mainFolderPath + File.separator + "Reports" + File.separator + "outward";
+		// Ensure folder exists
+		Path path = Paths.get(folderPath);
+		if (!Files.exists(path)) {
+			Files.createDirectories(path);
+		}
+		String filePath = folderPath + File.separator + "outwardreport_" + date + ".csv";
+		List<OutwardReportViewEntity> outwardReportDetails = outwardReportViewRepository.findAll();
+		try (PrintWriter writer = new PrintWriter(new FileWriter(filePath))) {
+			writer.println( "Order ID,DC No,Dispatch Date,CoilNumber,SC Inward ID,MaterialDesc,MaterialGrade,"
+					+ " Subgrade,Thickness,Width,Length,Qty_Sheets,Delivery Weight,Additional  Weight,Vehicle No,Processing Rate,Quality Remarks" );
+			for (OutwardReportViewEntity kk : outwardReportDetails) {
+				writer.println("" + "," + kk.getDeliveryid() + "," + kk.getCreatedon() + "," + kk.getCoilnumber() + ","
+						+ kk.getCustomerbatchid() + "," + kk.getMaterialdesc() + "," + kk.getMaterialgrade() + ","
+						+ kk.getSubgrade() + "," + kk.getFthickness() + "," + kk.getFwidth() + "," + kk.getFlength()
+						+ "," + kk.getNoofpieces() + "," + kk.getDeliveryWeight() + "," + kk.getAdditionalWeight() + ","
+						+ kk.getVehicleno() + "," + "" + "," + "");
+			}
+		}
+		return filePath;
+	}
+
 	public Map<Integer, GCPUploadDTO> inwardList() {
 		SearchListPageRequest request = new SearchListPageRequest();
 		
 		request.setPageNo(1);
 		request.setPageSize(1000);
-		log.info("in wiplist ");
+		log.info("upload inwardList ");
 		Map<String, Object> response = new HashMap<>(); 
 		
 		List<Object[]> packetsList = inwardEntryRepository.inwardListDataforGCP();

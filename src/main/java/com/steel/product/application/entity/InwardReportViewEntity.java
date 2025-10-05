@@ -40,6 +40,9 @@ public class InwardReportViewEntity {
 	@Column(name = "subgrade")
 	private String subgrade;
 
+	@Column(name = "mm_id")
+	private String mmId;
+
 	@Column(name = "fthickness")
 	private String fthickness;
 

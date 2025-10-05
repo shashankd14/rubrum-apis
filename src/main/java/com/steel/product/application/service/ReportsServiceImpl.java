@@ -150,8 +150,8 @@ public class ReportsServiceImpl implements ReportsService {
 			// Create row object
 			XSSFRow row;
 			
-			List<FGReportViewEntity> fgReportDetailsList =getFGReportDetails(partyId);
-			Map<String, Object[]> fgAcctStatementMap = getFGCassificationDetails(fgReportDetailsList);
+			//List<FGReportViewEntity> fgReportDetailsList =getFGReportDetails(partyId);
+			Map<String, Object[]> fgAcctStatementMap = getFGReportDetails(partyId);
 			//Map<String, Object[]> othersActStatementMap = getOthersCassificationDetails( fgReportDetailsList);
 
 			// Iterate over data and write to sheet
@@ -222,16 +222,16 @@ public class ReportsServiceImpl implements ReportsService {
 		return attachmentRequired;
 	}
 
-	public List<FGReportViewEntity> getFGReportDetails(int partyId) {
+	//public List<FGReportViewEntity> getFGReportDetails(int partyId) {
+		//List<FGReportViewEntity> partyList = fgReportViewRepository.findByPartyId(partyId);
+		//return partyList;
+	//}
 
-		List<FGReportViewEntity> partyList = fgReportViewRepository.findByPartyId(partyId);
-		return partyList;
-	}
-
-	public Map<String, Object[]> getFGCassificationDetails(List<FGReportViewEntity> partyList ) {
+	public Map<String, Object[]> getFGReportDetails(int partyId) {
 
 		Map<String, Object[]> acctStatementMap = new LinkedHashMap<>();
 
+		List<FGReportViewEntity> partyList = fgReportViewRepository.findByPartyId(partyId);
 		try {
 			acctStatementMap.put("1",
 				new Object[] { "Packet Id", "Order Id", "Coil Number", "SC Inward ID", "Plan Date",
@@ -429,7 +429,7 @@ public class ReportsServiceImpl implements ReportsService {
 			List<InwardReportViewEntity> partyList = inwardReportViewRepository.findByPartyId(partyId);
 
 			acctStatementMap.put("1",
-					new Object[] { "CoilNumber", "SC Inward ID", "MaterialDesc", "MaterialGrade", "Subgrade", "Thickness", "Width",
+					new Object[] { "CoilNumber", "SC Inward ID", "MaterialDesc", "MaterialGrade", "Subgrade","MMID", "Thickness", "Width",
 					"NetWeight", "Value of Goods", "Invoice No", "Invoice Date", "ReceivedDate", "Vehicle No",
 					"Inward Remarks", "TC No" });
 
@@ -437,7 +437,7 @@ public class ReportsServiceImpl implements ReportsService {
 			for (InwardReportViewEntity kk : partyList) {
 				cnt++;
 				acctStatementMap.put("" + cnt, new Object[] { kk.getCoilnumber(), kk.getCustomerbatchid(),
-				kk.getMaterialdesc(), kk.getMaterialGrade(), kk.getSubgrade(), kk.getFthickness(), kk.getFwidth(),
+				kk.getMaterialdesc(), kk.getMaterialGrade(), kk.getSubgrade(),kk.getMmId(), kk.getFthickness(), kk.getFwidth(),
 				kk.getNetWeight(), kk.getValueofgoods(), kk.getCustomerinvoiceno(), kk.getCustomerinvoicedate(),
 				kk.getReceivedDate(), kk.getVehicleno(), kk.getRemarks(), kk.getTestcertificatenumber() });
 			}
