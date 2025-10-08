@@ -111,10 +111,6 @@ public class GCPUploadFileService {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
-		
-		//objectMapper.writerWithDefaultPrettyPrinter().writeValue(new File(path+"/InwardDetails/InwardDetails_"+date+".csv"), kk);
-		//System.out.println("InwardDetails Written on "+date);
 	} 
 
 	public String exportInwardListToCsv(String mainFolderPath, String date) throws Exception {
@@ -203,13 +199,13 @@ public class GCPUploadFileService {
 		List<FGReportViewEntity> fgReportDetails = fgReportViewRepository.findAll();
 		try (PrintWriter writer = new PrintWriter(new FileWriter(filePath))) {
 			writer.println("Packet Id, Order Id, Coil Number, SC Inward ID,Plan Date,"
-			+ " Finishing Date, Processing TAT, MaterialDesc, MaterialGrade, subgrade,Thickness,"
+			+ " Finishing Date, Processing TAT, MaterialDesc, MaterialGrade, subgrade, Location Name, Thickness,"
 			+ "	Actual Width, Actual Length, Qty_Sheets, Actual Weight,Classification Tag, Remarks");
 			for (FGReportViewEntity kk : fgReportDetails) {
 				writer.println(kk.getPacketId() + "," + kk.getOrderid() + "," + kk.getCoilNumber() + ","
 						+ kk.getCustomerBatchId() + "," + kk.getProcessingPlanDate() + "," + kk.getFinishingDate() + ","
 						+ kk.getCoilage() + "," + kk.getMaterialDesc() + "," + kk.getMaterialGrade() + ","
-						+ kk.getSubgrade() + "," + kk.getThickness() + "," + kk.getActualwidth() + ","
+						+ kk.getSubgrade() +","+kk.getLocationname()+ "," + kk.getThickness() + "," + kk.getActualwidth() + ","
 						+ kk.getActuallength() + "," + kk.getCoilage() + "," + kk.getActualweight() + ","
 						+ kk.getClassificationTag() + "," + kk.getRemarks());
 			}
@@ -229,12 +225,12 @@ public class GCPUploadFileService {
 		List<WIPReportViewEntity> wipReportDetails = wipReportViewRepository.findAll();
 		try (PrintWriter writer = new PrintWriter(new FileWriter(filePath))) {
 			writer.println( "Packet id, Order ID, Processing Plan Date, Coil Age(No'of Days),"
-					+ "CoilNumber, SC Inward ID, MaterialDesc, MaterialGrade, subgrade, Thickness, Width,"
+					+ "CoilNumber, SC Inward ID, MaterialDesc, MaterialGrade, subgrade,Location Name, Thickness, Width,"
 					+ "Net Weight, Planned Length, Planned Weight, Plan Qty_Sheets, Inward Status,Classification Tag");
 			for (WIPReportViewEntity kk : wipReportDetails) {
 				writer.println( kk.getPacketId()+ "," +kk.getOrderid()+ "," + kk.getProcessingPlanDate()+ "," +kk.getCoilage()+ "," +
 						kk.getCoilNumber()+ "," + kk.getCustomerBatchId()+ "," + kk.getMaterialDesc()+ "," +
-						kk.getMaterialGrade()+ "," + kk.getSubgrade()+ "," +kk.getFthickness()+ "," +kk.getFwidth()+ "," +kk.getNetWeight()+ "," +
+						kk.getMaterialGrade()+ "," + kk.getSubgrade()+ "," +kk.getLocationname()+ "," +kk.getFthickness()+ "," +kk.getFwidth()+ "," +kk.getNetWeight()+ "," +
 						kk.getPlannedLength()+ "," +kk.getPlannedWeight()+ "," + kk.getNoofpieces()+ "," +
 						kk.getInwardStatus()+ "," +kk.getClassificationTag() );
 			}
@@ -253,12 +249,12 @@ public class GCPUploadFileService {
 		String filePath = folderPath + File.separator + "stockreport_" + date + ".csv";
 		List<StockSummaryReportViewEntity> stockReportDetailsyList = stockSummaryReportViewRepository.findAll();
 		try (PrintWriter writer = new PrintWriter(new FileWriter(filePath))) {
-			writer.println( "Coil No,SC Inward ID,MMId,MaterialDesc,MaterialGrade,Subgrade,"
+			writer.println( "Coil No,SC Inward ID,MMId,MaterialDesc,MaterialGrade,Subgrade,Location Name,"
 					+ "Ageing,Thickness,Width,Value Of Goods,NetWeight,InStockWeight,WIP Qty,FG Qty,"
 					+ "Quality Defects,UnprocessedWeight,Dispatched Qty" );
 			for (StockSummaryReportViewEntity kk : stockReportDetailsyList) {
 				writer.println( kk.getCoilNumber()+","+kk.getCustomerBatchId()+","+kk.getMmId()+","+kk.getMaterialDesc()+","+
-						kk.getMaterialGrade()+","+kk.getSubgrade()+","+kk.getCoilage()+","+kk.getFthickness()+","+
+						kk.getMaterialGrade()+","+kk.getSubgrade()+","+kk.getLocationname()+","+kk.getCoilage()+","+kk.getFthickness()+","+
 						kk.getFwidth()+","+kk.getValueofgoods()+","+kk.getNetweight()+","+kk.getInstockweight()+","+
 						kk.getWipqty()+","+ kk.getFgqty()+","+kk.getQualitydefects()+","+kk.getUnprocessedweight()+","+
 						kk.getDispatchedweight() );
@@ -278,11 +274,11 @@ public class GCPUploadFileService {
 		String filePath = folderPath + File.separator + "inwardreport_" + date + ".csv";
 		List<InwardReportViewEntity> fgReportDetails = inwardReportViewRepository.findAll();
 		try (PrintWriter writer = new PrintWriter(new FileWriter(filePath))) {
-			writer.println( "CoilNumber,SC Inward ID,MaterialDesc,MaterialGrade,Subgrade,MMID,Thickness,Width,NetWeight,"
+			writer.println( "CoilNumber,SC Inward ID,MaterialDesc,MaterialGrade,Subgrade,Location Name,MMID,Thickness,Width,NetWeight,"
 					+ "Value of Goods,Invoice No,Invoice Date,ReceivedDate,Vehicle No,Inward Remarks,TC No");
 			for (InwardReportViewEntity kk : fgReportDetails) {
 				writer.println(kk.getCoilnumber() + "," + kk.getCustomerbatchid() + "," + kk.getMaterialdesc() + ","
-						+ kk.getMaterialGrade() + "," + kk.getSubgrade() + "," + kk.getMmId() + "," + kk.getFthickness()
+						+ kk.getMaterialGrade() + "," + kk.getSubgrade() + "," +kk.getLocationname()+ "," + kk.getMmId() + "," + kk.getFthickness()
 						+ "," + kk.getFwidth() + "," + kk.getNetWeight() + "," + kk.getValueofgoods() + ","
 						+ kk.getCustomerinvoiceno() + "," + kk.getCustomerinvoicedate() + "," + kk.getReceivedDate()
 						+ "," + kk.getVehicleno() + "," + kk.getRemarks() + "," + kk.getTestcertificatenumber());
@@ -307,7 +303,7 @@ public class GCPUploadFileService {
 			for (OutwardReportViewEntity kk : outwardReportDetails) {
 				writer.println("" + "," + kk.getDeliveryid() + "," + kk.getCreatedon() + "," + kk.getCoilnumber() + ","
 						+ kk.getCustomerbatchid() + "," + kk.getMaterialdesc() + "," + kk.getMaterialgrade() + ","
-						+ kk.getSubgrade() + "," + kk.getFthickness() + "," + kk.getFwidth() + "," + kk.getFlength()
+						+ kk.getSubgrade() + "," + kk.getLocationname()+ "," + kk.getFthickness() + "," + kk.getFwidth() + "," + kk.getFlength()
 						+ "," + kk.getNoofpieces() + "," + kk.getDeliveryWeight() + "," + kk.getAdditionalWeight() + ","
 						+ kk.getVehicleno() + "," + "" + "," + "");
 			}

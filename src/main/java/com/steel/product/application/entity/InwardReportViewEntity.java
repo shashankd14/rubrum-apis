@@ -40,6 +40,9 @@ public class InwardReportViewEntity {
 	@Column(name = "subgrade")
 	private String subgrade;
 
+	@Column(name = "locationname")
+	private String locationname;
+
 	@Column(name = "mm_id")
 	private String mmId;
 

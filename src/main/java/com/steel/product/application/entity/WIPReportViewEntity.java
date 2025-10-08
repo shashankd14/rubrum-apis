@@ -40,6 +40,9 @@ public class WIPReportViewEntity {
 	@Column(name = "material_desc")
 	private String materialDesc;
 
+	@Column(name = "locationname")
+	private String locationname;
+
 	@Column(name = "material_grade")
 	private String materialGrade;
 

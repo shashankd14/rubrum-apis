@@ -73,6 +73,9 @@ public class FGReportViewEntity {
 	@Column(name = "enduser_tag_name")
 	private String enduserTagName;
 
+	@Column(name = "locationname")
+	private String locationname;
+	
 	@Column(name = "partyId")
 	private int partyId;
 

@@ -73,6 +73,9 @@ public class StockSummaryReportViewEntity {
 	@Column(name = "dispatchedweight")
 	private String dispatchedweight;
 
+	@Column(name = "locationname")
+	private String locationname;
+	
 	@Column(name = "inwardstatus")
 	private String inwardstatus;
 
