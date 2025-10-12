@@ -14,6 +14,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.steel.product.jswone.entity.POWiseMmidDetailsEntity;
+import com.steel.product.jswone.repository.POWiseMmisDetailsRepository;
 import com.steel.product.jswone.request.MMIDReceiveMainRequest;
 import com.steel.product.jswone.request.POIntegrationRequest;
 import com.steel.product.jswone.response.PODetailsLineItemResponse;
@@ -29,6 +33,9 @@ public class JSWIntegrationController {
 	@Autowired
 	private JSWIntegrationService service;
 
+	@Autowired
+	private POWiseMmisDetailsRepository poWiseMmisDetailsRepository;
+	
 	@PostMapping(value = "/xternal/poreceive", produces = "application/json")
 	public ResponseEntity<Object> poreceive(@RequestBody POIntegrationRequest request, HttpServletRequest httprequest) {
 		String ipAddress = httprequest.getRemoteAddr();
@@ -63,10 +70,30 @@ public class JSWIntegrationController {
 		PODetailsMainResponse resp = service.podetails(request);
 		List<String> locationwisePOList = new ArrayList<String>();
 		Map<String, Object> response = new HashMap<>();
-		
+        ObjectMapper mapper = new ObjectMapper();
+
 		if (resp != null && resp.getPurchaseorder() != null) {
 			for (PODetailsLineItemResponse result1 : resp.getPurchaseorder().getLine_items()) {
 				locationwisePOList.add(result1.getSku());
+				POWiseMmidDetailsEntity kk = new POWiseMmidDetailsEntity();
+				kk.setMmId(result1.getSku());
+				kk.setPoId(resp.getPurchaseorder().getPurchaseorder_id());
+				kk.setPoReference(resp.getPurchaseorder().getPurchaseorder_number());
+				String jsonString = "";
+				try {
+					jsonString = mapper.writeValueAsString(result1);
+					kk.setMmidDetailsObject(jsonString);
+				} catch (JsonProcessingException e) {
+				}
+				
+				if (result1.getSku() != null) {
+					POWiseMmidDetailsEntity existingEntity = poWiseMmisDetailsRepository.findByMmId(result1.getSku());
+					if (existingEntity != null && existingEntity.getId() > 0) {
+						kk.setId(existingEntity.getId());
+						kk.setCreatedOn(existingEntity.getCreatedOn());
+					}
+				}
+				poWiseMmisDetailsRepository.save(kk);
 			}
 			response.put("code", resp.getCode());
 			response.put("message", resp.getMessage());

@@ -235,7 +235,6 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 	@Override
 	public PODetailsMainResponse podetails(POIntegrationRequest requ) {
 		PODetailsMainResponse response = new PODetailsMainResponse();
-
 		try {
 			RestTemplate restTemplate = new RestTemplate();
 			Map<String, String> propertyMap = commonUtil.getAllProperties();
@@ -258,9 +257,26 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			
 			if(response!=null && response.getPurchaseorder()!=null &&  response.getPurchaseorder ().getLine_items() != null ) {
 				System.out.println("Hi kanak  "+ response.getPurchaseorder ().getLine_items().size());
+				
+				
+				
+				
+			}else {
+				
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			if(e.getMessage().contains("404")) {
+				response.setCode("1002");
+				response.setMessage("Resource does not exist.");
+			}
+			if(e.getMessage().contains("400")) {
+				response.setCode("6024");
+				response.setMessage("Invalid Params");
+			}
+			if(e.getMessage().contains("401")) {
+				response.setCode("57");
+				response.setMessage("You are not authorized to perform this operation");
+			}
 		}
 		return response;
 	}

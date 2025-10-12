@@ -34,6 +34,9 @@ public class OutwardPacketwiseReportViewEntity {
 	@Column(name = "customerbatchid")
 	private String customerbatchid;
 
+	@Column(name = "locationname")
+	private String locationname;
+
 	@Column(name = "materialdesc")
 	private String materialdesc;
 

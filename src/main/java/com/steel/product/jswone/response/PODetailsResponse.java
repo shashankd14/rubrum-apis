@@ -21,6 +21,8 @@ public class PODetailsResponse {
 
 	private String received_status;
 
+	private String purchaseorder_number;
+
 	private String status;
 
 	private List<PODetailsLineItemResponse> line_items;

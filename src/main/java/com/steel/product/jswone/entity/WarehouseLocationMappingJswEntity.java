@@ -7,7 +7,7 @@ import java.util.Date;
 
 @Data
 @Entity
-@Table(name = "jsw_warehouse_location_map")
+@Table(name = "jsw_warehouse_master")
 public class WarehouseLocationMappingJswEntity {
 
 	@Id
@@ -15,17 +15,29 @@ public class WarehouseLocationMappingJswEntity {
 	@Column(name = "id")
 	private int id;
 
-	@Column(name = "warehouse_id")
-	private String warehouse_id;
+	@Column(name = "ware_house_name")
+	private String ware_house_name;
 
-	@Column(name = "location_id")
-	private int location_id;
+	@Column(name = "party_id")
+	private int partyId;
 
-	@Column(name = "user_id")
-	private int user_id;
+	@Column(name = "ware_house_id")
+	private String wareHouseId;
 
-	@Column(name = "created_by")
-	private int createdBy;
+	@Column(name = "branch")
+	private String branch;
+
+	@Column(name = "address")
+	private String address;
+
+	@Column(name = "city")
+	private String city;
+
+	@Column(name = "state")
+	private String state;
+
+	@Column(name = "pincode")
+	private String pincode;
 
 	@Column(name = "created_on", updatable = false)
 	@CreationTimestamp

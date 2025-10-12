@@ -14,8 +14,8 @@ public interface POReceiveDetailsRepository extends JpaRepository<POReceiveDetai
 
 	POReceiveDetailsEntity findByPoReference(String poReference);
 
-	@Query(value = "select po.po_reference, po.po_id from jsw_warehouse_location_map map, jsw_po_receive_dtls po "
-			+ "where map.warehouse_id=po.warehouse_id and map.location_id=:locationId  ", nativeQuery = true)
+	@Query(value = "select po.po_reference, po.po_id from jsw_warehouse_master map, jsw_po_receive_dtls po "
+			+ "where map.ware_house_id=po.warehouse_id and map.party_id=:locationId  ", nativeQuery = true)
 	List<Object[]> locationwisePOList(@Param("locationId") int locationId);
 
 }

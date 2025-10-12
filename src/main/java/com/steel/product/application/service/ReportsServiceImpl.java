@@ -234,8 +234,8 @@ public class ReportsServiceImpl implements ReportsService {
 		List<FGReportViewEntity> partyList = fgReportViewRepository.findByPartyId(partyId);
 		try {
 			acctStatementMap.put("1",
-				new Object[] { "Packet Id", "Order Id", "Coil Number", "SC Inward ID", "Plan Date",
-				"Finishing Date", "Processing TAT", "MaterialDesc", "MaterialGrade", "subgrade","Thickness",
+				new Object[] { "Packet Id", "Order Id", "Coil Number", "SC Inward ID", "Location Name","Plan Date",
+				"Finishing Date", "Processing TAT", "MaterialDesc", "MaterialGrade", "subgrade", "Thickness",
 				"Actual Width", "Actual Length", "Qty_Sheets", "Actual Weight", "Classification Tag",
 				"Remarks" });
 
@@ -244,7 +244,7 @@ public class ReportsServiceImpl implements ReportsService {
 				cnt++;
 				acctStatementMap.put("" + cnt,
 				new Object[] { kk.getPacketId(), kk.getOrderid(), kk.getCoilNumber(), kk.getCustomerBatchId(),
-				kk.getProcessingPlanDate(), kk.getFinishingDate(), kk.getCoilage(),
+				kk.getLocationname(), kk.getProcessingPlanDate(), kk.getFinishingDate(), kk.getCoilage(),
 				kk.getMaterialDesc(), kk.getMaterialGrade(), kk.getSubgrade(), kk.getThickness(), kk.getActualwidth(),
 				kk.getActuallength(), kk.getCoilage(), kk.getActualweight(), kk.getClassificationTag(),
 				kk.getRemarks() });
@@ -332,7 +332,7 @@ public class ReportsServiceImpl implements ReportsService {
 
 			acctStatementMap.put("1",
 					new Object[] { "Packet id", "Order ID", "Processing Plan Date", "Coil Age(No'of Days)",
-							"CoilNumber", "SC Inward ID", "MaterialDesc", "MaterialGrade", "subgrade", "Thickness", "Width",
+							"CoilNumber", "SC Inward ID", "Location Name","MaterialDesc", "MaterialGrade", "subgrade", "Thickness", "Width",
 							"Net Weight", "Planned Length", "Planned Weight", "Plan Qty_Sheets", "Inward Status",
 							"Classification Tag" });
 
@@ -341,7 +341,7 @@ public class ReportsServiceImpl implements ReportsService {
 				cnt++;
 				acctStatementMap.put("" + cnt,
 						new Object[] { kk.getPacketId(), kk.getOrderid(), kk.getProcessingPlanDate(), kk.getCoilage(),
-								kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getMaterialDesc(),
+								kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getLocationname(), kk.getMaterialDesc(),
 								kk.getMaterialGrade(), kk.getSubgrade() , kk.getFthickness(), kk.getFwidth(), kk.getNetWeight(),
 								kk.getPlannedLength(), kk.getPlannedWeight(), kk.getNoofpieces(),
 								kk.getInwardStatus(), kk.getClassificationTag() });
@@ -429,14 +429,14 @@ public class ReportsServiceImpl implements ReportsService {
 			List<InwardReportViewEntity> partyList = inwardReportViewRepository.findByPartyId(partyId);
 
 			acctStatementMap.put("1",
-					new Object[] { "CoilNumber", "SC Inward ID", "MaterialDesc", "MaterialGrade", "Subgrade","MMID", "Thickness", "Width",
+					new Object[] { "CoilNumber", "SC Inward ID", "Location Name", "MaterialDesc", "MaterialGrade", "Subgrade","MMID", "Thickness", "Width",
 					"NetWeight", "Value of Goods", "Invoice No", "Invoice Date", "ReceivedDate", "Vehicle No",
 					"Inward Remarks", "TC No" });
 
 			int cnt = 1;
 			for (InwardReportViewEntity kk : partyList) {
 				cnt++;
-				acctStatementMap.put("" + cnt, new Object[] { kk.getCoilnumber(), kk.getCustomerbatchid(),
+				acctStatementMap.put("" + cnt, new Object[] { kk.getCoilnumber(), kk.getCustomerbatchid(),kk.getLocationname(),
 				kk.getMaterialdesc(), kk.getMaterialGrade(), kk.getSubgrade(),kk.getMmId(), kk.getFthickness(), kk.getFwidth(),
 				kk.getNetWeight(), kk.getValueofgoods(), kk.getCustomerinvoiceno(), kk.getCustomerinvoicedate(),
 				kk.getReceivedDate(), kk.getVehicleno(), kk.getRemarks(), kk.getTestcertificatenumber() });
@@ -529,7 +529,7 @@ public class ReportsServiceImpl implements ReportsService {
 			List<StockSummaryReportViewEntity> partyList = stockSummaryReportViewRepository.findByPartyId(partyId);
 			
 			acctStatementMap.put("1",
-			new Object[] { "Coil No", "SC Inward ID", "MMId", "MaterialDesc", "MaterialGrade","Subgrade", "Ageing",
+			new Object[] { "Coil No", "SC Inward ID", "MMId","Location Name", "MaterialDesc", "MaterialGrade","Subgrade", "Ageing",
 			"Thickness", "Width", "Value Of Goods","NetWeight", "InStockWeight", "WIP Qty", "FG Qty", "Quality Defects",
 			"UnprocessedWeight", "Dispatched Qty" });
 
@@ -537,7 +537,7 @@ public class ReportsServiceImpl implements ReportsService {
 			for (StockSummaryReportViewEntity kk : partyList) {
 				cnt++;
 				acctStatementMap.put("" + cnt,
-				new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getMmId(), kk.getMaterialDesc(),
+				new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getMmId(),kk.getLocationname(), kk.getMaterialDesc(),
 				kk.getMaterialGrade(), kk.getSubgrade(), kk.getCoilage(), kk.getFthickness(),
 				kk.getFwidth(), kk.getValueofgoods(), kk.getNetweight(), kk.getInstockweight(),
 				kk.getWipqty(), kk.getFgqty(), kk.getQualitydefects(), kk.getUnprocessedweight(),
@@ -631,7 +631,7 @@ public class ReportsServiceImpl implements ReportsService {
 			List<OutwardReportViewEntity> partyList = outwardReportViewRepository.findByPartyId(partyId);
 
 			acctStatementMap.put("1",
-			new Object[] { "Order ID", "DC No", "Dispatch Date", "CoilNumber", "SC Inward ID", "MaterialDesc",
+			new Object[] { "Order ID", "DC No", "Dispatch Date", "CoilNumber", "SC Inward ID", "Location Name","MaterialDesc",
 					"MaterialGrade", "Subgrade","Thickness", "Width", "Length", "Qty_Sheets", "Delivery Weight","Additional  Weight",
 					"Vehicle No", "Processing Rate", "Quality Remarks" });
 			int cnt = 1;
@@ -639,7 +639,7 @@ public class ReportsServiceImpl implements ReportsService {
 				cnt++;
 				acctStatementMap.put("" + cnt,
 				new Object[] { "", kk.getDeliveryid(), kk.getCreatedon(), kk.getCoilnumber(),
-				kk.getCustomerbatchid(), kk.getMaterialdesc(), kk.getMaterialgrade(),kk.getSubgrade(),
+				kk.getCustomerbatchid(), kk.getLocationname(), kk.getMaterialdesc(), kk.getMaterialgrade(),kk.getSubgrade(),
 				kk.getFthickness(), kk.getFwidth(), kk.getFlength(), kk.getNoofpieces(),
 				kk.getDeliveryWeight(), kk.getAdditionalWeight(), kk.getVehicleno(), "", "" });
 			}
@@ -727,7 +727,7 @@ public class ReportsServiceImpl implements ReportsService {
 			List<OutwardPacketwiseReportViewEntity> partyList = outwardPacketWiseRepository.findByPartyId(partyId);
 
 			acctStatementMap.put("1",
-			new Object[] { "Order ID", "Plan Id","DC No", "Dispatch Date", "CoilNumber", "SC Inward ID", "MaterialDesc",
+			new Object[] { "Order ID", "Plan Id","DC No", "Dispatch Date", "CoilNumber", "SC Inward ID", "Location Name", "MaterialDesc",
 					"MaterialGrade", "Subgrage","Thickness", "Width", "Length", "Qty_Sheets", "Delivery Weight","Additional  Weight",
 					"Vehicle No", "Processing Rate", "Quality Remarks" });
 			int cnt = 1;
@@ -735,7 +735,7 @@ public class ReportsServiceImpl implements ReportsService {
 				cnt++;
 				acctStatementMap.put("" + cnt,
 				new Object[] { "", kk.getPlanid(), kk.getDeliveryid(), kk.getCreatedon(), kk.getCoilnumber(),
-				kk.getCustomerbatchid(), kk.getMaterialdesc(), kk.getMaterialgrade(), kk.getSubgrade(),
+				kk.getCustomerbatchid(),kk.getLocationname() , kk.getMaterialdesc(), kk.getMaterialgrade(), kk.getSubgrade(),
 				kk.getFthickness(), kk.getFwidth(), kk.getFlength(), kk.getNoofpieces(),
 				kk.getDeliveryWeight(), kk.getAdditionalWeight(), kk.getVehicleno(), "", "" });
 			}
