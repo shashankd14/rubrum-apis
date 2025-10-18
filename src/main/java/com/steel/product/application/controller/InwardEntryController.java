@@ -122,8 +122,8 @@ public class InwardEntryController {
 			inwardEntry.setCustomerCoilId(inward.getCustomerCoilId());
 			inwardEntry.setCustomerInvoiceNo(inward.getCustomerInvoiceNo());
 			inwardEntry.setCustomerBatchId(inward.getCustomerBatchId());
-
-			 inwardEntry.setMmId(inward.getMmId());
+			inwardEntry.setPoId(inward.getPoId());
+			inwardEntry.setMmId(inward.getMmId());
 			//inwardEntry.setMaterial(this.matDescService.getMatById(inward.getMaterialId()));
 			//inwardEntry.setMaterialGrade(matGradeService.getById(inward.getMaterialGradeId()));
 
@@ -206,6 +206,7 @@ public class InwardEntryController {
 
 			inwardEntry.setCustomerCoilId(inward.getCustomerCoilId());
 			inwardEntry.setCustomerBatchId(inward.getCustomerBatchId());
+			inwardEntry.setPoId(inward.getPoId());
 
 			inwardEntry.setMaterial(this.matDescService.getMatById(inward.getMaterialId()));
 			inwardEntry.setMaterialGrade(matGradeService.getById(inward.getMaterialGradeId()));

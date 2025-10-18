@@ -1,8 +1,5 @@
 package com.steel.product.jswone.response;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import lombok.Data;
 
 @Data
@@ -16,13 +13,7 @@ public class PODetailsLineItemResponse {
 
 	private String sku;
 
-	private String location_name;
-
-	private String location_id;
-
 	private String date;
-
-	private String reference_number;
 
 	private String hsn_or_sac;
 
@@ -32,12 +23,12 @@ public class PODetailsLineItemResponse {
 
 	private String name;
 
-	private String tax_id;
+	private String reference_number;
 
 	private String rate;
 
-	private String quantity;
+	private String tax_id;
 
-	List<PODetailsLineItemChildResponse> line_items = new ArrayList<>();
+	private String quantity;
 
 }

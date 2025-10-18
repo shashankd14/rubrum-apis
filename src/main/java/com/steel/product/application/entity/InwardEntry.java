@@ -37,6 +37,9 @@ public class InwardEntry {
 	@Column(name = "dbilldate")
 	private Date dBillDate;
 
+	@Column(name = "po_id")
+	private String poId;
+
 	@Column(name = "vlorryno")
 	private String vLorryNo;
 
@@ -411,6 +414,14 @@ public class InwardEntry {
 	}
 
 	
+	public String getPoId() {
+		return poId;
+	}
+
+	public void setPoId(String poId) {
+		this.poId = poId;
+	}
+
 	public String getPurposeType() {
 		return this.purposeType;
 	}

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-	<property name="LOGS" value="./logs" />
+	<property name="LOGS" value="logs" />
 	<conversionRule conversionWord="mask"
 		converterClass="com.steel.product.application.log.MaskingConverter" />
 	<property name="patternValue"

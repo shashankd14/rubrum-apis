@@ -27,8 +27,10 @@ public class InwardDto {
 	private String customerCoilId;
 	
 	private String customerInvoiceNo;
-	
+
 	private String customerBatchId;
+
+	private String poId;
 
 	private String invoiceNumber;
 
@@ -345,6 +347,14 @@ public class InwardDto {
 
 	public void setInvoiceCopy(MultipartFile invoiceCopy) {
 		this.invoiceCopy = invoiceCopy;
+	}
+
+	public String getPoId() {
+		return poId;
+	}
+
+	public void setPoId(String poId) {
+		this.poId = poId;
 	}
 	
 	

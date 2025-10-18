@@ -1,24 +1,33 @@
 package com.steel.product.jswone.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.steel.product.application.util.CommonUtil;
 import com.steel.product.jswone.entity.MaterialMasterFileDataEntity;
 import com.steel.product.jswone.entity.MaterialMasterJswEntity;
 import com.steel.product.jswone.entity.POReceiveDetailsEntity;
+import com.steel.product.jswone.entity.POWiseMmidDetailsEntity;
 import com.steel.product.jswone.repository.MaterialMasterFiledataRepository;
 import com.steel.product.jswone.repository.MaterialMasterJswRepository;
 import com.steel.product.jswone.repository.POReceiveDetailsRepository;
+import com.steel.product.jswone.repository.POWiseMmidDetailsRepository;
 import com.steel.product.jswone.repository.PropertyRepository;
 import com.steel.product.jswone.request.ApiResponse;
 import com.steel.product.jswone.request.MMIDReceiveMainRequest;
 import com.steel.product.jswone.request.MaterialMasterFileDataDTO;
 import com.steel.product.jswone.request.POIntegrationRequest;
+import com.steel.product.jswone.response.PODetailsLineItemResponse;
 import com.steel.product.jswone.response.PODetailsMainResponse;
-
+import com.steel.product.jswone.response.PoGrnCustomType;
+import com.steel.product.jswone.response.PoGrnLineItem;
+import com.steel.product.jswone.response.PoGrnMainRequest;
 import lombok.extern.log4j.Log4j2;
 
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -42,19 +51,22 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 	private POReceiveDetailsRepository poReceiveDetailsRepository;
 
 	@Autowired
-	MaterialMasterFiledataRepository repository;
+	private MaterialMasterFiledataRepository repository;
 
 	@Autowired
-	MaterialMasterJswRepository materialMasterRepository;
+	private MaterialMasterJswRepository materialMasterRepository;
 
 	@Autowired
-	MaterialUploadService materialUploadService;
+	private MaterialUploadService materialUploadService;
 
 	@Autowired
-	ObjectMapper objectMapper;
+	private ObjectMapper objectMapper;
 
 	@Autowired
-	PropertyRepository propertyRepository;
+	private PropertyRepository propertyRepository;
+	
+	@Autowired
+	private POWiseMmidDetailsRepository powseMmidDetailsRepository;
 
 	@Autowired
 	CommonUtil commonUtil;
@@ -254,15 +266,14 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 				om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 				response = om.readValue(res.getBody().toString(), PODetailsMainResponse.class);
 			}
-			
 			if(response!=null && response.getPurchaseorder()!=null &&  response.getPurchaseorder ().getLine_items() != null ) {
 				System.out.println("Hi kanak  "+ response.getPurchaseorder ().getLine_items().size());
-				
-				
-				
-				
+				createPODetails(response);
+				response.setCode("0");
+				response.setMessage("Success");
 			}else {
-				
+				response.setCode("1002");
+				response.setMessage("Resource does not exist.");
 			}
 		} catch (Exception e) {
 			if(e.getMessage().contains("404")) {
@@ -279,6 +290,139 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			}
 		}
 		return response;
+	}
+
+	private void createPODetails(PODetailsMainResponse resp) {
+
+		List<String> locationwisePOList = new ArrayList<String>();
+		ObjectMapper mapper = new ObjectMapper();
+
+		if (resp != null && resp.getPurchaseorder() != null) {
+			for (PODetailsLineItemResponse result1 : resp.getPurchaseorder().getLine_items()) {
+				locationwisePOList.add(result1.getSku());
+				POWiseMmidDetailsEntity kk = new POWiseMmidDetailsEntity();
+				kk.setMmId(result1.getSku());
+				kk.setPoId(resp.getPurchaseorder().getPurchaseorder_id());
+				kk.setPoReference(resp.getPurchaseorder().getPurchaseorder_number());
+				String jsonString = "";
+				try {
+					jsonString = mapper.writeValueAsString(result1);
+					kk.setMmidDetailsObject(jsonString);
+				} catch (JsonProcessingException e) {
+				}
+
+				System.out.println("HI lineItem == "+jsonString);
+				if (result1.getSku() != null) {
+					POWiseMmidDetailsEntity existingEntity = powseMmidDetailsRepository.findByMmId(result1.getSku());
+					if (existingEntity != null && existingEntity.getId() > 0) {
+						kk.setId(existingEntity.getId());
+						kk.setCreatedOn(existingEntity.getCreatedOn());
+					} else {
+						kk.setCreatedOn(new Date());
+						kk.setUpdatedOn(new Date());
+					}
+				}
+				powseMmidDetailsRepository.save(kk);
+			}
+		}
+	}
+
+	@Override
+	public PODetailsMainResponse postgrn(POIntegrationRequest req ) {
+		PODetailsMainResponse response = new PODetailsMainResponse();
+		ResponseEntity<String> res =null;
+		try {
+			RestTemplate restTemplate = new RestTemplate();
+			Map<String, String> propertyMap = commonUtil.getAllProperties();
+
+			HttpHeaders headers = new HttpHeaders();
+			headers.set("Content-Type", "application/json");
+			headers.set(propertyMap.get("post_grn_headerkey"), propertyMap.get("post_grn_headervalue"));
+			PoGrnMainRequest postGRN = prepareGRNRequest(req.getPoId()); 
+			String postGRNReq = objectMapper.writeValueAsString(postGRN);
+			
+			HttpEntity<String> request = new HttpEntity<>(postGRNReq, headers);
+			String url = propertyMap.get("post_grn_url");
+			System.out.println("url  is  == " + url  + ", postGRNReq - " + request);
+			res = restTemplate.exchange(url, HttpMethod.POST, request, String.class);
+			System.out.println("response is == " + res);
+			if (res.getBody() != null) {
+				ObjectMapper om = new ObjectMapper();
+				om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+				response = om.readValue(res.getBody().toString(), PODetailsMainResponse.class);
+			}
+			if(response!=null && response.getPurchaseorder()!=null &&  response.getPurchaseorder ().getLine_items() != null ) {
+				createPODetails(response);
+				response.setCode("0");
+				response.setMessage("Success");
+			}else {
+				response.setCode("1002");
+				response.setMessage("Resource does not exist.");
+			}
+		} catch (Exception e) {
+			System.out.println("Error response is == " + e.getMessage());
+			if(e.getMessage().contains("404")) {
+				response.setCode("1002");
+				response.setMessage("Resource does not exist.");
+			}
+			if(e.getMessage().contains("400")) {
+				response.setCode("4198");
+				response.setMessage("Invalid Params");
+			}
+			if(e.getMessage().contains("401")) {
+				response.setCode("57");
+				response.setMessage("You are not authorized to perform this operation");
+			}
+		}
+		return response;
+	}
+
+	private PoGrnMainRequest prepareGRNRequest(String poId) {
+
+		PoGrnMainRequest req = new PoGrnMainRequest();
+		List<PoGrnCustomType> customTypeList = new ArrayList<>();
+		List<PoGrnLineItem> line_items = new ArrayList<>();
+
+		List<POWiseMmidDetailsEntity> poDetails = powseMmidDetailsRepository.findByPoId(poId);
+		for (POWiseMmidDetailsEntity entity : poDetails) {
+			PoGrnCustomType customParam = new PoGrnCustomType();
+			try {
+				ObjectMapper om = new ObjectMapper();
+				om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+				PODetailsLineItemResponse lineItems = objectMapper.readValue(entity.getMmidDetailsObject(), PODetailsLineItemResponse.class);
+
+				Date fdate = new Date(); // example
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+				req.setPo_number(entity.getPoReference());
+				req.setBill_number(entity.getPoReference());
+				req.setReference_number(entity.getPoReference());
+				req.setDate(sdf.format(fdate));
+
+				customParam.setApi_name("cf_refrence_no");
+				customParam.setLabel(entity.getPoReference());
+				customParam.setData_type("Text Box (Single Line)");
+				customParam.setValue(entity.getPoReference());
+				customTypeList.add(customParam);
+
+				PoGrnLineItem lineItem = new PoGrnLineItem();
+				lineItem.setItem_id(lineItems.getLine_item_id());
+				lineItem.setPurchase_order_line_item_id("");
+				lineItem.setSku(lineItems.getSku());
+				lineItem.setRate(lineItems.getRate());
+				lineItem.setQuantity(lineItems.getQuantity());
+				lineItem.setHsn_or_sac(lineItems.getHsn_or_sac());
+				lineItem.setTax_id(lineItems.getTax_id());
+				line_items.add(lineItem);
+				req.setLine_items(line_items);
+				req.setCustom_type(customTypeList);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+			req.setLine_items( line_items);
+			req.setCustom_type(customTypeList);
+		}
+		return req;
 	}
 
 }

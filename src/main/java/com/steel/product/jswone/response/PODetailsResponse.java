@@ -15,6 +15,8 @@ public class PODetailsResponse {
 
 	private String company_name;
 
+	private String reference_number;
+
 	private String order_status;
 
 	private String billed_status;
