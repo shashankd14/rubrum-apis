@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import com.steel.product.jswone.request.MMIDReceiveMainRequest;
 import com.steel.product.jswone.request.POIntegrationRequest;
 import com.steel.product.jswone.response.PODetailsMainResponse;
+import com.steel.product.jswone.response.POWiseInwardListResponse;
 
 public interface JSWIntegrationService {
 
@@ -18,5 +19,7 @@ public interface JSWIntegrationService {
 	PODetailsMainResponse podetails(POIntegrationRequest request);
 
 	PODetailsMainResponse postgrn(POIntegrationRequest request);
+
+	List<POWiseInwardListResponse> poWiseInwardList(POIntegrationRequest request);
 
 }

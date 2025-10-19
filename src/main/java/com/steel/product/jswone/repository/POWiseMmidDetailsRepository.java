@@ -14,13 +14,11 @@ public interface POWiseMmidDetailsRepository extends JpaRepository<POWiseMmidDet
 
 	POWiseMmidDetailsEntity findByMmId(String sku);
 
-	@Query(value = "SELECT coilnumber,customerbatchid, pode.po_reference,pode.po_id, pode.mm_id, pode.mmid_details_object "
-			+ " from product_tblinwardentry inward, jsw_po_receive_dtls po,	jsw_powise_mmid_details pode "
-			+ " WHERE  inward.po_id = po.po_id and pode.po_id = po.po_id and "
-			+ " pode.mm_id = inward.mm_id and inward.po_id = pode.po_id and "
-			+ " inward.po_id = :poId ", nativeQuery = true)
-	List<Object[]> getInwardDetailsByPoId(String poId);
-
-	List<POWiseMmidDetailsEntity> findByPoId(@Param("poId") String poId);
+	@Query(value = "SELECT pode.po_reference, inward.po_id, inward.mm_id, pode.mmid_details_object, "
+			+ " coilnumber, customerbatchid from product_tblinwardentry inward, jsw_powise_mmid_details pode "
+			+ " WHERE pode.mm_id = inward.mm_id and inward.po_id = pode.po_id and "
+			+ " inward.customerinvoiceno = :customerinvoiceno ", 
+		nativeQuery = true)
+	List<Object[]> getInwardDetailsByPoId(@Param("customerinvoiceno") String customerinvoiceno);
 
 }

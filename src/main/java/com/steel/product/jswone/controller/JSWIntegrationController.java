@@ -18,6 +18,7 @@ import com.steel.product.jswone.request.POIntegrationRequest;
 import com.steel.product.jswone.response.PODetailsLineItemResponse;
 import com.steel.product.jswone.response.PODetailsMainResponse;
 import com.steel.product.jswone.response.POListResponse;
+import com.steel.product.jswone.response.POWiseInwardListResponse;
 import com.steel.product.jswone.service.JSWIntegrationService;
 
 @RestController
@@ -88,6 +89,21 @@ public class JSWIntegrationController {
 			response.put("code", resp.getCode());
 			response.put("message", resp.getMessage());
 			return new ResponseEntity<Object>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@PostMapping(value = "/xternal/powiseinwardlist", produces = "application/json")
+	public ResponseEntity<Object> poWiseInwardList(@RequestBody POIntegrationRequest request, HttpServletRequest httprequest) {
+		List<POWiseInwardListResponse> inwardList = service.poWiseInwardList(request);
+		Map<String, Object> response = new HashMap<>();
+		if (inwardList!=null && inwardList.size() > 0 ) {
+			response.put("code", "success");
+			response.put("message", "success");
+			return new ResponseEntity<Object>(inwardList, HttpStatus.OK);
+		} else {
+			response.put("code", "fail");
+			response.put("message","Data not available");
+			return new ResponseEntity<Object>(inwardList, HttpStatus.BAD_REQUEST);
 		}
 	}
 

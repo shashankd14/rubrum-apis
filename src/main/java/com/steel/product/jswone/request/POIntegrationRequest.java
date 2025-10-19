@@ -7,6 +7,8 @@ public class POIntegrationRequest {
 
 	private String poReference;
 
+	private String poInvoiceNo;
+
 	private String warehouseId;
 
 	private String poId;

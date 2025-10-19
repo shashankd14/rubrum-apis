@@ -8,7 +8,7 @@ import java.util.Date;
 @Data
 @Entity
 @Table(name = "jsw_warehouse_master")
-public class WarehouseLocationMappingJswEntity {
+public class WarehouseMasterJswEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
