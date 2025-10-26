@@ -1,25 +1,34 @@
 package com.steel.product.jswone.service;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
+
+import com.steel.product.application.dto.quality.ListPageSearchRequest;
 import com.steel.product.jswone.request.MMIDReceiveMainRequest;
-import com.steel.product.jswone.request.POIntegrationRequest;
+import com.steel.product.jswone.request.POSOIntegrationRequest;
 import com.steel.product.jswone.response.PODetailsMainResponse;
+import com.steel.product.jswone.response.POInvoiceListResponse;
 import com.steel.product.jswone.response.POWiseInwardListResponse;
 
 public interface JSWIntegrationService {
 
-	ResponseEntity<Object> poReceive(POIntegrationRequest request);
+	ResponseEntity<Object> poReceive(POSOIntegrationRequest request);
 
 	ResponseEntity<Object> mmidreceive(MMIDReceiveMainRequest request);
 
-	List<Object[]> locationwisePOList(POIntegrationRequest request);
+	List<Object[]> locationwisePOList(POSOIntegrationRequest request);
 
-	PODetailsMainResponse podetails(POIntegrationRequest request);
+	PODetailsMainResponse podetails(POSOIntegrationRequest request);
 
-	PODetailsMainResponse postgrn(POIntegrationRequest request);
+	PODetailsMainResponse postgrn(POSOIntegrationRequest request);
 
-	List<POWiseInwardListResponse> poWiseInwardList(POIntegrationRequest request);
+	List<POWiseInwardListResponse> poWiseInwardList(POSOIntegrationRequest request);
 
+	ResponseEntity<Object> soReceive(POSOIntegrationRequest request);
+
+	List<Object[]> locationwiseSOList(POSOIntegrationRequest request);
+
+	Map<String, Object> allpoinvlist(ListPageSearchRequest listPageSearchRequest);
 }

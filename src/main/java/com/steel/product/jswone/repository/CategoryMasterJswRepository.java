@@ -11,7 +11,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import com.steel.product.jswone.entity.CategoryMasterJswEntity;
-import com.steel.product.trading.entity.CategoryEntity;
 
 @Repository
 public interface CategoryMasterJswRepository extends JpaRepository<CategoryMasterJswEntity, Integer> {

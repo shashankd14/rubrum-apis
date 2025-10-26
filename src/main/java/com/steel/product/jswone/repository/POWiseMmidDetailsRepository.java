@@ -2,6 +2,8 @@ package com.steel.product.jswone.repository;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -21,4 +23,19 @@ public interface POWiseMmidDetailsRepository extends JpaRepository<POWiseMmidDet
 		nativeQuery = true)
 	List<Object[]> getInwardDetailsByPoId(@Param("customerinvoiceno") String customerinvoiceno);
 
+	@Query(value = "SELECT distinct inward.customerinvoiceno, inward.zoho_sync_stts from product_tblinwardentry inward where 1=1", 
+		nativeQuery = true)
+	List<Object[]> allpoinvlists();
+
+	@Query(value = "SELECT distinct inward.customerinvoiceno, inward.zoho_sync_stts "
+			+ " from product_tblinwardentry inward "
+			+ " where case when :searchText is not null and LENGTH(:searchText) >0 then (inward.customerinvoiceno like %:searchText%) else 1=1 end " 
+			+ " order by inwardentryid desc",
+		countQuery = "SELECT count(distinct inward.customerinvoiceno) from product_tblinwardentry inward  " + 
+				 " where case when :searchText is not null and LENGTH(:searchText) >0 then (inward.customerinvoiceno like %:searchText%) else 1=1 end ", 
+		nativeQuery = true)
+	Page<Object[]> allpoinvlist(@Param("searchText") String searchText, Pageable pageable);
+	
+	
+	
 }

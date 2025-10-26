@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 @Entity
 @Table(name = "product_tblinwardentry")
 public class InwardEntry {
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "inwardentryid")
@@ -173,6 +174,9 @@ public class InwardEntry {
 	
 	@Column(name = "invoicecopy_fileurl")
 	private String invoicecopyFileurl;
+
+	@Column(name = "zohoSyncStts")
+	private String zoho_sync_stts;
 
 	public void addInstruction(Instruction instruction){
 		if(this.instructions == null){

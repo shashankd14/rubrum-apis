@@ -3,9 +3,13 @@ package com.steel.product.jswone.request;
 import lombok.Data;
 
 @Data
-public class POIntegrationRequest {
+public class POSOIntegrationRequest {
 
 	private String poReference;
+
+	private String soNo;
+
+	private String soId;
 
 	private String poInvoiceNo;
 

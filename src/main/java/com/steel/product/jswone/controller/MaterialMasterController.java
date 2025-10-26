@@ -36,7 +36,7 @@ public class MaterialMasterController {
 
 	@Autowired
 	private MaterialMasterJswService materialService;
-
+	
 	@Autowired
 	private LocationService locationService;
 

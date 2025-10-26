@@ -3,23 +3,27 @@ package com.steel.product.jswone.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.steel.product.application.dto.quality.ListPageSearchRequest;
 import com.steel.product.application.util.CommonUtil;
 import com.steel.product.jswone.entity.MaterialMasterFileDataEntity;
 import com.steel.product.jswone.entity.MaterialMasterJswEntity;
 import com.steel.product.jswone.entity.POReceiveDetailsEntity;
 import com.steel.product.jswone.entity.POWiseMmidDetailsEntity;
+import com.steel.product.jswone.entity.SOReceiveDetailsEntity;
 import com.steel.product.jswone.entity.WarehouseMasterJswEntity;
 import com.steel.product.jswone.repository.MaterialMasterFiledataRepository;
 import com.steel.product.jswone.repository.MaterialMasterJswRepository;
 import com.steel.product.jswone.repository.POReceiveDetailsRepository;
 import com.steel.product.jswone.repository.POWiseMmidDetailsRepository;
+import com.steel.product.jswone.repository.SOReceiveDetailsRepository;
 import com.steel.product.jswone.repository.WarehouseMasterRepository;
 import com.steel.product.jswone.request.ApiResponse;
 import com.steel.product.jswone.request.MMIDReceiveMainRequest;
 import com.steel.product.jswone.request.MaterialMasterFileDataDTO;
-import com.steel.product.jswone.request.POIntegrationRequest;
+import com.steel.product.jswone.request.POSOIntegrationRequest;
 import com.steel.product.jswone.response.PODetailsLineItemResponse;
 import com.steel.product.jswone.response.PODetailsMainResponse;
+import com.steel.product.jswone.response.POInvoiceListResponse;
 import com.steel.product.jswone.response.POWiseInwardListResponse;
 import com.steel.product.jswone.response.PoGrnCustomType;
 import com.steel.product.jswone.response.PoGrnLineItem;
@@ -30,11 +34,15 @@ import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -50,6 +58,9 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 
 	@Autowired
 	private POReceiveDetailsRepository poReceiveDetailsRepository;
+
+	@Autowired
+	private SOReceiveDetailsRepository soReceiveDetailsRepository;
 	
 	@Autowired
 	private WarehouseMasterRepository warehouseMasterRepository;
@@ -73,7 +84,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 	CommonUtil commonUtil;
 
 	@Override
-	public ResponseEntity<Object> poReceive(POIntegrationRequest request) {
+	public ResponseEntity<Object> poReceive(POSOIntegrationRequest request) {
 		log.info("******JSWIntegrationServiceImpl.poReceive*****");
 		POReceiveDetailsEntity entity = new POReceiveDetailsEntity();
 		HttpHeaders headers = new HttpHeaders();
@@ -126,6 +137,60 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			return new ResponseEntity<Object>(
 					"{\"status\": \"fail\",\"message\":\"" + e.getMessage() + "\", \"referenceNo\":\"\"}",
 					HttpStatus.BAD_REQUEST);
+		}
+	}
+
+	@Override
+	public ResponseEntity<Object> soReceive(POSOIntegrationRequest request) {
+		log.info("******JSWIntegrationServiceImpl.soReceive*****");
+		SOReceiveDetailsEntity entity = new SOReceiveDetailsEntity();
+		HttpHeaders headers = new HttpHeaders();
+		headers.set("Content-Type", "application/json");
+		log.info("obj.getReqObj() == " + request);
+		String message = "SO details received successfully";
+		List<String > errorList =new ArrayList<>();
+		try {
+			if (!(request.getSoNo() != null && request.getSoNo().length() > 0)) {
+				errorList.add("SoNo");
+			}
+			if (request.getWarehouseId() != null && request.getWarehouseId().length() > 0) {
+				List<WarehouseMasterJswEntity> duplentity = warehouseMasterRepository.findByWareHouseId(request.getWarehouseId());
+				if (!(duplentity != null && duplentity.size() > 0)) {
+					errorList.add("WarehouseId details not available");
+				}
+			} else {
+				errorList.add("WarehouseId");
+			}
+			if (!(request.getStatus() != null && request.getStatus().length() > 0)) {
+				errorList.add("Status");
+			}
+			if (!(request.getSoId() != null && request.getSoId().length() > 0)) {
+				errorList.add("SoId");
+			}
+			if (errorList != null && errorList.size() > 0) {
+				return new ResponseEntity<Object>(
+						"{\"code\": \"6024\",\"message\":\" Invalid Params\", \"error_info\":\""
+								+ String.join(", ", errorList) + "\"}", headers, HttpStatus.BAD_REQUEST);
+			}
+			
+			SOReceiveDetailsEntity duplentity = soReceiveDetailsRepository.findBySoNo(request.getPoReference());
+			if (duplentity != null && duplentity.getId() > 0) {
+				entity.setId(duplentity.getId());
+				message = "SO details received successfully";
+				entity.setUpdatedOn(new Date());
+				entity.setCreatedOn(duplentity.getCreatedOn());
+			} else {
+				entity.setCreatedOn(new Date());
+			}
+			entity.setSoNo(request.getSoNo());
+			entity.setWarehouseId(request.getWarehouseId());
+			entity.setSoId(request.getSoId());
+			entity.setSoStatus(request.getStatus());
+			entity.setIpAddress(request.getIpAddress());
+			entity = soReceiveDetailsRepository.save(entity);
+			return new ResponseEntity<Object>("{\"code\": \"0\",\"message\":\"" + message+ "\", \"referenceNo\":\"" + entity.getId() + "\"}", headers, HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<Object>("{\"status\": \"fail\",\"message\":\"" + e.getMessage() + "\", \"referenceNo\":\"\"}", HttpStatus.BAD_REQUEST);
 		}
 	}
 
@@ -263,13 +328,19 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 	}
 
 	@Override
-	public List<Object[]> locationwisePOList(POIntegrationRequest request) {
+	public List<Object[]> locationwisePOList(POSOIntegrationRequest request) {
 		List<Object[]> locationwisePOList = poReceiveDetailsRepository.locationwisePOList(request.getLocationId());
 		return locationwisePOList;
 	}
 
 	@Override
-	public PODetailsMainResponse podetails(POIntegrationRequest requ) {
+	public List<Object[]> locationwiseSOList(POSOIntegrationRequest request) {
+		List<Object[]> locationwisePOList = soReceiveDetailsRepository.locationwiseSOList(request.getLocationId());
+		return locationwisePOList;
+	}
+
+	@Override
+	public PODetailsMainResponse podetails(POSOIntegrationRequest requ) {
 		PODetailsMainResponse response = new PODetailsMainResponse();
 		try {
 			RestTemplate restTemplate = new RestTemplate();
@@ -352,7 +423,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 	}
 
 	@Override
-	public PODetailsMainResponse postgrn(POIntegrationRequest req ) {
+	public PODetailsMainResponse postgrn(POSOIntegrationRequest req ) {
 		PODetailsMainResponse response = new PODetailsMainResponse();
 		ResponseEntity<String> res =null;
 		try {
@@ -460,7 +531,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 	}
 
 	@Override
-	public List<POWiseInwardListResponse> poWiseInwardList(POIntegrationRequest request) {
+	public List<POWiseInwardListResponse> poWiseInwardList(POSOIntegrationRequest request) {
 		List<POWiseInwardListResponse> inwardList = new ArrayList<>();
 		List<Object[]> poDetails = powseMmidDetailsRepository.getInwardDetailsByPoId(request.getPoInvoiceNo());
 		for (Object[] result : poDetails) {
@@ -473,6 +544,31 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			inwardList.add(kk);
 		}
 		return inwardList;
+	}
+	
+	@Override
+	public Map<String, Object> allpoinvlist(ListPageSearchRequest listPageSearchRequest) {
+
+		Pageable pageable = PageRequest.of((listPageSearchRequest.getPageNo() - 1),
+				listPageSearchRequest.getPageSize());
+
+		List<POInvoiceListResponse> inwardList = new ArrayList<>();
+		Page<Object[]> poDetails = powseMmidDetailsRepository.allpoinvlist(listPageSearchRequest.getSearchText(),
+				pageable);
+
+		for (Object[] result : poDetails) {
+			POInvoiceListResponse kk = new POInvoiceListResponse();
+			kk.setPoInvoiceNo(result[0] != null ? result[0].toString() : null);
+			kk.setPoInvSyncStatus(result[1] != null ? result[1].toString() : "PENDING");
+			inwardList.add(kk);
+		}
+
+		Map<String, Object> response = new HashMap<>();
+		response.put("content", inwardList);
+		response.put("currentPage", poDetails.getNumber());
+		response.put("totalItems", poDetails.getTotalElements());
+		response.put("totalPages", poDetails.getTotalPages());
+		return response;
 	}
 
 }

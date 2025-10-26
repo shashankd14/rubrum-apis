@@ -13,12 +13,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import com.steel.product.application.dto.quality.ListPageSearchRequest;
 import com.steel.product.jswone.request.MMIDReceiveMainRequest;
-import com.steel.product.jswone.request.POIntegrationRequest;
+import com.steel.product.jswone.request.POSOIntegrationRequest;
 import com.steel.product.jswone.response.PODetailsLineItemResponse;
 import com.steel.product.jswone.response.PODetailsMainResponse;
 import com.steel.product.jswone.response.POListResponse;
 import com.steel.product.jswone.response.POWiseInwardListResponse;
+import com.steel.product.jswone.response.SOListResponse;
 import com.steel.product.jswone.service.JSWIntegrationService;
 
 @RestController
@@ -30,7 +33,7 @@ public class JSWIntegrationController {
 	private JSWIntegrationService service;
 
 	@PostMapping(value = "/xternal/poreceive", produces = "application/json")
-	public ResponseEntity<Object> poreceive(@RequestBody POIntegrationRequest request, HttpServletRequest httprequest) {
+	public ResponseEntity<Object> poreceive(@RequestBody POSOIntegrationRequest request, HttpServletRequest httprequest) {
 		String ipAddress = httprequest.getRemoteAddr();
 		request.setIpAddress(ipAddress);
 		return service.poReceive(request);
@@ -42,8 +45,16 @@ public class JSWIntegrationController {
 		return service.mmidreceive(request);
 	}
 
+
+	@PostMapping(value = "/xternal/soreceive", produces = "application/json")
+	public ResponseEntity<Object> soreceive(@RequestBody POSOIntegrationRequest request, HttpServletRequest httprequest) {
+		String ipAddress = httprequest.getRemoteAddr();
+		request.setIpAddress(ipAddress);
+		return service.soReceive(request);
+	}
+
 	@PostMapping(value = "/location/warehouse/polist", produces = "application/json")
-	public ResponseEntity<Object> locationwisePOList(@RequestBody POIntegrationRequest request,
+	public ResponseEntity<Object> locationwisePOList(@RequestBody POSOIntegrationRequest request,
 			HttpServletRequest httprequest) {
 		List<Object[]> locationwisePOList1 = service.locationwisePOList(request);
 		List<POListResponse> locationwisePOList = new ArrayList<POListResponse>();
@@ -57,8 +68,23 @@ public class JSWIntegrationController {
 		return new ResponseEntity<Object>(locationwisePOList, HttpStatus.OK);
 	}
 
+	@PostMapping(value = "/location/warehouse/solist", produces = "application/json")
+	public ResponseEntity<Object> locationwiseSOList(@RequestBody POSOIntegrationRequest request,
+			HttpServletRequest httprequest) {
+		List<Object[]> locationwisePOList1 = service.locationwiseSOList(request);
+		List<SOListResponse> locationwisePOList = new ArrayList<SOListResponse>();
+
+		for (Object[] result : locationwisePOList1) {
+			SOListResponse resp = new SOListResponse();
+			resp.setSoNo(result[0] != null ? (String) result[0] : null);
+			resp.setSoId(result[1] != null ? (String) result[1] : null);
+			locationwisePOList.add(resp);
+		}
+		return new ResponseEntity<Object>(locationwisePOList, HttpStatus.OK);
+	}
+
 	@PostMapping(value = "/xternal/podetails", produces = "application/json")
-	public ResponseEntity<Object> poDetails(@RequestBody POIntegrationRequest request,
+	public ResponseEntity<Object> poDetails(@RequestBody POSOIntegrationRequest request,
 			HttpServletRequest httprequest) {
 		PODetailsMainResponse resp = service.podetails(request);
 		List<String> locationwisePOList = new ArrayList<String>();
@@ -78,7 +104,7 @@ public class JSWIntegrationController {
 	}
 
 	@PostMapping(value = "/xternal/postgrn", produces = "application/json")
-	public ResponseEntity<Object> postgrn(@RequestBody POIntegrationRequest request, HttpServletRequest httprequest) {
+	public ResponseEntity<Object> postgrn(@RequestBody POSOIntegrationRequest request, HttpServletRequest httprequest) {
 		PODetailsMainResponse resp = service.postgrn(request);
 		Map<String, Object> response = new HashMap<>();
 		if ("0".equals(resp.getCode())) {
@@ -93,7 +119,7 @@ public class JSWIntegrationController {
 	}
 
 	@PostMapping(value = "/xternal/powiseinwardlist", produces = "application/json")
-	public ResponseEntity<Object> poWiseInwardList(@RequestBody POIntegrationRequest request, HttpServletRequest httprequest) {
+	public ResponseEntity<Object> poWiseInwardList(@RequestBody POSOIntegrationRequest request, HttpServletRequest httprequest) {
 		List<POWiseInwardListResponse> inwardList = service.poWiseInwardList(request);
 		Map<String, Object> response = new HashMap<>();
 		if (inwardList!=null && inwardList.size() > 0 ) {
@@ -105,6 +131,12 @@ public class JSWIntegrationController {
 			response.put("message","Data not available");
 			return new ResponseEntity<Object>(inwardList, HttpStatus.BAD_REQUEST);
 		}
+	}
+
+	@PostMapping(value = "/xternal/allpoinvlist", produces = "application/json")
+	public ResponseEntity<Object> allpoinvlist(@RequestBody ListPageSearchRequest listPageSearchRequest) {
+		Map<String, Object> response = service.allpoinvlist(listPageSearchRequest);
+		return new ResponseEntity<Object>(response, HttpStatus.OK);
 	}
 
 }
