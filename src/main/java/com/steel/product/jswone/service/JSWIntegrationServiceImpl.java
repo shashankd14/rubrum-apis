@@ -3,6 +3,7 @@ package com.steel.product.jswone.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.dto.quality.ListPageSearchRequest;
 import com.steel.product.application.util.CommonUtil;
 import com.steel.product.jswone.entity.MaterialMasterFileDataEntity;
@@ -27,16 +28,17 @@ import com.steel.product.jswone.response.POInvoiceListResponse;
 import com.steel.product.jswone.response.POWiseInwardListResponse;
 import com.steel.product.jswone.response.PoGrnCustomType;
 import com.steel.product.jswone.response.PoGrnLineItem;
+import com.steel.product.jswone.response.PoGrnLineItemBatches;
 import com.steel.product.jswone.response.PoGrnMainRequest;
 import lombok.extern.log4j.Log4j2;
 
 import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,10 +63,10 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 
 	@Autowired
 	private SOReceiveDetailsRepository soReceiveDetailsRepository;
-	
+
 	@Autowired
 	private WarehouseMasterRepository warehouseMasterRepository;
-	
+
 	@Autowired
 	private MaterialMasterFiledataRepository repository;
 
@@ -81,6 +83,9 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 	private POWiseMmidDetailsRepository powseMmidDetailsRepository;
 
 	@Autowired
+	private InwardEntryRepository inwardEntryRepository;
+
+	@Autowired
 	CommonUtil commonUtil;
 
 	@Override
@@ -91,13 +96,14 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 		headers.set("Content-Type", "application/json");
 		log.info("obj.getReqObj() == " + request);
 		String message = "PO details saved successfully";
-		List<String > errorList =new ArrayList<>();
+		List<String> errorList = new ArrayList<>();
 		try {
 			if (!(request.getPoReference() != null && request.getPoReference().length() > 0)) {
 				errorList.add("PoReference");
 			}
 			if (request.getWarehouseId() != null && request.getWarehouseId().length() > 0) {
-				List<WarehouseMasterJswEntity> duplentity = warehouseMasterRepository.findByWareHouseId(request.getWarehouseId());
+				List<WarehouseMasterJswEntity> duplentity = warehouseMasterRepository
+						.findByWareHouseId(request.getWarehouseId());
 				if (!(duplentity != null && duplentity.size() > 0)) {
 					errorList.add("WarehouseId details not available");
 				}
@@ -113,9 +119,10 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			if (errorList != null && errorList.size() > 0) {
 				return new ResponseEntity<Object>(
 						"{\"code\": \"6024\",\"message\":\" Invalid Params\", \"error_info\":\""
-								+ String.join(", ", errorList) + "\"}", headers, HttpStatus.BAD_REQUEST);
+								+ String.join(", ", errorList) + "\"}",
+						headers, HttpStatus.BAD_REQUEST);
 			}
-			
+
 			POReceiveDetailsEntity duplentity = poReceiveDetailsRepository.findByPoReference(request.getPoReference());
 			if (duplentity != null && duplentity.getId() > 0) {
 				entity.setId(duplentity.getId());
@@ -131,8 +138,9 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			entity.setPoStatus(request.getStatus());
 			entity.setIpAddress(request.getIpAddress());
 			entity = poReceiveDetailsRepository.save(entity);
-			return new ResponseEntity<Object>("{\"code\": \"0\",\"message\":\"" + message
-					+ "\", \"referenceNo\":\"" + entity.getId() + "\"}", headers, HttpStatus.OK);
+			return new ResponseEntity<Object>(
+					"{\"code\": \"0\",\"message\":\"" + message + "\", \"referenceNo\":\"" + entity.getId() + "\"}",
+					headers, HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity<Object>(
 					"{\"status\": \"fail\",\"message\":\"" + e.getMessage() + "\", \"referenceNo\":\"\"}",
@@ -148,13 +156,14 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 		headers.set("Content-Type", "application/json");
 		log.info("obj.getReqObj() == " + request);
 		String message = "SO details received successfully";
-		List<String > errorList =new ArrayList<>();
+		List<String> errorList = new ArrayList<>();
 		try {
 			if (!(request.getSoNo() != null && request.getSoNo().length() > 0)) {
 				errorList.add("SoNo");
 			}
 			if (request.getWarehouseId() != null && request.getWarehouseId().length() > 0) {
-				List<WarehouseMasterJswEntity> duplentity = warehouseMasterRepository.findByWareHouseId(request.getWarehouseId());
+				List<WarehouseMasterJswEntity> duplentity = warehouseMasterRepository
+						.findByWareHouseId(request.getWarehouseId());
 				if (!(duplentity != null && duplentity.size() > 0)) {
 					errorList.add("WarehouseId details not available");
 				}
@@ -170,9 +179,10 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			if (errorList != null && errorList.size() > 0) {
 				return new ResponseEntity<Object>(
 						"{\"code\": \"6024\",\"message\":\" Invalid Params\", \"error_info\":\""
-								+ String.join(", ", errorList) + "\"}", headers, HttpStatus.BAD_REQUEST);
+								+ String.join(", ", errorList) + "\"}",
+						headers, HttpStatus.BAD_REQUEST);
 			}
-			
+
 			SOReceiveDetailsEntity duplentity = soReceiveDetailsRepository.findBySoNo(request.getPoReference());
 			if (duplentity != null && duplentity.getId() > 0) {
 				entity.setId(duplentity.getId());
@@ -188,9 +198,13 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			entity.setSoStatus(request.getStatus());
 			entity.setIpAddress(request.getIpAddress());
 			entity = soReceiveDetailsRepository.save(entity);
-			return new ResponseEntity<Object>("{\"code\": \"0\",\"message\":\"" + message+ "\", \"referenceNo\":\"" + entity.getId() + "\"}", headers, HttpStatus.OK);
+			return new ResponseEntity<Object>(
+					"{\"code\": \"0\",\"message\":\"" + message + "\", \"referenceNo\":\"" + entity.getId() + "\"}",
+					headers, HttpStatus.OK);
 		} catch (Exception e) {
-			return new ResponseEntity<Object>("{\"status\": \"fail\",\"message\":\"" + e.getMessage() + "\", \"referenceNo\":\"\"}", HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<Object>(
+					"{\"status\": \"fail\",\"message\":\"" + e.getMessage() + "\", \"referenceNo\":\"\"}",
+					HttpStatus.BAD_REQUEST);
 		}
 	}
 
@@ -321,9 +335,8 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			return new ResponseEntity<Object>(response, HttpStatus.OK);
 		} catch (Exception e) {
 			// e.printStackTrace();
-			return new ResponseEntity<Object>(
-					"{\"code\": \"404\", \"message\": \"Failed to save the MMID details\"}", new HttpHeaders(),
-					HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<Object>("{\"code\": \"404\", \"message\": \"Failed to save the MMID details\"}",
+					new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
@@ -351,7 +364,8 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			headers.set("Authorization", propertyMap.get("podetails_Authorization"));
 			HttpEntity<String> request = new HttpEntity<>("{}", headers);
 			String url = propertyMap.get("podetails_url") + "?purchaseorder_id=" + requ.getPoId();
-			//String url = "https://tigios.techurate.com/mockapi/jsontoxml/execute/jswone/podetails/1.1";
+			// String url =
+			// "https://tigios.techurate.com/mockapi/jsontoxml/execute/jswone/podetails/1.1";
 			System.out.println("request is  == " + request + ", url - " + url);
 			System.out.println(" url - " + url);
 			ResponseEntity<String> res = restTemplate.exchange(url, HttpMethod.GET, request, String.class);
@@ -361,25 +375,26 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 				om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 				response = om.readValue(res.getBody().toString(), PODetailsMainResponse.class);
 			}
-			if(response!=null && response.getPurchaseorder()!=null &&  response.getPurchaseorder ().getLine_items() != null ) {
-				System.out.println("Hi kanak  "+ response.getPurchaseorder ().getLine_items().size());
+			if (response != null && response.getPurchaseorder() != null
+					&& response.getPurchaseorder().getLine_items() != null) {
+				System.out.println("Hi kanak  " + response.getPurchaseorder().getLine_items().size());
 				createPODetails(response);
 				response.setCode("0");
 				response.setMessage("Success");
-			}else {
+			} else {
 				response.setCode("1002");
 				response.setMessage("Resource does not exist.");
 			}
 		} catch (Exception e) {
-			if(e.getMessage().contains("404")) {
+			if (e.getMessage().contains("404")) {
 				response.setCode("1002");
 				response.setMessage("Resource does not exist.");
 			}
-			if(e.getMessage().contains("400")) {
+			if (e.getMessage().contains("400")) {
 				response.setCode("6024");
 				response.setMessage("Invalid Params");
 			}
-			if(e.getMessage().contains("401")) {
+			if (e.getMessage().contains("401")) {
 				response.setCode("57");
 				response.setMessage("You are not authorized to perform this operation");
 			}
@@ -406,7 +421,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 				} catch (JsonProcessingException e) {
 				}
 
-				System.out.println("HI lineItem == "+jsonString);
+				System.out.println("HI lineItem == " + jsonString);
 				if (result1.getSku() != null) {
 					POWiseMmidDetailsEntity existingEntity = powseMmidDetailsRepository.findByMmId(result1.getSku());
 					if (existingEntity != null && existingEntity.getId() > 0) {
@@ -423,9 +438,9 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 	}
 
 	@Override
-	public PODetailsMainResponse postgrn(POSOIntegrationRequest req ) {
+	public PODetailsMainResponse postgrn(POSOIntegrationRequest req) {
 		PODetailsMainResponse response = new PODetailsMainResponse();
-		ResponseEntity<String> res =null;
+		ResponseEntity<String> res = null;
 		try {
 			RestTemplate restTemplate = new RestTemplate();
 			Map<String, String> propertyMap = commonUtil.getAllProperties();
@@ -433,12 +448,12 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			HttpHeaders headers = new HttpHeaders();
 			headers.set("Content-Type", "application/json");
 			headers.set(propertyMap.get("post_grn_headerkey"), propertyMap.get("post_grn_headervalue"));
-			PoGrnMainRequest postGRN = prepareGRNRequest(req.getPoInvoiceNo()); 
+			PoGrnMainRequest postGRN = prepareGRNRequest(req.getPoInvoiceNo());
 			String postGRNReq = objectMapper.writeValueAsString(postGRN);
-			
+
 			HttpEntity<String> request = new HttpEntity<>(postGRNReq, headers);
 			String url = propertyMap.get("post_grn_url");
-			System.out.println("url  is  == " + url  + ", postGRNReq - " + request);
+			System.out.println("url  is  == " + url + ", postGRNReq - " + request);
 			res = restTemplate.exchange(url, HttpMethod.POST, request, String.class);
 			System.out.println("response is == " + res);
 			if (res.getBody() != null) {
@@ -446,25 +461,26 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 				om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 				response = om.readValue(res.getBody().toString(), PODetailsMainResponse.class);
 			}
-			if(response!=null && response.getPurchaseorder()!=null &&  response.getPurchaseorder ().getLine_items() != null ) {
+			if (response != null && response.getPurchaseorder() != null
+					&& response.getPurchaseorder().getLine_items() != null) {
 				createPODetails(response);
 				response.setCode("0");
 				response.setMessage("Success");
-			}else {
+			} else {
 				response.setCode("1002");
 				response.setMessage("Resource does not exist.");
 			}
 		} catch (Exception e) {
 			System.out.println("Error response is == " + e.getMessage());
-			if(e.getMessage().contains("404")) {
+			if (e.getMessage().contains("404")) {
 				response.setCode("1002");
 				response.setMessage("Resource does not exist.");
 			}
-			if(e.getMessage().contains("400")) {
+			if (e.getMessage().contains("400")) {
 				response.setCode("4198");
 				response.setMessage("Invalid Params");
 			}
-			if(e.getMessage().contains("401")) {
+			if (e.getMessage().contains("401")) {
 				response.setCode("57");
 				response.setMessage("You are not authorized to perform this operation");
 			}
@@ -483,69 +499,80 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 
 		List<Object[]> poDetails = powseMmidDetailsRepository.getInwardDetailsByPoId(poId);
 		for (Object[] result : poDetails) {
+			List<PoGrnLineItemBatches> batches = new ArrayList<>();
 			PoGrnCustomType customParam = new PoGrnCustomType();
 
 			String po_reference = (result[0] != null ? result[0].toString() : null);
-			String po_id = (result[1] != null ? result[1].toString() : null);
-			String mm_id = (result[2] != null ? result[2].toString() : null);
+			// String po_id = (result[1] != null ? result[1].toString() : null);
+			// String mm_id = (result[2] != null ? result[2].toString() : null);
 			String mmid_details_object = (result[3] != null ? result[3].toString() : null);
-			String coilNumber = (result[4] != null ? result[4].toString() : null);
-			String cuatBatchNo = (result[5] != null ? result[5].toString() : null);
+			String poinvno = (result[4] != null ? result[4].toString() : null);
+			String custBatchNo = (result[5] != null ? result[5].toString() : null);
+			String postdate = (result[6] != null ? result[6].toString() : null);
+			BigDecimal fquantity = (result[7] != null ? new BigDecimal(result[7].toString()) : null);
 
+			PODetailsLineItemResponse lineItems = new PODetailsLineItemResponse();
 			try {
-				ObjectMapper om = new ObjectMapper();
-				om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-				PODetailsLineItemResponse lineItems = objectMapper.readValue(mmid_details_object, PODetailsLineItemResponse.class);
-
-				Date fdate = new Date(); // example
-				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-				req.setPo_number(po_reference);
-				req.setBill_number(po_reference);
-				req.setReference_number(po_reference);
-				req.setDate(sdf.format(fdate));
-
-				customParam.setApi_name("cf_refrence_no");
-				customParam.setLabel(po_reference);
-				customParam.setData_type("Text Box (Single Line)");
-				customParam.setValue(po_reference);
-				customTypeList.add(customParam);
-
-				PoGrnLineItem lineItem = new PoGrnLineItem();
-				lineItem.setItem_id(lineItems.getLine_item_id());
-				lineItem.setPurchase_order_line_item_id("");
-				lineItem.setSku(lineItems.getSku());
-				lineItem.setRate(lineItems.getRate());
-				lineItem.setQuantity(lineItems.getQuantity());
-				lineItem.setHsn_or_sac(lineItems.getHsn_or_sac());
-				lineItem.setTax_id(lineItems.getTax_id());
-				line_items.add(lineItem);
-				req.setLine_items(line_items);
-				req.setCustom_type(customTypeList);
+				lineItems = objectMapper.readValue(mmid_details_object, PODetailsLineItemResponse.class);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			req.setLine_items( line_items);
-			req.setCustom_type(customTypeList);
+			req.setPo_number(po_reference);
+			req.setBill_number(poinvno);
+			req.setReference_number(po_reference);
+			req.setDate(postdate);
+
+			customParam.setApi_name("cf_refrence_no");
+			customParam.setLabel("Refrence No");
+			customParam.setData_type("Text Box (Single Line)");
+			customParam.setValue("");
+			customTypeList.add(customParam);
+
+			PoGrnLineItem lineItem = new PoGrnLineItem();
+			lineItem.setItem_id(lineItems.getItem_id());
+			lineItem.setPurchase_order_line_item_id(lineItems.getLine_item_id());
+			lineItem.setSku(lineItems.getSku());
+			lineItem.setRate(lineItems.getRate());
+			lineItem.setQuantity(fquantity);
+			lineItem.setHsn_or_sac(lineItems.getHsn_or_sac());
+			lineItem.setTax_id(lineItems.getTax_id());
+			PoGrnLineItemBatches batchObj = new PoGrnLineItemBatches();
+			batchObj.setBatch_number(custBatchNo);
+			batchObj.setIn_quantity(fquantity);
+			batches.add(batchObj);
+			lineItem.setBatches(batches);
+			line_items.add(lineItem);
 		}
+		req.setLine_items(line_items);
+		req.setCustom_fields(customTypeList);
 		return req;
 	}
 
 	@Override
-	public List<POWiseInwardListResponse> poWiseInwardList(POSOIntegrationRequest request) {
+	public Map<String, Object> poWiseInwardList(POSOIntegrationRequest request) {
 		List<POWiseInwardListResponse> inwardList = new ArrayList<>();
-		List<Object[]> poDetails = powseMmidDetailsRepository.getInwardDetailsByPoId(request.getPoInvoiceNo());
+		List<Object[]> poDetails = powseMmidDetailsRepository.poWiseInwardList(request.getPoInvoiceNo());
 		for (Object[] result : poDetails) {
 			POWiseInwardListResponse kk = new POWiseInwardListResponse();
 			kk.setPoReference(result[0] != null ? result[0].toString() : null);
 			kk.setPoId(result[1] != null ? result[1].toString() : null);
 			kk.setMmId(result[2] != null ? result[2].toString() : null);
-			kk.setCoilNumber(result[4] != null ? result[4].toString() : null);
-			kk.setCustomerBatchId(result[5] != null ? result[5].toString() : null);
+			kk.setCoilNumber(result[3] != null ? result[3].toString() : null);
+			kk.setCustomerBatchId(result[4] != null ? result[4].toString() : null);
+			kk.setPostingDate(result[5] != null ? result[5].toString() : null);
+			kk.setMmDesc(result[6] != null ? result[6].toString() : null);
+			kk.setQty(result[7] != null ? result[7].toString() : null);
 			inwardList.add(kk);
 		}
-		return inwardList;
+
+		Map<String, Object> response = new HashMap<>();
+		response.put("content", inwardList);
+		response.put("currentPage", 1);
+		response.put("totalItems", inwardList.size());
+		response.put("totalPages", 1);
+		return response;
 	}
-	
+
 	@Override
 	public Map<String, Object> allpoinvlist(ListPageSearchRequest listPageSearchRequest) {
 
@@ -569,6 +596,40 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 		response.put("totalItems", poDetails.getTotalElements());
 		response.put("totalPages", poDetails.getTotalPages());
 		return response;
+	}
+
+	@Override
+	public ResponseEntity<Object> coilSyncStts(List<POSOIntegrationRequest> request) {
+		log.info("******JSWIntegrationServiceImpl.coilSyncStts*****");
+		Map<String, String> sttsMap = new HashMap<>();
+		try {
+			for (POSOIntegrationRequest obj : request) {
+				String batchNo = obj.getCustomerBatchNo();
+				if (batchNo != null) {
+					String value = inwardEntryRepository.isCustomerBatchIdPresent(batchNo);
+					if (value != null && !value.isEmpty()) {
+						int cnt = inwardEntryRepository.updateZohoSyncStatus(batchNo, obj.getZohoSyncStatus());
+						if (cnt > 0) {
+							sttsMap.put(batchNo, "Status Updated Successfully.");
+						} else {
+							sttsMap.put(batchNo, "Failed to update.");
+						}
+					} else {
+						sttsMap.put(batchNo, "Invalid Batch No");
+					}
+				}
+			}
+			// Ensure no null keys sneak in
+			sttsMap = sttsMap.entrySet().stream().filter(e -> e.getKey() != null)
+					.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+			return ResponseEntity.ok(sttsMap);
+		} catch (Exception e) {
+			Map<String, Object> error = new HashMap<>();
+			error.put("status", "fail");
+			error.put("message", e.getMessage());
+			error.put("referenceNo", "");
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+		}
 	}
 
 }

@@ -375,6 +375,11 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 			+ " where child.isdeleted=0 and parent.isdeleted=0 and parent.inwardentryid = child.inwardid and parent.mm_id= mat.mm_id and party.npartyid = parent.npartyid "
 			+ " ORDER BY inwardentryid ) a "
 			+ " where 1=1 AND CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END order by inwardentryid desc ", nativeQuery = true)
-	List<Object[]> inwardListDataforGCP ( );
+	List<Object[]> inwardListDataforGCP();
+
+	@Modifying
+	@Transactional
+	@Query("update InwardEntry set zoho_sync_stts= :status where customerBatchId=:batchNo")
+	public int updateZohoSyncStatus(@Param("batchNo") String batchNo, @Param("status") String status);
 
 }

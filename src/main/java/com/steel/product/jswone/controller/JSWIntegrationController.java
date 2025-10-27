@@ -20,7 +20,6 @@ import com.steel.product.jswone.request.POSOIntegrationRequest;
 import com.steel.product.jswone.response.PODetailsLineItemResponse;
 import com.steel.product.jswone.response.PODetailsMainResponse;
 import com.steel.product.jswone.response.POListResponse;
-import com.steel.product.jswone.response.POWiseInwardListResponse;
 import com.steel.product.jswone.response.SOListResponse;
 import com.steel.product.jswone.service.JSWIntegrationService;
 
@@ -44,7 +43,6 @@ public class JSWIntegrationController {
 			HttpServletRequest httprequest) {
 		return service.mmidreceive(request);
 	}
-
 
 	@PostMapping(value = "/xternal/soreceive", produces = "application/json")
 	public ResponseEntity<Object> soreceive(@RequestBody POSOIntegrationRequest request, HttpServletRequest httprequest) {
@@ -119,24 +117,22 @@ public class JSWIntegrationController {
 	}
 
 	@PostMapping(value = "/xternal/powiseinwardlist", produces = "application/json")
-	public ResponseEntity<Object> poWiseInwardList(@RequestBody POSOIntegrationRequest request, HttpServletRequest httprequest) {
-		List<POWiseInwardListResponse> inwardList = service.poWiseInwardList(request);
-		Map<String, Object> response = new HashMap<>();
-		if (inwardList!=null && inwardList.size() > 0 ) {
-			response.put("code", "success");
-			response.put("message", "success");
-			return new ResponseEntity<Object>(inwardList, HttpStatus.OK);
-		} else {
-			response.put("code", "fail");
-			response.put("message","Data not available");
-			return new ResponseEntity<Object>(inwardList, HttpStatus.BAD_REQUEST);
-		}
+	public ResponseEntity<Object> poWiseInwardList(@RequestBody POSOIntegrationRequest request,
+			HttpServletRequest httprequest) {
+		Map<String, Object> response = service.poWiseInwardList(request);
+		return new ResponseEntity<Object>(response, HttpStatus.OK);
 	}
 
 	@PostMapping(value = "/xternal/allpoinvlist", produces = "application/json")
 	public ResponseEntity<Object> allpoinvlist(@RequestBody ListPageSearchRequest listPageSearchRequest) {
 		Map<String, Object> response = service.allpoinvlist(listPageSearchRequest);
 		return new ResponseEntity<Object>(response, HttpStatus.OK);
+	}
+
+	@PostMapping(value = "/xternal/coilsyncstts", produces = "application/json")
+	public ResponseEntity<Object> coilSyncStts(@RequestBody List<POSOIntegrationRequest> request, HttpServletRequest httprequest) {
+		String ipAddress = httprequest.getRemoteAddr();
+		return service.coilSyncStts(request);
 	}
 
 }

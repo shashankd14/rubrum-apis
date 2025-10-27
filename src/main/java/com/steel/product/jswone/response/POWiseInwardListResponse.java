@@ -11,6 +11,12 @@ public class POWiseInwardListResponse {
 
 	private String mmId;
 
+	private String mmDesc;
+
+	private String postingDate;
+
+	private String qty;
+
 	private String coilNumber;
 
 	private String customerBatchId;

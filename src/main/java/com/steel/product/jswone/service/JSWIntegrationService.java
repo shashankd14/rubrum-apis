@@ -24,11 +24,13 @@ public interface JSWIntegrationService {
 
 	PODetailsMainResponse postgrn(POSOIntegrationRequest request);
 
-	List<POWiseInwardListResponse> poWiseInwardList(POSOIntegrationRequest request);
+	Map<String, Object> poWiseInwardList(POSOIntegrationRequest request);
 
 	ResponseEntity<Object> soReceive(POSOIntegrationRequest request);
 
 	List<Object[]> locationwiseSOList(POSOIntegrationRequest request);
 
 	Map<String, Object> allpoinvlist(ListPageSearchRequest listPageSearchRequest);
+
+	ResponseEntity<Object> coilSyncStts(List<POSOIntegrationRequest> request);
 }

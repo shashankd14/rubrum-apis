@@ -15,11 +15,15 @@ public class POSOIntegrationRequest {
 
 	private String warehouseId;
 
+	private String customerBatchNo;
+
 	private String poId;
 
 	private int locationId;
 
 	private String status;
+
+	private String zohoSyncStatus;
 
 	private String ipAddress;
 }

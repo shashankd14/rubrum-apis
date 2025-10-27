@@ -13,7 +13,7 @@ public class PoGrnMainRequest {
 	private String reference_number;
 	private String date;
 
-	List<PoGrnCustomType> custom_type = new ArrayList<>();
+	List<PoGrnCustomType> custom_fields = new ArrayList<>();
 
 	List<PoGrnLineItem> line_items = new ArrayList<>();
 

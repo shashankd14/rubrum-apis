@@ -108,7 +108,7 @@ public class InwardEntry {
 	private Float fpresent;
 
 	@Column(name = "valueofgoods")
-	private Float valueOfGoods;
+	private float valueOfGoods;
 
 	@Column(name = "billedweight")
 	private float billedweight;
@@ -491,11 +491,11 @@ public class InwardEntry {
 		this.instructions = instruction;
 	}
 
-	public Float getValueOfGoods() {
+	public float getValueOfGoods() {
 		return valueOfGoods;
 	}
 
-	public void setValueOfGoods(Float valueOfGoods) {
+	public void setValueOfGoods(float valueOfGoods) {
 		this.valueOfGoods = valueOfGoods;
 	}
 
