@@ -6,6 +6,7 @@ import com.steel.product.application.dto.materialGradeDto.MaterialGradeDto;
 import com.steel.product.application.dto.party.PartyDto;
 import com.steel.product.application.entity.*;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -65,7 +66,7 @@ public class InwardEntryResponseDto {
     
     private Float fpresent;
 
-    private Float valueOfGoods;
+    private BigDecimal valueOfGoods;
 
     private float billedweight;
 
@@ -305,11 +306,11 @@ public class InwardEntryResponseDto {
         this.fpresent = fpresent;
     }
 
-    public Float getValueOfGoods() {
+    public BigDecimal getValueOfGoods() {
         return valueOfGoods;
     }
 
-    public void setValueOfGoods(Float valueOfGoods) {
+    public void setValueOfGoods(BigDecimal valueOfGoods) {
         this.valueOfGoods = valueOfGoods;
     }
 

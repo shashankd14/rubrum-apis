@@ -30,4 +30,7 @@ public interface CategoryMasterJswRepository extends JpaRepository<CategoryMaste
 
 	Optional<CategoryMasterJswEntity> findByCategoryId(Integer id);
 
+	@Query(value = "select distinct product.categoryId, product.categoryName from CategoryMasterJswEntity product where 1=1 ")
+	List<Object[]> distinctValues();
+
 }

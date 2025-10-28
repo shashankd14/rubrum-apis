@@ -625,9 +625,9 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 				inwardEntry.setvProcess("");
 				inwardEntry.setTdcNo(inward.getTdcno());
 				try {
-					inwardEntry.setValueOfGoods(Float.valueOf(inward.getValueofgoods()));
+					inwardEntry.setValueOfGoods(inward.getValueofgoods());
 				} catch (Exception e) {
-					inwardEntry.setValueOfGoods(0f);
+					inwardEntry.setValueOfGoods(BigDecimal.ZERO);
 				}
 				inwardEntry.setBilledweight(0);
 				inwardEntry.setParentCoilNumber(null);

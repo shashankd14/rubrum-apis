@@ -8,6 +8,8 @@ import com.steel.product.jswone.service.MaterialMasterJswService;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import javax.persistence.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -108,7 +110,7 @@ public class InwardEntry {
 	private Float fpresent;
 
 	@Column(name = "valueofgoods")
-	private float valueOfGoods;
+	private BigDecimal valueOfGoods;
 
 	@Column(name = "billedweight")
 	private float billedweight;
@@ -491,11 +493,11 @@ public class InwardEntry {
 		this.instructions = instruction;
 	}
 
-	public float getValueOfGoods() {
+	public BigDecimal getValueOfGoods() {
 		return valueOfGoods;
 	}
 
-	public void setValueOfGoods(float valueOfGoods) {
+	public void setValueOfGoods(BigDecimal valueOfGoods) {
 		this.valueOfGoods = valueOfGoods;
 	}
 

@@ -4,6 +4,7 @@ package com.steel.product.jswone.repository;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import com.steel.product.jswone.entity.BrandMasterJswEntity;
 
@@ -13,4 +14,7 @@ public interface BrandMasterJswRepository extends JpaRepository<BrandMasterJswEn
 	List<BrandMasterJswEntity> findByBrandName(String leafcategoryName);
 
 	List<BrandMasterJswEntity> findByLeafcategoryId(Integer leafcategoryId);
+
+	@Query(value = "select distinct product.brandId, product.brandName from BrandMasterJswEntity product where 1=1 ")
+	List<Object[]> distinctValues();
 }

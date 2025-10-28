@@ -604,9 +604,9 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 		Map<String, String> sttsMap = new HashMap<>();
 		try {
 			for (POSOIntegrationRequest obj : request) {
-				String batchNo = obj.getCustomerBatchNo();
+				String batchNo = obj.getBatchNo();
 				if (batchNo != null) {
-					String value = inwardEntryRepository.isCustomerBatchIdPresent(batchNo);
+					String value = inwardEntryRepository.isBatchNoPresent(batchNo);
 					if (value != null && !value.isEmpty()) {
 						int cnt = inwardEntryRepository.updateZohoSyncStatus(batchNo, obj.getZohoSyncStatus());
 						if (cnt > 0) {
@@ -620,8 +620,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 				}
 			}
 			// Ensure no null keys sneak in
-			sttsMap = sttsMap.entrySet().stream().filter(e -> e.getKey() != null)
-					.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+			sttsMap = sttsMap.entrySet().stream().filter(e -> e.getKey() != null).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 			return ResponseEntity.ok(sttsMap);
 		} catch (Exception e) {
 			Map<String, Object> error = new HashMap<>();

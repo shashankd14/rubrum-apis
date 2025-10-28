@@ -1,5 +1,6 @@
 package com.steel.product.application.dto.pdf;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 import com.steel.product.application.dto.delivery.DeliveryResponseDto;
@@ -45,11 +46,8 @@ public class InstructionResponsePdfDto {
 
     private DeliveryResponseDto deliveryDetails;
 
-    private Float valueOfGoods;
+    private BigDecimal valueOfGoods;
     
-    
-    
-
     private Long countOfWeight;
     
     private String baseTotalPrice;

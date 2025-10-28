@@ -30,5 +30,8 @@ public interface GradeMasterJswRepository extends JpaRepository<GradeMasterJswEn
 			+ " from jsw_material_master material, jsw_product_master product, jsw_grade_master grade   "
 			+ " where product.product_id=material.producttype_id and grade.grade_id=material.grade_id and mm_id=:mmId limit 1", nativeQuery = true)
 	List<Object[]> getGradeProductName(String mmId);
+
+	@Query(value = "select distinct product.gradeId, product.gradeName from GradeMasterJswEntity product where 1=1 ")
+	List<Object[]> distinctValues();
 	
 }

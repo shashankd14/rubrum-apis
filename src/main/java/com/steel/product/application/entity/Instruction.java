@@ -268,7 +268,9 @@ public class Instruction {
 		instructionResponsePdfDto.setDeliveryDetails(instruction.getDeliveryDetails() != null ? DeliveryDetails.valueOf(instruction.getDeliveryDetails()) : null);
 		instructionResponsePdfDto.setRemarks(instruction.getRemarks());
 		if (inwardEntry != null) {
-			instructionResponsePdfDto.setValueOfGoods((float) ((actualWeight / inwardEntry.getfQuantity()) * inwardEntry.getValueOfGoods()));
+			float kk = (actualWeight / inwardEntry.getfQuantity()) * inwardEntry.getValueOfGoods().floatValue();
+			
+			instructionResponsePdfDto.setValueOfGoods(new BigDecimal(kk));
 		}
 		return instructionResponsePdfDto;
 	} 

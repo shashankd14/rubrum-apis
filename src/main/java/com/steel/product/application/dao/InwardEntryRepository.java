@@ -65,6 +65,9 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
     @Query(nativeQuery = true, value = "SELECT customerbatchid FROM product_tblinwardentry WHERE customerbatchid = :customerbatchid limit 1")
     String isCustomerBatchIdPresent(@Param("customerbatchid") String customerbatchId);
 
+    @Query(nativeQuery = true, value = "SELECT batchnumber FROM product_tblinwardentry WHERE batchnumber= :batchnumber limit 1")
+    String isBatchNoPresent(@Param("batchnumber") String batchnumber);
+
     @Query("select inw from InwardEntry inw left join fetch inw.instructions ins where inw.coilNumber = :coilNumber order by ins.instructionId asc")
     <T> Optional<InwardEntry> findByCoilNumber(@Param("coilNumber")String coilNumber);
 
@@ -379,7 +382,7 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 
 	@Modifying
 	@Transactional
-	@Query("update InwardEntry set zoho_sync_stts= :status where customerBatchId=:batchNo")
+	@Query("update InwardEntry set zoho_sync_stts= :status where batchnumber=:batchNo")
 	public int updateZohoSyncStatus(@Param("batchNo") String batchNo, @Param("status") String status);
-
+	
 }

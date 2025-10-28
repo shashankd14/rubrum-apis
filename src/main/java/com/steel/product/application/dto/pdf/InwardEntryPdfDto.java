@@ -3,6 +3,8 @@ package com.steel.product.application.dto.pdf;
 import com.steel.product.application.entity.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -68,7 +70,7 @@ public class InwardEntryPdfDto {
 
 	private Float fpresent;
 
-	private Float valueOfGoods;
+	private BigDecimal valueOfGoods;
 
 	private float billedWeight;
 

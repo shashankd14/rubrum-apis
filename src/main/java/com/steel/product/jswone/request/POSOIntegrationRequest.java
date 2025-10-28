@@ -15,7 +15,7 @@ public class POSOIntegrationRequest {
 
 	private String warehouseId;
 
-	private String customerBatchNo;
+	private String batchNo;
 
 	private String poId;
 

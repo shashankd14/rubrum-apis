@@ -2,6 +2,7 @@ package com.steel.product.application.dto.inward;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 
 public class InwardDto {
@@ -56,7 +57,7 @@ public class InwardDto {
 
 	private float presentWeight;
 
-	private float valueOfGoods;
+	private BigDecimal valueOfGoods;
 
 	private ArrayList<MultipartFile> inwardFiles;
 	
@@ -285,11 +286,11 @@ public class InwardDto {
 		this.remarks = remarks;
 	}
 
-	public float getValueOfGoods() {
+	public BigDecimal getValueOfGoods() {
 		return valueOfGoods;
 	}
 
-	public void setValueOfGoods(float valueOfGoods) {
+	public void setValueOfGoods(BigDecimal valueOfGoods) {
 		this.valueOfGoods = valueOfGoods;
 	}
 

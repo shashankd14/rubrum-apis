@@ -47,7 +47,7 @@ public class DeliveryChallanPdfDto {
                 .reduce(0f, (sum, ins) -> sum + (ins.getProcess().getProcessId() == 7 ? ins.getPlannedWeight(): (ins.getActualWeight() == null ? ins.getPlannedWeight():  ins.getActualWeight()) ) , Float::sum);
         
         this.totalValueOfGoods = inwardPdfDtos.stream().flatMap(inw -> inw.getInstructions().stream())
-                .reduce(0f,(sum,ins) -> sum+ins.getValueOfGoods(),Float::sum);
+                .reduce(0f,(sum,ins) -> sum+ins.getValueOfGoods().floatValue(),Float::sum);
 
         this.totalPrice = inwardPdfDtos.stream().flatMap(inw -> inw.getInstructions().stream())
                 .reduce(0f,(sum,ins) -> sum+Float.parseFloat( ins.getTotalPrice()) ,Float::sum);

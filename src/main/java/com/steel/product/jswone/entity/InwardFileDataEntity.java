@@ -4,6 +4,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import javax.persistence.*;
+
+import java.math.BigDecimal;
 import java.util.Date;
 
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
@@ -36,7 +38,7 @@ public class InwardFileDataEntity {
 	private String grossweight;
 
 	@Column(name = "valueofgoods")
-	private String valueofgoods;
+	private BigDecimal valueofgoods;
 
 	@Column(name = "tdcno")
 	private String tdcno;

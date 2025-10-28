@@ -25,8 +25,10 @@ import com.steel.product.jswone.repository.SubGradeJswRepository;
 import com.steel.product.jswone.repository.SurfacetypeMasterJswRepository;
 import com.steel.product.jswone.repository.UomMasterJswRepository;
 import com.steel.product.jswone.request.SearchRequest;
+
 import lombok.extern.log4j.Log4j2;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,7 +77,14 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	@Override
 	public List<CategoryMasterJswEntity> getCategoryList(SearchRequest searchPageRequest) {
 		log.info("In getCategoryList page ");
-		List<CategoryMasterJswEntity> pageResult = categoryRepository.findAll();
+		List<CategoryMasterJswEntity> pageResult = new ArrayList<>();
+		List<Object[]> list = categoryRepository.distinctValues();
+		for (Object[] result : list) {
+			CategoryMasterJswEntity kk =new CategoryMasterJswEntity();
+			kk.setCategoryId(Integer.parseInt(result[0].toString()));
+			kk.setCategoryName( result[1].toString());
+			pageResult.add(kk);
+		}
 		return pageResult;
 	}
 
@@ -152,24 +161,38 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	@Override
 	public List<ProductMasterJswEntity> getProductList() {
 		log.info("In getAllProductList page ");
-		List<ProductMasterJswEntity> pageResult = productRepository.findAll();
+		List<ProductMasterJswEntity> pageResult = new ArrayList<>();
+		List<Object[]> list = productRepository.distinctValues();
+		for (Object[] result : list) {
+			ProductMasterJswEntity kk =new ProductMasterJswEntity();
+			kk.setProductId( Integer.parseInt(result[0].toString()));
+			kk.setProductName( result[1].toString());
+			pageResult.add(kk);
+		}
 		return pageResult;
 	}
 
 	@Override
 	public List<GradeMasterJswEntity> getGradesList() {
 		log.info("In getGradesList page ");
-		List<GradeMasterJswEntity> pageResult = gradeRepository.findAll();
+		List<GradeMasterJswEntity> pageResult = new ArrayList<>();
+		List<Object[]> list = gradeRepository.distinctValues();
+		for (Object[] result : list) {
+			GradeMasterJswEntity kk =new GradeMasterJswEntity();
+			kk.setGradeId( Integer.parseInt(result[0].toString()));
+			kk.setGradeName(result[1].toString());
+			pageResult.add(kk);
+		}
 		return pageResult;
 	}
 
 	@Override
 	public Map<Integer, String> getProductsMap() {
 		log.info("In getProductsMap page ");
-		List<ProductMasterJswEntity> list = productRepository.findAll();
+		List<Object[]> list = productRepository.distinctValues();
 		Map<Integer, String> map = new HashMap<Integer, String>(list.size());
-		for (ProductMasterJswEntity i : list) {
-			map.put(i.getProductId(), i.getProductName());
+		for (Object[] result : list) {
+			map.put(Integer.parseInt(result[0].toString()), result[1].toString());
 		}
 		return map;
 	}
@@ -177,10 +200,10 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	@Override
 	public Map<Integer, String> getCategoryMap() {
 		log.info("In getCategoryMap page ");
-		List<CategoryMasterJswEntity> list = categoryRepository.findAll();
+		List<Object[]> list = categoryRepository.distinctValues();
 		Map<Integer, String> map = new HashMap<Integer, String>(list.size());
-		for (CategoryMasterJswEntity i : list) {
-			map.put(i.getCategoryId(), i.getCategoryName());
+		for (Object[] result : list) {
+			map.put(Integer.parseInt(result[0].toString()), result[1].toString());
 		}
 		return map;
 	}
@@ -188,10 +211,10 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	@Override
 	public Map<Integer, String> getSubCategoryMap() {
 		log.info("In getSubCategoryMap page ");
-		List<SubCategoryJswEntity> list = subCategoryRepository.findAll();
+		List<Object[]> list = subCategoryRepository.distinctValues();
 		Map<Integer, String> map = new HashMap<Integer, String>(list.size());
-		for (SubCategoryJswEntity i : list) {
-			map.put(i.getSubcategoryId(), i.getSubcategoryName());
+		for (Object[] result : list) {
+			map.put(Integer.parseInt(result[0].toString()), result[1].toString());
 		}
 		return map;
 	}
@@ -199,10 +222,10 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	@Override
 	public Map<Integer, String> getLeafCategoryMap() {
 		log.info("In getLeafCategoryMap page ");
-		List<LeafCategoryJswEntity> list = leafCategoryRepository.findAll();
+		List<Object[]> list = leafCategoryRepository.distinctValues();
 		Map<Integer, String> map = new HashMap<Integer, String>(list.size());
-		for (LeafCategoryJswEntity i : list) {
-			map.put(i.getLeafcategoryId(), i.getLeafcategoryName());
+		for (Object[] result : list) {
+			map.put(Integer.parseInt(result[0].toString()), result[1].toString());
 		}
 		return map;
 	}
@@ -210,10 +233,10 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	@Override
 	public Map<Integer, String> getCoatingMap() {
 		log.info("In getCoatingMap page ");
-		List<CoatingtypeMasterJswEntity> list = coatingRepository.findAll();
+		List<Object[]> list = coatingRepository.distinctValues();
 		Map<Integer, String> map = new HashMap<Integer, String>(list.size());
-		for (CoatingtypeMasterJswEntity i : list) {
-			map.put(i.getCoatingtypeId(), i.getCoatingtype());
+		for (Object[] result : list) {
+			map.put(Integer.parseInt(result[0].toString()), result[1].toString());
 		}
 		return map;
 	}
@@ -221,10 +244,10 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	@Override
 	public Map<Integer, String> getSurfaceMap() {
 		log.info("In getSurfaceMap page ");
-		List<SurfacetypeMasterJswEntity> list = surfaceRepository.findAll();
+		List<Object[]> list = surfaceRepository.distinctValues();
 		Map<Integer, String> map = new HashMap<Integer, String>(list.size());
-		for (SurfacetypeMasterJswEntity i : list) {
-			map.put(i.getSurfacetypeId(), i.getSurfacetypeName());
+		for (Object[] result : list) {
+			map.put(Integer.parseInt(result[0].toString()), result[1].toString());
 		}
 		return map;
 	}
@@ -232,10 +255,10 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	@Override
 	public Map<Integer, String> getUomMap() {
 		log.info("In getUomMap page ");
-		List<UomMasterJswEntity> list = uomRepository.findAll();
+		List<Object[]> list = uomRepository.distinctValues();
 		Map<Integer, String> map = new HashMap<Integer, String>(list.size());
-		for (UomMasterJswEntity i : list) {
-			map.put(i.getUomId(), i.getUomName());
+		for (Object[] result : list) {
+			map.put(Integer.parseInt(result[0].toString()), result[1].toString());
 		}
 		return map;
 	}
@@ -243,10 +266,10 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	@Override
 	public Map<Integer, String> getGradeMap() {
 		log.info("In getGradeMap page ");
-		List<GradeMasterJswEntity> list = gradeRepository.findAll();
+		List<Object[]> list = gradeRepository.distinctValues();
 		Map<Integer, String> map = new HashMap<Integer, String>(list.size());
-		for (GradeMasterJswEntity i : list) {
-			map.put(i.getGradeId(), i.getGradeName());
+		for (Object[] result : list) {
+			map.put(Integer.parseInt(result[0].toString()), result[1].toString());
 		}
 		return map;
 	}
@@ -254,10 +277,10 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	@Override
 	public Map<Integer, String> getSubGradeMap() {
 		log.info("In getSubGradeMap page ");
-		List<SubgradeMasterJswEntity> list = subGradeJswRepository.findAll();
+		List<Object[]> list = subGradeJswRepository.distinctValues();
 		Map<Integer, String> map = new HashMap<Integer, String>(list.size());
-		for (SubgradeMasterJswEntity i : list) {
-			map.put(i.getSubgradeId(), i.getSubgradeName());
+		for (Object[] result : list) {
+			map.put(Integer.parseInt(result[0].toString()), result[1].toString());
 		}
 		return map;
 	}
@@ -265,10 +288,10 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	@Override
 	public Map<Integer, String> getBrandMap() {
 		log.info("In getBrandMap page ");
-		List<BrandMasterJswEntity> list = brandRepository.findAll();
+		List<Object[]> list = brandRepository.distinctValues();
 		Map<Integer, String> map = new HashMap<Integer, String>(list.size());
-		for (BrandMasterJswEntity i : list) {
-			map.put(i.getBrandId(), i.getBrandName());
+		for (Object[] result : list) {
+			map.put(Integer.parseInt(result[0].toString()), result[1].toString());
 		}
 		return map;
 	}
@@ -276,10 +299,10 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	@Override
 	public Map<Integer, String> getFormMap() {
 		log.info("In getFormMap page ");
-		List<FormMasterJswEntity> list = formRepository.findAll();
+		List<Object[]> list = formRepository.distinctValues();
 		Map<Integer, String> map = new HashMap<Integer, String>(list.size());
-		for (FormMasterJswEntity i : list) {
-			map.put(i.getFormId(), i.getFormName());
+		for (Object[] result : list) {
+			map.put(Integer.parseInt(result[0].toString()), result[1].toString());
 		}
 		return map;
 	}
