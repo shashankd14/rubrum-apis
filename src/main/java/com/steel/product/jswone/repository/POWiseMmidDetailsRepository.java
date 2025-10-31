@@ -35,7 +35,7 @@ public interface POWiseMmidDetailsRepository extends JpaRepository<POWiseMmidDet
 		nativeQuery = true)
 	List<Object[]> allpoinvlists();
 
-	@Query(value = "SELECT distinct inward.customerinvoiceno, inward.zoho_sync_stts "
+	@Query(value = "SELECT distinct inward.customerinvoiceno, inward.zoho_sync_stts, inward.zoho_sync_remarks"
 			+ " from product_tblinwardentry inward "
 			+ " where case when :searchText is not null and LENGTH(:searchText) >0 then (inward.customerinvoiceno like %:searchText%) else 1=1 end " 
 			+ " order by inwardentryid desc",

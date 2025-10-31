@@ -426,17 +426,17 @@ public class ReportsServiceImpl implements ReportsService {
 		Map<String, Object[]> acctStatementMap = new LinkedHashMap<>();
 
 		try {
-			List<InwardReportViewEntity> partyList = inwardReportViewRepository.findByPartyId(partyId);
+			List<InwardReportViewEntity> partyList = inwardReportViewRepository.findByPartyIdOrderByIdDesc(partyId);
 
 			acctStatementMap.put("1",
-					new Object[] { "CoilNumber", "SC Inward ID", "Location Name", "MaterialDesc", "MaterialGrade", "Subgrade","MMID", "Thickness", "Width",
+					new Object[] { "CoilNumber", "SC Inward ID", "Created On","Location Name", "MaterialDesc", "MaterialGrade", "Subgrade","MMID", "Thickness", "Width",
 					"NetWeight", "Value of Goods", "Invoice No", "Invoice Date", "ReceivedDate", "Vehicle No",
 					"Inward Remarks", "TC No" });
 
 			int cnt = 1;
 			for (InwardReportViewEntity kk : partyList) {
 				cnt++;
-				acctStatementMap.put("" + cnt, new Object[] { kk.getCoilnumber(), kk.getCustomerbatchid(),kk.getLocationname(),
+				acctStatementMap.put("" + cnt, new Object[] { kk.getCoilnumber(), kk.getCustomerbatchid(), kk.getCreatedon(), kk.getLocationname(),
 				kk.getMaterialdesc(), kk.getMaterialGrade(), kk.getSubgrade(),kk.getMmId(), kk.getFthickness(), kk.getFwidth(),
 				kk.getNetWeight(), kk.getValueofgoods(), kk.getCustomerinvoiceno(), kk.getCustomerinvoicedate(),
 				kk.getReceivedDate(), kk.getVehicleno(), kk.getRemarks(), kk.getTestcertificatenumber() });

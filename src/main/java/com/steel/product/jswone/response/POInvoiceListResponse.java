@@ -8,4 +8,6 @@ public class POInvoiceListResponse {
 	private String poInvoiceNo;
 
 	private String poInvSyncStatus;
+
+	private String poInvSyncRemarks;
 }

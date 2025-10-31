@@ -1,6 +1,7 @@
 package com.steel.product.application.entity;
 
 import com.steel.product.application.dto.inward.InwardEntryResponseDto;
+import com.steel.product.application.dto.material.MaterialResponseDto;
 import com.steel.product.application.dto.pdf.InstructionResponsePdfDto;
 import com.steel.product.application.dto.pdf.InwardEntryPdfDto;
 import com.steel.product.jswone.service.MaterialMasterJswService;
@@ -177,8 +178,11 @@ public class InwardEntry {
 	@Column(name = "invoicecopy_fileurl")
 	private String invoicecopyFileurl;
 
-	@Column(name = "zohoSyncStts")
-	private String zoho_sync_stts;
+	@Column(name = "zoho_sync_stts")
+	private String zohoSyncStts;
+
+	@Column(name = "zoho_sync_remarks")
+	private String zohoSyncRemarks;
 
 	public void addInstruction(Instruction instruction){
 		if(this.instructions == null){
@@ -738,6 +742,76 @@ public class InwardEntry {
 		inwardEntryResponseDto.setfQuantity(inwardEntry.getfQuantity());
 		inwardEntryResponseDto.setMaterial(inwardEntry.getMmId()!= null ? materialService.getProductName( inwardEntry.getMmId()) : null);
 		inwardEntryResponseDto.setMaterialGrade(inwardEntry.getMmId()!= null ? materialService.getGradeName(inwardEntry.getMmId()) : null);
+		//inwardEntryResponseDto.setMaterialGrade(inwardEntry.getMaterialGrade() != null ? MaterialGrade.valueOf(inwardEntry.getMaterialGrade()) : null);
+		inwardEntryResponseDto.setfThickness(inwardEntry.getfThickness());
+		inwardEntryResponseDto.setfWidth(inwardEntry.getfWidth());
+		inwardEntryResponseDto.setGrossWeight(inwardEntry.getGrossWeight());
+		inwardEntryResponseDto.setCreatedOn(inwardEntry.getCreatedOn());
+		inwardEntryResponseDto.setInstruction(inwardEntry.getInstructions() != null ?
+				inwardEntry.getInstructions().stream().filter(i -> !i.getIsDeleted())
+						.map(i -> Instruction.valueOf(i)).collect(Collectors.toList()): null);
+		if(inwardEntryResponseDto.getInstruction()!=null && inwardEntryResponseDto.getInstruction().size()>0) {
+			Collections.sort(inwardEntryResponseDto.getInstruction(), new MyInstructionIdComp());
+		}
+		
+		inwardEntryResponseDto.setPurposeType(inwardEntry.getPurposeType());
+		inwardEntryResponseDto.setdReceivedDate(inwardEntry.getdReceivedDate());
+		inwardEntryResponseDto.setvLorryNo(inwardEntry.getvLorryNo());
+		inwardEntryResponseDto.setvInvoiceNo(inwardEntry.getvInvoiceNo());
+		inwardEntryResponseDto.setTestCertificateNumber(inwardEntry.getTestCertificateNumber());
+		inwardEntryResponseDto.setRemarks(inwardEntry.getRemarks());
+		inwardEntryResponseDto.setdInvoiceDate(inwardEntry.getdInvoiceDate());
+		inwardEntryResponseDto.setValueOfGoods(inwardEntry.getValueOfGoods());
+		inwardEntryResponseDto.setCreatedBy(inwardEntry.getCreatedBy());
+		inwardEntryResponseDto.setCreatedOn(inwardEntry.getCreatedOn());
+		inwardEntryResponseDto.setUpdatedBy(inwardEntry.getUpdatedBy());
+		inwardEntryResponseDto.setUpdatedOn(inwardEntry.getUpdatedOn());
+		inwardEntryResponseDto.setStatus(inwardEntry.getStatus());
+		inwardEntryResponseDto.setfQuantity(inwardEntry.getfQuantity());
+		inwardEntryResponseDto.setFpresent(inwardEntry.getFpresent());
+		inwardEntryResponseDto.setInStockWeight(inwardEntry.getInStockWeight());
+		inwardEntryResponseDto.setDeleted(inwardEntry.getDeleted());
+		inwardEntryResponseDto.setfLength(inwardEntry.getfLength());
+		inwardEntryResponseDto.setAvailableLength(inwardEntry.getAvailableLength());
+		inwardEntryResponseDto.setCustomerInvoiceNo(inwardEntry.getCustomerInvoiceNo());
+		inwardEntryResponseDto.setParentCoilNumber(inwardEntry.getParentCoilNumber());
+		inwardEntryResponseDto.setScrapWeight( inwardEntry.getScrapWeight() );
+		inwardEntryResponseDto.setMmId( inwardEntry.getMmId()  );
+		long daysBetween = 0;
+		try {
+			// Today's date
+			LocalDate today = LocalDate.now();
+			Calendar calendar = Calendar.getInstance();
+			Date date = inwardEntry.getCreatedOn();
+			if (inwardEntry.getdReceivedDate() != null) {
+				date = inwardEntry.getdReceivedDate();
+			}
+			calendar.setTime(date); // convert Date to Calendar
+			int year = calendar.get(Calendar.YEAR);
+			int month = calendar.get(Calendar.MONTH) + 1; // 0-based, so add 1
+			int day = calendar.get(Calendar.DAY_OF_MONTH);
+			LocalDate oldDate = LocalDate.of(year, month, day);
+			daysBetween = ChronoUnit.DAYS.between(oldDate, today);
+			inwardEntryResponseDto.setAgeing(daysBetween);
+		} catch (Exception e) {
+			inwardEntryResponseDto.setAgeing(daysBetween);
+		}
+		return inwardEntryResponseDto;
+	}
+
+	public static InwardEntryResponseDto valueOfResponsePartyWise (InwardEntry inwardEntry, Map<String, String> matDescMap) {
+		InwardEntryResponseDto inwardEntryResponseDto = new InwardEntryResponseDto();
+		inwardEntryResponseDto.setInwardEntryId(inwardEntry.getInwardEntryId());
+		inwardEntryResponseDto.setParty(inwardEntry.getParty() != null ? Party.valueOf(inwardEntry.getParty()) : null);
+		inwardEntryResponseDto.setCoilNumber(inwardEntry.getCoilNumber());
+		inwardEntryResponseDto.setTdcNo( inwardEntry.getTdcNo() );
+		inwardEntryResponseDto.setBatchNumber(inwardEntry.getBatchNumber());
+		inwardEntryResponseDto.setCustomerBatchId(inwardEntry.getCustomerBatchId());
+		inwardEntryResponseDto.setfQuantity(inwardEntry.getfQuantity());
+		MaterialResponseDto kk =new MaterialResponseDto();
+		kk.setMmDescConcatenated(matDescMap.get( inwardEntry.getMmId()));
+		inwardEntryResponseDto.setMaterial(kk);
+		//inwardEntryResponseDto.setMaterialGrade(inwardEntry.getMmId()!= null ? materialService.getGradeName(inwardEntry.getMmId()) : null);
 		//inwardEntryResponseDto.setMaterialGrade(inwardEntry.getMaterialGrade() != null ? MaterialGrade.valueOf(inwardEntry.getMaterialGrade()) : null);
 		inwardEntryResponseDto.setfThickness(inwardEntry.getfThickness());
 		inwardEntryResponseDto.setfWidth(inwardEntry.getfWidth());

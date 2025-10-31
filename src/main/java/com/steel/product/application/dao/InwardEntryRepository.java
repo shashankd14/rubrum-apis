@@ -208,13 +208,14 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 	public void consolidatePlanner(@Param("inwardentryid") Integer inwardentryid, @Param("allocatedSoqty") Float totalAllocatedQty);
 
 	@Query(value = "select inwardentryid, coilnumber, coilage, fthickness, flength, fwidth, material, "
-			+ " gradename, subgradename,brandname, partyname,customerbatchid from ("
+			+ " gradename, subgradename,brandname, partyname,customerbatchid, mm_id, mm_description from ("
 			+ " select distinct inw.inwardentryid ,inw.coilnumber, DATEDIFF(curdate(), date_format(inw.dreceiveddate, '%Y-%m-%d')) coilage,"
 			+ " inw.fthickness, inw.fLength, inw.fWidth,party.partyname, customerbatchid,"
 			+ " (select product.product_name from jsw_product_master product where product.product_id=mat.producttype_id limit 1 ) as material, "
 			+ " (select grade.grade_name from jsw_grade_master grade where grade.grade_id=mat.grade_id limit 1) as gradename, "
 			+ " (select subgrade.subgrade_name from jsw_subgrade_master subgrade where subgrade.subgrade_id=mat.subgrade_id limit 1) as subgradename, "
-			+ " (select brand.brand_name from jsw_brand_master brand where brand.brand_id=mat.brand_id limit 1) as brandname "
+			+ " (select brand.brand_name from jsw_brand_master brand where brand.brand_id=mat.brand_id limit 1) as brandname, "
+			+ " mat.mm_id, mat.mm_description "
 			+ " from product_tblinwardentry inw, jsw_material_master mat, product_tblpartydetails party"
 			+ " where inw.isdeleted=0 and mat.mm_id=inw.mm_id and inw.npartyid=party.npartyid "
 			+ " and (case when :status >0 then inw.vstatus=:status else 1=1 end ) "
@@ -382,7 +383,13 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 
 	@Modifying
 	@Transactional
-	@Query("update InwardEntry set zoho_sync_stts= :status where batchnumber=:batchNo")
+	@Query("update InwardEntry set zohoSyncStts= :status where batchnumber=:batchNo")
 	public int updateZohoSyncStatus(@Param("batchNo") String batchNo, @Param("status") String status);
-	
+
+	@Modifying
+	@Transactional
+	@Query("update InwardEntry set zohoSyncRemarks= :zohoSyncRemarks where customerinvoiceno =:customerinvoiceno")
+	public int updateZohoSyncRemarks(@Param("customerinvoiceno") String customerinvoiceno, @Param("zohoSyncRemarks") String zohoSyncRemarks);
+
+
 }

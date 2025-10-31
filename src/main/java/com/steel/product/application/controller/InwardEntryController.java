@@ -312,15 +312,17 @@ public class InwardEntryController {
 			return new ResponseEntity<Object>(response, HttpStatus.OK);
 		} else {
 			Page<Object[]> packetsList1 = inwdEntrySvc.listAllLocationWiseInwards(searchListPageRequest);
+			Map<String, String> matDescMap = new HashMap<>();
 
 			List<Integer> inwardIdList = new ArrayList<>(); 
 			for (Object[] result : packetsList1) {
 				Integer inwardId =  (result[0] != null ? (Integer) result[0] : null);
 				inwardIdList.add(inwardId);
+				matDescMap.put((result[12] != null ? (String) result[12] : null), (result[13] != null ? (String) result[13] : null));
 			}
-			//log.info("In inwardIdList === " + inwardIdList);
+			log.info("In inwardIdList === " + matDescMap);
 			List<InwardEntry> pageResult = inwdEntrySvc.locationWiseListByInwardId(inwardIdList);
-			List<InwardEntryResponseDto> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponse(inw, materialService)).collect(Collectors.toList());
+			List<InwardEntryResponseDto> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponsePartyWise(inw, matDescMap)).collect(Collectors.toList());
 			response.put("content", inwardList);
 			response.put("currentPage", packetsList1.getNumber());
 			response.put("totalItems", packetsList1.getTotalElements());

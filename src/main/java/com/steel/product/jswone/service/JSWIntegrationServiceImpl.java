@@ -2,16 +2,19 @@ package com.steel.product.jswone.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.dto.quality.ListPageSearchRequest;
 import com.steel.product.application.util.CommonUtil;
+import com.steel.product.jswone.entity.JswoneAuditTrailEntity;
 import com.steel.product.jswone.entity.MaterialMasterFileDataEntity;
 import com.steel.product.jswone.entity.MaterialMasterJswEntity;
 import com.steel.product.jswone.entity.POReceiveDetailsEntity;
 import com.steel.product.jswone.entity.POWiseMmidDetailsEntity;
 import com.steel.product.jswone.entity.SOReceiveDetailsEntity;
 import com.steel.product.jswone.entity.WarehouseMasterJswEntity;
+import com.steel.product.jswone.repository.JswoneAuditTrailRepository;
 import com.steel.product.jswone.repository.MaterialMasterFiledataRepository;
 import com.steel.product.jswone.repository.MaterialMasterJswRepository;
 import com.steel.product.jswone.repository.POReceiveDetailsRepository;
@@ -52,6 +55,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 @Service
@@ -60,6 +65,9 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 
 	@Autowired
 	private POReceiveDetailsRepository poReceiveDetailsRepository;
+	
+	@Autowired
+	private JswoneAuditTrailRepository jswoneAuditTrailRepository;
 
 	@Autowired
 	private SOReceiveDetailsRepository soReceiveDetailsRepository;
@@ -355,48 +363,88 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 	@Override
 	public PODetailsMainResponse podetails(POSOIntegrationRequest requ) {
 		PODetailsMainResponse response = new PODetailsMainResponse();
+		JswoneAuditTrailEntity kk =new JswoneAuditTrailEntity();
+		ObjectMapper mapper = new ObjectMapper();
 		try {
 			RestTemplate restTemplate = new RestTemplate();
 			Map<String, String> propertyMap = commonUtil.getAllProperties();
 
+			kk.setPoId(requ.getPoId());
 			HttpHeaders headers = new HttpHeaders();
 			headers.set("Content-Type", "application/json");
 			headers.set("Authorization", propertyMap.get("podetails_Authorization"));
 			HttpEntity<String> request = new HttpEntity<>("{}", headers);
 			String url = propertyMap.get("podetails_url") + "?purchaseorder_id=" + requ.getPoId();
-			// String url =
-			// "https://tigios.techurate.com/mockapi/jsontoxml/execute/jswone/podetails/1.1";
 			System.out.println("request is  == " + request + ", url - " + url);
-			System.out.println(" url - " + url);
+			kk.setRequestObj("");
+			kk.setProcessType("PO_DETAILS");
+			kk.setRequestUrl(url);
 			ResponseEntity<String> res = restTemplate.exchange(url, HttpMethod.GET, request, String.class);
 			System.out.println("response is == " + res);
+			kk.setDestinationResponse(res.getBody().toString());
 			if (res.getBody() != null) {
 				ObjectMapper om = new ObjectMapper();
 				om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 				response = om.readValue(res.getBody().toString(), PODetailsMainResponse.class);
 			}
-			if (response != null && response.getPurchaseorder() != null
-					&& response.getPurchaseorder().getLine_items() != null) {
+			if (response != null && response.getPurchaseorder() != null && response.getPurchaseorder().getLine_items() != null) {
 				System.out.println("Hi kanak  " + response.getPurchaseorder().getLine_items().size());
 				createPODetails(response);
 				response.setCode("0");
 				response.setMessage("Success");
+				kk.setStatusCode("200");
 			} else {
 				response.setCode("1002");
 				response.setMessage("Resource does not exist.");
 			}
+			jswoneAuditTrailRepository.save(kk);
+		} catch (HttpClientErrorException | HttpServerErrorException ex) {
+			String error = ex.getResponseBodyAsString();
+			kk.setDestinationResponse( error);
+			try {
+				JsonNode outer = mapper.readTree(error);
+				String outerMessage = outer.path("message").asText();
+				int start = outerMessage.indexOf("{");
+				int end = outerMessage.lastIndexOf("}");
+				if (start != -1 && end != -1 && end > start) {
+					String innerJson = outerMessage.substring(start, end + 1);
+					// Parse the inner JSON
+					JsonNode inner = mapper.readTree(innerJson);
+					String code = inner.path("code").asText();
+					String message = inner.path("message").asText();
+					response.setCode(code);
+					response.setMessage(message);
+					kk.setSourceRespone( mapper.writeValueAsString(response));
+				} else {
+					System.out.println("No inner JSON found in message");
+				}
+			} catch (Exception w) {
+				
+			}
+			kk.setStatusCode("" + ex.getStatusCode().value());
+			jswoneAuditTrailRepository.save(kk);
 		} catch (Exception e) {
+			System.out.println("Error response is == " + e.getMessage());
+            kk.setDestinationResponse( e.getMessage());
 			if (e.getMessage().contains("404")) {
+				kk.setStatusCode("404");
 				response.setCode("1002");
 				response.setMessage("Resource does not exist.");
 			}
 			if (e.getMessage().contains("400")) {
-				response.setCode("6024");
+				kk.setStatusCode("400");
+				response.setCode("4198");
 				response.setMessage("Invalid Params");
 			}
 			if (e.getMessage().contains("401")) {
+				kk.setStatusCode("401");
 				response.setCode("57");
 				response.setMessage("You are not authorized to perform this operation");
+			}
+			if (e.getMessage().contains("500")) {
+				kk.setStatusCode(""+500);
+				response.setCode("57");
+				response.setMessage(e.getMessage());
 			}
 		}
 		return response;
@@ -441,53 +489,91 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 	public PODetailsMainResponse postgrn(POSOIntegrationRequest req) {
 		PODetailsMainResponse response = new PODetailsMainResponse();
 		ResponseEntity<String> res = null;
+		JswoneAuditTrailEntity kk =new JswoneAuditTrailEntity();
+		ObjectMapper mapper = new ObjectMapper();
 		try {
 			RestTemplate restTemplate = new RestTemplate();
 			Map<String, String> propertyMap = commonUtil.getAllProperties();
-
+			kk.setPoInvoiceNo(req.getPoInvoiceNo());
+			kk.setProcessType("GRN_POST");
 			HttpHeaders headers = new HttpHeaders();
 			headers.set("Content-Type", "application/json");
 			headers.set(propertyMap.get("post_grn_headerkey"), propertyMap.get("post_grn_headervalue"));
 			PoGrnMainRequest postGRN = prepareGRNRequest(req.getPoInvoiceNo());
 			String postGRNReq = objectMapper.writeValueAsString(postGRN);
-
+			kk.setRequestObj(postGRNReq );
 			HttpEntity<String> request = new HttpEntity<>(postGRNReq, headers);
 			String url = propertyMap.get("post_grn_url");
+			kk.setRequestUrl(url);
 			System.out.println("url  is  == " + url + ", postGRNReq - " + request);
 			res = restTemplate.exchange(url, HttpMethod.POST, request, String.class);
 			System.out.println("response is == " + res);
 			if (res.getBody() != null) {
-				ObjectMapper om = new ObjectMapper();
-				om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-				response = om.readValue(res.getBody().toString(), PODetailsMainResponse.class);
+				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+				response = mapper.readValue(res.getBody().toString(), PODetailsMainResponse.class);
 			}
-			if (response != null && response.getPurchaseorder() != null
-					&& response.getPurchaseorder().getLine_items() != null) {
-				createPODetails(response);
+			kk.setDestinationResponse(res.getBody().toString());
+			jswoneAuditTrailRepository.save(kk);
+			if (response != null && response.getPurchaseorder() != null && response.getPurchaseorder().getLine_items() != null) {
 				response.setCode("0");
 				response.setMessage("Success");
 			} else {
 				response.setCode("1002");
 				response.setMessage("Resource does not exist.");
 			}
+			kk.setSourceRespone( mapper.writeValueAsString(response));
+		} catch (HttpClientErrorException | HttpServerErrorException ex) {
+			String error = ex.getResponseBodyAsString();
+			kk.setDestinationResponse( error);
+			try {
+				JsonNode outer = mapper.readTree(error);
+				String outerMessage = outer.path("message").asText();
+				int start = outerMessage.indexOf("{");
+				int end = outerMessage.lastIndexOf("}");
+				if (start != -1 && end != -1 && end > start) {
+					String innerJson = outerMessage.substring(start, end + 1);
+					// Parse the inner JSON
+					JsonNode inner = mapper.readTree(innerJson);
+					String code = inner.path("code").asText();
+					String message = inner.path("message").asText();
+					response.setCode(code);
+					response.setMessage(message);
+					kk.setSourceRespone( mapper.writeValueAsString(response));
+				} else {
+					System.out.println("No inner JSON found in message");
+				}
+			} catch (Exception w) {
+				
+			}
+			kk.setStatusCode("" + ex.getStatusCode().value());
+			jswoneAuditTrailRepository.save(kk);
 		} catch (Exception e) {
-			System.out.println("Error response is == " + e.getMessage());
+            kk.setDestinationResponse( e.getMessage());
 			if (e.getMessage().contains("404")) {
+				kk.setStatusCode("404");
 				response.setCode("1002");
 				response.setMessage("Resource does not exist.");
 			}
 			if (e.getMessage().contains("400")) {
+				kk.setStatusCode("400");
 				response.setCode("4198");
 				response.setMessage("Invalid Params");
 			}
 			if (e.getMessage().contains("401")) {
+				kk.setStatusCode("401");
 				response.setCode("57");
 				response.setMessage("You are not authorized to perform this operation");
 			}
 			if (e.getMessage().contains("500")) {
+				kk.setStatusCode("500");
 				response.setCode("57");
 				response.setMessage(e.getMessage());
 			}
+		}
+		try {
+			String responseStr = objectMapper.writeValueAsString(response);
+			inwardEntryRepository.updateZohoSyncRemarks(req.getPoInvoiceNo(), responseStr);
+		} catch (JsonProcessingException e) {
 		}
 		return response;
 	}
@@ -587,6 +673,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			POInvoiceListResponse kk = new POInvoiceListResponse();
 			kk.setPoInvoiceNo(result[0] != null ? result[0].toString() : null);
 			kk.setPoInvSyncStatus(result[1] != null ? result[1].toString() : "PENDING");
+			kk.setPoInvSyncRemarks( result[2] != null ? result[2].toString() : "");
 			inwardList.add(kk);
 		}
 
