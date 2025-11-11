@@ -9,5 +9,7 @@ public class POInvoiceListResponse {
 
 	private String poInvSyncStatus;
 
+	private String manualPoFlag;
+	
 	private String poInvSyncRemarks;
 }

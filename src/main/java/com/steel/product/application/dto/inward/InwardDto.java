@@ -5,6 +5,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
+import javax.persistence.Column;
+
 public class InwardDto {
 	
 	private int inwardId;
@@ -74,7 +76,9 @@ public class InwardDto {
 	private Float uts;
 
 	private Float el;
-	
+
+	private boolean manualPoFlag;
+
 	private MultipartFile invoiceCopy;
 	
 	public int getInwardId() {
@@ -356,6 +360,14 @@ public class InwardDto {
 
 	public void setPoId(String poId) {
 		this.poId = poId;
+	}
+
+	public boolean isManualPoFlag() {
+		return manualPoFlag;
+	}
+
+	public void setManualPoFlag(boolean manualPoFlag) {
+		this.manualPoFlag = manualPoFlag;
 	}
 	
 	

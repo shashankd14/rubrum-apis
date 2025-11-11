@@ -674,6 +674,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			kk.setPoInvoiceNo(result[0] != null ? result[0].toString() : null);
 			kk.setPoInvSyncStatus(result[1] != null ? result[1].toString() : "PENDING");
 			kk.setPoInvSyncRemarks( result[2] != null ? result[2].toString() : "");
+			kk.setManualPoFlag( result[3] != null ? result[3].toString() : "false");
 			inwardList.add(kk);
 		}
 

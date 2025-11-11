@@ -155,7 +155,8 @@ public class InwardEntryController {
 			inwardEntry.setCreatedOn(this.timestamp);
 			inwardEntry.setUpdatedOn(this.timestamp);
 			inwardEntry.setCreatedBy(userId);
-			inwardEntry.setUpdatedBy(userId);
+			inwardEntry.setCreatedBy(userId);
+			inwardEntry.setManualPoFlag(inward.isManualPoFlag());
 
 			if (inward.getTestCertificateFile() != null) {
 				String fileUrl = awsS3Service.uploadFile(inward.getTestCertificateFile());

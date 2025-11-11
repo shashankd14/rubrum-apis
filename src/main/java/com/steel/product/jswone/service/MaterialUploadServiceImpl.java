@@ -91,7 +91,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 	InwardFiledataRepository inwardFiledataRepository;
 
 	@Autowired
-	MaterialMasterJswRepository materialMasterRepository;
+	MaterialMasterJswRepository materialMasterJswRepository;
 
 	@Autowired
 	InwardEntryService inwdEntrySvc;
@@ -141,21 +141,28 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 	@Override
 	public ResponseEntity<Object> uploadmmidData(MaterialUploadRequest request) throws Exception, FileNotFoundException {
 		log.info("******MaterialUploadService.uploadmmidData*****");
-		 
 		try {
-			
+			int totalMMIDCount=0;
+			int newDataCount=0;
+			int updatedDataCount=0;
+			List<MaterialMasterFileDataEntity> productList = new ArrayList<>();
 			if (request.isFileData()) {
 				String newFileName = new File(fileUploadPath).getName(); // .replace(".", "_" + new Date()+ ".");
-
 				List<MaterialMasterFileDataDTO> products = mmFileDetails();
-				List<MaterialMasterFileDataEntity> productList = new ArrayList<>();
-
+				totalMMIDCount = products.size();
 				System.out.println("Hi size " + products.size());
 				for (MaterialMasterFileDataDTO dto : products) {
 					MaterialMasterFileDataEntity dest = new MaterialMasterFileDataEntity();
 					BeanUtils.copyProperties(dto, dest);
 					try {
 						dest.setFilename(newFileName);
+						MaterialMasterFileDataEntity dummyEntity = repository.findFirstByMmId(dest.getMmId());
+						if (dummyEntity != null && dummyEntity.getMateraiId() > 0) {
+							dest.setMateraiId(dummyEntity.getMateraiId());
+							updatedDataCount=updatedDataCount+1;
+						} else {
+							newDataCount=newDataCount+1;
+						}
 						productList.add(dest);
 						repository.save(dest);
 					} catch (Exception e) {
@@ -165,15 +172,23 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 				log.info("File Uploaded Successfully. Count is == " + products.size());
 			}
 			if (request.isMasterData()) {
-				List<MaterialMasterFileDataEntity> listFileData =repository.findAll();
-				log.info("listFileData is == " + listFileData.size());
-				List<MaterialMasterJswEntity> materialMasterList = new ArrayList<>();
-	
-				for (MaterialMasterFileDataEntity sourceEntity : listFileData) {
+				//List<MaterialMasterFileDataEntity> listFileData =repository.findAll();
+				log.info("listFileData is == " + productList.size());
+				//List<MaterialMasterJswEntity> materialMasterList = new ArrayList<>();
+				for (MaterialMasterFileDataEntity sourceEntity : productList) {
 					MaterialMasterJswEntity destEntity = new MaterialMasterJswEntity();
 					BeanUtils.copyProperties(sourceEntity, destEntity);
 					log.info("getMmId is == " + sourceEntity.getMmId());
 
+					MaterialMasterJswEntity oldEntity = materialMasterJswRepository.findFirstByMmId(sourceEntity.getMmId());
+					if (oldEntity != null && oldEntity.getMaterialId() > 0) {
+						destEntity.setMaterialId(oldEntity.getMaterialId());
+						destEntity.setUpdatedOn(new Date());
+						destEntity.setCreatedOn(oldEntity.getCreatedOn());
+					} else {
+						destEntity.setCreatedOn(oldEntity.getCreatedOn());
+						destEntity.setUpdatedOn(null);
+					}
 					if(sourceEntity.getLength()!=null && sourceEntity.getLength().length() >0 ) {
 						destEntity.setLength(new BigDecimal(sourceEntity.getLength()));
 					} else {
@@ -221,15 +236,23 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 					destEntity.setSurfacetypeId(setSurfacetypeMaster(sourceEntity.getSurfacetype(), destEntity.getProducttypeId()));
 					destEntity.setUomId(setUomMaster(sourceEntity.getUom(), destEntity.getProducttypeId()));
 					destEntity.setFormId(setFormMaster(sourceEntity.getForm(), destEntity.getProducttypeId()));
-					materialMasterList.add(destEntity);
+					//materialMasterList.add(destEntity);
 					try {
-						materialMasterRepository.save(destEntity);
+						materialMasterJswRepository.save(destEntity);
 					} catch (Exception e) {
+						e.printStackTrace();
 						System.out.println("error while save --  "+e.getMessage());
 					}
 				}
 			}
-			return new ResponseEntity<Object>("{\"status\": \"success\", \"message\": \"File Uploaded Successfully.\"}", new HttpHeaders(), HttpStatus.OK);
+
+			Map<String, Object> resp = new HashMap<>();
+			resp.put("totalRecordCount", totalMMIDCount);
+			resp.put("newMMIDsCount", newDataCount);
+			resp.put("updatedMMIDsCount", updatedDataCount);
+			resp.put("status", "SUCCESS");
+			resp.put("message", "File Uploaded Successfully.");
+			return new ResponseEntity<Object>(resp, new HttpHeaders(), HttpStatus.OK);
 		} catch( Exception e) {
 			e.printStackTrace();
 			return new ResponseEntity<Object>("{\"status\": \"failed\", \"message\": \"Failed to Uploaded a file.\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -494,7 +517,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 	public Page<Object[]> materialSearchBymmid(MaterialSearchPageRequest request) {
 		Pageable pageable = PageRequest.of((request.getPageNo() - 1), request.getPageSize());
 
-		Page<Object[]> packetsList = materialMasterRepository.materialSearchBymmid(request.getMmid(), pageable);
+		Page<Object[]> packetsList = materialMasterJswRepository.materialSearchBymmid(request.getMmid(), pageable);
 		return packetsList;
 	}
 
@@ -503,7 +526,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 		Pageable pageable = PageRequest.of((request.getPageNo() - 1), request.getPageSize());
 		//request.setFormId(22);
 		MaterialMasterJswSpecification spec = new MaterialMasterJswSpecification(request);
-		Page<MaterialMasterJswEntity> pageResult = materialMasterRepository.findAll(spec, pageable);
+		Page<MaterialMasterJswEntity> pageResult = materialMasterJswRepository.findAll(spec, pageable);
 		return pageResult;
 	}
 	
@@ -570,7 +593,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 			partyIdsMap.put("Aspen Unit - 3", 13);
 			partyIdsMap.put("SSI", 14); 
 
-			List<MaterialMasterJswEntity> mmList = materialMasterRepository.findByMmId(inward.getMmid());
+			List<MaterialMasterJswEntity> mmList = materialMasterJswRepository.findByMmId(inward.getMmid());
 			if (mmList != null && mmList.size() > 0 && mmList.get(0).getFormId() == 22 ) {
 				mmObj = mmList.get(0);
 
@@ -689,9 +712,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 		if("WIP".equals(request.getParam() )) {
 			statusId=2;
 		}
-		
-		
-		List<Object[]> pageResult = materialMasterRepository.listAllLocationWiseInwards(statusId);
+		List<Object[]> pageResult = materialMasterJswRepository.listAllLocationWiseInwards(statusId);
 		return pageResult;
 	}
 	

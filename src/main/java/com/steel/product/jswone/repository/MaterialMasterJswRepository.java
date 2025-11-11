@@ -81,5 +81,7 @@ public interface MaterialMasterJswRepository
 			+ "and (case when :status >0 then inw.vstatus=:status else 1=1 end ) "
 			+ " ) product where 1=1 ", 
 		nativeQuery = true)
-	List<Object[]> listAllLocationWiseInwards(@Param("status") int status); 
+	List<Object[]> listAllLocationWiseInwards(@Param("status") int status);
+
+	void deleteByMaterialId(Integer materaiId); 
 }

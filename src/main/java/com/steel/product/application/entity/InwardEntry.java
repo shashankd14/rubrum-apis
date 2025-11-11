@@ -184,6 +184,9 @@ public class InwardEntry {
 	@Column(name = "zoho_sync_remarks")
 	private String zohoSyncRemarks;
 
+	@Column(name = "manual_po_flag")
+	private boolean manualPoFlag;
+
 	public void addInstruction(Instruction instruction){
 		if(this.instructions == null){
 			this.instructions = new LinkedHashSet<>();
@@ -607,6 +610,14 @@ public class InwardEntry {
 
 	public void setInvoicecopyFileurl(String invoicecopyFileurl) {
 		this.invoicecopyFileurl = invoicecopyFileurl;
+	}
+
+	public boolean isManualPoFlag() {
+		return manualPoFlag;
+	}
+
+	public void setManualPoFlag(boolean manualPoFlag) {
+		this.manualPoFlag = manualPoFlag;
 	}
 
 	public static InwardEntryPdfDto valueOf(InwardEntry inwardEntry, List<InstructionResponsePdfDto> instructionResponsePdfDtos){
