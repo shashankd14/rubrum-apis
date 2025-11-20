@@ -20,12 +20,4 @@ public class MultipartConfig {
         resolver.setPreserveFilename(true);
         return resolver;
     }
-
-//	@Bean
-//	public MultipartConfigElement multipartConfigElement() {
-//		MultipartConfigFactory factory = new MultipartConfigFactory();
-//		factory.setMaxFileSize(DataSize.ofMegabytes(3));
-//		factory.setMaxRequestSize(DataSize.ofMegabytes(20));
-//		return factory.createMultipartConfig();
-//	}
 }
