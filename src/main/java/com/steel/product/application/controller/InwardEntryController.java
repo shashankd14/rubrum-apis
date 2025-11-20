@@ -111,10 +111,9 @@ public class InwardEntryController {
 				return new ResponseEntity<Object>("Invalid present weight entered.", HttpStatus.BAD_REQUEST);
 			}
 			inwardEntry.setInStockWeight(inward.getPresentWeight());
-
-			if (inward.getBillDate() != null)
+			if (inward.getBillDate() != null) {
 				inwardEntry.setdBillDate(Timestamp.valueOf(inward.getBillDate()));
-
+			}
 			inwardEntry.setvLorryNo(inward.getVehicleNumber());
 			inwardEntry.setvInvoiceNo(inward.getInvoiceNumber());
 			inwardEntry.setdInvoiceDate(Timestamp.valueOf(inward.getInvoiceDate()));
@@ -126,7 +125,6 @@ public class InwardEntryController {
 			inwardEntry.setMmId(inward.getMmId());
 			//inwardEntry.setMaterial(this.matDescService.getMatById(inward.getMaterialId()));
 			//inwardEntry.setMaterialGrade(matGradeService.getById(inward.getMaterialGradeId()));
-
 			inwardEntry.setfWidth(inward.getWidth());
 			inwardEntry.setfThickness(inward.getThickness());
 			inwardEntry.setfLength(inward.getLength());
@@ -156,24 +154,28 @@ public class InwardEntryController {
 			inwardEntry.setUpdatedOn(this.timestamp);
 			inwardEntry.setCreatedBy(userId);
 			inwardEntry.setCreatedBy(userId);
-			inwardEntry.setManualPoFlag(inward.isManualPoFlag());
-
-			if (inward.getTestCertificateFile() != null) {
-				String fileUrl = awsS3Service.uploadFile(inward.getTestCertificateFile());
-				inwardEntry.setTestCertificateFileUrl(fileUrl);
-			}
+			inwardEntry.setManualPoFlag((inward.getManualPoFlag() == null? "Yes": inward.getManualPoFlag()));
+			
 			if (inward.getInvoiceCopy() != null) {
-				String fileUrl = awsS3Service.uploadFile(inward.getInvoiceCopy());
-				inwardEntry.setInvoicecopyFileurl( fileUrl);
+		        String modifiedFileName = inward.getCoilNumber()+"_invoicecopy_"+ inward.getInvoiceCopy().getOriginalFilename().replaceAll("[^a-zA-Z0-9._-]", "_").replace(" ","_");
+				System.out.println("modifiedFileName == "+modifiedFileName);
+		        String invoiceCopyFileUrl = awsS3Service.uploadFile(inward.getInvoiceCopy(), modifiedFileName);
+				inwardEntry.setInvoiceCopy(modifiedFileName);
+				inwardEntry.setInvoicecopyFileurl(invoiceCopyFileUrl);
+			}
+			if (inward.getTestCertificateFile() != null) {
+		        String modifiedFileName = inward.getCoilNumber()+"_testcertificate_"+ inward.getTestCertificateFile().getOriginalFilename();
+				String fileUrl = awsS3Service.uploadFile(inward.getTestCertificateFile(), modifiedFileName.replaceAll("[^a-zA-Z0-9._-]", "_").replace(" ","_"));
+				inwardEntry.setTestCertificateFileUrl(fileUrl);
 			}
 			inwardEntry.setTestCertificateNumber(inward.getTestCertificateNumber());
 			InwardEntry savedInwardEntry = inwdEntrySvc.saveEntry(inwardEntry);
-
 			if (inward.getInwardFiles() != null) {
 				for (MultipartFile file : inward.getInwardFiles()) {
 					InwardDoc inwardDoc = new InwardDoc();
 					inwardDoc.setInwardEntry(inwardEntry);
-					String str = awsS3Service.uploadFile(file);
+			        String modifiedFileName = inward.getCoilNumber()+"_inwardfiles_"+ inward.getInvoiceCopy().getOriginalFilename();
+					String str = awsS3Service.uploadFile(file, modifiedFileName.replaceAll("[^a-zA-Z0-9._-]", "_").replace(" ","_"));
 					inwardDoc.setDocUrl(str);
 					inwardDocService.save(inwardDoc);
 				}
@@ -233,13 +235,18 @@ public class InwardEntryController {
 			inwardEntry.setEl(inward.getEl());
 			
 			if (inward.getTestCertificateFile() != null) {
-				String fileUrl = awsS3Service.uploadFile(inward.getTestCertificateFile());
+		        String modifiedFileName = inward.getCoilNumber()+"_testcertificate_"+ inward.getTestCertificateFile().getOriginalFilename();
+				String fileUrl = awsS3Service.uploadFile(inward.getTestCertificateFile(), modifiedFileName.replaceAll("[^a-zA-Z0-9._-]", "_").replace(" ","_"));
 				inwardEntry.setTestCertificateFileUrl(fileUrl);
 			}
 			if (inward.getInvoiceCopy() != null) {
-				String fileUrl = awsS3Service.uploadFile(inward.getInvoiceCopy());
-				inwardEntry.setInvoicecopyFileurl( fileUrl);
+		        String modifiedFileName = inward.getCoilNumber()+"_invoicecopy_"+ inward.getInvoiceCopy().getOriginalFilename();
+		        System.out.println("modifiedFileName  == "+modifiedFileName);
+				String invoiceCopyFileUrl = awsS3Service.uploadFile(inward.getInvoiceCopy(), modifiedFileName.replaceAll("[^a-zA-Z0-9._-]", "_").replace(" ","_"));
+				inwardEntry.setInvoiceCopy(modifiedFileName);
+				inwardEntry.setInvoicecopyFileurl( invoiceCopyFileUrl);
 			}
+
 			inwardEntry.setTestCertificateNumber(inward.getTestCertificateNumber());
 			inwdEntrySvc.saveEntry(inwardEntry);
 
@@ -248,7 +255,8 @@ public class InwardEntryController {
 				for (MultipartFile file : inward.getInwardFiles()) {
 					InwardDoc inwardDoc = new InwardDoc();
 					inwardDoc.setInwardEntry(inwardEntry);
-					String str = awsS3Service.uploadFile(file);
+			        String modifiedFileName = inward.getCoilNumber()+"_inwardfiles_"+ inward.getInvoiceCopy().getOriginalFilename();
+					String str = awsS3Service.uploadFile(file, modifiedFileName.replaceAll("[^a-zA-Z0-9._-]", "_"));
 					inwardDoc.setDocUrl(str);
 					System.out.println("inwardDoc: " + inwardDoc);
 					inwardDocService.save(inwardDoc);

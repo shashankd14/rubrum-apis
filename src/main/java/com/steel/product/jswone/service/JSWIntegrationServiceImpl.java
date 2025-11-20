@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.dto.quality.ListPageSearchRequest;
+import com.steel.product.application.service.AWSS3Service;
 import com.steel.product.application.util.CommonUtil;
 import com.steel.product.jswone.entity.JswoneAuditTrailEntity;
 import com.steel.product.jswone.entity.MaterialMasterFileDataEntity;
@@ -33,8 +34,11 @@ import com.steel.product.jswone.response.PoGrnCustomType;
 import com.steel.product.jswone.response.PoGrnLineItem;
 import com.steel.product.jswone.response.PoGrnLineItemBatches;
 import com.steel.product.jswone.response.PoGrnMainRequest;
+import com.steel.product.jswone.response.PoGrnMainResponse;
+
 import lombok.extern.log4j.Log4j2;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
@@ -45,6 +49,8 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -52,9 +58,12 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -96,6 +105,12 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 	@Autowired
 	CommonUtil commonUtil;
 
+	@Autowired
+	AWSS3Service awsS3Service;
+
+	@Value("${email.gcpreportspath}")
+	private String gcpReportsPath;
+	
 	@Override
 	public ResponseEntity<Object> poReceive(POSOIntegrationRequest request) {
 		log.info("******JSWIntegrationServiceImpl.poReceive*****");
@@ -388,7 +403,6 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 				response = om.readValue(res.getBody().toString(), PODetailsMainResponse.class);
 			}
 			if (response != null && response.getPurchaseorder() != null && response.getPurchaseorder().getLine_items() != null) {
-				System.out.println("Hi kanak  " + response.getPurchaseorder().getLine_items().size());
 				createPODetails(response);
 				response.setCode("0");
 				response.setMessage("Success");
@@ -422,7 +436,6 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 				
 			}
 			kk.setStatusCode("" + ex.getStatusCode().value());
-			jswoneAuditTrailRepository.save(kk);
 		} catch (Exception e) {
 			System.out.println("Error response is == " + e.getMessage());
             kk.setDestinationResponse( e.getMessage());
@@ -444,9 +457,17 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			if (e.getMessage().contains("500")) {
 				kk.setStatusCode(""+500);
 				response.setCode("57");
-				response.setMessage(e.getMessage());
+				response.setMessage("JSW Connector API Not Working, Please Contact JSW Admin Team ");
 			}
 		}
+		try {
+			kk.setSourceRespone( mapper.writeValueAsString(response));
+		} catch (Exception e) {
+			kk.setStatusCode(""+500);
+			response.setCode("57");
+			response.setMessage("JSW Connector API Not Working, Please Contact JSW Admin Team ");
+		}
+		jswoneAuditTrailRepository.save(kk);
 		return response;
 	}
 
@@ -486,11 +507,12 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 	}
 
 	@Override
-	public PODetailsMainResponse postgrn(POSOIntegrationRequest req) {
-		PODetailsMainResponse response = new PODetailsMainResponse();
+	public PoGrnMainResponse postgrn(POSOIntegrationRequest req) {
+		PoGrnMainResponse response = new PoGrnMainResponse();
 		ResponseEntity<String> res = null;
 		JswoneAuditTrailEntity kk =new JswoneAuditTrailEntity();
 		ObjectMapper mapper = new ObjectMapper();
+		String billId="";
 		try {
 			RestTemplate restTemplate = new RestTemplate();
 			Map<String, String> propertyMap = commonUtil.getAllProperties();
@@ -510,20 +532,28 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			System.out.println("response is == " + res);
 			if (res.getBody() != null) {
 				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-				response = mapper.readValue(res.getBody().toString(), PODetailsMainResponse.class);
+				response = mapper.readValue(res.getBody().toString(), PoGrnMainResponse.class);
+				if(response!=null && response.getBill() != null  && response.getBill().getBill_id()!=null) {
+					kk.setBillid(response.getBill().getBill_id());
+					billId=response.getBill().getBill_id();
+					req.setBillId(billId);
+				}
 			}
 			kk.setDestinationResponse(res.getBody().toString());
 			jswoneAuditTrailRepository.save(kk);
-			if (response != null && response.getPurchaseorder() != null && response.getPurchaseorder().getLine_items() != null) {
+			if (response != null && "0".equals( response.getCode()) ) {
+				kk.setStatusCode(""+res.getStatusCode());
 				response.setCode("0");
-				response.setMessage("Success");
+				response.setMessage( response.getMessage());
 			} else {
-				response.setCode("1002");
-				response.setMessage("Resource does not exist.");
+				kk.setStatusCode(""+res.getStatusCode());
+				response.setCode( response.getCode());
+				response.setMessage( response.getMessage());
 			}
 			kk.setSourceRespone( mapper.writeValueAsString(response));
 		} catch (HttpClientErrorException | HttpServerErrorException ex) {
 			String error = ex.getResponseBodyAsString();
+			kk.setStatusCode("" + ex.getStatusCode().value());
 			kk.setDestinationResponse( error);
 			try {
 				JsonNode outer = mapper.readTree(error);
@@ -545,8 +575,6 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			} catch (Exception w) {
 				
 			}
-			kk.setStatusCode("" + ex.getStatusCode().value());
-			jswoneAuditTrailRepository.save(kk);
 		} catch (Exception e) {
             kk.setDestinationResponse( e.getMessage());
 			if (e.getMessage().contains("404")) {
@@ -565,15 +593,26 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 				response.setMessage("You are not authorized to perform this operation");
 			}
 			if (e.getMessage().contains("500")) {
-				kk.setStatusCode("500");
+				kk.setStatusCode("400");
 				response.setCode("57");
-				response.setMessage(e.getMessage());
+				response.setMessage("JSW Connector API Not Working, Please Contact JSW Admin Team ");
 			}
 		}
 		try {
+			kk.setSourceRespone( mapper.writeValueAsString(response));
+		} catch (Exception e) {
+			kk.setStatusCode(""+500);
+			response.setCode("57");
+			response.setMessage("JSW Connector API Not Working, Please Contact JSW Admin Team ");
+		}
+		jswoneAuditTrailRepository.save(kk);
+		try {
 			String responseStr = objectMapper.writeValueAsString(response);
-			inwardEntryRepository.updateZohoSyncRemarks(req.getPoInvoiceNo(), responseStr);
+			inwardEntryRepository.updateZohoSyncRemarks(req.getPoInvoiceNo(), responseStr, billId);
 		} catch (JsonProcessingException e) {
+		}
+		if (billId != null && billId.length() > 0) {
+			uploadDocument(req);
 		}
 		return response;
 	}
@@ -633,7 +672,6 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 		req.setCustom_fields(customTypeList);
 		return req;
 	}
-
 	@Override
 	public Map<String, Object> poWiseInwardList(POSOIntegrationRequest request) {
 		List<POWiseInwardListResponse> inwardList = new ArrayList<>();
@@ -662,8 +700,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 	@Override
 	public Map<String, Object> allpoinvlist(ListPageSearchRequest listPageSearchRequest) {
 
-		Pageable pageable = PageRequest.of((listPageSearchRequest.getPageNo() - 1),
-				listPageSearchRequest.getPageSize());
+		Pageable pageable = PageRequest.of((listPageSearchRequest.getPageNo() - 1), listPageSearchRequest.getPageSize());
 
 		List<POInvoiceListResponse> inwardList = new ArrayList<>();
 		Page<Object[]> poDetails = powseMmidDetailsRepository.allpoinvlist(listPageSearchRequest.getSearchText(),
@@ -674,7 +711,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			kk.setPoInvoiceNo(result[0] != null ? result[0].toString() : null);
 			kk.setPoInvSyncStatus(result[1] != null ? result[1].toString() : "PENDING");
 			kk.setPoInvSyncRemarks( result[2] != null ? result[2].toString() : "");
-			kk.setManualPoFlag( result[3] != null ? result[3].toString() : "false");
+			kk.setManualPoFlag( result[3] != null ? result[3].toString() : "Y");
 			inwardList.add(kk);
 		}
 
@@ -717,6 +754,147 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			error.put("referenceNo", "");
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
 		}
+	}
+
+	@Override
+	public PODetailsMainResponse uploadDocument(POSOIntegrationRequest req) {
+		PODetailsMainResponse response = new PODetailsMainResponse();
+		ResponseEntity<String> res = null;
+		JswoneAuditTrailEntity kk =new JswoneAuditTrailEntity();
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			RestTemplate restTemplate = new RestTemplate();
+			Map<String, String> propertyMap = commonUtil.getAllProperties();
+			kk.setPoInvoiceNo(req.getBillId() );
+			kk.setProcessType("UPLOAD_DOC");
+			HttpHeaders headers = new HttpHeaders();
+			headers.set("Content-Type", "application/json");
+			headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+			headers.set(propertyMap.get("upload_doc_headerkey"), propertyMap.get("upload_doc_headervalue"));
+			MultiValueMap<String, Object> docList = prepareDocumentUploadRequest(req.getPoInvoiceNo());
+			HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(docList, headers);
+			String url = propertyMap.get("upload_doc_url")+"/"+req.getBillId();
+			kk.setRequestUrl(url);
+			System.out.println("url  is  == " + url + ", request is  - " + request);
+			kk.setRequestObj( request.toString());
+			res = restTemplate.exchange(url, HttpMethod.POST, request, String.class);
+			System.out.println("response is == " + res);
+			if (res.getBody() != null) {
+				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+				response = mapper.readValue(res.getBody().toString(), PODetailsMainResponse.class);
+			}
+			kk.setDestinationResponse(res.getBody().toString());
+			jswoneAuditTrailRepository.save(kk);
+			if (response != null && "0".equals( response.getCode()) ) {
+				response.setCode("0");
+				//String responseStr = objectMapper.writeValueAsString(response);
+				inwardEntryRepository.updateZohoDocUploadStatus(req.getBillId());
+				response.setMessage( response.getMessage());
+			} else {
+				response.setCode( response.getCode());
+				response.setMessage( response.getMessage());
+			}
+			kk.setSourceRespone( mapper.writeValueAsString(response));
+		} catch (HttpClientErrorException | HttpServerErrorException ex) {
+			String error = ex.getResponseBodyAsString();
+			kk.setDestinationResponse( error);
+			try {
+				JsonNode outer = mapper.readTree(error);
+				String outerMessage = outer.path("message").asText();
+				int start = outerMessage.indexOf("{");
+				int end = outerMessage.lastIndexOf("}");
+				if (start != -1 && end != -1 && end > start) {
+					String innerJson = outerMessage.substring(start, end + 1);
+					// Parse the inner JSON
+					JsonNode inner = mapper.readTree(innerJson);
+					String code = inner.path("code").asText();
+					String message = inner.path("message").asText();
+					response.setCode(code);
+					response.setMessage(message);
+					kk.setSourceRespone( mapper.writeValueAsString(response));
+				} else {
+					System.out.println("No inner JSON found in message");
+				}
+			} catch (Exception w) {
+				
+			}
+			kk.setStatusCode("" + ex.getStatusCode().value());
+		} catch (Exception e) {
+            kk.setDestinationResponse( e.getMessage());
+			if (e.getMessage().contains("404")) {
+				kk.setStatusCode("404");
+				response.setCode("1002");
+				response.setMessage("Resource does not exist.");
+			}
+			if (e.getMessage().contains("400")) {
+				kk.setStatusCode("400");
+				response.setCode("4198");
+				response.setMessage("Invalid Params");
+			}
+			if (e.getMessage().contains("401")) {
+				kk.setStatusCode("401");
+				response.setCode("57");
+				response.setMessage("You are not authorized to perform this operation");
+			}
+			if (e.getMessage().contains("500")) {
+				kk.setStatusCode("400");
+				response.setCode("57");
+				response.setMessage("JSW Connector API Not Working, Please Contact JSW Admin Team ");
+			}
+		}
+		try {
+			kk.setSourceRespone( mapper.writeValueAsString(response));
+		} catch (Exception e) {
+			kk.setStatusCode(""+500);
+			response.setCode("57");
+			response.setMessage("JSW Connector API Not Working, Please Contact JSW Admin Team ");
+		}
+		jswoneAuditTrailRepository.save(kk);
+		return response;
+	}
+
+	private MultiValueMap<String, Object> prepareDocumentUploadRequest(String poInvNo) {
+		//FileSystemResource fileResource = new FileSystemResource("C:/Users/kanakadri.rayi/Pictures/Screenshots/jswone_logo.JPG");
+		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+		//body.add("Attachment", fileResource);
+
+		PoGrnMainRequest req = new PoGrnMainRequest();
+
+		List<Object[]> poDetails = powseMmidDetailsRepository.getDocDetailsbyPoId(poInvNo);
+		for (Object[] result : poDetails) {
+			//int inwardId = (result[0] != null ? Integer.parseInt(result[0].toString()) : null);
+			String testcertificatefileurl = (result[1] != null ? result[1].toString() : null);
+			String invoicecopy_fileur = (result[2] != null ? result[2].toString() : null);
+			String invoiceCopyFileName = (result[3] != null ? result[3].toString() : null);
+			String testcertificatenumber = (result[4] != null ? result[4].toString() : null);
+			
+			if(invoicecopy_fileur!=null && invoicecopy_fileur.length()>0) {
+			    String testcertificatefileNamecc = invoicecopy_fileur.split("\\?")[0];
+			    String testCertificateFileName = testcertificatefileNamecc.substring(testcertificatefileNamecc.lastIndexOf('/') + 1);
+				String filapth1 = awsS3Service.downloadS3toLocalFile(invoiceCopyFileName, gcpReportsPath+File.separator+"jswone_upload_temp"+File.separator+testCertificateFileName);
+				body.add("Attachment", filapth1);
+			}
+			if(testcertificatefileurl!=null && testcertificatefileurl.length()>0) {
+			    String testcertificatefileNamecc = testcertificatefileurl.split("\\?")[0];
+			    String testCertificateFileName = testcertificatefileNamecc.substring(testcertificatefileNamecc.lastIndexOf('/') + 1);
+				String filapth2 = awsS3Service.downloadS3toLocalFile(testcertificatenumber, gcpReportsPath+File.separator+"jswone_upload_temp"+File.separator+testCertificateFileName);
+				body.add("Attachment", filapth2);
+			}
+		}
+		System.out.println("filapth == "+body);
+		return body;
+	}
+	
+	public MultiValueMap<String, Object> fileList(String billId) {
+
+		// File to Upload
+		FileSystemResource fileResource = new FileSystemResource(
+				"C:/Users/kanakadri.rayi/Pictures/Screenshots/jswone_logo.JPG");
+
+		// Form data
+		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+		body.add("Attachment", fileResource);
+		return body;
 	}
 
 }

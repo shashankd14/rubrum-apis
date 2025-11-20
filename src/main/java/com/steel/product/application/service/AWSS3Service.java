@@ -7,20 +7,23 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface AWSS3Service {
 
-	public String uploadFile(MultipartFile multipartFile);
+	String uploadFile(MultipartFile multipartFile, String fileExtension);
 
-	public String uploadPDFFileToS3Bucket(String bucketName, File file, String partDetailsId);
+	String uploadFileToS3Bucket(String bucketName, File file, String fileExtension);
 
-	public String generatePresignedUrl(String fileName);
+	String uploadPDFFileToS3Bucket(String bucketName, File file, String partDetailsId);
+
+	String generatePresignedUrl(String fileName);
 
 	String persistFiles(String applicationJarPath, String stageName, String templateName, MultipartFile file)
 			throws IOException;
 
 	String persistQualityReportFiles(String applicationJarPath, String stageName, String templateName,
-			MultipartFile file) throws IOException;
+			MultipartFile file);
 
-	String persistTradingFiles(String applicationJarPath, String stageName, MultipartFile file) throws IOException;
+	String persistTradingFiles(String applicationJarPath, String itemCode, MultipartFile file) throws IOException;
 
 	String generatePresignedUrlForTrading(String fileName);
 
+	String downloadS3toLocalFile(String s3Key, String localPath);
 }

@@ -24,6 +24,9 @@ public class JswoneAuditTrailEntity {
 	@Column(name = "po_invoice_no")
 	private String poInvoiceNo;
 
+	@Column(name = "billid")
+	private String billid;
+
 	@Column(name = "request_obj")
 	private String requestObj;
 
