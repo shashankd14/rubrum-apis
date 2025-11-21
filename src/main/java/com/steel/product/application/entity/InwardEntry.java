@@ -61,6 +61,12 @@ public class InwardEntry {
 
 	@Column(name = "purposetype")
 	private String purposeType;
+	
+	@Column(name = "invoicecopy_fileurl")
+	private String invoicecopyFileurl;
+	
+	@Column(name = "invoice_copy")
+	private String invoiceCopy;
 
 	@Column(name = "testcertificatenumber")
 	private String testCertificateNumber;
@@ -174,9 +180,6 @@ public class InwardEntry {
 
     @Column(name = "el")
 	private Float el;
-	
-	@Column(name = "invoicecopy_fileurl")
-	private String invoicecopyFileurl;
 
 	@Column(name = "zoho_sync_stts")
 	private String zohoSyncStts;
@@ -185,8 +188,14 @@ public class InwardEntry {
 	private String zohoSyncRemarks;
 
 	@Column(name = "manual_po_flag")
-	private boolean manualPoFlag;
+	private String manualPoFlag;
 
+	@Column(name = "bill_id")
+	private String billId;
+
+	@Column(name = "zoho_docupload_stts")
+	private String zohoDocuploadStts;
+	
 	public void addInstruction(Instruction instruction){
 		if(this.instructions == null){
 			this.instructions = new LinkedHashSet<>();
@@ -198,6 +207,22 @@ public class InwardEntry {
 	public void removeInstruction(Instruction instruction){
 		this.getInstructions().remove(instruction);
 		instruction.setInwardId(null);
+	}
+
+	public String getBillId() {
+		return billId;
+	}
+
+	public void setBillId(String billId) {
+		this.billId = billId;
+	}
+
+	public String getZohoDocuploadStts() {
+		return zohoDocuploadStts;
+	}
+
+	public void setZohoDocuploadStts(String zohoDocuploadStts) {
+		this.zohoDocuploadStts = zohoDocuploadStts;
 	}
 
 	public int getInwardEntryId() {
@@ -579,7 +604,30 @@ public class InwardEntry {
 	public void setAllocatedSoqty(Float allocatedSoqty) {
 		this.allocatedSoqty = allocatedSoqty;
 	}
-	
+	public String getInvoiceCopy() {
+		return invoiceCopy;
+	}
+
+	public void setInvoiceCopy(String invoiceCopy) {
+		this.invoiceCopy = invoiceCopy;
+	}
+
+	public String getZohoSyncStts() {
+		return zohoSyncStts;
+	}
+
+	public void setZohoSyncStts(String zohoSyncStts) {
+		this.zohoSyncStts = zohoSyncStts;
+	}
+
+	public String getZohoSyncRemarks() {
+		return zohoSyncRemarks;
+	}
+
+	public void setZohoSyncRemarks(String zohoSyncRemarks) {
+		this.zohoSyncRemarks = zohoSyncRemarks;
+	}
+
 	public Float getYs() {
 		return ys;
 	}
@@ -612,11 +660,11 @@ public class InwardEntry {
 		this.invoicecopyFileurl = invoicecopyFileurl;
 	}
 
-	public boolean isManualPoFlag() {
+	public String getManualPoFlag() {
 		return manualPoFlag;
 	}
 
-	public void setManualPoFlag(boolean manualPoFlag) {
+	public void setManualPoFlag(String manualPoFlag) {
 		this.manualPoFlag = manualPoFlag;
 	}
 

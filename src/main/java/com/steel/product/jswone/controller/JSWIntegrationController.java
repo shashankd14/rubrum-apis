@@ -20,6 +20,7 @@ import com.steel.product.jswone.request.POSOIntegrationRequest;
 import com.steel.product.jswone.response.PODetailsLineItemResponse;
 import com.steel.product.jswone.response.PODetailsMainResponse;
 import com.steel.product.jswone.response.POListResponse;
+import com.steel.product.jswone.response.PoGrnMainResponse;
 import com.steel.product.jswone.response.SOListResponse;
 import com.steel.product.jswone.service.JSWIntegrationService;
 
@@ -84,35 +85,83 @@ public class JSWIntegrationController {
 	@PostMapping(value = "/xternal/podetails", produces = "application/json")
 	public ResponseEntity<Object> poDetails(@RequestBody POSOIntegrationRequest request,
 			HttpServletRequest httprequest) {
-		PODetailsMainResponse resp = service.podetails(request);
-		List<String> locationwisePOList = new ArrayList<String>();
+		PODetailsMainResponse resp;
 		Map<String, Object> response = new HashMap<>();
-		for (PODetailsLineItemResponse result1 : resp.getPurchaseorder().getLine_items()) {
-			locationwisePOList.add(result1.getSku());
-		}
-		response.put("code", resp.getCode());
-		response.put("message", resp.getMessage());
-		response.put("data", locationwisePOList);
+		try {
+			resp = service.podetails(request);
+			List<String> locationwisePOList = new ArrayList<String>();
+			for (PODetailsLineItemResponse result1 : resp.getPurchaseorder().getLine_items()) {
+				locationwisePOList.add(result1.getSku());
+			}
+			response.put("code", resp.getCode());
+			response.put("message", resp.getMessage());
+			response.put("data", locationwisePOList);
 
-		if ("0".equals(resp.getCode())) {
-			return new ResponseEntity<Object>(response, HttpStatus.OK);
-		} else {
-			return new ResponseEntity<Object>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+			if ("0".equals(resp.getCode())) {
+				return new ResponseEntity<Object>(response, HttpStatus.OK);
+			} else {
+				return new ResponseEntity<Object>(response, HttpStatus.BAD_REQUEST);
+			}
+		} catch (Exception e) {
+			response.put("code", "57");
+			response.put("message", "JSW Connector API Not Working, Please Contact JSW Admin Team ");
+			response.put("data", "");
+			return new ResponseEntity<Object>(response, HttpStatus.BAD_REQUEST);
 		}
+		
 	}
 
 	@PostMapping(value = "/xternal/postgrn", produces = "application/json")
 	public ResponseEntity<Object> postgrn(@RequestBody POSOIntegrationRequest request, HttpServletRequest httprequest) {
-		PODetailsMainResponse resp = service.postgrn(request);
 		Map<String, Object> response = new HashMap<>();
-		if ("0".equals(resp.getCode())) {
-			response.put("code", resp.getCode());
-			response.put("message", resp.getMessage());
-			return new ResponseEntity<Object>(response, HttpStatus.OK);
-		} else {
-			response.put("code", resp.getCode());
-			response.put("message", resp.getMessage());
-			return new ResponseEntity<Object>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		try {
+			PoGrnMainResponse resp = service.postgrn(request);
+			if (resp != null && resp.getCode() !=null && "0".equals(resp.getCode())) {
+				response.put("code", resp.getCode());
+				response.put("message", resp.getMessage());
+				return new ResponseEntity<Object>(response, HttpStatus.OK);
+			} else if (resp != null && resp.getCode() !=null) {
+				response.put("code", resp.getCode());
+				response.put("message", resp.getMessage());
+				return new ResponseEntity<Object>(response, HttpStatus.BAD_REQUEST);
+			} else {
+				response.put("code", "57");
+				response.put("message", "JSW Connector API Not Working, Please Contact JSW Admin Team ");
+				response.put("data", "");
+				return new ResponseEntity<Object>(response, HttpStatus.BAD_REQUEST);
+			}
+		} catch (Exception e) {
+			response.put("code", "57");
+			response.put("message", "JSW Connector API Not Working, Please Contact JSW Admin Team ");
+			response.put("data", "");
+			return new ResponseEntity<Object>(response, HttpStatus.BAD_REQUEST);
+		}
+	}
+
+	@PostMapping(value = "/xternal/uploaddoc", produces = "application/json")
+	public ResponseEntity<Object> uploaddoc(@RequestBody POSOIntegrationRequest request, HttpServletRequest httprequest) {
+		Map<String, Object> response = new HashMap<>();
+		try {
+			PODetailsMainResponse resp = service.uploadDocument(request);
+			if (resp != null && resp.getCode() !=null && "0".equals(resp.getCode())) {
+				response.put("code", resp.getCode());
+				response.put("message", resp.getMessage());
+				return new ResponseEntity<Object>(response, HttpStatus.OK);
+			} else if (resp != null && resp.getCode() !=null) {
+				response.put("code", resp.getCode());
+				response.put("message", resp.getMessage());
+				return new ResponseEntity<Object>(response, HttpStatus.BAD_REQUEST);
+			} else {
+				response.put("code", "57");
+				response.put("message", "JSW Connector API Not Working, Please Contact JSW Admin Team ");
+				response.put("data", "");
+				return new ResponseEntity<Object>(response, HttpStatus.BAD_REQUEST);
+			}
+		} catch (Exception e) {
+			response.put("code", "57");
+			response.put("message", "JSW Connector API Not Working, Please Contact JSW Admin Team ");
+			response.put("data", "");
+			return new ResponseEntity<Object>(response, HttpStatus.BAD_REQUEST);
 		}
 	}
 

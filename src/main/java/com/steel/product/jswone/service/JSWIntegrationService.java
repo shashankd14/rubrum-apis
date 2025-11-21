@@ -9,8 +9,7 @@ import com.steel.product.application.dto.quality.ListPageSearchRequest;
 import com.steel.product.jswone.request.MMIDReceiveMainRequest;
 import com.steel.product.jswone.request.POSOIntegrationRequest;
 import com.steel.product.jswone.response.PODetailsMainResponse;
-import com.steel.product.jswone.response.POInvoiceListResponse;
-import com.steel.product.jswone.response.POWiseInwardListResponse;
+import com.steel.product.jswone.response.PoGrnMainResponse;
 
 public interface JSWIntegrationService {
 
@@ -22,7 +21,7 @@ public interface JSWIntegrationService {
 
 	PODetailsMainResponse podetails(POSOIntegrationRequest request);
 
-	PODetailsMainResponse postgrn(POSOIntegrationRequest request);
+	PoGrnMainResponse postgrn(POSOIntegrationRequest request);
 
 	Map<String, Object> poWiseInwardList(POSOIntegrationRequest request);
 
@@ -33,4 +32,6 @@ public interface JSWIntegrationService {
 	Map<String, Object> allpoinvlist(ListPageSearchRequest listPageSearchRequest);
 
 	ResponseEntity<Object> coilSyncStts(List<POSOIntegrationRequest> request);
+
+	PODetailsMainResponse uploadDocument(POSOIntegrationRequest req);
 }

@@ -24,6 +24,13 @@ public interface POWiseMmidDetailsRepository extends JpaRepository<POWiseMmidDet
 		nativeQuery = true)
 	List<Object[]> getInwardDetailsByPoId(@Param("customerinvoiceno") String customerinvoiceno);
 
+	@Query(value = "SELECT inwardentryid, testcertificatefileurl, invoicecopy_fileurl, " 
+			+ " invoice_copy, testcertificatenumber "
+			+ " from product_tblinwardentry inward  "
+			+ " WHERE inward.customerinvoiceno = :customerinvoiceno ", 
+		nativeQuery = true)
+	List<Object[]> getDocDetailsbyPoId (@Param("customerinvoiceno") String customerinvoiceno);
+
 	@Query(value = "SELECT pode.po_reference, inward.po_id, inward.mm_id,coilnumber, customerbatchid, "
 			+ " DATE_FORMAT( inward.createdon, '%d-%m-%Y') postdate, mm.mm_description, inward.fquantity"
 			+ " from product_tblinwardentry inward, jsw_material_master mm, jsw_po_receive_dtls pode"

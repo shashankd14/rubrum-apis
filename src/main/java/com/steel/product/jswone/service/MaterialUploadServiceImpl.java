@@ -186,7 +186,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 						destEntity.setUpdatedOn(new Date());
 						destEntity.setCreatedOn(oldEntity.getCreatedOn());
 					} else {
-						destEntity.setCreatedOn(oldEntity.getCreatedOn());
+						destEntity.setCreatedOn(new Date());
 						destEntity.setUpdatedOn(null);
 					}
 					if(sourceEntity.getLength()!=null && sourceEntity.getLength().length() >0 ) {

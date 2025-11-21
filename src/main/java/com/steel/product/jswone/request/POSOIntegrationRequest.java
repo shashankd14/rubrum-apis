@@ -11,6 +11,8 @@ public class POSOIntegrationRequest {
 
 	private String soId;
 
+	private String billId;
+
 	private String poInvoiceNo;
 
 	private String warehouseId;
