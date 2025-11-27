@@ -45,6 +45,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
@@ -542,6 +543,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			kk.setDestinationResponse(res.getBody().toString());
 			jswoneAuditTrailRepository.save(kk);
 			if (response != null && "0".equals( response.getCode()) ) {
+				inwardEntryRepository.updateZohoSyncStatusByPoInvNo(req.getPoInvoiceNo(), "SUCCESS", billId);
 				kk.setStatusCode(""+res.getStatusCode());
 				response.setCode("0");
 				response.setMessage( response.getMessage());
@@ -599,20 +601,25 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			}
 		}
 		try {
+			response.setUploadDocStatus("Document upload Failed");
 			kk.setSourceRespone( mapper.writeValueAsString(response));
 		} catch (Exception e) {
 			kk.setStatusCode(""+500);
 			response.setCode("57");
 			response.setMessage("JSW Connector API Not Working, Please Contact JSW Admin Team ");
 		}
-		jswoneAuditTrailRepository.save(kk);
+ 		if (billId != null && billId.length() > 0) {
+			PODetailsMainResponse uploadDocStatusResponse = uploadDocument(req);
+			if (uploadDocStatusResponse != null && "0".equals( uploadDocStatusResponse.getCode()) ) {
+				response.setUploadDocStatus("Document uploaded successfully");
+			}
+		}
 		try {
+			kk.setSourceRespone( mapper.writeValueAsString(response));
+			jswoneAuditTrailRepository.save(kk);
 			String responseStr = objectMapper.writeValueAsString(response);
 			inwardEntryRepository.updateZohoSyncRemarks(req.getPoInvoiceNo(), responseStr, billId);
 		} catch (JsonProcessingException e) {
-		}
-		if (billId != null && billId.length() > 0) {
-			uploadDocument(req);
 		}
 		return response;
 	}
@@ -712,6 +719,9 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			kk.setPoInvSyncStatus(result[1] != null ? result[1].toString() : "PENDING");
 			kk.setPoInvSyncRemarks( result[2] != null ? result[2].toString() : "");
 			kk.setManualPoFlag( result[3] != null ? result[3].toString() : "Y");
+			kk.setBillId( result[4] != null ? result[4].toString() : "");
+			kk.setZohoDocumentUploadStts(result[5] != null ? result[5].toString() : "PENDING");
+			kk.setZohoDocumentUploadRemarks( result[6] != null ? result[6].toString() : "");
 			inwardList.add(kk);
 		}
 
@@ -765,16 +775,18 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 		try {
 			RestTemplate restTemplate = new RestTemplate();
 			Map<String, String> propertyMap = commonUtil.getAllProperties();
-			kk.setPoInvoiceNo(req.getBillId() );
+			kk.setPoInvoiceNo(req.getPoInvoiceNo());
 			kk.setProcessType("UPLOAD_DOC");
+			kk.setBillid(req.getBillId());
 			HttpHeaders headers = new HttpHeaders();
 			headers.set("Content-Type", "application/json");
 			headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 			headers.set(propertyMap.get("upload_doc_headerkey"), propertyMap.get("upload_doc_headervalue"));
-			MultiValueMap<String, Object> docList = prepareDocumentUploadRequest(req.getPoInvoiceNo());
-			HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(docList, headers);
 			String url = propertyMap.get("upload_doc_url")+"/"+req.getBillId();
 			kk.setRequestUrl(url);
+			MultiValueMap<String, Object> docList = prepareDocumentUploadRequest(req.getBillId());
+			docList.forEach((key, values) -> values.removeIf(Objects::isNull));
+			HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(docList, headers);
 			System.out.println("url  is  == " + url + ", request is  - " + request);
 			kk.setRequestObj( request.toString());
 			res = restTemplate.exchange(url, HttpMethod.POST, request, String.class);
@@ -787,7 +799,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			jswoneAuditTrailRepository.save(kk);
 			if (response != null && "0".equals( response.getCode()) ) {
 				response.setCode("0");
-				//String responseStr = objectMapper.writeValueAsString(response);
+				kk.setStatusCode(""+res.getStatusCode());
 				inwardEntryRepository.updateZohoDocUploadStatus(req.getBillId());
 				response.setMessage( response.getMessage());
 			} else {
@@ -850,39 +862,51 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			response.setMessage("JSW Connector API Not Working, Please Contact JSW Admin Team ");
 		}
 		jswoneAuditTrailRepository.save(kk);
+		try {
+			kk.setSourceRespone( mapper.writeValueAsString(response));
+			jswoneAuditTrailRepository.save(kk);
+			String responseStr = objectMapper.writeValueAsString(response);
+			inwardEntryRepository.uploadDocumentZohoSyncRemarks(responseStr, req.getBillId());
+		} catch (JsonProcessingException e) {
+		}
 		return response;
 	}
 
-	private MultiValueMap<String, Object> prepareDocumentUploadRequest(String poInvNo) {
-		//FileSystemResource fileResource = new FileSystemResource("C:/Users/kanakadri.rayi/Pictures/Screenshots/jswone_logo.JPG");
-		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-		//body.add("Attachment", fileResource);
-
-		PoGrnMainRequest req = new PoGrnMainRequest();
-
-		List<Object[]> poDetails = powseMmidDetailsRepository.getDocDetailsbyPoId(poInvNo);
+	private MultiValueMap<String, Object> prepareDocumentUploadRequest(String billId) {
+		MultiValueMap<String, Object> docList = new LinkedMultiValueMap<>();
+		List<Object[]> poDetails = powseMmidDetailsRepository.getDocDetailsbyPoId(billId);
 		for (Object[] result : poDetails) {
-			//int inwardId = (result[0] != null ? Integer.parseInt(result[0].toString()) : null);
 			String testcertificatefileurl = (result[1] != null ? result[1].toString() : null);
 			String invoicecopy_fileur = (result[2] != null ? result[2].toString() : null);
-			String invoiceCopyFileName = (result[3] != null ? result[3].toString() : null);
-			String testcertificatenumber = (result[4] != null ? result[4].toString() : null);
 			
 			if(invoicecopy_fileur!=null && invoicecopy_fileur.length()>0) {
 			    String testcertificatefileNamecc = invoicecopy_fileur.split("\\?")[0];
 			    String testCertificateFileName = testcertificatefileNamecc.substring(testcertificatefileNamecc.lastIndexOf('/') + 1);
-				String filapth1 = awsS3Service.downloadS3toLocalFile(invoiceCopyFileName, gcpReportsPath+File.separator+"jswone_upload_temp"+File.separator+testCertificateFileName);
-				body.add("Attachment", filapth1);
+				try {
+					String filaPath = awsS3Service.downloadS3toLocalFile(testCertificateFileName, gcpReportsPath+File.separator+"jswone_upload_temp"+File.separator+testCertificateFileName);
+				    File file = new File(filaPath);
+				    if (file.exists() && file.isFile()) {
+				    	docList.add("Attachment", new FileSystemResource(file));
+				    }
+				} catch (Exception e) {
+					System.out.println("File Available "+testcertificatefileNamecc);
+				}
 			}
 			if(testcertificatefileurl!=null && testcertificatefileurl.length()>0) {
 			    String testcertificatefileNamecc = testcertificatefileurl.split("\\?")[0];
 			    String testCertificateFileName = testcertificatefileNamecc.substring(testcertificatefileNamecc.lastIndexOf('/') + 1);
-				String filapth2 = awsS3Service.downloadS3toLocalFile(testcertificatenumber, gcpReportsPath+File.separator+"jswone_upload_temp"+File.separator+testCertificateFileName);
-				body.add("Attachment", filapth2);
+				try {
+					String filaPath = awsS3Service.downloadS3toLocalFile(testCertificateFileName, gcpReportsPath+File.separator+"jswone_upload_temp"+File.separator+testCertificateFileName);
+				    File file = new File(filaPath);
+				    if (file.exists() && file.isFile()) {
+				    	docList.add("Attachment", new FileSystemResource(file));
+				    }
+				} catch (Exception e) {
+					System.out.println("File Available "+testcertificatefileNamecc);
+				}
 			}
 		}
-		System.out.println("filapth == "+body);
-		return body;
+		return docList;
 	}
 	
 	public MultiValueMap<String, Object> fileList(String billId) {

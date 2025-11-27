@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import lombok.extern.log4j.Log4j2;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -218,14 +219,13 @@ public class AWSS3ServiceImpl implements AWSS3Service {
     
     public String downloadS3toLocalFile(String s3Key, String localPath) {
         S3Client s3 = s3Client(); // Your existing method to get S3Client
-        // Check if the object exists first
         try {
             s3.headObject(builder -> builder.bucket(bucketName).key(s3Key));
         } catch (software.amazon.awssdk.services.s3.model.NoSuchKeyException e) {
-            log.error("S3 object not found: " + s3Key, e);
+            //log.error("S3 object not found: " + s3Key, e);
             return null; // or throw a custom exception
         } catch (software.amazon.awssdk.services.s3.model.S3Exception e) {
-            log.error("Error accessing S3 for key: " + s3Key, e);
+            //log.error("Error accessing S3 for key: " + s3Key, e);
             return null; // or throw a custom exception
         }
 
@@ -238,8 +238,11 @@ public class AWSS3ServiceImpl implements AWSS3Service {
 
             s3.getObject(getRequest, Paths.get(localPath));
             log.info("File downloaded successfully: " + localPath);
+        }  catch (SdkClientException e) {
+            //System.err.println("SDK client error: " + e.getMessage());
+            return localPath;
         } catch (Exception e) {
-            log.error("Error downloading file from S3: " + s3Key, e.getMessage());
+           // log.error("Error downloading file from S3: " + s3Key, e.getMessage());
             return localPath;
 		}
         return localPath;

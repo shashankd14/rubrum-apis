@@ -10,6 +10,13 @@ public class POInvoiceListResponse {
 	private String poInvSyncStatus;
 
 	private String manualPoFlag;
-	
+
 	private String poInvSyncRemarks;
+
+	private String billId;
+
+	private String zohoDocumentUploadStts;
+
+	private String zohoDocumentUploadRemarks;
+
 }

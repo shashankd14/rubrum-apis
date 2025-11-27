@@ -9,5 +9,7 @@ public class PoGrnMainResponse {
 
 	private String message;
 
+	private String uploadDocStatus;
+
 	private PoGrnDtailsResponse bill;
 }

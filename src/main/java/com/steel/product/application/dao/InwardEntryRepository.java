@@ -388,7 +388,12 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 
 	@Modifying
 	@Transactional
-	@Query("update InwardEntry set zohoSyncRemarks= :zohoSyncRemarks, billId=:billId  where customerinvoiceno =:customerinvoiceno")
+	@Query("update InwardEntry set zohoSyncStts= :status, bill_id = :billId where customerinvoiceno=:customerinvoiceno")
+	public int updateZohoSyncStatusByPoInvNo(@Param("customerinvoiceno") String customerinvoiceno, @Param("status") String status, String billId);
+
+	@Modifying
+	@Transactional
+	@Query("update InwardEntry set zohoSyncRemarks= :zohoSyncRemarks, billId=:billId where customerinvoiceno =:customerinvoiceno")
 	public int updateZohoSyncRemarks(@Param("customerinvoiceno") String customerinvoiceno,
 			@Param("zohoSyncRemarks") String zohoSyncRemarks, @Param("billId") String billId);
 
@@ -396,5 +401,11 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 	@Transactional
 	@Query("update InwardEntry set zohoDocuploadStts= 'SUCCESS' where billId =:billId")
 	public int updateZohoDocUploadStatus(@Param("billId") String billId);
+
+	@Modifying
+	@Transactional
+	@Query("update InwardEntry set zohoDocuploadRemarks= :zohoDocuploadRemarks where billId =:billId")
+	public int uploadDocumentZohoSyncRemarks(@Param("zohoDocuploadRemarks") String zohoDocuploadRemarks, @Param("billId") String billId);
+
 
 }

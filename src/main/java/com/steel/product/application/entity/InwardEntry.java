@@ -196,6 +196,9 @@ public class InwardEntry {
 	@Column(name = "zoho_docupload_stts")
 	private String zohoDocuploadStts;
 	
+	@Column(name = "zoho_docupload_remarks")
+	private String zohoDocuploadRemarks;
+
 	public void addInstruction(Instruction instruction){
 		if(this.instructions == null){
 			this.instructions = new LinkedHashSet<>();

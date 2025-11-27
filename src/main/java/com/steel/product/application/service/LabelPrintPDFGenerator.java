@@ -123,7 +123,7 @@ public class LabelPrintPDFGenerator {
 			coilDetailsTab.addCell(companyNameCell1);	
 			
 			Paragraph custNameParagraph = new Paragraph();
-			custNameParagraph.add(new Phrase(new Chunk("CUST NAME: ", font8b)));
+			custNameParagraph.add(new Phrase(new Chunk("Warehouse Id: ", font8b)));
 			custNameParagraph.add(new Phrase(new Chunk(resp.getPartyName().toUpperCase(), font11b)));
 			PdfPCell companyNameCell2 = new PdfPCell(custNameParagraph);
 			companyNameCell2.setHorizontalAlignment( Element.ALIGN_LEFT);
@@ -143,7 +143,7 @@ public class LabelPrintPDFGenerator {
 
 			Paragraph coilParagraph = new Paragraph();
 			coilParagraph.add(new Phrase(new Chunk("SC Inward Id: ", font8b)));
-			coilParagraph.add(new Phrase(new Chunk(resp.getCoilNo(), font11b)));
+			coilParagraph.add(new Phrase(new Chunk(resp.getCustomerBatchNo(), font11b)));
 			PdfPCell companyNameCell3 = new PdfPCell(coilParagraph);
 			companyNameCell3.setHorizontalAlignment( Element.ALIGN_LEFT);
 			companyNameCell3.setVerticalAlignment( Element.ALIGN_MIDDLE);
@@ -163,7 +163,7 @@ public class LabelPrintPDFGenerator {
 
 			Paragraph mcoilParagraph = new Paragraph();
 			mcoilParagraph.add(new Phrase(new Chunk("CUST COIL NO: ", font8b)));
-			mcoilParagraph.add(new Phrase(new Chunk(resp.getCustomerBatchNo(), font11b)));			
+			mcoilParagraph.add(new Phrase(new Chunk("", font11b)));			
 			PdfPCell companyNameCell5 = new PdfPCell(mcoilParagraph);
 			companyNameCell5.setHorizontalAlignment( Element.ALIGN_LEFT);
 			companyNameCell5.setVerticalAlignment( Element.ALIGN_MIDDLE);
@@ -217,8 +217,8 @@ public class LabelPrintPDFGenerator {
 			coilDetailsTab.addCell(companyNameCell10);			
 
 			Paragraph coilbatchParagraph = new Paragraph();
-			coilbatchParagraph.add(new Phrase(new Chunk("COIL BATCH ID:  ", font8b)));
-			coilbatchParagraph.add(new Phrase(new Chunk(resp.getCoilBatchNo(), font11b)));
+			coilbatchParagraph.add(new Phrase(new Chunk("JSW One Batch Id:  ", font8b)));
+			coilbatchParagraph.add(new Phrase(new Chunk(resp.getCoilNo(), font11b)));
 			PdfPCell companyNameCell11 = new PdfPCell(coilbatchParagraph);
 			companyNameCell11.setHorizontalAlignment( Element.ALIGN_LEFT);
 			companyNameCell11.setColspan(2);

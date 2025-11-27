@@ -633,7 +633,7 @@ public class ReportsServiceImpl implements ReportsService {
 			acctStatementMap.put("1",
 			new Object[] { "Order ID", "DC No", "Dispatch Date", "CoilNumber", "SC Inward ID", "Location Name","MaterialDesc",
 					"MaterialGrade", "Subgrade","Thickness", "Width", "Length", "Qty_Sheets", "Delivery Weight","Additional  Weight",
-					"Vehicle No", "Processing Rate", "Quality Remarks" });
+					"Vehicle No", "Delivery Remarks", "Processing Rate", "Quality Remarks" });
 			int cnt = 1;
 			for (OutwardReportViewEntity kk : partyList) {
 				cnt++;
@@ -641,7 +641,7 @@ public class ReportsServiceImpl implements ReportsService {
 				new Object[] { "", kk.getDeliveryid(), kk.getCreatedon(), kk.getCoilnumber(),
 				kk.getCustomerbatchid(), kk.getLocationname(), kk.getMaterialdesc(), kk.getMaterialgrade(),kk.getSubgrade(),
 				kk.getFthickness(), kk.getFwidth(), kk.getFlength(), kk.getNoofpieces(),
-				kk.getDeliveryWeight(), kk.getAdditionalWeight(), kk.getVehicleno(), "", "" });
+				kk.getDeliveryWeight(), kk.getAdditionalWeight(), kk.getVehicleno(), kk.getRemarks(), "", "" });
 			}
 		} catch (Exception e) {
 			LOGGER.error("Error at getOutwardSummaryReportDetails " + e.getMessage());
@@ -729,7 +729,7 @@ public class ReportsServiceImpl implements ReportsService {
 			acctStatementMap.put("1",
 			new Object[] { "Order ID", "Plan Id","DC No", "Dispatch Date", "CoilNumber", "SC Inward ID", "Location Name", "MaterialDesc",
 					"MaterialGrade", "Subgrage","Thickness", "Width", "Length", "Qty_Sheets", "Delivery Weight","Additional  Weight",
-					"Vehicle No", "Processing Rate", "Quality Remarks" });
+					"Vehicle No","Delivery Remarks", "Processing Rate", "Quality Remarks" });
 			int cnt = 1;
 			for (OutwardPacketwiseReportViewEntity kk : partyList) {
 				cnt++;
@@ -737,7 +737,7 @@ public class ReportsServiceImpl implements ReportsService {
 				new Object[] { "", kk.getPlanid(), kk.getDeliveryid(), kk.getCreatedon(), kk.getCoilnumber(),
 				kk.getCustomerbatchid(),kk.getLocationname() , kk.getMaterialdesc(), kk.getMaterialgrade(), kk.getSubgrade(),
 				kk.getFthickness(), kk.getFwidth(), kk.getFlength(), kk.getNoofpieces(),
-				kk.getDeliveryWeight(), kk.getAdditionalWeight(), kk.getVehicleno(), "", "" });
+				kk.getDeliveryWeight(), kk.getAdditionalWeight(), kk.getRemarks(), kk.getVehicleno(), "", "" });
 			}
 		} catch (Exception e) {
 			LOGGER.error("Error at getOutwardReportDetails " + e.getMessage());

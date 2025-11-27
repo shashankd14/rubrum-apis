@@ -45,6 +45,9 @@ public class OutwardPacketwiseReportViewEntity {
 
 	@Column(name = "subgrade")
 	private String subgrade;
+	
+	@Column(name = "remarks")
+	private String remarks;
 
 	@Column(name = "fthickness")
 	private String fthickness;

@@ -17,7 +17,7 @@ public interface POWiseMmidDetailsRepository extends JpaRepository<POWiseMmidDet
 	POWiseMmidDetailsEntity findByMmId(String sku);
 
 	@Query(value = "SELECT pode.po_reference, inward.po_id, inward.mm_id, pode.mmid_details_object, "
-			+ " customerinvoiceno, customerbatchid, DATE_FORMAT( inward.dinvoicedate, '%d-%m-%Y') postdate,fquantity "
+			+ " customerinvoiceno, customerbatchid, DATE_FORMAT( inward.dinvoicedate, '%d-%m-%Y') postdate, round((fquantity  / 1000),3) fquantity "
 			+ " from product_tblinwardentry inward, jsw_powise_mmid_details pode "
 			+ " WHERE pode.mm_id = inward.mm_id and inward.po_id = pode.po_id and "
 			+ " inward.customerinvoiceno = :customerinvoiceno ", 
@@ -27,9 +27,9 @@ public interface POWiseMmidDetailsRepository extends JpaRepository<POWiseMmidDet
 	@Query(value = "SELECT inwardentryid, testcertificatefileurl, invoicecopy_fileurl, " 
 			+ " invoice_copy, testcertificatenumber "
 			+ " from product_tblinwardentry inward  "
-			+ " WHERE inward.customerinvoiceno = :customerinvoiceno ", 
+			+ " WHERE inward.bill_id = :billId ", 
 		nativeQuery = true)
-	List<Object[]> getDocDetailsbyPoId (@Param("customerinvoiceno") String customerinvoiceno);
+	List<Object[]> getDocDetailsbyPoId (@Param("billId") String billId);
 
 	@Query(value = "SELECT pode.po_reference, inward.po_id, inward.mm_id,coilnumber, customerbatchid, "
 			+ " DATE_FORMAT( inward.createdon, '%d-%m-%Y') postdate, mm.mm_description, inward.fquantity"
@@ -42,7 +42,8 @@ public interface POWiseMmidDetailsRepository extends JpaRepository<POWiseMmidDet
 		nativeQuery = true)
 	List<Object[]> allpoinvlists();
 
-	@Query(value = "SELECT distinct inward.customerinvoiceno, inward.zoho_sync_stts, inward.zoho_sync_remarks, manual_po_flag "
+	@Query(value = "SELECT distinct inward.customerinvoiceno, inward.zoho_sync_stts, inward.zoho_sync_remarks, manual_po_flag, "
+			+ " bill_id, zoho_docupload_stts,zoho_docupload_remarks "
 			+ " from product_tblinwardentry inward "
 			+ " where case when :searchText is not null and LENGTH(:searchText) >0 then (inward.customerinvoiceno like %:searchText%) else 1=1 end " 
 			+ " order by inwardentryid desc",
