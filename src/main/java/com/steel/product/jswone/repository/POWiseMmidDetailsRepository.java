@@ -32,9 +32,11 @@ public interface POWiseMmidDetailsRepository extends JpaRepository<POWiseMmidDet
 	List<Object[]> getDocDetailsbyPoId (@Param("billId") String billId);
 
 	@Query(value = "SELECT pode.po_reference, inward.po_id, inward.mm_id,coilnumber, customerbatchid, "
-			+ " DATE_FORMAT( inward.createdon, '%d-%m-%Y') postdate, mm.mm_description, inward.fquantity"
+			+ " DATE_FORMAT( inward.createdon, '%d-%m-%Y') postdate, mm.mm_description, inward.fquantity, valueofgoods ,"
+			+ " (SELECT sum(valueofgoods) from product_tblinwardentry inward, jsw_material_master mm, jsw_po_receive_dtls pode "  
+			+ " WHERE mm.mm_id = inward.mm_id and pode.po_id = inward.po_id and inward.customerinvoiceno = :customerinvoiceno ) as total  "
 			+ " from product_tblinwardentry inward, jsw_material_master mm, jsw_po_receive_dtls pode"
-			+ " WHERE  mm.mm_id = inward.mm_id and pode.po_id = inward.po_id and "
+			+ " WHERE mm.mm_id = inward.mm_id and pode.po_id = inward.po_id and "
 			+ " inward.customerinvoiceno = :customerinvoiceno ", nativeQuery = true)
 	List<Object[]> poWiseInwardList(@Param("customerinvoiceno") String customerinvoiceno);
 

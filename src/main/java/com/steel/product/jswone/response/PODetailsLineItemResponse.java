@@ -31,4 +31,8 @@ public class PODetailsLineItemResponse {
 
 	private String quantity;
 
+	private String quantity_billed;
+
+	private String item_total;
+
 }

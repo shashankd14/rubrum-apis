@@ -693,6 +693,8 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			kk.setPostingDate(result[5] != null ? result[5].toString() : null);
 			kk.setMmDesc(result[6] != null ? result[6].toString() : null);
 			kk.setQty(result[7] != null ? result[7].toString() : null);
+			kk.setValueOfGoods(result[8] != null ? result[8].toString() : null);
+			kk.setTotalValueOfGoods( result[9] != null ? result[9].toString() : null);
 			inwardList.add(kk);
 		}
 

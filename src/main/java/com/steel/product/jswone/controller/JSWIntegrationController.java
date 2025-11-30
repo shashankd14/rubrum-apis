@@ -19,6 +19,7 @@ import com.steel.product.jswone.request.MMIDReceiveMainRequest;
 import com.steel.product.jswone.request.POSOIntegrationRequest;
 import com.steel.product.jswone.response.PODetailsLineItemResponse;
 import com.steel.product.jswone.response.PODetailsMainResponse;
+import com.steel.product.jswone.response.PODetailsResponseDTO;
 import com.steel.product.jswone.response.POListResponse;
 import com.steel.product.jswone.response.PoGrnMainResponse;
 import com.steel.product.jswone.response.SOListResponse;
@@ -89,9 +90,13 @@ public class JSWIntegrationController {
 		Map<String, Object> response = new HashMap<>();
 		try {
 			resp = service.podetails(request);
-			List<String> locationwisePOList = new ArrayList<String>();
+			List<PODetailsResponseDTO> locationwisePOList = new ArrayList<>();
 			for (PODetailsLineItemResponse result1 : resp.getPurchaseorder().getLine_items()) {
-				locationwisePOList.add(result1.getSku());
+				PODetailsResponseDTO respdto = new PODetailsResponseDTO();
+				respdto.setSku(result1.getSku());
+				respdto.setQuantity(result1.getQuantity());
+				respdto.setQuantity_billed(result1.getQuantity_billed());
+				locationwisePOList.add(respdto);
 			}
 			response.put("code", resp.getCode());
 			response.put("message", resp.getMessage());
