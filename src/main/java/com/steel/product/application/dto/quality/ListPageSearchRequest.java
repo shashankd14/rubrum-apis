@@ -27,6 +27,8 @@ public class ListPageSearchRequest {
 
 	private int location;
 
+	private int branchId;
+
 	private String batchNo;
 
 }

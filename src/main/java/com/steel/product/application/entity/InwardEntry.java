@@ -964,7 +964,9 @@ public class InwardEntry {
 		inwardEntryResponseDto.setValueOfGoods(inwardEntry.getValueOfGoods());
 		inwardEntryResponseDto.setYs(inwardEntry.getYs());
 		inwardEntryResponseDto.setUts(inwardEntry.getUts());
-		inwardEntryResponseDto.setValueOfGoods(inwardEntry.getValueOfGoods());
+		inwardEntryResponseDto.setEl(inwardEntry.getEl());
+		inwardEntryResponseDto.setEl(inwardEntry.getEl());
+		inwardEntryResponseDto.setInvoicecopyFileurl(inwardEntry.getInvoicecopyFileurl());
 		inwardEntryResponseDto.setCreatedBy(inwardEntry.getCreatedBy());
 		inwardEntryResponseDto.setCreatedOn(inwardEntry.getCreatedOn());
 		inwardEntryResponseDto.setUpdatedBy(inwardEntry.getUpdatedBy());

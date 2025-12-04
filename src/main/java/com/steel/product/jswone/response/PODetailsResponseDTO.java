@@ -1,5 +1,7 @@
 package com.steel.product.jswone.response;
 
+import java.math.BigDecimal;
+
 import lombok.Data;
 
 @Data
@@ -7,8 +9,8 @@ public class PODetailsResponseDTO {
 
 	private String sku;
 
-	private String quantity;
+	private BigDecimal quantity;
 
-	private String quantity_billed;
+	private BigDecimal quantity_billed;
 
 }

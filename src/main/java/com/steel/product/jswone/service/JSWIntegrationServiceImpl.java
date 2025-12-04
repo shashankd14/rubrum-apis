@@ -29,6 +29,7 @@ import com.steel.product.jswone.request.POSOIntegrationRequest;
 import com.steel.product.jswone.response.PODetailsLineItemResponse;
 import com.steel.product.jswone.response.PODetailsMainResponse;
 import com.steel.product.jswone.response.POInvoiceListResponse;
+import com.steel.product.jswone.response.POWiseInwardListMainResponse;
 import com.steel.product.jswone.response.POWiseInwardListResponse;
 import com.steel.product.jswone.response.PoGrnCustomType;
 import com.steel.product.jswone.response.PoGrnLineItem;
@@ -497,6 +498,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 					if (existingEntity != null && existingEntity.getId() > 0) {
 						kk.setId(existingEntity.getId());
 						kk.setCreatedOn(existingEntity.getCreatedOn());
+						kk.setUpdatedOn(new Date());
 					} else {
 						kk.setCreatedOn(new Date());
 						kk.setUpdatedOn(new Date());
@@ -633,7 +635,6 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 		for (Object[] result : poDetails) {
 			List<PoGrnLineItemBatches> batches = new ArrayList<>();
 			PoGrnCustomType customParam = new PoGrnCustomType();
-
 			String po_reference = (result[0] != null ? result[0].toString() : null);
 			// String po_id = (result[1] != null ? result[1].toString() : null);
 			// String mm_id = (result[2] != null ? result[2].toString() : null);
@@ -660,6 +661,12 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			customParam.setValue("");
 			customTypeList.add(customParam);
 
+			BigDecimal availQty = lineItems.getQuantity().subtract(lineItems.getQuantity_billed());
+			BigDecimal extraQty = new BigDecimal("0.00");
+			if (fquantity.compareTo(availQty) > 0) {
+				extraQty = fquantity.subtract(availQty);
+				fquantity = availQty;
+			}
 			PoGrnLineItem lineItem = new PoGrnLineItem();
 			lineItem.setItem_id(lineItems.getItem_id());
 			lineItem.setPurchase_order_line_item_id(lineItems.getLine_item_id());
@@ -674,6 +681,24 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			batches.add(batchObj);
 			lineItem.setBatches(batches);
 			line_items.add(lineItem);
+
+			if (extraQty.compareTo(BigDecimal.ZERO) > 0) {
+				List<PoGrnLineItemBatches> batches_pt = new ArrayList<>();
+				PoGrnLineItem lineItem_pt = new PoGrnLineItem();
+				lineItem_pt.setItem_id(lineItems.getItem_id());
+				lineItem_pt.setPurchase_order_line_item_id(lineItems.getLine_item_id());
+				lineItem_pt.setSku(lineItems.getSku());
+				lineItem_pt.setRate(lineItems.getRate());
+				lineItem_pt.setQuantity(extraQty);
+				lineItem_pt.setHsn_or_sac(lineItems.getHsn_or_sac());
+				lineItem_pt.setTax_id(lineItems.getTax_id());
+				PoGrnLineItemBatches batchObj_pt = new PoGrnLineItemBatches();
+				batchObj_pt.setBatch_number(custBatchNo);
+				batchObj_pt.setIn_quantity(extraQty);
+				batches_pt.add(batchObj_pt);
+				lineItem_pt.setBatches(batches_pt);
+				line_items.add(lineItem_pt);
+			}
 		}
 		req.setLine_items(line_items);
 		req.setCustom_fields(customTypeList);
@@ -682,6 +707,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 	@Override
 	public Map<String, Object> poWiseInwardList(POSOIntegrationRequest request) {
 		List<POWiseInwardListResponse> inwardList = new ArrayList<>();
+		POWiseInwardListMainResponse mainReq = new POWiseInwardListMainResponse();
 		List<Object[]> poDetails = powseMmidDetailsRepository.poWiseInwardList(request.getPoInvoiceNo());
 		for (Object[] result : poDetails) {
 			POWiseInwardListResponse kk = new POWiseInwardListResponse();
@@ -694,12 +720,14 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			kk.setMmDesc(result[6] != null ? result[6].toString() : null);
 			kk.setQty(result[7] != null ? result[7].toString() : null);
 			kk.setValueOfGoods(result[8] != null ? result[8].toString() : null);
-			kk.setTotalValueOfGoods( result[9] != null ? result[9].toString() : null);
+			mainReq.setTotalValueOfGoods( result[9] != null ? result[9].toString() : null);
+			mainReq.setPoReference(result[0] != null ? result[0].toString() : null);
+			mainReq.setPoId(result[1] != null ? result[1].toString() : null);
 			inwardList.add(kk);
 		}
-
+		mainReq.setInwardList(inwardList);
 		Map<String, Object> response = new HashMap<>();
-		response.put("content", inwardList);
+		response.put("content", mainReq);
 		response.put("currentPage", 1);
 		response.put("totalItems", inwardList.size());
 		response.put("totalPages", 1);

@@ -19,8 +19,6 @@ public class POWiseInwardListResponse {
 
 	private String valueOfGoods;
 
-	private String totalValueOfGoods;
-
 	private String coilNumber;
 
 	private String customerBatchId;

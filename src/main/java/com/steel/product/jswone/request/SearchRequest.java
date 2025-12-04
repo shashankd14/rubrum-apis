@@ -15,11 +15,13 @@ public class SearchRequest implements Serializable {
 	private Integer gradeId;
 
 	private Integer brandId;
-	
+
 	private Integer productId;
-	
+
+	private Integer branchId;
+
 	private Integer subcategoryId;
-	
+
 	private Integer leafcategoryId;
 
 	private String searchText;

@@ -29,6 +29,9 @@ public class Party {
 	@Column(name = "contactname")
 	private String contactName;
 
+	@Column(name = "branch_id")
+	private int branchId;
+	
 	@Column(name = "contactnumber")
 	private String contactNumber;
 

@@ -77,4 +77,22 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 
 	Optional<SalesOrderJswEntity> findBySoNumberIgnoreCase(String soNumber);
 	
+	@Query(value = "SELECT distinct so.so_id, so.so_number "
+			+ " FROM jsw_sales_order so, jsw_sales_order_child so_child "
+			+ " where so.is_deleted = 0 and so_child.is_deleted = 0 and so_child.so_id = so.so_id "
+			+ " and case when :soId is not null and LENGTH(:soId) >0 then so.so_id = :soId else so.so_id end " 
+			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (so_child.mm_id like %:searchText% or so.so_number like %:searchText%) else 1=1 end " 
+			+ " order by so.so_id desc",
+		countQuery = "SELECT count(distinct so.so_id ) " + 
+			"  FROM jsw_sales_order so, jsw_sales_order_child so_child" + 
+		  	"  where so.is_deleted = 0 and so_child.is_deleted = 0 and so_child.so_id = so.so_id" + 
+		  	"  and case when :soId is not null and LENGTH(:soId) >0 then so.so_id = :soId else so.so_id end \" \r\n" + 
+		  	"  and case when :searchText is not null and LENGTH(:searchText) >0 then (so_child.mm_id like %:searchText% or so.so_number like %:searchText%) else 1=1 end \" \r\n" + 
+		  	"  order by so.so_id desc", 
+		nativeQuery = true)
+	Page<Object[]> listAllSOIDsConsolidatePlan(@Param("searchText") String searchText, @Param("soId") Integer soId, Pageable pageable);
+	
+	
+	
+	
 }
