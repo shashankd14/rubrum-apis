@@ -31,12 +31,4 @@ public class BranchMasterController {
 		List<BranchMasterDTO> pageResult = branchMasterService.getList(searchPageRequest);
 		return new ResponseEntity<Object>(pageResult, HttpStatus.OK);
 	}
-
-	@PostMapping({ "/location" })
-	public ResponseEntity<Object> getLocationList(@RequestBody SearchRequest searchPageRequest) {
-		List<BranchMasterDTO> pageResult = branchMasterService.getList(searchPageRequest);
-		return new ResponseEntity<Object>(pageResult, HttpStatus.OK);
-	}
-
-	
 }

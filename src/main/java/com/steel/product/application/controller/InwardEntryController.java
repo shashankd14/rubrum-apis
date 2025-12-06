@@ -211,15 +211,17 @@ public class InwardEntryController {
 			inwardEntry.setCustomerBatchId(inward.getCustomerBatchId());
 			inwardEntry.setPoId(inward.getPoId());
 
-			inwardEntry.setMaterial(this.matDescService.getMatById(inward.getMaterialId()));
-			inwardEntry.setMaterialGrade(matGradeService.getById(inward.getMaterialGradeId()));
-
+			if (inward.getMaterialId() > 0) {
+				inwardEntry.setMaterial(this.matDescService.getMatById(inward.getMaterialId()));
+			}
+			if (inward.getMaterialGradeId() > 0) {
+				inwardEntry.setMaterialGrade(matGradeService.getById(inward.getMaterialGradeId()));
+			}
 			inwardEntry.setfWidth(inward.getWidth());
 			inwardEntry.setfThickness(inward.getThickness());
 			inwardEntry.setfLength(inward.getLength());
 			inwardEntry.setfQuantity(inward.getPresentWeight());
 			inwardEntry.setGrossWeight(inward.getGrossWeight());
-
 			inwardEntry.setStatus(this.statusService.getStatusById(inward.getStatusId()));
 			inwardEntry.setvProcess(inward.getProcess());
 			inwardEntry.setTdcNo(inward.getTdcNo());
@@ -246,12 +248,9 @@ public class InwardEntryController {
 				inwardEntry.setInvoiceCopy(modifiedFileName);
 				inwardEntry.setInvoicecopyFileurl( invoiceCopyFileUrl);
 			}
-
 			inwardEntry.setTestCertificateNumber(inward.getTestCertificateNumber());
 			inwdEntrySvc.saveEntry(inwardEntry);
-
 			if (inward.getInwardFiles() != null) {
-
 				for (MultipartFile file : inward.getInwardFiles()) {
 					InwardDoc inwardDoc = new InwardDoc();
 					inwardDoc.setInwardEntry(inwardEntry);
@@ -262,10 +261,12 @@ public class InwardEntryController {
 					inwardDocService.save(inwardDoc);
 				}
 			}
-
-			return new ResponseEntity<Object>("success", HttpStatus.OK);
+			Map<String, Object> response = new HashMap<>();
+			response.put("status", "success");
+			response.put("code", 200);
+			response.put("message", "Inward updated successfully");
+			return new ResponseEntity<>(response, HttpStatus.OK);
 		} catch (Exception e) {
-
 			System.out.println(e.toString());
 			e.printStackTrace();
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);

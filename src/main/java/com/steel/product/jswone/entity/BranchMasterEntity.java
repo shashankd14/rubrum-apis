@@ -18,7 +18,7 @@ public class BranchMasterEntity {
 	@Column(name = "branch_id")
 	private Integer branchId;
 
-	@Column(name = "brand_name")
+	@Column(name = "branch_name")
 	private String branchName;
 
 	@Column(name = "address")
