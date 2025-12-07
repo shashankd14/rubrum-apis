@@ -1,11 +1,16 @@
 package com.steel.product.application.entity;
 
+import java.math.BigDecimal;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import javax.persistence.*;
 
 @Builder
 @NoArgsConstructor
@@ -59,22 +64,13 @@ public class OutwardReportViewEntity {
 	private String tdcNo;
 
 	@Column(name = "qty")
-	private String qty;
+	private BigDecimal qty;
 
 	@Column(name = "rate")
-	private String rate;
+	private BigDecimal rate;
 
 	@Column(name = "totalprice")
-	private String totalprice;
-
-	@Column(name = "cgst")
-	private String cgst;
-
-	@Column(name = "sgst")
-	private String sgst;
-
-	@Column(name = "grosstotal")
-	private String grosstotal;
+	private BigDecimal totalprice;
 
 	@Column(name = "party_id")
 	private int partyId;

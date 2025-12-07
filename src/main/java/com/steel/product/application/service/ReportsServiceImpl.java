@@ -2,6 +2,8 @@ package com.steel.product.application.service;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -1060,12 +1062,23 @@ public class ReportsServiceImpl implements ReportsService {
 			int cnt = 1;
 			for (OutwardReportViewEntity kk : partyList) {
 				cnt++;
+				
+				BigDecimal cgst =  kk.getTotalprice().multiply(new BigDecimal("0.09"));
+				BigDecimal sgst =  kk.getTotalprice().multiply(new BigDecimal("0.09"));
+				BigDecimal grossTotal  =  kk.getTotalprice().add(cgst.add(sgst));
+				
 				acctStatementMap.put("" + cnt,
 						new Object[] { kk.getAspendcno(), kk.getCustomerbatchid(), kk.getCoilnumber(),
 								kk.getVehicleno(), kk.getCustomername(), kk.getSapinvoiceno(), kk.getSapinvoicedate(),
-								kk.getMaterialdesc(), kk.getMaterialgrade(), kk.getTdcNo(), kk.getProcessname(), kk.getQty(),
-								kk.getRate(), kk.getTotalprice(), kk.getTotalprice(), kk.getCgst(), kk.getSgst(),
-								kk.getGrosstotal() });
+								kk.getMaterialdesc(), kk.getMaterialgrade(), kk.getTdcNo(), kk.getProcessname(), 
+								(kk.getQty().divide(new BigDecimal("1000")).setScale(3, RoundingMode.HALF_UP)),
+								kk.getRate(), 
+								kk.getTotalprice().setScale(2, RoundingMode.HALF_UP),
+								kk.getTotalprice().setScale(2, RoundingMode.HALF_UP), 
+								cgst.setScale(2, RoundingMode.HALF_UP), 
+								sgst.setScale(2, RoundingMode.HALF_UP), 
+								grossTotal.setScale(2, RoundingMode.HALF_UP)
+								});
 			}
 		} catch (Exception e) {
 			LOGGER.error("Error at getMonthlyOutwardReportDetails " + e.getMessage());
