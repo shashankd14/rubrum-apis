@@ -1,5 +1,31 @@
 package com.steel.product.application.service;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.stereotype.Service;
+
 import com.steel.product.application.dao.FGReportViewRepository;
 import com.steel.product.application.dao.InwardReportViewRepository;
 import com.steel.product.application.dao.MonthwisePlanTrackerEndUserwiseViewRepository;
@@ -26,31 +52,6 @@ import com.steel.product.application.entity.StockSummaryReportViewEntity;
 import com.steel.product.application.entity.WIPReportViewEntity;
 import com.steel.product.application.util.CSVUtil;
 import com.steel.product.application.util.EmailUtil;
-import org.apache.poi.ss.usermodel.BorderStyle;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.HorizontalAlignment;
-import org.apache.poi.xssf.usermodel.XSSFRow;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.env.Environment;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.stereotype.Service;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 @Service
 public class ReportsServiceImpl implements ReportsService {
@@ -333,7 +334,7 @@ public class ReportsServiceImpl implements ReportsService {
 
 			acctStatementMap.put("1",
 			new Object[] { "CoilNumber", "CustomerBatchId", "Finishing Date","Current Date","Coil Age(No'of Days)",
-					"No'of Pieces","MaterialDesc", "MaterialGrade","Remarks", "Packet Id", "Thickness", "Actual Width",
+					"No'of Pieces","MaterialDesc", "MaterialGrade", "TDC No","Remarks", "Packet Id", "Thickness", "Actual Width",
 					"Actual Length", "Actual Weight", "Classification Tag", "End User Tag" });
 
 			int cnt = 1;
@@ -343,7 +344,7 @@ public class ReportsServiceImpl implements ReportsService {
 					acctStatementMap.put("" + cnt,
 					new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getFinishingDate(),
 					kk.getCurrentdate(), kk.getCoilage(), kk.getNoofpieces(),kk.getMaterialDesc(), kk.getMaterialGrade(),
-					kk.getRemarks(), kk.getPacketId(), kk.getThickness(), kk.getActualwidth(),
+					kk.getTdcNo(), kk.getRemarks(), kk.getPacketId(), kk.getThickness(), kk.getActualwidth(),
 					kk.getActuallength(), kk.getActualweight(), kk.getClassificationTag(),
 					((kk.getEnduserTagName() != null && kk.getEnduserTagName().length() > 0) ? kk.getEnduserTagName() : "") });
 				}
@@ -362,16 +363,16 @@ public class ReportsServiceImpl implements ReportsService {
 
 			acctStatementMap.put("1",
 					new Object[] { "CoilNumber", "CustomerBatchId", "Finishing Date","Current Date","Coil Age(No'of Days)",
-							"No'of Pieces","MaterialDesc", "MaterialGrade","Remarks","Packet Id", "Thickness", "Actual Width", 
-							"Actual Length", "Actual Weight", "Classification Tag", "End User Tag" });
+							"No'of Pieces","MaterialDesc", "MaterialGrade", "TDC No","Remarks","Packet Id", "Thickness",
+							"Actual Width", "Actual Length", "Actual Weight", "Classification Tag", "End User Tag" });
 
 			int cnt = 1;
 			for (FGReportViewEntity kk : partyList) {
 				if (!("FG".equals(kk.getClassificationTag()))) {
 					cnt++;
 					acctStatementMap.put("" + cnt, new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(),
-					kk.getFinishingDate(), kk.getCurrentdate(), kk.getCoilage(),
-					kk.getNoofpieces(), kk.getMaterialGrade(), kk.getRemarks(), kk.getPacketId(), kk.getThickness(),
+					kk.getFinishingDate(), kk.getCurrentdate(), kk.getCoilage(),kk.getNoofpieces(), 
+					kk.getMaterialGrade(), kk.getTdcNo(), kk.getRemarks(), kk.getPacketId(), kk.getThickness(),
 					kk.getActualwidth(), kk.getActuallength(), kk.getActualweight(), kk.getClassificationTag(),
 					((kk.getEnduserTagName() != null && kk.getEnduserTagName().length() > 0) ? kk.getEnduserTagName() : "") });
 				}
@@ -1028,18 +1029,17 @@ public class ReportsServiceImpl implements ReportsService {
 
 			acctStatementMap.put("1",
 					new Object[] { "CustomerName", "CoilNumber", "CustomerBatchId", "ReceivedDate", "MaterialDesc",
-							"MaterialGrade", "Thickness", "Width", "Length", "NetWeight", "customerinvoiceno",
+							"MaterialGrade", "TDC No", "Thickness", "Width", "Length", "NetWeight", "customerinvoiceno",
 							"customerinvoicedate", "InwardStatus" });
 
 			int cnt = 1;
 			for (InwardReportViewEntity kk : partyList) {
 				cnt++;
-
 				acctStatementMap.put("" + cnt,
 						new Object[] { kk.getCustomerName(), kk.getCoilnumber(), kk.getCustomerbatchid(),
-								kk.getReceivedDate(), kk.getMaterialdesc(), kk.getMaterialGrade(), kk.getFthickness(),
-								kk.getFwidth(), kk.getFlength(), kk.getNetWeight(), kk.getCustomerinvoiceno(),
-								kk.getCustomerinvoicedate(), kk.getInwardStatus() });
+								kk.getReceivedDate(), kk.getMaterialdesc(), kk.getMaterialGrade(), kk.getTdcNo(),
+								kk.getFthickness(), kk.getFwidth(), kk.getFlength(), kk.getNetWeight(),
+								kk.getCustomerinvoiceno(), kk.getCustomerinvoicedate(), kk.getInwardStatus() });
 			}
 		} catch (Exception e) {
 			LOGGER.error("Error at getInwardReportDetails " + e.getMessage());
@@ -1055,7 +1055,7 @@ public class ReportsServiceImpl implements ReportsService {
 			List<OutwardReportViewEntity> partyList = outwardReportViewRepository.findByPartyIdAndMnthAndYer(partyId, month, year);
 			acctStatementMap.put("1",
 					new Object[] { "ASPEN DC NUMBER", "customerbatchid", "coilnumber", "vehicleno", "Customer name", "SAP Invoice No", "SAP INVOICE DATE",
-							"Material Description", "Material Grade", "PROCESS", "Qty ", "Rate/per MT", "Subtotal", "Total Amount",
+							"Material Description", "Material Grade", "TDC No", "PROCESS", "Qty ", "Rate/per MT", "Subtotal", "Total Amount",
 							"CGST 6%", "SGST 6%", "Gross Total" });
 			int cnt = 1;
 			for (OutwardReportViewEntity kk : partyList) {
@@ -1063,7 +1063,7 @@ public class ReportsServiceImpl implements ReportsService {
 				acctStatementMap.put("" + cnt,
 						new Object[] { kk.getAspendcno(), kk.getCustomerbatchid(), kk.getCoilnumber(),
 								kk.getVehicleno(), kk.getCustomername(), kk.getSapinvoiceno(), kk.getSapinvoicedate(),
-								kk.getMaterialdesc(), kk.getMaterialgrade(), kk.getProcessname(), kk.getQty(),
+								kk.getMaterialdesc(), kk.getMaterialgrade(), kk.getTdcNo(), kk.getProcessname(), kk.getQty(),
 								kk.getRate(), kk.getTotalprice(), kk.getTotalprice(), kk.getCgst(), kk.getSgst(),
 								kk.getGrosstotal() });
 			}

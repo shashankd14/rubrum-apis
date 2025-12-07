@@ -18,13 +18,13 @@ public class InwardReportViewEntity {
 	@Id
 	@Column(name = "id")
 	private Integer id;
-	
+
 	@Column(name = "mnth")
 	private Integer mnth;
-	
+
 	@Column(name = "yer")
 	private Integer yer;
-	
+
 	@Column(name = "customer_name")
 	private String customerName;
 
@@ -33,15 +33,18 @@ public class InwardReportViewEntity {
 
 	@Column(name = "customerbatchid")
 	private String customerbatchid;
-	
+
 	@Column(name = "received_date")
 	private String receivedDate;
-	
+
 	@Column(name = "material_desc")
 	private String materialdesc;
 
 	@Column(name = "material_grade")
 	private String materialGrade;
+
+	@Column(name = "tdc_no")
+	private String tdcNo;
 
 	@Column(name = "fthickness")
 	private String fthickness;

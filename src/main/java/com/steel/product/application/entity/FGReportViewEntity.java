@@ -43,6 +43,9 @@ public class FGReportViewEntity {
 	@Column(name = "remarks")
 	private String remarks;
 
+	@Column(name = "tdc_no")
+	private String tdcNo;
+
 	@Column(name = "packet_id")
 	private String packetId;
 

@@ -24,7 +24,7 @@ public class OutwardReportViewEntity {
 
 	@Column(name = "yer")
 	private Integer yer;
-	
+
 	@Column(name = "customerbatchid")
 	private String customerbatchid;
 
@@ -54,6 +54,9 @@ public class OutwardReportViewEntity {
 
 	@Column(name = "processname")
 	private String processname;
+
+	@Column(name = "tdc_no")
+	private String tdcNo;
 
 	@Column(name = "qty")
 	private String qty;
