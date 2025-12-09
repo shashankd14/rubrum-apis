@@ -66,6 +66,18 @@ public class OutwardReportViewEntity {
 	@Column(name = "qty")
 	private BigDecimal qty;
 
+	@Column(name = "base_proce")
+	private BigDecimal basePrice;
+
+	@Column(name = "packing_charges")
+	private BigDecimal packingCharges;
+
+	@Column(name = "lamination_charges")
+	private BigDecimal laminationCharges;
+
+	@Column(name = "additional_charges")
+	private BigDecimal additionalCharges;
+
 	@Column(name = "rate")
 	private BigDecimal rate;
 

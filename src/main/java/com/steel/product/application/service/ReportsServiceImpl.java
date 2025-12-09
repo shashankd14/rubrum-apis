@@ -1056,9 +1056,15 @@ public class ReportsServiceImpl implements ReportsService {
 		try {
 			List<OutwardReportViewEntity> partyList = outwardReportViewRepository.findByPartyIdAndMnthAndYer(partyId, month, year);
 			acctStatementMap.put("1",
-					new Object[] { "ASPEN DC NUMBER", "customerbatchid", "coilnumber", "vehicleno", "Customer name", "SAP Invoice No", "SAP INVOICE DATE",
-							"Material Description", "Material Grade", "TDC No", "PROCESS", "Qty ", "Rate/per MT", "Subtotal", "Total Amount",
-							"CGST 6%", "SGST 6%", "Gross Total" });
+					new Object[] { "Aspen DC No", "customerbatchid", "coilnumber", "vehicleno", "customer name", "sap invoice No", "sap invoice date",
+							"material description", "material grade", "tdc no", "process type", "Qty ", 
+							"Base Rate", 
+							"Packing Charges", 
+							"Lamination Charges", 
+							"Additional Charges", 
+							"Rate", 
+							 "Total Amount",
+							"CGST 9%", "SGST 9%", "Gross Total" });
 			int cnt = 1;
 			for (OutwardReportViewEntity kk : partyList) {
 				cnt++;
@@ -1071,9 +1077,12 @@ public class ReportsServiceImpl implements ReportsService {
 						new Object[] { kk.getAspendcno(), kk.getCustomerbatchid(), kk.getCoilnumber(),
 								kk.getVehicleno(), kk.getCustomername(), kk.getSapinvoiceno(), kk.getSapinvoicedate(),
 								kk.getMaterialdesc(), kk.getMaterialgrade(), kk.getTdcNo(), kk.getProcessname(), 
-								(kk.getQty().divide(new BigDecimal("1000")).setScale(3, RoundingMode.HALF_UP)),
+								kk.getQty().divide(new BigDecimal("1000")).setScale(3, RoundingMode.HALF_UP),
+								kk.getBasePrice(), 
+								kk.getPackingCharges(),
+								kk.getLaminationCharges(), 
+								kk.getAdditionalCharges(), 
 								kk.getRate(), 
-								kk.getTotalprice().setScale(2, RoundingMode.HALF_UP),
 								kk.getTotalprice().setScale(2, RoundingMode.HALF_UP), 
 								cgst.setScale(2, RoundingMode.HALF_UP), 
 								sgst.setScale(2, RoundingMode.HALF_UP), 
