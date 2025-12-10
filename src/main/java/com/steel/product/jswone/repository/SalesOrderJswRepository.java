@@ -18,16 +18,19 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " FROM jsw_sales_order so, jsw_sales_order_child so_child "
 			+ " where so.is_deleted = 0 and so_child.is_deleted = 0 and so_child.so_id = so.so_id "
 			+ " and case when :soId is not null and LENGTH(:soId) >0 then so.so_id = :soId else so.so_id end " 
+		  	+ " and case when :status is not null and LENGTH(:status) > 0 then so.so_status = :status else so.so_status  = so.so_status end "  
 			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (so_child.mm_id like %:searchText% or so.so_number like %:searchText%) else 1=1 end " 
 			+ " order by so.so_id desc",
 		countQuery = "SELECT count(distinct so.so_id ) " + 
 			"  FROM jsw_sales_order so, jsw_sales_order_child so_child" + 
 		  	"  where so.is_deleted = 0 and so_child.is_deleted = 0 and so_child.so_id = so.so_id" + 
-		  	"  and case when :soId is not null and LENGTH(:soId) >0 then so.so_id = :soId else so.so_id end \" \r\n" + 
-		  	"  and case when :searchText is not null and LENGTH(:searchText) >0 then (so_child.mm_id like %:searchText% or so.so_number like %:searchText%) else 1=1 end \" \r\n" + 
+		  	"  and case when :soId is not null and LENGTH(:soId) >0 then so.so_id = :soId else so.so_id end " + 
+		  	"  and case when :status is not null and LENGTH(:status) > 0 then so.so_status in :status else 1=1 end " + 
+		  	"  and case when :searchText is not null and LENGTH(:searchText) >0 then (so_child.mm_id like %:searchText% or so.so_number like %:searchText%) else 1=1 end " + 
 		  	"  order by so.so_id desc", 
 		nativeQuery = true)
-	Page<Object[]> listAllSOIDs(@Param("searchText") String searchText, @Param("soId") Integer soId, Pageable pageable);
+	Page<Object[]> listAllSOIDs(@Param("searchText") String searchText, @Param("soId") Integer soId,
+			@Param("status") List<String> status, Pageable pageable);
 	
 	@Query(value = "SELECT so.so_id, so.so_number, so.socreatedate, so.deliverymethod, "
 			+ " so.destinationcode, so.refno, so.joplsorefno, so.bizsegment, so.ecommerce, so.supplysource, so.typeofsupply, "

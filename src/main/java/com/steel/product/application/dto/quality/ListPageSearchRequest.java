@@ -1,5 +1,8 @@
 package com.steel.product.application.dto.quality;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,6 +23,8 @@ public class ListPageSearchRequest {
 	private String sortColumn;
 
 	private String sortOrder;
+
+	private List<String> status = new ArrayList<>();
 
 	private int planId;
 

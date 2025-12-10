@@ -52,7 +52,7 @@ public class SalesOrderJswController {
 		return salesOrderService.save(salesOrderMainRequest, "approve");
 	}
 	
-	@PostMapping(value = "/consolidateplanner", produces = "application/json")
+	@PostMapping(value = "/consolidateplanner/create", produces = "application/json")
 	public ResponseEntity<Object> consolidatePlanner(@RequestBody List<SalesOrderChildRequest> salesOrderMainRequest) {
 		return salesOrderService.consolidatePlanner(salesOrderMainRequest);
 	}
@@ -153,6 +153,7 @@ public class SalesOrderJswController {
 	public ResponseEntity<Object> consolidateplannerListAllSOs(@RequestBody ListPageSearchRequest listPageSearchRequest) {
 		Map<String, Object> response = new HashMap<>();
 		
+		listPageSearchRequest.getStatus().add("SO_APPROVED");
 		Page<Object[]> packetsList1 = salesOrderService.listAllSOIDs(listPageSearchRequest);
 		
 		List<Integer> soIDsList  = new ArrayList<>(); 

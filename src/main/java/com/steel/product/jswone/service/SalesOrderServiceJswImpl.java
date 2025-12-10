@@ -26,6 +26,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import javax.transaction.Transactional;
+
 import org.apache.commons.beanutils.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -146,7 +148,8 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				partyIds = new ArrayList<>();
 			}
 		}
-		Page<Object[]> packetsList = salesOrderRepository.listAllSOIDs(listPageSearchRequest.getSearchText(), listPageSearchRequest.getSoId(), pageable);
+		Page<Object[]> packetsList = salesOrderRepository.listAllSOIDs(listPageSearchRequest.getSearchText(),
+				listPageSearchRequest.getSoId(), listPageSearchRequest.getStatus(), pageable);
 		return packetsList;
 	}
 
@@ -157,6 +160,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 	}
 	
 	@Override
+	@Transactional
 	public ResponseEntity<Object> consolidatePlanner(List<SalesOrderChildRequest> salesOrderPacketsListNew) {
 		log.info("inside consolidatePlanner ");
 		ResponseEntity<Object> responseEntity = null;
