@@ -14,6 +14,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.LinkedHashSet;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -51,6 +53,7 @@ public class SalesOrderController {
 	public ResponseEntity<Object> listAllPackets(@RequestBody ListPageSearchRequest listPageSearchRequest) {
 		Map<String, Object> response = new HashMap<>();
 		Page<Object[]> packetsList = salesOrderService.listAllPackets(listPageSearchRequest);
+		Set<String> soNumberSet = new LinkedHashSet<>();
 
 		Map<Integer, SalesOrderListDTO> kk = new LinkedHashMap<>();
 		for (Object[] result : packetsList) {
@@ -62,7 +65,13 @@ public class SalesOrderController {
 			resp.setMaterialGrade(result[4] != null ? (String) result[4] : null);
 			resp.setMaterialDesc(result[5] != null ? (String) result[5] : null);
 			resp.setFthickness(result[6] != null ? (Float) result[6] : null);
-			resp.setSoNumber(result[19] != null ? (String) result[19] : null);
+			if (result[19] != null) {
+				String soNumber = (String) result[19];
+				resp.setSoNumber(soNumber);
+				soNumberSet.add(soNumber);   // collect for list
+			} else {
+				resp.setSoNumber(null);
+			}
 			if (result[20] != null) {
 				BigInteger ok = result[20] != null ? (BigInteger) result[20] : null;
 				resp.setCustomerCodeId(ok.intValue());
@@ -99,6 +108,7 @@ public class SalesOrderController {
 		response.put("currentPage", packetsList.getNumber());
 		response.put("totalItems", packetsList.getTotalElements());
 		response.put("totalPages", packetsList.getTotalPages());
+		response.put("soList", new ArrayList<>(soNumberSet));
 		return new ResponseEntity<Object>(response, HttpStatus.OK);
 	}
 
