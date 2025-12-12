@@ -11,38 +11,51 @@ public class InwardFileDataDTO {
 	private String sno;
 
 	@CsvBindByPosition(position = 1)
-	private String coilno;
-
-	@CsvBindByPosition(position = 2)
 	private String receiveddate;
 
-	@CsvBindByPosition(position = 3)
-	private String custbatchno;
-
-	@CsvBindByPosition(position = 4)
+	@CsvBindByPosition(position = 2)
 	private String batchnumber;
 
-	@CsvBindByPosition(position = 5)
+	@CsvBindByPosition(position = 3)
 	private String presentweight;
 
-	@CsvBindByPosition(position = 6)
+	@CsvBindByPosition(position = 4)
 	private String grossweight;
 
-	@CsvBindByPosition(position = 7)
+	@CsvBindByPosition(position = 5)
 	private String valueofgoods;
 
-	@CsvBindByPosition(position = 8)
+	@CsvBindByPosition(position = 6)
 	private String tdcno;
 
-	@CsvBindByPosition(position = 9)
+	@CsvBindByPosition(position = 7)
 	private String vehicleno;
 
-	@CsvBindByPosition(position = 10)
-	private String invoicenumber;
-
-	@CsvBindByPosition(position = 11)
+	@CsvBindByPosition(position = 8)
 	private String mmid;
 
-	@CsvBindByPosition(position = 12)
+	@CsvBindByPosition(position = 9)
 	private String locationname;
+
+	@CsvBindByPosition(position = 10)
+	private String scinwardid;
+
+	@CsvBindByPosition(position = 11)
+	private String purchaseinvoiceno;
+
+	@CsvBindByPosition(position = 12)
+	private String invoicedate;
+
+	@CsvBindByPosition(position = 13)
+	private String ys;
+
+	@CsvBindByPosition(position = 14)
+	private String uts;
+
+	@CsvBindByPosition(position = 15)
+	private String el;
+
+	@CsvBindByPosition(position = 16)
+	private String remarks;
+
 }

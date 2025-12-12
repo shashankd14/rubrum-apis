@@ -30,7 +30,7 @@ public class Party {
 	private String contactName;
 
 	@Column(name = "branch_id")
-	private int branchId;
+	private Integer branchId;
 	
 	@Column(name = "contactnumber")
 	private String contactNumber;

@@ -13,5 +13,5 @@ public class MaterialUploadRequest extends BaseRequest {
 	
 	private boolean masterData;
 	
-	private String locationName;
+	private String fileName;
 }

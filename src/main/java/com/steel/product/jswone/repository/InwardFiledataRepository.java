@@ -11,6 +11,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface InwardFiledataRepository extends JpaRepository<InwardFileDataEntity, Integer> {
 
-	@Query("select inw from InwardFileDataEntity inw where inw.coilno not in (select mm.coilNumber from InwardEntry mm)")
+	@Query("select inw from InwardFileDataEntity inw where inw.batchnumber not in (select mm.batchNumber from InwardEntry mm)")
 	List<InwardFileDataEntity> findAll();
 }

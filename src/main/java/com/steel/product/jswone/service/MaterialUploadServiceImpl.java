@@ -535,19 +535,30 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 		log.info("******MaterialUploadService.uploadInwardData*****");
 		 
 		try {
-			String newFileName = new File(inwardFileUploadPath).getName();
+			int totalMMIDCount=0;
+			String fullPath = inwardFileUploadPath + File.separator + request.getFileName();
+			System.out.println("fullPath == "+fullPath);
+			File file = new File(fullPath);
 
+			if (!file.exists()) {
+			    return new ResponseEntity<>(
+			        "{\"status\": \"fail\", \"message\": \"File " + (request.getFileName() == null ?"": request.getFileName()) + " not found.\"}",
+			        new HttpHeaders(),
+			        HttpStatus.INTERNAL_SERVER_ERROR	
+			    );
+			}
 			if (request.isFileData()) {
-				List<InwardFileDataDTO> products = inwardFileDetails();
+				List<InwardFileDataDTO> products = inwardFileDetails(fullPath);
 				List<InwardFileDataEntity> productList = new ArrayList<>();
-
-				System.out.println("Hi size " + products.size());
+				totalMMIDCount = products .size();
+				//System.out.println("Hi size " + products.size());
 				for (InwardFileDataDTO dto : products) {
-					if (dto != null && dto.getCoilno() != null && dto.getCoilno().length() > 0) {
+					if (dto != null && dto.getBatchnumber() != null && dto.getBatchnumber().length() > 0) {
 						InwardFileDataEntity dest = new InwardFileDataEntity();
 						BeanUtils.copyProperties(dto, dest);
+						dest.setCoilnumber(dto.getBatchnumber());
 						try {
-							dest.setFilename(newFileName);
+							dest.setFilename(file.getName());
 							productList.add(dest);
 							inwardFiledataRepository.save(dest);
 						} catch (Exception e) {
@@ -557,13 +568,24 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 				}
 				log.info("File Uploaded Successfully. Count is == " + products.size());
 			}
+			
+			int cnt = 0;
 			if (request.isMasterData()) {
 				List<InwardFileDataEntity> listFileData = inwardFiledataRepository.findAll();
 				for (InwardFileDataEntity sourceEntity : listFileData) {
-					saveInwardEntry(sourceEntity);
+					int inwardEnrtyId = saveInwardEntry(sourceEntity);
+					if (inwardEnrtyId > 0) {
+						cnt++;
+					}
 				}
+				log.info("Inward Creation Count is == "+cnt);
 			}
-			return new ResponseEntity<Object>("{\"status\": \"success\", \"message\": \"File Uploaded Successfully.\"}", new HttpHeaders(), HttpStatus.OK);
+			Map<String, Object> resp = new HashMap<>();
+			resp.put("totalRecordCount", totalMMIDCount);
+			resp.put("Inward_Created_Count", cnt);
+			resp.put("status", "SUCCESS");
+			resp.put("message", "File Uploaded Successfully.");
+			return new ResponseEntity<Object>(resp, new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new ResponseEntity<Object>("{\"status\": \"failed\", \"message\": \"Failed to Uploaded a file.\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -592,16 +614,32 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 			partyIdsMap.put("G2 Steel", 12);
 			partyIdsMap.put("Aspen Unit - 3", 13);
 			partyIdsMap.put("SSI", 14); 
-
+			partyIdsMap.put("Test Location", 15); 
+			
+			partyIdsMap.put("Jagdamba Steel Indutries", 1);
+			partyIdsMap.put("Vansh Ispat Pvt Ltd", 2);
+			partyIdsMap.put("Taloja Steel Service Center Pvt. Ltd.", 3);
+			partyIdsMap.put("Ratnesh Engg. Pvt. Ltd.", 4);
+			partyIdsMap.put("Ratnesh Ispat Services Pvt Ltd", 5);
+			partyIdsMap.put("Mita Engineering", 6);
+			partyIdsMap.put("Aspen Steel Pvt. Ltd  - 1", 7);
+			partyIdsMap.put("Bansal Ispat Industries", 8);
+			partyIdsMap.put("Rameshwar Coil Cutter LLP", 9);
+			partyIdsMap.put("SUN MUTIARA ENGINEERING PVT LTD", 10);
+			partyIdsMap.put("Akeyem Sons Metal Forms Pvt. Ltd.", 11);
+			partyIdsMap.put("G2 Steel Services Pvt. Ltd.", 12);
+			partyIdsMap.put("Aspen Steel Pvt. Ltd - 3", 13);
+			partyIdsMap.put("Shree Shyam Industries", 14); 
+			partyIdsMap.put("Test Location", 15); 
 			List<MaterialMasterJswEntity> mmList = materialMasterJswRepository.findByMmId(inward.getMmid());
-			if (mmList != null && mmList.size() > 0 && mmList.get(0).getFormId() == 22 ) {
+			if (mmList != null && mmList.size() > 0) {
 				mmObj = mmList.get(0);
 
 				int userId = 1;
 				inwardEntry.setInwardEntryId(0);
 				inwardEntry.setPurposeType("STEEL SERVICE CENTRE");
 				inwardEntry.setParty(this.partyDetailsService.getPartyById(partyIdsMap.get(inward.getLocationname())));
-				inwardEntry.setCoilNumber(inward.getCoilno());
+				inwardEntry.setCoilNumber(inward.getBatchnumber());
 				inwardEntry.setBatchNumber(inward.getBatchnumber());
 
 				if (inward.getReceiveddate() != null && inward.getReceiveddate().length()>0) {
@@ -613,29 +651,31 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 					inwardEntry.setdReceivedDate(new Date());
 				}
 				inwardEntry.setvLorryNo(inward.getVehicleno());
-				inwardEntry.setvInvoiceNo(inward.getInvoicenumber());
-				// inwardEntry.setdInvoiceDate(Timestamp.valueOf(inward.getInvoicenumber()ceDate()));
-
+				//inwardEntry.setvInvoiceNo(inward.getPurchaseinvoiceno());
+				if (inward.getInvoicedate() != null && inward.getInvoicedate().length()>0) {
+					DateFormat sourceFormat = new SimpleDateFormat("dd-MMM-yy");
+					Date date = sourceFormat.parse(inward.getInvoicedate());
+					inwardEntry.setdInvoiceDate(date);
+				}
 				inwardEntry.setCustomerCoilId("");
-				inwardEntry.setCustomerInvoiceNo(inward.getInvoicenumber());
-				inwardEntry.setCustomerBatchId(inward.getCustbatchno());
-
+				inwardEntry.setCustomerInvoiceNo(inward.getPurchaseinvoiceno());
+				inwardEntry.setCustomerBatchId(inward.getScinwardid());
 				inwardEntry.setMmId(inward.getMmid());
-				// inwardEntry.setMaterial(this.matDescService.getMatById(inward.getMaterialId()));
-				// inwardEntry.setMaterialGrade(matGradeService.getById(inward.getMaterialGradeId()));
 				inwardEntry.setfWidth(mmObj.getWidth().floatValue());
 				inwardEntry.setfThickness(mmObj.getThickness().floatValue());
 				inwardEntry.setfLength(mmObj.getLength().floatValue());
-				inwardEntry.setfQuantity(Float.valueOf(inward.getPresentweight()));
-				inwardEntry.setInStockWeight( Float.valueOf(inward.getPresentweight()));
-				inwardEntry.setFpresent( Float.valueOf(inward.getPresentweight()));
+				inwardEntry.setfQuantity(Float.valueOf(inward.getPresentweight())) ;//inward.getPresentweight().floatValue());
+				inwardEntry.setInStockWeight(Float.valueOf(inward.getPresentweight()));
+				inwardEntry.setFpresent(Float.valueOf(inward.getPresentweight()));
 				inwardEntry.setGrossWeight(Float.valueOf(inward.getGrossweight()));
-
+				inwardEntry.setYs((inward.getYs() !=null && inward.getYs().length()> 0 ? Float.parseFloat(inward.getYs()): 0));
+				inwardEntry.setUts((inward.getUts() !=null && inward.getUts().length()> 0 ? Float.parseFloat(inward.getUts()): 0));
+				inwardEntry.setEl((inward.getEl() !=null && inward.getEl().length()> 0 ? Float.parseFloat(inward.getEl()): 0));
+				inwardEntry.setRemarks( inward.getRemarks());
 				float fLength;
 				try {
 					float fConstant = 8.10f;
-					fLength = (Float.valueOf(inwardEntry.getFpresent()) / 
-							(inwardEntry.getfThickness() * fConstant *  ( inwardEntry.getfWidth() /1000 ))) * 1000;
+					fLength = (Float.valueOf(inwardEntry.getFpresent()) / (inwardEntry.getfThickness() * fConstant *  ( inwardEntry.getfWidth() /1000 ))) * 1000;
 					//System.out.println("Hi Kanak == "+fLength);
 				} catch (Exception e) {
 					fLength=mmObj.getLength().floatValue();
@@ -688,12 +728,12 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 		}
 		return inwardEnrtyId;
 	}
-	
-	private List<InwardFileDataDTO> inwardFileDetails( ) {
+
+	private List<InwardFileDataDTO> inwardFileDetails(String fullPath) {
 		// 1.read the file via csv reader
 		CSVReader reader = null;
 		try {
-			reader = new CSVReaderBuilder(new FileReader(inwardFileUploadPath)).build();
+			reader = new CSVReaderBuilder(new FileReader(fullPath)).build();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
