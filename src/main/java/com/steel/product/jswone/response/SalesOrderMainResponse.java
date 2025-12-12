@@ -17,7 +17,7 @@ public class SalesOrderMainResponse {
 
 	private String soNumber;
 
-	private Date socreatedate;
+	private String socreatedate;
 
 	private String deliverymethod;
 
@@ -56,6 +56,16 @@ public class SalesOrderMainResponse {
 	private Integer partyId;
 	
 	private String partyName;
+
+	private String zbooks_so;
+
+	private String expected_delivery_date;
+
+	private String likely_material_date;
+
+	private String standard_material_date;
+
+	private String branch;
 
 	private List<SalesOrderChildResponse> itemslist = new ArrayList<>();
 

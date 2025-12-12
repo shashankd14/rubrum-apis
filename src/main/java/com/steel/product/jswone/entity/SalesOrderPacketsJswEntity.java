@@ -68,4 +68,7 @@ public class SalesOrderPacketsJswEntity {
 	@Column(name = "is_deleted", columnDefinition = "BIT")
 	private Boolean isDeleted;
 
+	@Column(name = "wearhouse_id")
+	private String wearhouseId;
+
 }
