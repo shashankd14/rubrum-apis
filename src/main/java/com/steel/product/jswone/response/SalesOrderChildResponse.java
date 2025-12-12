@@ -24,4 +24,14 @@ public class SalesOrderChildResponse {
 
 	private String itemStatus;
 
+	private String mm_description;
+
+	private String tax;
+
+	private String hsn;
+
+	private String wearhouse_id;
+
+	private String ware_house_name;
+
 }
