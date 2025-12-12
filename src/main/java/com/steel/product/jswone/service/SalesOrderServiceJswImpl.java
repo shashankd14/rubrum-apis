@@ -17,14 +17,16 @@ import com.steel.product.jswone.repository.SalesOrderChildJswRepository;
 import com.steel.product.jswone.repository.SalesOrderJswRepository;
 import com.steel.product.jswone.request.SalesOrderChildRequest;
 import com.steel.product.jswone.request.SalesOrderMainRequest;
+import com.steel.product.jswone.request.SalesOrderDetails;
+import com.steel.product.jswone.request.SalesOrderExternalRequest;
+import com.steel.product.jswone.request.SalesOrderLineItem;
+import com.steel.product.jswone.request.SalesOrderCustomFields;
 
 import lombok.extern.log4j.Log4j2;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 import javax.transaction.Transactional;
 
@@ -277,6 +279,162 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 		Page<Object[]> packetsList = salesOrderRepository.findInventory(listPageSearchRequest.getSearchText(), partyIds,
 				partyIdsFlag, pageable);
 		return packetsList;
+	}
+
+	@Override
+	public ResponseEntity<Object> post(SalesOrderExternalRequest req, String option) {
+		try {
+
+			// ----------------------- Validate Mandatory Fields -----------------------
+			String missingField = validateExternalRequest(req);
+			if (missingField != null) {
+				return new ResponseEntity<>(
+						"{\"code\":\"failure\", \"message\": \"" + missingField + " is required\"}",
+						HttpStatus.BAD_REQUEST
+				);
+			}
+
+			// ----------------------- Extract Header Fields -----------------------
+			SalesOrderDetails d = req.getSalesOrder_Details();
+			SalesOrderCustomFields c = req.getCustom_fields();
+
+			BigDecimal totalqty = BigDecimal.ZERO;
+
+			SalesOrderJswEntity so = new SalesOrderJswEntity();
+
+			so.setSoNumber(d.getSalesorder_number());
+			so.setSocreatedate(convertToDate(d.getDate()));
+			so.setRefno(d.getReference_number());
+			so.setCustomerid(d.getCustomer_id());
+			so.setDeliverymethod(d.getDelivery_method());
+			so.setTerms(req.getPayment_terms_label().split(" ")[0]);
+			so.setPaymentmode(String.valueOf(req.getPayment_terms()));
+			so.setBizsegment(c.getCf_biz_segment());
+			so.setSupplysource(c.getCf_supply_source());
+			so.setTypeofsupply(d.getDelivery_method());
+			so.setZbooksSo(d.getSalesorder_id());
+			so.setCreatedBy(commonUtil.getUserId());
+			so.setUpdatedBy(commonUtil.getUserId());
+			so.setCreatedOn(new Date());
+			so.setUpdatedOn(new Date());
+			so.setAllocatedStts("PENDING");
+			so.setIsDeleted(false);
+			so.setSoStatus(StatusType.SO_CREATED.getType());
+
+			// ----------------------- Branch -----------------------
+			if (d.getBranch_id() != null) {
+				so.setBranchId(Long.parseLong(d.getBranch_id()));
+			}
+
+			// ----------------------- Expected Delivery Date -----------------------
+			if (d.getExpected_shipment_date() != null) {
+				Date original = convertToDate(d.getExpected_shipment_date());
+				so.setExpectedDeliveryDate(original);
+
+				// ---- Set **Standard Material Date → 2 days behind** ----
+				Calendar cal = Calendar.getInstance();
+				cal.setTime(original);
+				cal.add(Calendar.DAY_OF_MONTH, -2);
+				so.setStandardMaterialDate(cal.getTime());
+			}
+			so.setTotalSoqty(BigDecimal.valueOf(d.getTotal_quantity()));
+			// ----------------------- Line Items -----------------------
+			for (SalesOrderLineItem li : req.getLine_items()) {
+
+				SalesOrderPacketsJswEntity item = new SalesOrderPacketsJswEntity();
+				BeanUtils.copyProperties(item, li);
+
+				// FK → set parent
+				item.setSoId(so);
+
+				// SKU → mm_id
+				item.setMmId(li.getSku());
+
+				if (li.getWarehouse_id() != null) {
+					item.setWearhouseId(li.getWarehouse_id());
+				}
+
+				item.setCreatedBy(commonUtil.getUserId());
+				item.setUpdatedBy(commonUtil.getUserId());
+				item.setCreatedOn(new Date());
+				item.setUpdatedOn(new Date());
+				item.setItemStatus(StatusType.SO_CREATED.getType());
+				item.setAllocatedStts("PENDING");
+				item.setIsDeleted(false);
+
+				// Add qty to SO total
+//				totalqty = totalqty.add(item.getSoqty());
+
+				// Add child to parent (manages FK & cascading)
+				so.addItem(item);
+			}
+
+
+
+			// ----------------------- Save Parent (cascade saves children) -----------------------
+			salesOrderRepository.save(so);
+
+			return ResponseEntity.ok("{\"code\":\"success\", \"message\":\"External Sales Order created successfully\"}");
+
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			return new ResponseEntity<>(
+					"{\"code\":\"failure\", \"message\": \"" + ex.getMessage() + "\"}",
+					HttpStatus.INTERNAL_SERVER_ERROR
+			);
+		}
+	}
+
+
+	private String validateExternalRequest(SalesOrderExternalRequest req) {
+
+		// SalesOrder_Details
+		if (req.getSalesOrder_Details() == null) return "SalesOrder_Details";
+
+		SalesOrderDetails d = req.getSalesOrder_Details();
+		if (isEmpty(d.getSalesorder_number())) return "SalesOrder_Details.salesorder_number";
+		if (isEmpty(d.getDate())) return "SalesOrder_Details.date";
+		if (isEmpty(d.getStatus())) return "SalesOrder_Details.status";
+		if (isEmpty(d.getReference_number())) return "SalesOrder_Details.reference_number";
+		if (isEmpty(d.getCustomer_id())) return "SalesOrder_Details.customer_id";
+		if (isEmpty(d.getDelivery_method())) return "SalesOrder_Details.delivery_method";
+		if (isEmpty(d.getBranch_id())) return "SalesOrder_Details.branch_id";
+		if (d.getTotal_quantity() == null) return "SalesOrder_Details.total_quantity";
+
+		// Line Items
+		if (req.getLine_items() == null || req.getLine_items().isEmpty()) return "line_items";
+		for (SalesOrderLineItem li : req.getLine_items()) {
+			if (isEmpty(li.getSku())) return "line_items.sku";
+			if (isEmpty(li.getWarehouse_id())) return "line_items.warehouse_id";
+
+		}
+
+		// payments
+		if (req.getPayment_terms() == null) return "payment_terms";
+		if (isEmpty(req.getPayment_terms_label())) return "payment_terms_label";
+
+		// custom fields
+		if (req.getCustom_fields() == null) return "custom_fields";
+
+		SalesOrderCustomFields c = req.getCustom_fields();
+
+		if (isEmpty(c.getCf_biz_segment())) return "custom_fields.cf_biz_segment";
+		if (isEmpty(c.getCf_supply_source())) return "custom_fields.cf_supply_source";
+		if (isEmpty(c.getCf_delivery_method())) return "custom_fields.cf_delivery_method";
+
+		return null; // ALL OK
+	}
+
+	private boolean isEmpty(String s) {
+		return s == null || s.trim().isEmpty();
+	}
+
+	private Date convertToDate(String dateStr) {
+		try {
+			return new SimpleDateFormat("yyyy-MM-dd").parse(dateStr);
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
 }
