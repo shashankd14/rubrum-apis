@@ -1056,40 +1056,42 @@ public class ReportsServiceImpl implements ReportsService {
 		try {
 			List<OutwardReportViewEntity> partyList = outwardReportViewRepository.findByPartyIdAndMnthAndYer(partyId, month, year);
 			acctStatementMap.put("1",
-					new Object[] { "Aspen DC No", "customerbatchid", "coilnumber", "vehicleno", "customer name", "sap invoice No", "sap invoice date",
-							"material description", "material grade", "tdc no", "process type", "Qty ", 
+					new Object[] {"S.No", "Aspen DC No", "customerbatchid", "material description", "vehicleno", "customer name", "sap invoice No", "sap invoice date",
+							"material grade", "tdc no", "process type", "Qty ", 
 							"Base Rate", 
 							"Packing Charges", 
 							"Lamination Charges", 
 							"Additional Charges", 
 							"Rate", 
-							 "Total Amount",
-							"CGST 9%", "SGST 9%", "Gross Total" });
+							"Total Amount"});
 			int cnt = 1;
+			int oldDCNo=0;
+			BigDecimal totalweight = new BigDecimal("0.00");
 			for (OutwardReportViewEntity kk : partyList) {
+				if (oldDCNo > 0 && oldDCNo != kk.getAspendcno()) {
+					cnt++;
+					acctStatementMap.put("" + cnt, new Object[] { cnt, "", "", "", "", "", "", "", "", "", "",
+							totalweight.divide(new BigDecimal("1000")).setScale(3, RoundingMode.HALF_UP),
+							"", "", "", "", "", "", });
+				}
 				cnt++;
-				
-				BigDecimal cgst =  kk.getTotalprice().multiply(new BigDecimal("0.09"));
-				BigDecimal sgst =  kk.getTotalprice().multiply(new BigDecimal("0.09"));
-				BigDecimal grossTotal  =  kk.getTotalprice().add(cgst.add(sgst));
-				
 				acctStatementMap.put("" + cnt,
-						new Object[] { kk.getAspendcno(), kk.getCustomerbatchid(), kk.getCoilnumber(),
-								kk.getVehicleno(), kk.getCustomername(), kk.getSapinvoiceno(), kk.getSapinvoicedate(),
-								kk.getMaterialdesc(), kk.getMaterialgrade(), kk.getTdcNo(), kk.getProcessname(), 
-								kk.getQty().divide(new BigDecimal("1000")).setScale(3, RoundingMode.HALF_UP),
-								kk.getBasePrice(), 
-								kk.getPackingCharges(),
-								kk.getLaminationCharges(), 
-								kk.getAdditionalCharges(), 
-								kk.getRate(), 
-								kk.getTotalprice().setScale(2, RoundingMode.HALF_UP), 
-								cgst.setScale(2, RoundingMode.HALF_UP), 
-								sgst.setScale(2, RoundingMode.HALF_UP), 
-								grossTotal.setScale(2, RoundingMode.HALF_UP)
-								});
+						new Object[] { cnt, kk.getAspendcno(), kk.getCustomerbatchid(),kk.getMaterialgrade(),
+						kk.getVehicleno(), kk.getCustomername(), kk.getSapinvoiceno(), kk.getSapinvoicedate(),
+						kk.getMaterialdesc(), kk.getTdcNo(), kk.getProcessname(), 
+						kk.getQty().divide(new BigDecimal("1000")).setScale(3, RoundingMode.HALF_UP),
+						kk.getBasePrice(), 
+						kk.getPackingCharges(),
+						kk.getLaminationCharges(), 
+						kk.getAdditionalCharges(), 
+						kk.getRate(), 
+						kk.getTotalprice().setScale(2, RoundingMode.HALF_UP)
+						});
+				oldDCNo = kk.getAspendcno();
+				totalweight =  kk.getTotalweight();
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			LOGGER.error("Error at getMonthlyOutwardReportDetails " + e.getMessage());
 		}
 		return acctStatementMap;

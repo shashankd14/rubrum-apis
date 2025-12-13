@@ -43,7 +43,7 @@ public class OutwardReportViewEntity {
 	private String customername;
 
 	@Column(name = "aspendcno")
-	private String aspendcno;
+	private int aspendcno;
 
 	@Column(name = "sapinvoiceno")
 	private String sapinvoiceno;
@@ -65,6 +65,9 @@ public class OutwardReportViewEntity {
 
 	@Column(name = "qty")
 	private BigDecimal qty;
+
+	@Column(name = "totalweight")
+	private BigDecimal totalweight;
 
 	@Column(name = "base_proce")
 	private BigDecimal basePrice;
