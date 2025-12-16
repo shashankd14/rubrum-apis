@@ -45,10 +45,6 @@ public class SalesOrderJswController {
 		return salesOrderService.save(salesOrderMainRequest, "create");
 	}
 
-	@PostMapping(value = "/update", produces = "application/json")
-	public ResponseEntity<Object> update(@RequestBody SalesOrderMainRequest salesOrderMainRequest) {
-		return salesOrderService.save(salesOrderMainRequest, "update");
-	}
 
 	@PostMapping(value = "/approve", produces = "application/json")
 	public ResponseEntity<Object> approve(@RequestBody SalesOrderMainRequest salesOrderMainRequest) {
@@ -80,7 +76,6 @@ public class SalesOrderJswController {
 
 			resp.setSoId( result[0] != null ? Integer.parseInt(result[0].toString()) : null);
 			resp.setSoNumber(result[1] != null ? (String) result[1] : null);
-//			resp.setSocreatedate( result[2] != null ? (Date) result[2] : null);
 			resp.setSocreatedate( result[2] != null ? sdf.format(result[2]) : null );
 
 			resp.setDeliverymethod( result[3] != null ? (String) result[3] : null);
@@ -93,7 +88,7 @@ public class SalesOrderJswController {
 			resp.setTypeofsupply( result[10] != null ? (String) result[10] : null);
 			resp.setIncomingpayment( result[11] != null ? (String) result[11] : null);
 			resp.setPaymentmode( result[12] != null ? (String) result[12] : null);
-			resp.setTerms( result[13] != null ? (String) result[13] : null);
+			resp.setTerms( result[13] != null ? (String) result[13] +" Days"  : null);
 			resp.setCustomerCode( result[14] != null ? (String) result[14] : null);
 			resp.setTotalSoqty( result[15] != null ? (BigDecimal) result[15] : null);
 			resp.setTotalAllocatedSoqty( result[16] != null ? (BigDecimal) result[16] : null);
@@ -104,7 +99,6 @@ public class SalesOrderJswController {
 			resp.setExpected_delivery_date(formatDate(result[20]));
 			resp.setLikely_material_date(formatDate(result[21]));
 			resp.setStandard_material_date(formatDate(result[22]));
-//			resp.setBranch(result[31] != null ? (String) result[31] : null);
 
 			child.setSoChildId( result[23] != null ? (Integer) result[23] : null);
 			child.setMmId( result[24] != null ? (String) result[24] : null);
@@ -233,10 +227,14 @@ public class SalesOrderJswController {
 		return new ResponseEntity<Object>(response, HttpStatus.OK);
 	}
 
-
 	@PostMapping(value = "/post", produces = "application/json")
 	public ResponseEntity<Object> post(@RequestBody SalesOrderExternalRequest salesOrderExternalRequest ) {
 		return salesOrderService.post(salesOrderExternalRequest, "post");
+	}
+
+	@PostMapping(value = "/update", produces = "application/json")
+	public ResponseEntity<Object> update(@RequestBody SalesOrderExternalRequest salesOrderMainRequest) {
+		return salesOrderService.update(salesOrderMainRequest);
 	}
 
 	private String formatDate(Object value) {

@@ -433,4 +433,110 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 		}
 	}
 
+
+	@Override
+	public ResponseEntity<Object> update(SalesOrderExternalRequest request) {
+
+		String option = request
+				.getSalesOrder_Details()
+				.getStatus();   // CREATED / APPROVED / ON_HOLD / REJECTED
+
+		log.info("Updating Sales Order with status: {}", option);
+
+		if (option == null) {
+			return new ResponseEntity<>(
+					"{\"status\":\"failure\",\"message\":\"Status is required\"}",
+					HttpStatus.BAD_REQUEST
+			);
+		}
+
+		switch (option.toUpperCase()) {
+
+			case "APPROVED":
+				return approveSalesOrder(request);
+
+			case "ON_HOLD":
+				return holdSalesOrder(request);
+
+			case "REJECTED":
+				return rejectSalesOrder(request);
+
+			default:
+				return new ResponseEntity<>(
+						"{\"status\":\"failure\",\"message\":\"Invalid status value\"}",
+						HttpStatus.BAD_REQUEST
+				);
+		}
+	}
+
+	private ResponseEntity<Object> approveSalesOrder(SalesOrderExternalRequest req) {
+
+		SalesOrderDetails d = req.getSalesOrder_Details();
+
+		SalesOrderJswEntity so =
+				salesOrderRepository.findBySoNumberIgnoreCase(d.getSalesorder_number())
+						.orElseThrow(() -> new RuntimeException("SO not found"));
+
+		Date standardDate = convertToDate(d.getStandard_material_date());
+		Date likelyDate = convertToDate(d.getLikely_material_date());
+//		Date original =
+		so.setSoStatus(StatusType.SO_APPROVED.getType());
+		so.setApprovedDate(new Date());
+		so.setUpdatedBy(commonUtil.getUserId());
+		so.setStandardMaterialDate(standardDate);
+		so.setLikelyMaterialDate(likelyDate);
+		so.setRemarks(d.getRemarks());
+		so.setCamCode(d.getCam_code());
+
+		// approve child items also
+		for (SalesOrderPacketsJswEntity item : so.getItemslist()) {
+			item.setItemStatus(StatusType.SO_APPROVED.getType());
+			item.setApprovedDate(new Date());
+		}
+
+		salesOrderRepository.save(so);
+
+		return ResponseEntity.ok(
+				"{\"status\":\"success\",\"message\":\"Sales Order approved\"}"
+		);
+	}
+
+
+	private ResponseEntity<Object> holdSalesOrder(SalesOrderExternalRequest req) {
+
+		SalesOrderDetails d = req.getSalesOrder_Details();
+
+		SalesOrderJswEntity so =
+				salesOrderRepository.findBySoNumberIgnoreCase(d.getSalesorder_number())
+						.orElseThrow(() -> new RuntimeException("SO not found"));
+
+		so.setSoStatus(StatusType.SO_HOLD.getType());
+		so.setUpdatedOn(new Date());
+		so.setUpdatedBy(commonUtil.getUserId());
+		salesOrderRepository.save(so);
+		return ResponseEntity.ok(
+				"{\"status\":\"success\",\"message\":\"Sales Order put on hold\"}"
+		);
+	}
+
+	private ResponseEntity<Object> rejectSalesOrder(SalesOrderExternalRequest req) {
+
+		SalesOrderDetails d = req.getSalesOrder_Details();
+
+		SalesOrderJswEntity so =
+				salesOrderRepository.findBySoNumberIgnoreCase(d.getSalesorder_number())
+						.orElseThrow(() -> new RuntimeException("SO not found"));
+
+		so.setSoStatus(StatusType.SO_REJECTED.getType());
+		so.setRemarks(d.getRemarks());
+		so.setUpdatedOn(new Date());
+		so.setUpdatedBy(commonUtil.getUserId());
+		salesOrderRepository.save(so);
+		return ResponseEntity.ok(
+				"{\"status\":\"success\",\"message\":\"Sales Order rejected\"}"
+		);
+	}
+
+
+
 }
