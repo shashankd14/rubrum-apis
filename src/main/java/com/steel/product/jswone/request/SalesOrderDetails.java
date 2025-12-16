@@ -33,6 +33,14 @@ public class SalesOrderDetails {
 
     private String expected_shipment_date;
 
+    private String standard_material_date;
+
+    private String likely_material_date;
+
+    private String remarks;
+
+    private String cam_code;
+
     private Integer total_quantity;
 
     private Integer balance;

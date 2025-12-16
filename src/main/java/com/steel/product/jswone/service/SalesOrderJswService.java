@@ -24,4 +24,6 @@ public interface SalesOrderJswService {
 
 	ResponseEntity<Object> post(SalesOrderExternalRequest salesOrderExternalRequest, String option);
 
+	ResponseEntity<Object> update(SalesOrderExternalRequest salesOrderPacketsListNew);
+
 }
