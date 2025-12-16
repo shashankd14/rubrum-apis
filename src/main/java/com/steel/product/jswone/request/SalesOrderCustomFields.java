@@ -2,8 +2,6 @@ package com.steel.product.jswone.request;
 
 import lombok.Data;
 
-import javax.validation.constraints.NotBlank;
-
 @Data
 public class SalesOrderCustomFields {
 

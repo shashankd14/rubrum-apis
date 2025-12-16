@@ -323,7 +323,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 
 			// ----------------------- Branch -----------------------
 			if (d.getBranch_id() != null) {
-				so.setBranchId(Long.parseLong(d.getBranch_id()));
+				so.setBranchId( d.getBranch_id());
 			}
 
 			// ----------------------- Expected Delivery Date -----------------------

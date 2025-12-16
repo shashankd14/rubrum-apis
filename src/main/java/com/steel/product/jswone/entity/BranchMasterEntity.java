@@ -1,6 +1,8 @@
 package com.steel.product.jswone.entity;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Data;
@@ -15,30 +17,27 @@ public class BranchMasterEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "branch_id")
-	private Integer branchId;
+	@Column(name = "id")
+	private Long id;
 
-	@Column(name = "branch_name")
+	@Column(name = "branch_id", nullable = false)
+	private String branchId;
+
+	@Column(name = "branch_name", nullable = false)
 	private String branchName;
 
-	@Column(name = "address")
-	private String address;
-
-	@Column(name = "city")
-	private String city;
-
-	@Column(name = "state")
-	private String state;
-
-	@Column(name = "pincode")
-	private String pincode;
-
-	@Column(name = "created_on", updatable = false)
 	@CreationTimestamp
+	@Column(name = "created_on", nullable = false, updatable = false)
 	private Date createdOn;
 
-	@Column(name = "updated_on", updatable = false)
-	@CreationTimestamp
+	@Column(name = "created_by")
+	private String createdBy;
+
+	@UpdateTimestamp
+	@Column(name = "updated_on")
 	private Date updatedOn;
+
+	@Column(name = "updated_by")
+	private String updatedBy;
 
 }
