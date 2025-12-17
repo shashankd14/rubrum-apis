@@ -2,6 +2,7 @@ package com.steel.product.jswone.service;
 
 import com.steel.product.application.dto.quality.ListPageSearchRequest;
 import com.steel.product.jswone.request.SalesOrderChildRequest;
+import com.steel.product.jswone.request.SalesOrderExternalRequest;
 import com.steel.product.jswone.request.SalesOrderMainRequest;
 
 import java.util.List;
@@ -20,5 +21,9 @@ public interface SalesOrderJswService {
 	ResponseEntity<Object> consolidatePlanner(List<SalesOrderChildRequest> salesOrderMainRequest);
 
 	Page<Object[]> findInventory(ListPageSearchRequest listPageSearchRequest);
+
+	ResponseEntity<Object> post(SalesOrderExternalRequest salesOrderExternalRequest, String option);
+
+	ResponseEntity<Object> update(SalesOrderExternalRequest salesOrderPacketsListNew);
 
 }

@@ -75,6 +75,36 @@ public class SalesOrderJswEntity {
 	@Column(name = "so_status")
 	private String soStatus;
 
+	@Column(name = "remarks")
+	private String remarks;
+
+
+	@Column(name = "branch_id")
+	private Long branchId;
+
+
+//	@ManyToOne(fetch = FetchType.LAZY)
+//	@JoinColumn(name = "branch_id", referencedColumnName = "branch_id", insertable = false, updatable = false)
+//	private SalesOrderBranchEntity branch;
+
+
+	@Column(name = "expected_delivery_date")
+	private Date expectedDeliveryDate;
+
+	@Column(name = "cam_code")
+	private String camCode;
+
+	@Column(name = "likely_material_date")
+	private Date likelyMaterialDate;
+
+	@Column(name = "zbooks_so")
+	private String zbooksSo;
+
+
+	@Column(name = "standard_material_date")
+	private Date standardMaterialDate;
+
+
 	@Column(name = "created_by")
 	private Integer createdBy;
 
