@@ -8,14 +8,15 @@ import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
 import com.lowagie.text.DocumentException;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
@@ -39,12 +41,12 @@ import com.steel.product.application.service.PartyDetailsService;
 import com.steel.product.application.service.PdfService;
 import com.steel.product.application.service.StatusService;
 import com.steel.product.jswone.entity.BrandMasterJswEntity;
-import com.steel.product.jswone.entity.LeafCategoryJswEntity;
 import com.steel.product.jswone.entity.CategoryMasterJswEntity;
 import com.steel.product.jswone.entity.CoatingtypeMasterJswEntity;
 import com.steel.product.jswone.entity.FormMasterJswEntity;
 import com.steel.product.jswone.entity.GradeMasterJswEntity;
 import com.steel.product.jswone.entity.InwardFileDataEntity;
+import com.steel.product.jswone.entity.LeafCategoryJswEntity;
 import com.steel.product.jswone.entity.MaterialMasterFileDataEntity;
 import com.steel.product.jswone.entity.MaterialMasterJswEntity;
 import com.steel.product.jswone.entity.ProductMasterJswEntity;
@@ -53,12 +55,12 @@ import com.steel.product.jswone.entity.SubgradeMasterJswEntity;
 import com.steel.product.jswone.entity.SurfacetypeMasterJswEntity;
 import com.steel.product.jswone.entity.UomMasterJswEntity;
 import com.steel.product.jswone.repository.BrandMasterJswRepository;
-import com.steel.product.jswone.repository.LeafCategoryJswRepository;
 import com.steel.product.jswone.repository.CategoryMasterRepository;
 import com.steel.product.jswone.repository.CoatingtypeMasterJswRepository;
 import com.steel.product.jswone.repository.FormMasterJswRepository;
 import com.steel.product.jswone.repository.GradeMasterJswRepository;
 import com.steel.product.jswone.repository.InwardFiledataRepository;
+import com.steel.product.jswone.repository.LeafCategoryJswRepository;
 import com.steel.product.jswone.repository.MaterialMasterFiledataRepository;
 import com.steel.product.jswone.repository.MaterialMasterJswRepository;
 import com.steel.product.jswone.repository.MaterialMasterJswSpecification;
@@ -142,20 +144,32 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 	public ResponseEntity<Object> uploadmmidData(MaterialUploadRequest request) throws Exception, FileNotFoundException {
 		log.info("******MaterialUploadService.uploadmmidData*****");
 		try {
+			
 			int totalMMIDCount=0;
 			int newDataCount=0;
 			int updatedDataCount=0;
 			List<MaterialMasterFileDataEntity> productList = new ArrayList<>();
 			if (request.isFileData()) {
-				String newFileName = new File(fileUploadPath).getName(); // .replace(".", "_" + new Date()+ ".");
-				List<MaterialMasterFileDataDTO> products = mmFileDetails();
+				String fullPath = inwardFileUploadPath + File.separator + request.getFileName();
+				System.out.println("fullPath == "+fullPath);
+				File file = new File(fullPath);
+
+				if (!file.exists()) {
+				    return new ResponseEntity<>(
+				        "{\"status\": \"fail\", \"message\": \"File " + (request.getFileName() == null ?"": request.getFileName()) + " not found.\"}",
+				        new HttpHeaders(),
+				        HttpStatus.INTERNAL_SERVER_ERROR	
+				    );
+				}
+
+				List<MaterialMasterFileDataDTO> products = mmFileDetails(fullPath);
 				totalMMIDCount = products.size();
 				System.out.println("Hi size " + products.size());
 				for (MaterialMasterFileDataDTO dto : products) {
 					MaterialMasterFileDataEntity dest = new MaterialMasterFileDataEntity();
 					BeanUtils.copyProperties(dto, dest);
 					try {
-						dest.setFilename(newFileName);
+						dest.setFilename(file.getName());
 						MaterialMasterFileDataEntity dummyEntity = repository.findFirstByMmId(dest.getMmId());
 						if (dummyEntity != null && dummyEntity.getMateraiId() > 0) {
 							dest.setMateraiId(dummyEntity.getMateraiId());
@@ -259,11 +273,11 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 		}
 	}
 	
-	private List<MaterialMasterFileDataDTO> mmFileDetails( ) {
+	private List<MaterialMasterFileDataDTO> mmFileDetails(String fullPath) {
 		// 1.read the file via csv reader
 		CSVReader reader = null;
 		try {
-			reader = new CSVReaderBuilder(new FileReader(fileUploadPath)).build();
+			reader = new CSVReaderBuilder(new FileReader(fullPath)).build();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -536,18 +550,18 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 		 
 		try {
 			int totalMMIDCount=0;
-			String fullPath = inwardFileUploadPath + File.separator + request.getFileName();
-			System.out.println("fullPath == "+fullPath);
-			File file = new File(fullPath);
-
-			if (!file.exists()) {
-			    return new ResponseEntity<>(
-			        "{\"status\": \"fail\", \"message\": \"File " + (request.getFileName() == null ?"": request.getFileName()) + " not found.\"}",
-			        new HttpHeaders(),
-			        HttpStatus.INTERNAL_SERVER_ERROR	
-			    );
-			}
 			if (request.isFileData()) {
+				String fullPath = inwardFileUploadPath + File.separator + request.getFileName();
+				System.out.println("fullPath == "+fullPath);
+				File file = new File(fullPath);
+
+				if (!file.exists()) {
+				    return new ResponseEntity<>(
+				        "{\"status\": \"fail\", \"message\": \"File " + (request.getFileName() == null ?"": request.getFileName()) + " not found.\"}",
+				        new HttpHeaders(),
+				        HttpStatus.INTERNAL_SERVER_ERROR	
+				    );
+				}
 				List<InwardFileDataDTO> products = inwardFileDetails(fullPath);
 				List<InwardFileDataEntity> productList = new ArrayList<>();
 				totalMMIDCount = products .size();
@@ -641,22 +655,47 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 				inwardEntry.setParty(this.partyDetailsService.getPartyById(partyIdsMap.get(inward.getLocationname())));
 				inwardEntry.setCoilNumber(inward.getBatchnumber());
 				inwardEntry.setBatchNumber(inward.getBatchnumber());
+				//inwardEntry.setvInvoiceNo(inward.getPurchaseinvoiceno());
 
 				if (inward.getReceiveddate() != null && inward.getReceiveddate().length()>0) {
-					//System.out.println("date is == " + inward.getReceiveddate());
-					DateFormat sourceFormat = new SimpleDateFormat("dd-MMM-yy");
-					Date date = sourceFormat.parse(inward.getReceiveddate());
-					inwardEntry.setdReceivedDate(date);
+					try {
+						SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+						sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+						Date date = sdf.parse(inward.getReceiveddate());
+						Calendar cal = Calendar.getInstance();
+						cal.setTime(date);
+						inwardEntry.setdReceivedDate(cal.getTime());
+					} catch (Exception e) {
+						SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+						sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+						Date date = sdf.parse(inward.getReceiveddate());
+						Calendar cal = Calendar.getInstance();
+						cal.setTime(date);
+						inwardEntry.setdReceivedDate(cal.getTime());
+					}
 				} else {
 					inwardEntry.setdReceivedDate(new Date());
 				}
+				//System.out.println(inward.getReceiveddate()+", setdReceivedDate == "+inwardEntry.getdReceivedDate());
 				inwardEntry.setvLorryNo(inward.getVehicleno());
-				//inwardEntry.setvInvoiceNo(inward.getPurchaseinvoiceno());
 				if (inward.getInvoicedate() != null && inward.getInvoicedate().length()>0) {
-					DateFormat sourceFormat = new SimpleDateFormat("dd-MMM-yy");
-					Date date = sourceFormat.parse(inward.getInvoicedate());
-					inwardEntry.setdInvoiceDate(date);
+					try {
+						SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+						sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+						Date date = sdf.parse(inward.getInvoicedate());
+						Calendar cal = Calendar.getInstance();
+						cal.setTime(date);
+						inwardEntry.setdInvoiceDate(cal.getTime());
+					} catch (Exception e) {
+						SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+						sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+						Date date = sdf.parse(inward.getInvoicedate());
+						Calendar cal = Calendar.getInstance();
+						cal.setTime(date);
+						inwardEntry.setdInvoiceDate(cal.getTime());
+					}
 				}
+				//System.out.println(inward.getInvoicedate()+", getdInvoiceDate == "+inwardEntry.getdInvoiceDate());
 				inwardEntry.setCustomerCoilId("");
 				inwardEntry.setCustomerInvoiceNo(inward.getPurchaseinvoiceno());
 				inwardEntry.setCustomerBatchId(inward.getScinwardid());
