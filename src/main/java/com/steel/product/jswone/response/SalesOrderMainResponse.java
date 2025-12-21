@@ -67,6 +67,10 @@ public class SalesOrderMainResponse {
 
 	private String branch;
 
+	private String remarks;
+
+	private String cam_code;
+
 	private List<SalesOrderChildResponse> itemslist = new ArrayList<>();
 
 }
