@@ -128,7 +128,7 @@ public class SalesOrderJswEntity {
 	@Column(name = "is_deleted", columnDefinition = "BIT")
 	private Boolean isDeleted;
 
-	@OneToMany(mappedBy = "soId", cascade = { CascadeType.PERSIST, CascadeType.MERGE }, orphanRemoval = true)
+	@OneToMany(mappedBy = "soId", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<SalesOrderPacketsJswEntity> itemslist;
 
 	public void removeItem(SalesOrderPacketsJswEntity instruction) {
