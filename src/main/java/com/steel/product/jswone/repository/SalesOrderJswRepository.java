@@ -37,7 +37,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " so.incomingpayment, so.paymentmode, so.terms, so.customerid, so.total_soqty, so.total_allocated_soqty, "
 			+ " so.allocated_stts as soallstts, so.so_status , so.zbooks_so, so.expected_delivery_date, so.likely_material_date, so.standard_material_date, so_child.so_child_id,  "
 			+ " so_child.mm_id, '' instruction_id, '' inward_entry_d, so_child.soqty, so_child.allocated_soqty, "
-			+ " so_child.allocated_stts, so_child.item_status, so_child.wearhouse_id , mm.mm_description, mm.hsn, mm.tax, wm.ware_house_name, br.branch_name, so.cam_code , so.remarks" +
+			+ " so_child.allocated_stts, so_child.item_status, so_child.wearhouse_id , so_child.tax_percentage, mm.mm_description, so_child.hsn_or_sac, wm.ware_house_name, br.branch_name, so.cam_code , so.remarks" +
 			" FROM jsw_sales_order so INNER JOIN jsw_sales_order_child so_child ON so_child.so_id = so.so_id INNER JOIN jsw_sales_order_branch br ON br.branch_id = so.branch_id LEFT JOIN jsw_material_master mm ON mm.mm_id = so_child.mm_id" +
 			" left join jsw_warehouse_master wm on wm.ware_house_id = so_child.wearhouse_id where so.is_deleted = 0 and so_child.is_deleted = 0 " +
 			" and so.so_id in :soIDsList order by so.so_id desc", nativeQuery = true)
@@ -79,6 +79,8 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			 Pageable pageable);
 
 	Optional<SalesOrderJswEntity> findBySoNumberIgnoreCase(String soNumber);
+
+	Optional<SalesOrderJswEntity> findBySoNumberAndIsDeletedFalse(String soNumber);
 	
 	@Query(value = "SELECT distinct so.so_id, so.so_number "
 			+ " FROM jsw_sales_order so, jsw_sales_order_child so_child "
