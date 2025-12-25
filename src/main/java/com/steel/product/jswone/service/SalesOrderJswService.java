@@ -1,6 +1,7 @@
 package com.steel.product.jswone.service;
 
 import com.steel.product.application.dto.quality.ListPageSearchRequest;
+import com.steel.product.jswone.request.SalesOrderBulkRequest;
 import com.steel.product.jswone.request.SalesOrderChildRequest;
 import com.steel.product.jswone.request.SalesOrderExternalRequest;
 import com.steel.product.jswone.request.SalesOrderMainRequest;
@@ -26,4 +27,5 @@ public interface SalesOrderJswService {
 
 	ResponseEntity<Object> update(SalesOrderExternalRequest salesOrderPacketsListNew);
 
+	ResponseEntity<Object> bulkUpdate(SalesOrderBulkRequest salesOrderPacketsListNew);
 }

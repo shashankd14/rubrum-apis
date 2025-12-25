@@ -1,5 +1,6 @@
 package com.steel.product.jswone.controller;
 
+import com.steel.product.jswone.request.SalesOrderBulkRequest;
 import com.steel.product.jswone.request.SalesOrderExternalRequest;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -88,7 +89,7 @@ public class SalesOrderJswController {
 			resp.setTypeofsupply( result[10] != null ? (String) result[10] : null);
 			resp.setIncomingpayment( result[11] != null ? (String) result[11] : null);
 			resp.setPaymentmode( result[12] != null ? (String) result[12] : null);
-			resp.setTerms( result[13] != null ? (String) result[13] +" Days"  : null);
+			resp.setTerms( result[13] != null ? (String) result[13] : null);
 			resp.setCustomerCode( result[14] != null ? (String) result[14] : null);
 			resp.setTotalSoqty( result[15] != null ? (BigDecimal) result[15] : null);
 			resp.setTotalAllocatedSoqty( result[16] != null ? (BigDecimal) result[16] : null);
@@ -100,20 +101,22 @@ public class SalesOrderJswController {
 			resp.setLikely_material_date(formatDate(result[21]));
 			resp.setStandard_material_date(formatDate(result[22]));
 
-			child.setSoChildId( result[23] != null ? (Integer) result[23] : null);
-			child.setMmId( result[24] != null ? (String) result[24] : null);
-			child.setSoqty( result[27] != null ? (BigDecimal) result[27] : null);
-			child.setAllocatedSoqty( result[28] != null ? (BigDecimal) result[28] : null);
-			child.setAllocatedStts(  result[29] != null ? (String) result[29] : null);
-			child.setItemStatus( result[30] != null ? (String) result[30] : null);
-			child.setWearhouse_id( result[31] != null ? (String) result[31] : null);
+			child.setSoChildId(result[23] != null ? (Integer) result[23] : null);
+			child.setMmId(result[24] != null ? (String) result[24] : null);
+			child.setSoqty(result[27] != null ? (BigDecimal) result[27] : null);
+			child.setAllocatedSoqty(result[28] != null ? (BigDecimal) result[28] : null);
+			child.setAllocatedStts(result[29] != null ? (String) result[29] : null);
+			child.setItemStatus(result[30] != null ? (String) result[30] : null);
+			child.setWearhouse_id(result[31] != null ? (String) result[31] : null);
+			child.setTax(result[32] != null ? (String) result[32] : null);
 
-
-			child.setMm_description(result[32] != null ? (String) result[32] : null);
-			child.setHsn(result[33] != null ? String.valueOf(result[33]) : null);
-			child.setTax(result[34] != null ? (String) result[34] : null);
+			child.setMm_description(result[33] != null ? (String) result[33] : null);
+			child.setHsn(result[34] != null ? String.valueOf(result[34]) : null);
 			child.setWare_house_name(result[35] != null ? (String) result[35] : null);
 			resp.setBranch(result[36] != null ? (String) result[36] : null);
+			resp.setCam_code(result[37] != null ? (String) result[37] : null);
+			resp.setRemarks(result[38] != null ? (String) result[38] : null);
+
 
 			resp.getItemslist().add(child);
 
@@ -235,6 +238,13 @@ public class SalesOrderJswController {
 	public ResponseEntity<Object> update(@RequestBody SalesOrderExternalRequest salesOrderMainRequest) {
 		return salesOrderService.update(salesOrderMainRequest);
 	}
+
+	@PostMapping(value = "/bulkaUpdate", produces = "application/json")
+	public ResponseEntity<Object> bulkApprove(
+			@RequestBody SalesOrderBulkRequest request) {
+		return salesOrderService.bulkUpdate(request);
+	}
+
 
 	private String formatDate(Object value) {
 		if (value == null) return null;

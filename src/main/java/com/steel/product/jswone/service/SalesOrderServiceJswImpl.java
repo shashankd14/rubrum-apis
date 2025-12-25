@@ -15,17 +15,14 @@ import com.steel.product.jswone.entity.StatusType;
 import com.steel.product.jswone.repository.SalesOrderAllocationJswRepository;
 import com.steel.product.jswone.repository.SalesOrderChildJswRepository;
 import com.steel.product.jswone.repository.SalesOrderJswRepository;
-import com.steel.product.jswone.request.SalesOrderChildRequest;
-import com.steel.product.jswone.request.SalesOrderMainRequest;
-import com.steel.product.jswone.request.SalesOrderDetails;
-import com.steel.product.jswone.request.SalesOrderExternalRequest;
-import com.steel.product.jswone.request.SalesOrderLineItem;
-import com.steel.product.jswone.request.SalesOrderCustomFields;
+import com.steel.product.jswone.request.*;
 
 import lombok.extern.log4j.Log4j2;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
 
 import javax.transaction.Transactional;
@@ -280,8 +277,8 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				partyIdsFlag, pageable);
 		return packetsList;
 	}
-
 	@Override
+	@Transactional
 	public ResponseEntity<Object> post(SalesOrderExternalRequest req, String option) {
 		try {
 
@@ -298,28 +295,45 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			SalesOrderDetails d = req.getSalesOrder_Details();
 			SalesOrderCustomFields c = req.getCustom_fields();
 
-			BigDecimal totalqty = BigDecimal.ZERO;
+			// ----------------------- FIND EXISTING SO BY SO_NUMBER -----------------------
+			Optional<SalesOrderJswEntity> existingSoOpt = salesOrderRepository.findBySoNumberAndIsDeletedFalse(d.getSalesorder_number());
 
-			SalesOrderJswEntity so = new SalesOrderJswEntity();
+			SalesOrderJswEntity so;
 
-			so.setSoNumber(d.getSalesorder_number());
+			if (existingSoOpt.isPresent()) {
+				// ======================= UPDATE FLOW =======================
+				so = existingSoOpt.get();
+
+				// Remove existing children (orphanRemoval = true will delete them)
+				if (so.getItemslist() != null) {
+					so.getItemslist().clear();
+				}
+
+			} else {
+				// ======================= INSERT FLOW =======================
+				so = new SalesOrderJswEntity();
+				so.setSoNumber(d.getSalesorder_number());
+				so.setCreatedBy(commonUtil.getUserId());
+				so.setCreatedOn(new Date());
+				so.setAllocatedStts("PENDING");
+				so.setIsDeleted(false);
+				so.setSoStatus(StatusType.SO_CREATED.getType());
+			}
+
+			// ----------------------- COMMON HEADER UPDATE -----------------------
 			so.setSocreatedate(convertToDate(d.getDate()));
 			so.setRefno(d.getReference_number());
 			so.setCustomerid(d.getCustomer_id());
 			so.setDeliverymethod(d.getDelivery_method());
-			so.setTerms(req.getPayment_terms_label().split(" ")[0]);
+			so.setTerms(req.getPayment_terms_label());
 			so.setPaymentmode(String.valueOf(req.getPayment_terms()));
 			so.setBizsegment(c.getCf_biz_segment());
 			so.setSupplysource(c.getCf_supply_source());
 			so.setTypeofsupply(d.getDelivery_method());
 			so.setZbooksSo(d.getSalesorder_id());
-			so.setCreatedBy(commonUtil.getUserId());
 			so.setUpdatedBy(commonUtil.getUserId());
-			so.setCreatedOn(new Date());
 			so.setUpdatedOn(new Date());
-			so.setAllocatedStts("PENDING");
-			so.setIsDeleted(false);
-			so.setSoStatus(StatusType.SO_CREATED.getType());
+			so.setTotalSoqty(BigDecimal.valueOf(d.getTotal_quantity()));
 
 			// ----------------------- Branch -----------------------
 			if (d.getBranch_id() != null) {
@@ -331,50 +345,39 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				Date original = convertToDate(d.getExpected_shipment_date());
 				so.setExpectedDeliveryDate(original);
 
-				// ---- Set **Standard Material Date → 2 days behind** ----
 				Calendar cal = Calendar.getInstance();
 				cal.setTime(original);
 				cal.add(Calendar.DAY_OF_MONTH, -2);
 				so.setStandardMaterialDate(cal.getTime());
 			}
-			so.setTotalSoqty(BigDecimal.valueOf(d.getTotal_quantity()));
-			// ----------------------- Line Items -----------------------
+
+			// ----------------------- LINE ITEMS (CHILD UPSERT) -----------------------
 			for (SalesOrderLineItem li : req.getLine_items()) {
 
 				SalesOrderPacketsJswEntity item = new SalesOrderPacketsJswEntity();
-				BeanUtils.copyProperties(item, li);
 
-				// FK → set parent
 				item.setSoId(so);
-
-				// SKU → mm_id
 				item.setMmId(li.getSku());
-
-				if (li.getWarehouse_id() != null) {
-					item.setWearhouseId(li.getWarehouse_id());
-				}
-
+				item.setSoqty(BigDecimal.valueOf(li.getQuantity()));
+				item.setTax_percentage(String.valueOf(li.getTax_percentage()));
+				item.setHsn_or_sac(li.getHsn_or_sac());
+				item.setItemStatus(StatusType.SO_CREATED.getType());
+				item.setAllocatedStts("PENDING");
+				item.setIsDeleted(false);
 				item.setCreatedBy(commonUtil.getUserId());
 				item.setUpdatedBy(commonUtil.getUserId());
 				item.setCreatedOn(new Date());
 				item.setUpdatedOn(new Date());
-				item.setItemStatus(StatusType.SO_CREATED.getType());
-				item.setAllocatedStts("PENDING");
-				item.setIsDeleted(false);
 
-				// Add qty to SO total
-//				totalqty = totalqty.add(item.getSoqty());
-
-				// Add child to parent (manages FK & cascading)
+				if (li.getWarehouse_id() != null) {
+					item.setWearhouseId(li.getWarehouse_id());
+				}
 				so.addItem(item);
 			}
-
-
-
-			// ----------------------- Save Parent (cascade saves children) -----------------------
 			salesOrderRepository.save(so);
-
-			return ResponseEntity.ok("{\"code\":\"success\", \"message\":\"External Sales Order created successfully\"}");
+			return ResponseEntity.ok(
+					"{\"code\":\"success\", \"message\":\"External Sales Order processed successfully\"}"
+			);
 
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -384,7 +387,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			);
 		}
 	}
-
+	
 
 	private String validateExternalRequest(SalesOrderExternalRequest req) {
 
@@ -483,7 +486,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 
 		Date standardDate = convertToDate(d.getStandard_material_date());
 		Date likelyDate = convertToDate(d.getLikely_material_date());
-//		Date original =
+
 		so.setSoStatus(StatusType.SO_APPROVED.getType());
 		so.setApprovedDate(new Date());
 		so.setUpdatedBy(commonUtil.getUserId());
@@ -501,7 +504,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 		salesOrderRepository.save(so);
 
 		return ResponseEntity.ok(
-				"{\"status\":\"success\",\"message\":\"Sales Order approved\"}"
+				"{\"status\":\"success\",\"message\":\"Sales Order approved Successfully.\"}"
 		);
 	}
 
@@ -517,9 +520,11 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 		so.setSoStatus(StatusType.SO_HOLD.getType());
 		so.setUpdatedOn(new Date());
 		so.setUpdatedBy(commonUtil.getUserId());
+		so.setRemarks(d.getRemarks());
+		so.setCamCode(d.getCam_code());
 		salesOrderRepository.save(so);
 		return ResponseEntity.ok(
-				"{\"status\":\"success\",\"message\":\"Sales Order put on hold\"}"
+				"{\"status\":\"success\",\"message\":\"Sales Order put on hold Successfully.\"}"
 		);
 	}
 
@@ -535,12 +540,50 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 		so.setRemarks(d.getRemarks());
 		so.setUpdatedOn(new Date());
 		so.setUpdatedBy(commonUtil.getUserId());
+		so.setRemarks(d.getRemarks());
+		so.setCamCode(d.getCam_code());
 		salesOrderRepository.save(so);
 		return ResponseEntity.ok(
-				"{\"status\":\"success\",\"message\":\"Sales Order rejected\"}"
+				"{\"status\":\"success\",\"message\":\"Sales Order rejected Successfully.\"}"
 		);
 	}
 
+	@Override
+	@Transactional
+	public ResponseEntity<Object> bulkUpdate(SalesOrderBulkRequest request) {
 
+		if (request.getSoIds() == null || request.getSoIds().isEmpty()) {
+			return ResponseEntity.badRequest()
+					.body("{\"status\":\"failure\",\"message\":\"SO ID list is empty\"}");
+		}
 
+		List<SalesOrderJswEntity> orders = salesOrderRepository.findAllById(request.getSoIds());
+
+		if (orders.size() != request.getSoIds().size()) {
+			return ResponseEntity.badRequest()
+					.body("{\"status\":\"failure\",\"message\":\"One or more SO IDs not found\"}");
+		}
+
+		Date now = new Date();
+		for (SalesOrderJswEntity so : orders) {
+			so.setSoStatus(StatusType.SO_APPROVED.getType());
+			so.setApprovedDate(now);
+			so.setUpdatedOn(now);
+			so.setUpdatedBy(commonUtil.getUserId());
+
+			for (SalesOrderPacketsJswEntity item : so.getItemslist()) {
+				item.setItemStatus(StatusType.SO_APPROVED.getType());
+				item.setApprovedDate(now);
+				item.setUpdatedOn(now);
+				item.setUpdatedBy(commonUtil.getUserId());
+			}
+		}
+
+		salesOrderRepository.saveAll(orders);
+
+		return ResponseEntity.ok(
+				"{\"status\":\"success\",\"message\":\"Sales Orders approved successfully\",\"count\":"
+						+ orders.size() + "}"
+		);
+	}
 }

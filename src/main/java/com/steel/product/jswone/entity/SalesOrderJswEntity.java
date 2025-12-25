@@ -112,13 +112,13 @@ public class SalesOrderJswEntity {
 	private Integer updatedBy;
 
 	@CreationTimestamp
-	@Column(name = "created_on", nullable = false, updatable = false)
+	@Column(name = "created_on")
 	private Date createdOn;
 
-	@Column(name = "approved_date", nullable = false, updatable = false)
+	@Column(name = "approved_date")
 	private Date approvedDate;
 
-	@Column(name = "allocation_date", nullable = false, updatable = false)
+	@Column(name = "allocation_date")
 	private Date allocationDate;
 
 	@UpdateTimestamp
@@ -128,7 +128,7 @@ public class SalesOrderJswEntity {
 	@Column(name = "is_deleted", columnDefinition = "BIT")
 	private Boolean isDeleted;
 
-	@OneToMany(mappedBy = "soId", cascade = { CascadeType.PERSIST, CascadeType.MERGE }, orphanRemoval = true)
+	@OneToMany(mappedBy = "soId", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<SalesOrderPacketsJswEntity> itemslist;
 
 	public void removeItem(SalesOrderPacketsJswEntity instruction) {

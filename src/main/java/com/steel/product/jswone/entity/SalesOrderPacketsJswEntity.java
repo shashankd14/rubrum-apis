@@ -71,4 +71,10 @@ public class SalesOrderPacketsJswEntity {
 	@Column(name = "wearhouse_id")
 	private String wearhouseId;
 
+	@Column(name = "tax_percentage")
+	private String tax_percentage;
+
+	@Column(name = "hsn_or_sac")
+	private String hsn_or_sac;
+
 }
