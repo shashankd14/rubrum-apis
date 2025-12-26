@@ -632,9 +632,9 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 		List<PoGrnLineItem> line_items = new ArrayList<>();
 
 		List<Object[]> poDetails = powseMmidDetailsRepository.getInwardDetailsByPoId(poId);
+		BigDecimal totalValueofgods = new BigDecimal("0.00"); 
 		for (Object[] result : poDetails) {
 			List<PoGrnLineItemBatches> batches = new ArrayList<>();
-			PoGrnCustomType customParam = new PoGrnCustomType();
 			String po_reference = (result[0] != null ? result[0].toString() : null);
 			// String po_id = (result[1] != null ? result[1].toString() : null);
 			// String mm_id = (result[2] != null ? result[2].toString() : null);
@@ -643,7 +643,8 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			String custBatchNo = (result[5] != null ? result[5].toString() : null);
 			String postdate = (result[6] != null ? result[6].toString() : null);
 			BigDecimal fquantity = (result[7] != null ? new BigDecimal(result[7].toString()) : null);
-
+			BigDecimal valueofgods = (result[8] != null ? new BigDecimal(result[8].toString()) : null);
+			totalValueofgods=totalValueofgods.add(valueofgods);
 			PODetailsLineItemResponse lineItems = new PODetailsLineItemResponse();
 			try {
 				lineItems = objectMapper.readValue(mmid_details_object, PODetailsLineItemResponse.class);
@@ -654,12 +655,6 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			req.setBill_number(poinvno);
 			req.setReference_number(po_reference);
 			req.setDate(postdate);
-
-			customParam.setApi_name("cf_refrence_no");
-			customParam.setLabel("Refrence No");
-			customParam.setData_type("Text Box (Single Line)");
-			customParam.setValue("");
-			customTypeList.add(customParam);
 
 			BigDecimal availQty = lineItems.getQuantity().subtract(lineItems.getQuantity_billed());
 			BigDecimal extraQty = new BigDecimal("0.00");
@@ -701,6 +696,20 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			}
 		}
 		req.setLine_items(line_items);
+
+		PoGrnCustomType customParam = new PoGrnCustomType();
+		customParam.setApi_name("cf_refrence_no");
+		customParam.setLabel("Refrence No");
+		customParam.setData_type("Text Box (Single Line)");
+		customParam.setValue("");
+		customTypeList.add(customParam);
+
+		PoGrnCustomType customParam2 = new PoGrnCustomType();
+		customParam2.setApi_name("cf_total_value_of_goods");
+		customParam2.setLabel("Total Value Of Goods");
+		customParam2.setData_type("Text Box (Single Line)");
+		customParam2.setValue(totalValueofgods.toString());
+		customTypeList.add(customParam2);
 		req.setCustom_fields(customTypeList);
 		return req;
 	}

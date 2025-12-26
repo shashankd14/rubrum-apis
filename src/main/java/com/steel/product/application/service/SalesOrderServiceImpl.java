@@ -387,4 +387,36 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 		labelFile.deleteOnExit();
 		return file;
 	}
+
+	@Override
+	public Map<Integer, List<String>> fetchMappedSOList(List<Integer> locationList) {
+		List<Object[]> packetsList = salesOrderRepository.fetchMappedSOList(locationList);
+		Map<Integer, List<String>> soMap = new LinkedHashMap<>();
+
+		for (Object[] result : packetsList) {
+			String sono = result[0] != null ? (String) result[0] : null;
+			Integer locationId = result[1] != null ? (Integer) result[1] : null;
+
+			if (soMap != null && soMap.get(locationId) != null) {
+				List<String> addEntity = soMap.get(locationId);
+				addEntity.add(sono);
+				soMap.put(locationId, addEntity);
+			} else {
+				List<String> addEntity = new ArrayList<>();
+				addEntity.add(sono);
+				soMap.put(locationId, addEntity);
+			}
+		}
+		return soMap;
+	}
+
+	@Override
+	public List<String> mmidBySO(String soNo) {
+		List<String> mappedSOList = new ArrayList<>();
+		List<Object[]> packetsList = salesOrderRepository.mmidBySO(soNo);
+		for (Object[] result : packetsList) {
+			mappedSOList.add(result[0] != null ? (String) result[0] : null);
+		}
+		return mappedSOList;
+	}
 }

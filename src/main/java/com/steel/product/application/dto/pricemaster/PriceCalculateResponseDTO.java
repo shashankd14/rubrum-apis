@@ -13,4 +13,7 @@ public class PriceCalculateResponseDTO {
 	private String remarks;
 
 	private List<PriceCalculateDTO> priceDetailsList =new ArrayList<>();
+
+	private List<String> mappedSOList = new ArrayList<>();
+
 }

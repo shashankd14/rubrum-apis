@@ -289,6 +289,17 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 		return theEntry;
 	}
 
+	@Override
+	public InwardEntry getByCoilNumber1(String coilNumber) {
+		
+		Optional<InwardEntry> result = this.inwdEntryRepo.findByCoilNumber(coilNumber);
+		InwardEntry theEntry = null;
+		if (result.isPresent()) {
+			theEntry = result.get();
+		}
+		return theEntry;
+	}
+
 	public JSONObject getPlanPDFs(int inwardId) {
 		JSONObject finalResp =new JSONObject();
 		List<PartDetailsPDFResponse> response = new ArrayList<PartDetailsPDFResponse>();

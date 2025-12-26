@@ -20,6 +20,8 @@ public class ListPageSearchRequest {
 
 	private Integer soId;
 
+	private String soNo;
+
 	private String sortColumn;
 
 	private String sortOrder;

@@ -151,5 +151,20 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrderEntity, In
 			+ " and so_child.instruction_id in :instructionIdList ", 
 		nativeQuery = true)
 	List<Object[]> validateSoNoAndCustCode(@Param("instructionIdList") List<Integer> instructionIdList);
+
+	@Query(value = "SELECT distinct so.so_number, wm.party_id "
+			+ " FROM jsw_sales_order so, jsw_sales_order_child so_child, jsw_material_master mm, jsw_warehouse_master wm"
+			+ " WHERE so_child.so_id = so.so_id and mm.mm_id = so_child.mm_id AND wm.ware_house_id = so_child.wearhouse_id AND so.is_deleted = 0"
+			+ " AND so_child.is_deleted = 0 AND wm.party_id in :locationList ", 
+		nativeQuery = true)
+	List<Object[]> fetchMappedSOList(@Param("locationList") List<Integer> locationList);
+
+	
+	@Query(value = "SELECT distinct so_child.mm_id, so_child.soqty "
+			+ " FROM jsw_sales_order so, jsw_sales_order_child so_child, jsw_material_master mm "
+			+ " WHERE so_child.so_id = so.so_id and mm.mm_id = so_child.mm_id"
+			+ " AND so.is_deleted = 0 AND so_child.is_deleted = 0 AND so.so_number= :soNo ", 
+		nativeQuery = true)
+	List<Object[]> mmidBySO(@Param("soNo") String soNo);
 	
 }

@@ -76,4 +76,6 @@ public interface InwardEntryService {
 
 	Page<Object[]> wipInwardIdListPlanId(SearchListPageRequest searchListPageRequest);
 
+	InwardEntry getByCoilNumber1(String coilNumber);
+
 }

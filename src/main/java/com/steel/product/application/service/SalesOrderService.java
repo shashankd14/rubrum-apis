@@ -10,6 +10,8 @@ import com.steel.product.trading.request.DeleteRequest;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 
@@ -32,4 +34,9 @@ public interface SalesOrderService {
 	SalesOrderListResponse getSoNoAndCustCode(List<Integer> list);
 
 	File generatePdf(ListPageSearchRequest request) throws IOException, DocumentException;
+
+	Map<Integer, List<String>> fetchMappedSOList(List<Integer> soList);
+
+	List<String> mmidBySO(String soNo);
+
 }

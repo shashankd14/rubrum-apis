@@ -57,11 +57,13 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 
 	private MaterialMasterJswService materialMasterJswService;
 
+	private SalesOrderService salesOrderService;
+
 	@Autowired
 	public DeliveryDetailsServiceImpl(DeliveryDetailsRepository deliveryDetailsRepo,
 			InstructionService instructionService, StatusService statusService, InwardEntryService inwardEntryService,
 			PriceMasterService priceMasterService, CommonUtil commonUtil,
-			MaterialMasterJswService materialMasterJswService) {
+			MaterialMasterJswService materialMasterJswService, SalesOrderService salesOrderService) {
 		this.deliveryDetailsRepo = deliveryDetailsRepo;
 		this.instructionService = instructionService;
 		this.statusService = statusService;
@@ -69,6 +71,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 		this.priceMasterService = priceMasterService;
 		this.commonUtil = commonUtil;
 		this.materialMasterJswService = materialMasterJswService;
+		this.salesOrderService = salesOrderService;
 	}
 
 	@Override
@@ -493,7 +496,9 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
     public PriceCalculateResponseDTO validatePriceMapping(DeliveryDto deliveryDto, Integer userId) {
 		PriceCalculateResponseDTO priceCalculateResponseDTO= new PriceCalculateResponseDTO();
         try {
-			LOGGER.info("in validatePriceMapping delivery api");
+			int locationId=0;
+        	
+        	LOGGER.info("in validatePriceMapping delivery api");
 			List<DeliveryItemDetails> deliveryItemDetails = deliveryDto.getDeliveryItemDetails();
 			for (DeliveryItemDetails instructionslist : deliveryItemDetails) {
 				if(instructionslist.getAdditionalWeight()!=null && instructionslist.getAdditionalWeight()>0) {
@@ -511,6 +516,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 				boolean innerStts = false;
 				InwardEntry inwardEntry = instruction.getInwardId();
 		        MaterialResponseDto materialGradeDto = materialMasterJswService.getGradeProductName(inwardEntry.getMmId());
+				locationId=inwardEntry.getParty().getnPartyId();
 
 				/*PriceCalculateDTO priceCalculateDTO = priceMasterService.calculateInstructionWisePrice(
 						inwardEntry.getParty().getnPartyId(), BigDecimal.valueOf(inwardEntry.getfThickness()),
@@ -561,7 +567,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 				priceDetailsList.add(priceCalculateDTO);
 				mainStts = innerStts;
 			}
-			
+
 			priceCalculateResponseDTO.setValidationStatus(mainStts);
 			if(priceCalculateResponseDTO.isValidationStatus()) {
 			    priceCalculateResponseDTO.setRemarks("Thickness range found for all selected packets");
@@ -569,6 +575,12 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 			    priceCalculateResponseDTO.setRemarks("This thickness range already has a value (rate) defined. Please recheck.");
 			}
 			priceCalculateResponseDTO.setPriceDetailsList(priceDetailsList);
+			List<Integer> locationList  = new ArrayList<>(); 
+			locationList.add(locationId);
+			Map<Integer, List<String>> locationWiseSOMap = salesOrderService.fetchMappedSOList(locationList);
+			if(locationWiseSOMap!=null && locationWiseSOMap.get(locationId) != null ) {
+				priceCalculateResponseDTO.setMappedSOList(locationWiseSOMap.get(locationId));
+			}
       
 		} catch (Exception e) {
 			e.printStackTrace();

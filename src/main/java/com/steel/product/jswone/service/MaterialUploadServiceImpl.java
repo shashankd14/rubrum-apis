@@ -136,30 +136,30 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 
 	@Value("${fileUploadPath}")
 	private String fileUploadPath;
-	
+
 	@Value("${inwardFileUploadPath}")
 	private String inwardFileUploadPath;
-	 
+
 	@Override
-	public ResponseEntity<Object> uploadmmidData(MaterialUploadRequest request) throws Exception, FileNotFoundException {
+	public ResponseEntity<Object> uploadmmidData(MaterialUploadRequest request)
+			throws Exception, FileNotFoundException {
 		log.info("******MaterialUploadService.uploadmmidData*****");
 		try {
-			
-			int totalMMIDCount=0;
-			int newDataCount=0;
-			int updatedDataCount=0;
+
+			int totalMMIDCount = 0;
+			int newDataCount = 0;
+			int updatedDataCount = 0;
 			List<MaterialMasterFileDataEntity> productList = new ArrayList<>();
 			if (request.isFileData()) {
 				String fullPath = inwardFileUploadPath + File.separator + request.getFileName();
-				System.out.println("fullPath == "+fullPath);
+				System.out.println("fullPath == " + fullPath);
 				File file = new File(fullPath);
 
 				if (!file.exists()) {
-				    return new ResponseEntity<>(
-				        "{\"status\": \"fail\", \"message\": \"File " + (request.getFileName() == null ?"": request.getFileName()) + " not found.\"}",
-				        new HttpHeaders(),
-				        HttpStatus.INTERNAL_SERVER_ERROR	
-				    );
+					return new ResponseEntity<>(
+							"{\"status\": \"fail\", \"message\": \"File "
+									+ (request.getFileName() == null ? "" : request.getFileName()) + " not found.\"}",
+							new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 				}
 
 				List<MaterialMasterFileDataDTO> products = mmFileDetails(fullPath);
@@ -173,9 +173,9 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 						MaterialMasterFileDataEntity dummyEntity = repository.findFirstByMmId(dest.getMmId());
 						if (dummyEntity != null && dummyEntity.getMateraiId() > 0) {
 							dest.setMateraiId(dummyEntity.getMateraiId());
-							updatedDataCount=updatedDataCount+1;
+							updatedDataCount = updatedDataCount + 1;
 						} else {
-							newDataCount=newDataCount+1;
+							newDataCount = newDataCount + 1;
 						}
 						productList.add(dest);
 						repository.save(dest);
@@ -186,15 +186,16 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 				log.info("File Uploaded Successfully. Count is == " + products.size());
 			}
 			if (request.isMasterData()) {
-				//List<MaterialMasterFileDataEntity> listFileData =repository.findAll();
+				// List<MaterialMasterFileDataEntity> listFileData =repository.findAll();
 				log.info("listFileData is == " + productList.size());
-				//List<MaterialMasterJswEntity> materialMasterList = new ArrayList<>();
+				// List<MaterialMasterJswEntity> materialMasterList = new ArrayList<>();
 				for (MaterialMasterFileDataEntity sourceEntity : productList) {
 					MaterialMasterJswEntity destEntity = new MaterialMasterJswEntity();
 					BeanUtils.copyProperties(sourceEntity, destEntity);
 					log.info("getMmId is == " + sourceEntity.getMmId());
 
-					MaterialMasterJswEntity oldEntity = materialMasterJswRepository.findFirstByMmId(sourceEntity.getMmId());
+					MaterialMasterJswEntity oldEntity = materialMasterJswRepository
+							.findFirstByMmId(sourceEntity.getMmId());
 					if (oldEntity != null && oldEntity.getMaterialId() > 0) {
 						destEntity.setMaterialId(oldEntity.getMaterialId());
 						destEntity.setUpdatedOn(new Date());
@@ -203,17 +204,17 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 						destEntity.setCreatedOn(new Date());
 						destEntity.setUpdatedOn(null);
 					}
-					if(sourceEntity.getLength()!=null && sourceEntity.getLength().length() >0 ) {
+					if (sourceEntity.getLength() != null && sourceEntity.getLength().length() > 0) {
 						destEntity.setLength(new BigDecimal(sourceEntity.getLength()));
 					} else {
 						destEntity.setLength(BigDecimal.ZERO);
 					}
-					if(sourceEntity.getWidth() !=null && sourceEntity.getWidth().length() >0 ) {
+					if (sourceEntity.getWidth() != null && sourceEntity.getWidth().length() > 0) {
 						destEntity.setWidth(new BigDecimal(sourceEntity.getWidth()));
 					} else {
 						destEntity.setWidth(BigDecimal.ZERO);
 					}
-					if(sourceEntity.getThickness() !=null && sourceEntity.getThickness().length() >0 ) {
+					if (sourceEntity.getThickness() != null && sourceEntity.getThickness().length() > 0) {
 						destEntity.setThickness(new BigDecimal(sourceEntity.getThickness()));
 					} else {
 						destEntity.setThickness(BigDecimal.ZERO);
@@ -233,29 +234,33 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 					} else {
 						destEntity.setIDiameter(BigDecimal.ZERO);
 					}
-					
-					if(!(sourceEntity.getBrand()!=null && sourceEntity.getBrand().length()>0)) {
+
+					if (!(sourceEntity.getBrand() != null && sourceEntity.getBrand().length() > 0)) {
 						sourceEntity.setBrand("UnBrand");
-					} 
-					// Brand Master 
+					}
+					// Brand Master
 					destEntity.setCategoryId(setCategoryMaster(sourceEntity.getCategory()));
-					destEntity.setSubcategoryId(setSubCategoryMaster(sourceEntity.getSubcategory(), destEntity.getCategoryId()));
-					destEntity.setLeafcategoryId(setLeafCategoryMaster(sourceEntity.getLeafcategory(), destEntity.getSubcategoryId()));
-					destEntity.setBrandId( setBrandNameMaster(sourceEntity.getBrand(), destEntity.getLeafcategoryId()));
-					// Product Master 
+					destEntity.setSubcategoryId(
+							setSubCategoryMaster(sourceEntity.getSubcategory(), destEntity.getCategoryId()));
+					destEntity.setLeafcategoryId(
+							setLeafCategoryMaster(sourceEntity.getLeafcategory(), destEntity.getSubcategoryId()));
+					destEntity.setBrandId(setBrandNameMaster(sourceEntity.getBrand(), destEntity.getLeafcategoryId()));
+					// Product Master
 					destEntity.setProducttypeId(setProductMaster(sourceEntity.getProducttype(), destEntity));
 					destEntity.setGradeId(setGradeMaster(sourceEntity.getGrade(), destEntity.getProducttypeId()));
 					destEntity.setSubgradeId(setSubGradeMaster(sourceEntity.getSubgrade(), destEntity.getGradeId()));
-					destEntity.setCoatingtypeId(setCoatingtypeMaster( sourceEntity.getCoatingtype(), destEntity.getProducttypeId() ));
-					destEntity.setSurfacetypeId(setSurfacetypeMaster(sourceEntity.getSurfacetype(), destEntity.getProducttypeId()));
+					destEntity.setCoatingtypeId(
+							setCoatingtypeMaster(sourceEntity.getCoatingtype(), destEntity.getProducttypeId()));
+					destEntity.setSurfacetypeId(
+							setSurfacetypeMaster(sourceEntity.getSurfacetype(), destEntity.getProducttypeId()));
 					destEntity.setUomId(setUomMaster(sourceEntity.getUom(), destEntity.getProducttypeId()));
 					destEntity.setFormId(setFormMaster(sourceEntity.getForm(), destEntity.getProducttypeId()));
-					//materialMasterList.add(destEntity);
+					// materialMasterList.add(destEntity);
 					try {
 						materialMasterJswRepository.save(destEntity);
 					} catch (Exception e) {
 						e.printStackTrace();
-						System.out.println("error while save --  "+e.getMessage());
+						System.out.println("error while save --  " + e.getMessage());
 					}
 				}
 			}
@@ -267,12 +272,13 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 			resp.put("status", "SUCCESS");
 			resp.put("message", "File Uploaded Successfully.");
 			return new ResponseEntity<Object>(resp, new HttpHeaders(), HttpStatus.OK);
-		} catch( Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
-			return new ResponseEntity<Object>("{\"status\": \"failed\", \"message\": \"Failed to Uploaded a file.\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<Object>("{\"status\": \"failed\", \"message\": \"Failed to Uploaded a file.\"}",
+					new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-	
+
 	private List<MaterialMasterFileDataDTO> mmFileDetails(String fullPath) {
 		// 1.read the file via csv reader
 		CSVReader reader = null;
@@ -283,9 +289,9 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 		}
 
 		// 2.convert into java object
-		CsvToBean<MaterialMasterFileDataDTO> csvToBean = new CsvToBeanBuilder<MaterialMasterFileDataDTO>(reader).withSkipLines(1)
-				.withIgnoreLeadingWhiteSpace(true).withIgnoreEmptyLine(true).withType(MaterialMasterFileDataDTO.class)
-				.build();
+		CsvToBean<MaterialMasterFileDataDTO> csvToBean = new CsvToBeanBuilder<MaterialMasterFileDataDTO>(reader)
+				.withSkipLines(1).withIgnoreLeadingWhiteSpace(true).withIgnoreEmptyLine(true)
+				.withType(MaterialMasterFileDataDTO.class).build();
 		return csvToBean.parse();
 	}
 
@@ -294,9 +300,9 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 		Integer pk = 0;
 		try {
 			if (categoryName != null && categoryName.length() > 0) {
-				
+
 				List<CategoryMasterJswEntity> oldList = categoryRepository.findByCategoryName(categoryName);
-				if(oldList!=null && oldList.size() > 0) {
+				if (oldList != null && oldList.size() > 0) {
 					pk = oldList.get(0).getCategoryId();
 				} else {
 					CategoryMasterJswEntity entity = new CategoryMasterJswEntity();
@@ -317,7 +323,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 		try {
 			if (subCategoryName != null && subCategoryName.length() > 0) {
 				List<SubCategoryJswEntity> oldList = subCategoryRepository.findBySubcategoryName(subCategoryName);
-				if(oldList!=null && oldList.size() > 0) {
+				if (oldList != null && oldList.size() > 0) {
 					pk = oldList.get(0).getSubcategoryId();
 				} else {
 					SubCategoryJswEntity entity = new SubCategoryJswEntity();
@@ -337,13 +343,14 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 		Integer pk = 0;
 		try {
 			if (leafcategoryName != null && leafcategoryName.length() > 0) {
-				List<LeafCategoryJswEntity> oldList = leafCategoryJswRepository.findByLeafcategoryName(leafcategoryName);
-				if(oldList!=null && oldList.size() > 0) {
+				List<LeafCategoryJswEntity> oldList = leafCategoryJswRepository
+						.findByLeafcategoryName(leafcategoryName);
+				if (oldList != null && oldList.size() > 0) {
 					pk = oldList.get(0).getLeafcategoryId();
 				} else {
 					LeafCategoryJswEntity entity = new LeafCategoryJswEntity();
 					entity.setLeafcategoryName(leafcategoryName);
-					entity.setSubcategoryId( subCategoryId);
+					entity.setSubcategoryId(subCategoryId);
 					leafCategoryJswRepository.save(entity);
 					pk = entity.getLeafcategoryId();
 				}
@@ -352,7 +359,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 		}
 		return pk;
 	}
-	
+
 	@Override
 	public Integer setBrandNameMaster(String brandName, Integer leafcategoryId) {
 		Integer pk = 0;
@@ -363,8 +370,8 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 					pk = oldList.get(0).getBrandId();
 				} else {
 					BrandMasterJswEntity entity = new BrandMasterJswEntity();
-					entity.setBrandName( brandName);
-					entity.setLeafcategoryId( leafcategoryId);
+					entity.setBrandName(brandName);
+					entity.setLeafcategoryId(leafcategoryId);
 					brandRepository.save(entity);
 					pk = entity.getBrandId();
 				}
@@ -386,7 +393,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 				} else {
 					UomMasterJswEntity entity = new UomMasterJswEntity();
 					entity.setUomName(uom);
-					entity.setProductId( producttypeId);
+					entity.setProductId(producttypeId);
 					uomRepository.save(entity);
 					pk = entity.getUomId();
 				}
@@ -408,7 +415,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 				} else {
 					FormMasterJswEntity entity = new FormMasterJswEntity();
 					entity.setFormName(form);
-					entity.setProductId( producttypeId);
+					entity.setProductId(producttypeId);
 					formRepository.save(entity);
 					pk = entity.getFormId();
 				}
@@ -429,7 +436,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 				} else {
 					GradeMasterJswEntity entity = new GradeMasterJswEntity();
 					entity.setGradeName(grade);
-					entity.setProductId( producttypeId);
+					entity.setProductId(producttypeId);
 					gradeRepository.save(entity);
 					pk = entity.getGradeId();
 				}
@@ -451,7 +458,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 				} else {
 					SubgradeMasterJswEntity entity = new SubgradeMasterJswEntity();
 					entity.setSubgradeName(subgrade);
-					entity.setGradeId( gradeId);
+					entity.setGradeId(gradeId);
 					subGradeJswRepository.save(entity);
 					pk = entity.getSubgradeId();
 				}
@@ -460,7 +467,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 		}
 		return pk;
 	}
-	
+
 	@Override
 	public Integer setProductMaster(String productName, MaterialMasterJswEntity mmEntity) {
 		Integer pk = 0;
@@ -484,7 +491,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 	}
 
 	@Override
-	public Integer setSurfacetypeMaster(String surfacetype, Integer producttypeId ) {
+	public Integer setSurfacetypeMaster(String surfacetype, Integer producttypeId) {
 		Integer pk = 0;
 		try {
 			if (surfacetype != null && surfacetype.length() > 0) {
@@ -494,17 +501,17 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 					pk = oldList.get(0).getSurfacetypeId();
 				} else {
 					SurfacetypeMasterJswEntity entity = new SurfacetypeMasterJswEntity();
-					entity.setSurfacetypeName( surfacetype);
-					entity.setProductId( producttypeId);
+					entity.setSurfacetypeName(surfacetype);
+					entity.setProductId(producttypeId);
 					surfacetypeRepository.save(entity);
-					pk = entity.getSurfacetypeId() ;
+					pk = entity.getSurfacetypeId();
 				}
 			}
 		} catch (Exception e) {
 		}
 		return pk;
 	}
-	
+
 	@Override
 	public Integer setCoatingtypeMaster(String coatingtype, Integer producttypeId) {
 		Integer pk = 0;
@@ -526,7 +533,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 		}
 		return pk;
 	}
-	
+
 	@Override
 	public Page<Object[]> materialSearchBymmid(MaterialSearchPageRequest request) {
 		Pageable pageable = PageRequest.of((request.getPageNo() - 1), request.getPageSize());
@@ -538,21 +545,24 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 	@Override
 	public Page<MaterialMasterJswEntity> materialSearch(MaterialSearchPageRequest request) {
 		Pageable pageable = PageRequest.of((request.getPageNo() - 1), request.getPageSize());
-		//request.setFormId(22);
+		// request.setFormId(22);
 		MaterialMasterJswSpecification spec = new MaterialMasterJswSpecification(request);
 		Page<MaterialMasterJswEntity> pageResult = materialMasterJswRepository.findAll(spec, pageable);
 		return pageResult;
 	}
-	
+
 	@Override
 	public ResponseEntity<Object> uploadInwardData(MaterialUploadRequest request) throws Exception, FileNotFoundException {
 		log.info("******MaterialUploadService.uploadInwardData*****");
 		 
 		try {
-			int totalMMIDCount=0;
+			int totalMMIDCount = 0;
+			int newDataCount = 0;
+			int updatedDataCount = 0;
+			int serialNo = inwardFiledataRepository.findMaxValue();
 			if (request.isFileData()) {
 				String fullPath = inwardFileUploadPath + File.separator + request.getFileName();
-				System.out.println("fullPath == "+fullPath);
+				System.out.println("fullPath == "+fullPath+", serialNo == "+serialNo);
 				File file = new File(fullPath);
 
 				if (!file.exists()) {
@@ -570,13 +580,21 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 					if (dto != null && dto.getBatchnumber() != null && dto.getBatchnumber().length() > 0) {
 						InwardFileDataEntity dest = new InwardFileDataEntity();
 						BeanUtils.copyProperties(dto, dest);
-						dest.setCoilnumber(dto.getBatchnumber());
+						dest.setCoilnumber(dto.getBatchnumber());	
+						dest.setSerialNo(serialNo);
+						InwardFileDataEntity dummyEntity = inwardFiledataRepository.findFirstByBatchnumber(dto.getBatchnumber());
+						if (dummyEntity != null && dummyEntity.getInwarddtlsid() > 0) {
+							dest.setInwarddtlsid( dummyEntity.getInwarddtlsid());
+							updatedDataCount=updatedDataCount+1;
+						} else {
+							newDataCount=newDataCount+1;
+						}
 						try {
 							dest.setFilename(file.getName());
 							productList.add(dest);
 							inwardFiledataRepository.save(dest);
 						} catch (Exception e) {
-							System.out.println("error while save --  " + e.getMessage());
+							System.out.println("error while save --  " +dto.getBatchnumber()+",  "+ e.getMessage());
 						}
 					}
 				}
@@ -585,18 +603,20 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 			
 			int cnt = 0;
 			if (request.isMasterData()) {
-				List<InwardFileDataEntity> listFileData = inwardFiledataRepository.findAll();
+				List<InwardFileDataEntity> listFileData = inwardFiledataRepository.findAll(serialNo);
 				for (InwardFileDataEntity sourceEntity : listFileData) {
 					int inwardEnrtyId = saveInwardEntry(sourceEntity);
 					if (inwardEnrtyId > 0) {
 						cnt++;
+						inwardFiledataRepository.updateStatus(inwardEnrtyId, "SUCCESS", sourceEntity.getBatchnumber());
 					}
 				}
 				log.info("Inward Creation Count is == "+cnt);
 			}
 			Map<String, Object> resp = new HashMap<>();
 			resp.put("totalRecordCount", totalMMIDCount);
-			resp.put("Inward_Created_Count", cnt);
+			resp.put("updatedDataCount", updatedDataCount);
+			resp.put("newDataCount", newDataCount);
 			resp.put("status", "SUCCESS");
 			resp.put("message", "File Uploaded Successfully.");
 			return new ResponseEntity<Object>(resp, new HttpHeaders(), HttpStatus.OK);
@@ -606,13 +626,13 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 		}
 	}
 
-	public Integer saveInwardEntry(InwardFileDataEntity inward ) {
+	public Integer saveInwardEntry(InwardFileDataEntity inward) {
 		InwardEntry inwardEntry = new InwardEntry();
 		Integer inwardEnrtyId = 0;
 		System.out.println("DTO details " + inward);
 		MaterialMasterJswEntity mmObj = null;
 		try {
-			
+
 			Map<String, Integer> partyIdsMap = new HashMap<>();
 			partyIdsMap.put("JSI", 1);
 			partyIdsMap.put("Vansh Ispat", 2);
@@ -627,9 +647,9 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 			partyIdsMap.put("ASMFPL", 11);
 			partyIdsMap.put("G2 Steel", 12);
 			partyIdsMap.put("Aspen Unit - 3", 13);
-			partyIdsMap.put("SSI", 14); 
-			partyIdsMap.put("Test Location", 15); 
-			
+			partyIdsMap.put("SSI", 14);
+			partyIdsMap.put("Test Location", 15);
+
 			partyIdsMap.put("Jagdamba Steel Indutries", 1);
 			partyIdsMap.put("Vansh Ispat Pvt Ltd", 2);
 			partyIdsMap.put("Taloja Steel Service Center Pvt. Ltd.", 3);
@@ -643,8 +663,8 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 			partyIdsMap.put("Akeyem Sons Metal Forms Pvt. Ltd.", 11);
 			partyIdsMap.put("G2 Steel Services Pvt. Ltd.", 12);
 			partyIdsMap.put("Aspen Steel Pvt. Ltd - 3", 13);
-			partyIdsMap.put("Shree Shyam Industries", 14); 
-			partyIdsMap.put("Test Location", 15); 
+			partyIdsMap.put("Shree Shyam Industries", 14);
+			partyIdsMap.put("Test Location", 15);
 			List<MaterialMasterJswEntity> mmList = materialMasterJswRepository.findByMmId(inward.getMmid());
 			if (mmList != null && mmList.size() > 0) {
 				mmObj = mmList.get(0);
@@ -655,9 +675,9 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 				inwardEntry.setParty(this.partyDetailsService.getPartyById(partyIdsMap.get(inward.getLocationname())));
 				inwardEntry.setCoilNumber(inward.getBatchnumber());
 				inwardEntry.setBatchNumber(inward.getBatchnumber());
-				//inwardEntry.setvInvoiceNo(inward.getPurchaseinvoiceno());
+				// inwardEntry.setvInvoiceNo(inward.getPurchaseinvoiceno());
 
-				if (inward.getReceiveddate() != null && inward.getReceiveddate().length()>0) {
+				if (inward.getReceiveddate() != null && inward.getReceiveddate().length() > 0) {
 					try {
 						SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 						sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -676,9 +696,9 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 				} else {
 					inwardEntry.setdReceivedDate(new Date());
 				}
-				//System.out.println(inward.getReceiveddate()+", setdReceivedDate == "+inwardEntry.getdReceivedDate());
+				// System.out.println(inward.getReceiveddate()+", setdReceivedDate == "+inwardEntry.getdReceivedDate());
 				inwardEntry.setvLorryNo(inward.getVehicleno());
-				if (inward.getInvoicedate() != null && inward.getInvoicedate().length()>0) {
+				if (inward.getInvoicedate() != null && inward.getInvoicedate().length() > 0) {
 					try {
 						SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 						sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -695,7 +715,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 						inwardEntry.setdInvoiceDate(cal.getTime());
 					}
 				}
-				//System.out.println(inward.getInvoicedate()+", getdInvoiceDate == "+inwardEntry.getdInvoiceDate());
+				// System.out.println(inward.getInvoicedate()+", getdInvoiceDate == "+inwardEntry.getdInvoiceDate());
 				inwardEntry.setCustomerCoilId("");
 				inwardEntry.setCustomerInvoiceNo(inward.getPurchaseinvoiceno());
 				inwardEntry.setCustomerBatchId(inward.getScinwardid());
@@ -703,23 +723,23 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 				inwardEntry.setfWidth(mmObj.getWidth().floatValue());
 				inwardEntry.setfThickness(mmObj.getThickness().floatValue());
 				inwardEntry.setfLength(mmObj.getLength().floatValue());
-				inwardEntry.setfQuantity(Float.valueOf(inward.getPresentweight())) ;//inward.getPresentweight().floatValue());
+				inwardEntry.setfQuantity(Float.valueOf(inward.getPresentweight()));// inward.getPresentweight().floatValue());
 				inwardEntry.setInStockWeight(Float.valueOf(inward.getPresentweight()));
 				inwardEntry.setFpresent(Float.valueOf(inward.getPresentweight()));
 				inwardEntry.setGrossWeight(Float.valueOf(inward.getGrossweight()));
-				inwardEntry.setYs((inward.getYs() !=null && inward.getYs().length()> 0 ? Float.parseFloat(inward.getYs()): 0));
-				inwardEntry.setUts((inward.getUts() !=null && inward.getUts().length()> 0 ? Float.parseFloat(inward.getUts()): 0));
-				inwardEntry.setEl((inward.getEl() !=null && inward.getEl().length()> 0 ? Float.parseFloat(inward.getEl()): 0));
-				inwardEntry.setRemarks( inward.getRemarks());
+				inwardEntry.setYs((inward.getYs() != null && inward.getYs().length() > 0 ? Float.parseFloat(inward.getYs()) : 0));
+				inwardEntry.setUts((inward.getUts() != null && inward.getUts().length() > 0 ? Float.parseFloat(inward.getUts()) : 0));
+				inwardEntry.setEl((inward.getEl() != null && inward.getEl().length() > 0 ? Float.parseFloat(inward.getEl()) : 0));
+				inwardEntry.setRemarks(inward.getRemarks());
 				float fLength;
 				try {
 					float fConstant = 8.10f;
-					fLength = (Float.valueOf(inwardEntry.getFpresent()) / (inwardEntry.getfThickness() * fConstant *  ( inwardEntry.getfWidth() /1000 ))) * 1000;
-					//System.out.println("Hi Kanak == "+fLength);
+					fLength = (Float.valueOf(inwardEntry.getFpresent()) / (inwardEntry.getfThickness() * fConstant * (inwardEntry.getfWidth() / 1000))) * 1000;
+					// System.out.println("Hi Kanak == "+fLength);
 				} catch (Exception e) {
-					fLength=mmObj.getLength().floatValue();
+					fLength = mmObj.getLength().floatValue();
 				}
-				inwardEntry.setfLength(fLength );
+				inwardEntry.setfLength(fLength);
 				inwardEntry.setAvailableLength(fLength);
 				// inwardEntry.setStatus(this.statusService.getStatusById(inward.getStatusId()));
 				inwardEntry.setStatus(this.statusService.getStatusById(1));
@@ -741,6 +761,13 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 				inwardEntry.setCreatedBy(userId);
 				inwardEntry.setUpdatedBy(userId);
 				inwardEntry.setTestCertificateNumber("");
+
+				InwardEntry checkEntity = inwdEntrySvc.getByCoilNumber(inwardEntry.getCoilNumber());
+				if (checkEntity != null && checkEntity.getInwardEntryId() > 0) {
+					inwardEntry.setInwardEntryId(checkEntity.getInwardEntryId());
+					inwardEntry.setInstructions( checkEntity.getInstructions());
+				}
+
 				InwardEntry savedInwardEntry = inwdEntrySvc.saveEntry(inwardEntry);
 				if (savedInwardEntry != null && savedInwardEntry.getInwardEntryId() > 0) {
 					try {
@@ -760,7 +787,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 					}
 				}
 			} else {
-				System.out.println("=============== MMID not exists ===  "+inward.getMmid());
+				System.out.println("=============== MMID not exists ===  " + inward.getMmid());
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -779,20 +806,19 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 
 		// 2.convert into java object
 		CsvToBean<InwardFileDataDTO> csvToBean = new CsvToBeanBuilder<InwardFileDataDTO>(reader).withSkipLines(1)
-				.withIgnoreLeadingWhiteSpace(true).withIgnoreEmptyLine(true).withType(InwardFileDataDTO.class)
-				.build();
+				.withIgnoreLeadingWhiteSpace(true).withIgnoreEmptyLine(true).withType(InwardFileDataDTO.class).build();
 		return csvToBean.parse();
 	}
-	
+
 	@Override
 	public List<Object[]> mmidmasterusedinward(MaterialSearchPageRequest request) {
 		log.info("In mmidmasterusedinward page ");
-		int statusId=0;
-		if("WIP".equals(request.getParam() )) {
-			statusId=2;
+		int statusId = 0;
+		if ("WIP".equals(request.getParam())) {
+			statusId = 2;
 		}
 		List<Object[]> pageResult = materialMasterJswRepository.listAllLocationWiseInwards(statusId);
 		return pageResult;
 	}
-	
+
 }

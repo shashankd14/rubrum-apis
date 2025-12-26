@@ -75,6 +75,15 @@ public class InwardFileDataEntity {
 	@Column(name = "el")
 	private String el;
 
+	@Column(name = "serial_no")
+	private int serialNo;
+	
+	@Column(name = "inward_entry_id")
+	private int inwardEntryId;
+	
+	@Column(name = "inward_creation_status")
+	private String inwardCreationStatus;
+
 	@Column(name = "remarks")
 	private String remarks;
 
