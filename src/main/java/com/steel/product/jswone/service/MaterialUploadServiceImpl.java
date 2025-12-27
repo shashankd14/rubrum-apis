@@ -582,6 +582,10 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 						BeanUtils.copyProperties(dto, dest);
 						dest.setCoilnumber(dto.getBatchnumber());	
 						dest.setSerialNo(serialNo);
+						if (dto.getValueofgoods() != null && dto.getValueofgoods().length()>0) {
+							dest.setValueofgoods(new BigDecimal( dto.getValueofgoods()));
+						}
+
 						InwardFileDataEntity dummyEntity = inwardFiledataRepository.findFirstByBatchnumber(dto.getBatchnumber());
 						if (dummyEntity != null && dummyEntity.getInwarddtlsid() > 0) {
 							dest.setInwarddtlsid( dummyEntity.getInwarddtlsid());
@@ -746,10 +750,8 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 
 				inwardEntry.setvProcess("");
 				inwardEntry.setTdcNo(inward.getTdcno());
-				try {
-					inwardEntry.setValueOfGoods(inward.getValueofgoods());
-				} catch (Exception e) {
-					inwardEntry.setValueOfGoods(BigDecimal.ZERO);
+				if (inward.getValueofgoods() != null && inward.getValueofgoods().compareTo(BigDecimal.ZERO) > 0) {
+					inwardEntry.setValueOfGoods(inward.getValueofgoods().multiply(BigDecimal.valueOf(1000)));
 				}
 				inwardEntry.setBilledweight(0);
 				inwardEntry.setParentCoilNumber(null);
@@ -762,7 +764,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 				inwardEntry.setUpdatedBy(userId);
 				inwardEntry.setTestCertificateNumber("");
 
-				InwardEntry checkEntity = inwdEntrySvc.getByCoilNumber(inwardEntry.getCoilNumber());
+				InwardEntry checkEntity = inwdEntrySvc.getByCoilNumber1(inwardEntry.getCoilNumber());
 				if (checkEntity != null && checkEntity.getInwardEntryId() > 0) {
 					inwardEntry.setInwardEntryId(checkEntity.getInwardEntryId());
 					inwardEntry.setInstructions( checkEntity.getInstructions());
