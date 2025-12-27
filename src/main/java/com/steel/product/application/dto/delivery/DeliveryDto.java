@@ -21,6 +21,8 @@ public class DeliveryDto {
     
     private Integer laminationId;
 
+    private String deliveryType;
+
     public List<DeliveryItemDetails> getDeliveryItemDetails() {
         return deliveryItemDetails;
     }
@@ -83,6 +85,14 @@ public class DeliveryDto {
 
 	public void setLaminationId(Integer laminationId) {
 		this.laminationId = laminationId;
+	}
+
+	public String getDeliveryType() {
+		return deliveryType;
+	}
+
+	public void setDeliveryType(String deliveryType) {
+		this.deliveryType = deliveryType;
 	}
 
 

@@ -25,9 +25,12 @@ public class DeliveryDetails {
     
     @Column(name = "lamination_id")
     private Integer laminationId;
-    
+
     @Column(name = "totalweight")
     private Float totalWeight;
+
+    @Column(name = "delivery_type")
+    private String deliveryType;
 
     @Column(name = "createdby")
     private Integer createdBy;
@@ -232,6 +235,14 @@ public class DeliveryDetails {
 
 	public void setLaminationId(Integer laminationId) {
 		this.laminationId = laminationId;
+	}
+
+	public String getDeliveryType() {
+		return deliveryType;
+	}
+
+	public void setDeliveryType(String deliveryType) {
+		this.deliveryType = deliveryType;
 	}
     
     

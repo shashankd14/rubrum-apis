@@ -130,8 +130,9 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 
         delivery.setCreatedBy(userId);
         delivery.setUpdatedBy(userId);
-        delivery.setVehicleNo(deliveryDto.getVehicleNo());
-        delivery.setTallyStatus("PENDING");
+		delivery.setVehicleNo(deliveryDto.getVehicleNo());
+		delivery.setDeliveryType(deliveryDto.getDeliveryType());
+		delivery.setTallyStatus("PENDING");
         delivery.setPackingRateId( deliveryDto.getPackingRateId());
         delivery.setLaminationId( deliveryDto.getLaminationId() );
         float inStockWeight = 0f, weightToDeliver = 0f, parentWeight = 0f;
