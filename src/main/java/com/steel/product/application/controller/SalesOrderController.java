@@ -51,6 +51,15 @@ public class SalesOrderController {
 	public ResponseEntity<Object> listAllPackets(@RequestBody ListPageSearchRequest listPageSearchRequest) {
 		Map<String, Object> response = new HashMap<>();
 		Page<Object[]> packetsList = salesOrderService.listAllPackets(listPageSearchRequest);
+		Map<Integer, Integer> locationsMap = new HashMap<>();
+		
+		for (Object[] result : packetsList) {
+			SalesOrderListResponse resp = new SalesOrderListResponse();
+			resp.setPartyId(result[8] != null ? Integer.parseInt(result[8].toString()) : null);
+			locationsMap.put(resp.getPartyId(), resp.getPartyId());
+		}		
+		System.out.println("locationsMap == "+locationsMap);
+		Map<Integer, List<String>> locationWiseSOMap = salesOrderService.fetchMappedSOList(new ArrayList<>(locationsMap.values()));
 
 		Map<Integer, SalesOrderListDTO> kk = new LinkedHashMap<>();
 		for (Object[] result : packetsList) {
@@ -91,10 +100,11 @@ public class SalesOrderController {
 			}
 			resp.setPartyId(result[8] != null ? Integer.parseInt(result[8].toString()) : null);
 			resp.setPartyName(result[9] != null ? (String) result[9] : null);
+			resp.setMappedSOList(locationWiseSOMap.get(resp.getPartyId()));
+			
 			kk.put(resp.getInstructionId(), resp);
 		}
 		List<SalesOrderListDTO> qirList = new ArrayList<SalesOrderListDTO>(kk.values());
-
 		response.put("content", qirList);
 		response.put("currentPage", packetsList.getNumber());
 		response.put("totalItems", packetsList.getTotalElements());
@@ -136,24 +146,13 @@ public class SalesOrderController {
 			soIDsList.add(soId);
 		}
 		List<Object[]> packetsList = salesOrderService.listAllSOs(soIDsList);
-		Map<Integer, Integer> locationsMap = new HashMap<>();
 		Map<Integer, SalesOrderListResponse> soMap = new LinkedHashMap<>();
-		
-		for (Object[] result : packetsList) {
-			SalesOrderListResponse resp = new SalesOrderListResponse();
-			resp.setPartyId(result[8] != null ? Integer.parseInt(result[8].toString()) : null);
-			locationsMap.put(resp.getPartyId(), resp.getPartyId());
-		}		
-		System.out.println("locationsMap == "+locationsMap);
-		Map<Integer, List<String>> locationWiseSOMap = salesOrderService.fetchMappedSOList(new ArrayList<>(locationsMap.values()));
-
 		for (Object[] result : packetsList) {
 			SalesOrderListResponse resp = new SalesOrderListResponse();
 			SalesOrderListDTO child = new SalesOrderListDTO();
 			
 			resp.setPartyId(result[8] != null ? Integer.parseInt(result[8].toString()) : null);
 			resp.setPartyName(result[9] != null ? (String) result[9] : null);
-			locationsMap.put(resp.getPartyId(), resp.getPartyId());
 			resp.setSoStatus( result[12] != null ? (String) result[12] : null);
 			resp.setSoNumber(result[14] != null ? (String) result[14] : null);
 			resp.setSoId(result[15] != null ? Integer.parseInt(result[15].toString()) : null);
@@ -166,7 +165,6 @@ public class SalesOrderController {
 			child.setMaterialGrade(result[4] != null ? (String) result[4] : null);
 			child.setMaterialDesc(result[5] != null ? (String) result[5] : null);
 			child.setFthickness(result[6] != null ? (Float) result[6] : null);
-			child.setMappedSOList(locationWiseSOMap.get(resp.getPartyId()));
 			try {
 				Float dweight;
 				Float dwidth;
@@ -202,9 +200,6 @@ public class SalesOrderController {
 		response.put("currentPage", packetsList1.getNumber());
 		response.put("totalItems", packetsList1.getTotalElements());
 		response.put("totalPages", packetsList1.getTotalPages());
-		//System.out.println("locationsMap == "+locationsMap);
-		//List<String> packetasListnew = salesOrderService.fetchMappedSOList(new ArrayList<>(locationsMap.values()));
-		//response.put("mappedSOList", packetasListnew);
 		return new ResponseEntity<Object>(response, HttpStatus.OK);
 	}
 
