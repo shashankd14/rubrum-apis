@@ -21,6 +21,8 @@ public class SalesOrderCreateDTO {
 
 	private String soNumber;
 
+	private String mmid;
+
 	private Integer customerCodeId;
 
 	private String customerBatchNo;

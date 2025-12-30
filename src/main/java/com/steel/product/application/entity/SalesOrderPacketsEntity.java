@@ -32,6 +32,9 @@ public class SalesOrderPacketsEntity {
 
 	@Column(name = "coil_no")
 	private String coilNo;
+	
+	@Column(name = "mmid")
+	private String mmid;
 
 	@Column(name = "customer_batch_no")
 	private String customerBatchNo;

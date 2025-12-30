@@ -15,65 +15,65 @@ public interface InstructionService {
 
 	public List<Instruction> getAll();
 
-    public List<Instruction> getAllWIP();
+	public List<Instruction> getAllWIP();
 
-    public List<Instruction> getAllWIPList();
+	public List<Instruction> getAllWIPList();
 
-    public Instruction getById(int theId);
+	public Instruction getById(int theId);
 
 //    public ResponseEntity<Object> addCutInstruction(List<InstructionSaveRequestDto> cutInstructionSaveRequestDtos);
 
-    public List<Instruction> findSlitAndCutInstructionByInwardId(Integer inwardId);
+	public List<Instruction> findSlitAndCutInstructionByInwardId(Integer inwardId);
 
-    public void deleteById(Integer instructionId);
+	public void deleteById(Integer instructionId);
 
-    public List<Instruction> findAllByGroupId(Integer groupId);
+	public List<Instruction> findAllByGroupId(Integer groupId);
 
-    public List<Instruction> findAllByParentGroupId(Integer parentGroupId);
+	public List<Instruction> findAllByParentGroupId(Integer parentGroupId);
 
-    public List<Instruction> findAllByParentInstructionId(Integer parentInstructionId);
+	public List<Instruction> findAllByParentInstructionId(Integer parentInstructionId);
 
-    public void updateInstructionWithDeliveryRemarks(int deliveryId, String remarks, int instructionId);
+	public void updateInstructionWithDeliveryRemarks(int deliveryId, String remarks, int instructionId);
 
-    public Instruction findInstructionById(Integer instructionId);
+	public Instruction findInstructionById(Integer instructionId);
 
-    public List<Instruction> saveAll(List<Instruction> instructions);
+	public List<Instruction> saveAll(List<Instruction> instructions);
 
-    public Instruction save(Instruction instruction);
+	public Instruction save(Instruction instruction);
 
-    public InstructionResponseDto saveUnprocessedForDelivery(Integer inwardId, int userId);
+	public InstructionResponseDto saveUnprocessedForDelivery(Integer inwardId, int userId);
 
-    ResponseEntity<Object> updateInstruction(InstructionFinishDto instructionFinishDto, int userId);
+	ResponseEntity<Object> updateInstruction(InstructionFinishDto instructionFinishDto, int userId);
 
-    public List<Instruction> findAllByInstructionIdInAndStatus(List<Integer> instructionIds, Integer statusId);
+	public List<Instruction> findAllByInstructionIdInAndStatus(List<Integer> instructionIds, Integer statusId);
 
-    public Float sumOfPlannedWeightOfInstructionsHavingGroupId(Integer groupId);
+	public Float sumOfPlannedWeightOfInstructionsHavingGroupId(Integer groupId);
 
-    public Float sumOfPlannedWeightOfInstructionHavingParentInstructionId(Integer parentInstructionId);
+	public Float sumOfPlannedWeightOfInstructionHavingParentInstructionId(Integer parentInstructionId);
 
-    public Float sumOfPlannedLengthOfInstructionHavingParentInstructionId(Integer parentInstructionId);
+	public Float sumOfPlannedLengthOfInstructionHavingParentInstructionId(Integer parentInstructionId);
 
-    TotalLengthAndWeight sumOfPlannedLengthAndWeightOfInstructionsHavingParentInstructionId(Integer groupId);
+	TotalLengthAndWeight sumOfPlannedLengthAndWeightOfInstructionsHavingParentInstructionId(Integer groupId);
 
-    TotalLengthAndWeight sumOfPlannedLengthAndWeightOfInstructionsHavingGroupId(List<Integer> groupIds);
+	TotalLengthAndWeight sumOfPlannedLengthAndWeightOfInstructionsHavingGroupId(List<Integer> groupIds);
 
-    List<Instruction> getAllByInstructionIdIn(List<Integer> instructionIds);
+	List<Instruction> getAllByInstructionIdIn(List<Integer> instructionIds);
 
-    ResponseEntity<Object> addInstruction(List<InstructionSaveRequestDto> instructionSaveRequestDtos, int userId);
+	ResponseEntity<Object> addInstruction(List<InstructionSaveRequestDto> instructionSaveRequestDtos, int userId);
 
-    InwardEntryPdfDto findInwardJoinFetchInstructionsAndPartDetails(String partDetailsId,List<Integer> groupIds);
+	InwardEntryPdfDto findInwardJoinFetchInstructionsAndPartDetails(String partDetailsId, List<Integer> groupIds);
 
-    ResponseEntity<Object> deleteCut(CutInstructionDeleteRequest cutInstructionDeleteRequest);
+	ResponseEntity<Object> deleteCut(CutInstructionDeleteRequest cutInstructionDeleteRequest);
 
-    ResponseEntity<Object> deleteSlit(SlitInstructionDeleteRequest slitInstructionDeleteRequest);
+	ResponseEntity<Object> deleteSlit(SlitInstructionDeleteRequest slitInstructionDeleteRequest);
 
-    List<Instruction> findAllByGroupIdOrParentGroupId(Integer groupId,Integer parentGroupId);
+	List<Instruction> findAllByGroupIdOrParentGroupId(Integer groupId, Integer parentGroupId);
 
-    Instruction findFirstByGroupIdAndIsDeletedFalse(Integer groupId);
+	Instruction findFirstByGroupIdAndIsDeletedFalse(Integer groupId);
 
-    HashMap<Integer,Double> findSumOfPlannedWeightAndActualWeightForUnprocessed();
+	HashMap<Integer, Double> findSumOfPlannedWeightAndActualWeightForUnprocessed();
 
-    List<InstructionResponseDto> saveFullHandlingDispatch(List<Integer> inwardList, int userId) throws MockException;
+	List<InstructionResponseDto> saveFullHandlingDispatch(List<Integer> inwardList, int userId) throws MockException;
 
 	int getPartCount(Long theId);
 
@@ -100,5 +100,6 @@ public interface InstructionService {
 	public ResponseEntity<Object> updateClassification(UpdateClassificationDTO updateClassificationDTO);
 
 	public void updateAdditionalWeight(int instructionId, Float additionalWeight);
-}
 
+	public void updateSonoMmid(String sono, String mmid, int instructionId);
+}

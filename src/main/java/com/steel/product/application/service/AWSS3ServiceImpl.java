@@ -6,10 +6,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
 import java.time.Duration;
-import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -247,5 +247,12 @@ public class AWSS3ServiceImpl implements AWSS3Service {
 		}
         return localPath;
     }
- 
+    
+	public static void mainss(String[] args) {
+		String kk = new BCryptPasswordEncoder().encode("5699e5cb-8aac-4a39-bb61-413f18653051") ;
+		System.out.println("Hi aknak =="+kk);
+		kk = new BCryptPasswordEncoder().encode("admin@123") ;
+		System.out.println("Hi aknak22 =="+kk);		
+	}
+
 }

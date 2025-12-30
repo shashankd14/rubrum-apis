@@ -14,6 +14,4 @@ public class PriceCalculateResponseDTO {
 
 	private List<PriceCalculateDTO> priceDetailsList =new ArrayList<>();
 
-	private List<String> mappedSOList = new ArrayList<>();
-
 }

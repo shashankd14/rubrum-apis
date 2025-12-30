@@ -16,7 +16,8 @@ import javax.transaction.Transactional;
 public interface SalesOrderRepository extends JpaRepository<SalesOrderEntity, Integer> {
 
 	@Query(value = "select planid, inwardid, batchno, customerbatchid, materialgrade, materialdesc, fthickness, fweight, locationid, partyname,fWidth, flength,fquantity, "
-			+ "inStockWeight, actualNoOfPieces , process_status, instruction_status, classification_tag, enduser_tag_name,sono,customer_code, subgrade,brandname,createdon "
+			+ "inStockWeight, actualNoOfPieces , process_status, instruction_status, classification_tag, enduser_tag_name,sono,customer_code,"
+			+ " subgrade,brandname,createdon, mmid "
 			+ " from ( SELECT inwardid,  coilnumber as batchno, customerbatchid, "
 			+ " (SELECT product_name FROM jsw_product_master a, jsw_material_master mat where a.product_id=mat.producttype_id and mat.mm_id=parent.mm_id limit 1) as  materialdesc,"
 			+ " (SELECT grade_name FROM jsw_grade_master grade, jsw_material_master mat where grade.grade_id=mat.grade_id and mat.mm_id=parent.mm_id limit 1) as  materialgrade,"
@@ -31,7 +32,7 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrderEntity, In
 			+ " (SELECT so.customer_code_id from sales_order so, sales_order_child sochild where so.so_id=sochild.so_id and sochild.instruction_id = child.instructionid limit 1) as customer_code,"
 			+ " (SELECT subgrade.subgrade_name FROM jsw_subgrade_master subgrade, jsw_material_master mat where subgrade.subgrade_id=mat.subgrade_id and mat.mm_id=parent.mm_id limit 1) as  subgrade,"
 			+ " (SELECT brand.brand_name FROM jsw_brand_master brand, jsw_material_master mat where brand.brand_id=mat.brand_id and mat.mm_id=parent.mm_id limit 1) as brandname,"
-			+ " child.createdon as createdon "
+			+ " child.createdon as createdon, child.mmid "
 			+ " FROM product_tblinwardentry parent, product_instruction child, product_tblpartydetails party  "
 			+ " where child.isdeleted=0 and parent.isdeleted=0 and parent.inwardentryid = child.inwardid and party.npartyid = parent.npartyid "
 			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (parent.coilnumber like %:searchText% or parent.customerBatchId like %:searchText% or parent.customerInvoiceNo like %:searchText%) else 1=1 end " 
@@ -96,7 +97,7 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrderEntity, In
 	
 	@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, materialgrade, materialdesc, fthickness,  weight, npartyid,partyname,width, length, "
 			+ "process_status, instruction_status,(select so_number from sales_order so where so.so_id= a.so_id) sonumber, "
-			+ " a.so_id, classification_tag, enduser_tag_name, customer_code, plannednoofpieces"
+			+ " a.so_id, classification_tag, enduser_tag_name, customer_code, plannednoofpieces, mmid"
 			+ " from ( SELECT inwardid,  coilnumber, customerbatchid, "
 			+ " (SELECT product_name FROM jsw_product_master product, jsw_material_master mat where product.product_id=mat.producttype_id and mat.mm_id=parent.mm_id limit 1) as  materialdesc,"
 			+ " (SELECT grade_name FROM jsw_grade_master grade, jsw_material_master mat where grade.grade_id=mat.grade_id and mat.mm_id=parent.mm_id limit 1) as  materialgrade,"
@@ -107,7 +108,7 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrderEntity, In
 			+ " (select classification_name from product_packet_classification where classification_id=child.packet_classification_id) as classification_tag, "
 			+ " (select tag_name from product_enduser_tags where tag_id=child.enduser_tag_id) as enduser_tag_name,	 "
 			+ " (SELECT count(distinct inss.instructionid) cnt FROM product_instruction inss where inss.inwardid=parent.inwardentryid  and status!=4 and inss.parentgroupid=child.groupid) as siltcutcnt, "
-			+ " parent.npartyid, so_child.so_id,  "
+			+ " parent.npartyid, so_child.so_id, child.mmid,  "
 			+ " (select tag_name from product_enduser_tags tags where so.customer_code_id=tags.tag_id) as customer_code"
 			+ " FROM product_tblinwardentry parent, product_instruction child, sales_order_child so_child, sales_order so, product_tblpartydetails party "
 			+ " where so.is_deleted = 0 and so_child.is_deleted = 0 and parent.inwardentryid = child.inwardid and parent.inwardentryid = so_child.inward_entry_d and so_child.so_id = so.so_id and so_child.instruction_id = child.instructionid and party.npartyid = parent.npartyid "

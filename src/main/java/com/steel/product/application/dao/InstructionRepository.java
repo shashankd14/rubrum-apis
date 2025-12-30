@@ -112,7 +112,7 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
     int getPartCount(@Param("partDetailsId") Long partDetailsId);
 
 	@Modifying
-	@Transactional
+	//@Transactional
 	@Query("update PartDetails set pdfS3Url=:url where partDetailsId= :partDetailsId ")
 	public void updateS3PlanPDF(@Param("partDetailsId") String partDetailsId, @Param("url") String url);
 
@@ -123,7 +123,7 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
     public List<Instruction> findAllByInstructionIdInAndStatus(@Param("instructionIds") List<Integer> instructionIds, @Param("statusId") List<Integer> statusId);
 
 	@Modifying
-	@Transactional
+	//@Transactional
 	@Query("update Instruction set groupId =:groupId where instructionId in :instructionIds ")
 	public void updateInstructionGroupId(@Param("groupId") int groupId, @Param("instructionIds") List<Integer> instructionIds);
 
@@ -151,29 +151,34 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
 	public List<Object[]> getQRCodeDetails_Finish(@Param("inwardId") Integer inwardId);
 
 	@Modifying
-	@Transactional
+	//@Transactional
 	@Query("update PartDetails set labelpdfWipS3Url=:url where partDetailsId= :partDetailsId ")
 	public void updateS3PlanLabelPDF(@Param("partDetailsId") String partDetailsId, @Param("url") String url);
 
 	@Modifying
-	@Transactional
+	//@Transactional
 	@Query("update PartDetails set labelpdfFgS3Url=:url, labelUpdatedTime=CURRENT_TIMESTAMP where partDetailsId= :partDetailsId ")
 	public void updateS3FGLabelPDF(@Param("partDetailsId") String partDetailsId, @Param("url") String url);
 
 	@Modifying
-	@Transactional
+	//@Transactional
 	@Query(value = "update product_instruction set packet_classification_id= :classificationId where inwardid= :inwardId and instructionid= :instructionId", nativeQuery = true)
 	public void updateClassification(@Param("instructionId") Integer instructionId, @Param("inwardId") Integer inwardId,
 			@Param("classificationId") Integer classificationId);
 
 	@Modifying
-	@Transactional
+	//@Transactional
 	@Query(value = "update product_instruction set additional_weight= :additionalWeight where instructionid= :instructionId", nativeQuery = true)
 	public void updateAdditionalWeight(@Param("instructionId") Integer instructionId,
 			@Param("additionalWeight") Float additionalWeight);
+
+	@Modifying
+	//@Transactional
+	@Query(value = "update product_instruction set mmid= :mmid, sono= :sono where instructionid= :instructionId", nativeQuery = true)
+	public void updateSonoMmid(@Param("sono") String sono, @Param("mmid") String mmid, @Param("instructionId") int instructionId);
 	
 	@Modifying
-	@Transactional
+	//@Transactional
 	@Query(value = "update product_instruction set allocated_soqty = :allocatedSoqty where instructionid= :instructionId", nativeQuery = true)
 	public void consolidatePlanner(@Param("instructionId") Integer instructionId,
 			@Param("allocatedSoqty") Float totalAllocatedQty);

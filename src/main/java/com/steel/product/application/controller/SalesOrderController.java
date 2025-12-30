@@ -100,6 +100,7 @@ public class SalesOrderController {
 			}
 			resp.setPartyId(result[8] != null ? Integer.parseInt(result[8].toString()) : null);
 			resp.setPartyName(result[9] != null ? (String) result[9] : null);
+			resp.setMmid( result[24] != null ? (String) result[24] : null);
 			resp.setMappedSOList(locationWiseSOMap.get(resp.getPartyId()));
 			
 			kk.put(resp.getInstructionId(), resp);
@@ -185,6 +186,7 @@ public class SalesOrderController {
 			}
 			child.setPacketStatus( result[13] != null ? (String) result[13] : null);
 			child.setPlannedNoofPieces(result[19] != null ? Integer.parseInt(result[19].toString()) : 0);
+			child.setMmid(result[20] != null ? (String) result[20] : null);
 			resp.getChildListResp().add(child);
 			
 			if (soMap != null && soMap.get(resp.getSoId()) != null) {

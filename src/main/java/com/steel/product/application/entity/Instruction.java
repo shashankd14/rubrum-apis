@@ -144,6 +144,12 @@ public class Instruction {
     @Column(name = "is_slit_and_cut", columnDefinition = "BIT")
     private Boolean isSlitAndCut;
 
+    @Column(name = "sono")
+    private String sono;
+
+    @Column(name = "mmid")
+    private String mmid;
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "part_Details_id")
     private PartDetails partDetails;

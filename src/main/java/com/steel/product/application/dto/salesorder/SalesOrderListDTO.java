@@ -3,7 +3,6 @@ package com.steel.product.application.dto.salesorder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -45,6 +44,8 @@ public class SalesOrderListDTO {
 	private String subGrade;
 
 	private String brand;
+
+	private String mmid;
 
 	private Date instructionDate;
 

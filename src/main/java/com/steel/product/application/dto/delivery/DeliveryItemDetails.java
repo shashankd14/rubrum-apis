@@ -2,39 +2,59 @@ package com.steel.product.application.dto.delivery;
 
 public class DeliveryItemDetails {
 
-    private int instructionId;
-    
-    private int inwardId;
+	private int instructionId;
 
-    private String remarks;
+	private int inwardId;
 
-    private Float weight;
-    
-    private Float additionalWeight;
+	private String remarks;
 
-    public int getInstructionId() {
-        return instructionId;
-    }
+	private Float weight;
 
-    public void setInstructionId(int instructionId) {
-        this.instructionId = instructionId;
-    }
+	private Float additionalWeight;
 
-    public String getRemarks() {
-        return remarks;
-    }
+	private String sono;
 
-    public void setRemarks(String remarks) {
-        this.remarks = remarks;
-    }
+	private String mmid;
 
-    public Float getWeight() {
-        return weight;
-    }
+	public String getSono() {
+		return sono;
+	}
 
-    public void setWeight(Float weight) {
-        this.weight = weight;
-    }
+	public void setSono(String sono) {
+		this.sono = sono;
+	}
+
+	public String getMmid() {
+		return mmid;
+	}
+
+	public void setMmid(String mmid) {
+		this.mmid = mmid;
+	}
+
+	public int getInstructionId() {
+		return instructionId;
+	}
+
+	public void setInstructionId(int instructionId) {
+		this.instructionId = instructionId;
+	}
+
+	public String getRemarks() {
+		return remarks;
+	}
+
+	public void setRemarks(String remarks) {
+		this.remarks = remarks;
+	}
+
+	public Float getWeight() {
+		return weight;
+	}
+
+	public void setWeight(Float weight) {
+		this.weight = weight;
+	}
 
 	public Float getAdditionalWeight() {
 		return additionalWeight;
@@ -51,7 +71,5 @@ public class DeliveryItemDetails {
 	public void setInwardId(int inwardId) {
 		this.inwardId = inwardId;
 	}
-    
-    
-    
+
 }

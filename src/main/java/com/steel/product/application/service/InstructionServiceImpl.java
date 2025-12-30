@@ -1616,4 +1616,9 @@ public class InstructionServiceImpl implements InstructionService {
 		instructionRepository.updateAdditionalWeight(instructionId, additionalWeight);
 	}
 
+	@Override
+	public void updateSonoMmid(String sono, String mmid, int instructionId) {
+		instructionRepository.updateSonoMmid(sono, mmid, instructionId);
+	}
+
 }

@@ -43,6 +43,8 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 
 	private SalesOrderChildRepository childRepository;
 
+    private InstructionService instructionService;
+
 	private CommonUtil commonUtil;
 
 	private StatusService statusService;
@@ -51,13 +53,14 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 	
 	@Autowired
 	public SalesOrderServiceImpl(SalesOrderRepository salesOrderRepository, CommonUtil commonUtil,
-			StatusService statusService, SalesOrderChildRepository childRepository,
-			SpringTemplateEngine templateEngine) {
+			StatusService statusService, SalesOrderChildRepository childRepository, SpringTemplateEngine templateEngine,
+			InstructionService instructionService) {
 		this.childRepository = childRepository;
 		this.salesOrderRepository = salesOrderRepository;
 		this.commonUtil = commonUtil;
 		this.statusService = statusService;
 		this.templateEngine = templateEngine;
+		this.instructionService = instructionService;
 	}
 
 	@Override
@@ -176,6 +179,7 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 				childEntity.setSoId(salesOrderEntity.getSoId());
 				childEntity.setCoilNo(request.getCoilNo());
 				childEntity.setInstructionId(request.getInstructionId());
+				childEntity.setMmid(request.getMmid());
 				childEntity.setInwardEntryId(request.getInwardEntryId());
 				childEntity.setCustomerBatchNo(request.getCustomerBatchNo());
 				childEntity.setFthickness(request.getFthickness());
@@ -185,6 +189,9 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 				childEntity.setIsDeleted(false);
 				childEntity.setStatus(this.statusService.getStatusById(1));
 				childRepository.save(childEntity);
+				if (request.getMmid() != null && request.getMmid().length()>0 ) {
+					instructionService.updateSonoMmid(request.getSoNumber(), request.getMmid(), request.getInstructionId());
+				}
 			}
 			//salesOrderRepository.save(salesOrderEntity);
 		} catch (Exception e) {
@@ -226,9 +233,7 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 
 	@Override
 	public List<Object[]> listAllSOs(List<String> soIDsList) {
-
 		List<Object[]> packetsList = salesOrderRepository.listAllSOs(soIDsList);
-
 		return packetsList;
 	}
 

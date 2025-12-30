@@ -602,7 +602,7 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 			BigDecimal actualLength = new BigDecimal(Float.toString(ins.getActualLength()==null ? ins.getPlannedLength() : ins.getActualLength()));
 
 			for (AdditionalPriceMasterResponse additionalPriceMasterResponse : addPriceList) {
-				System.out.println("additionalPriceMasterResponse == "+additionalPriceMasterResponse.getId());
+				//System.out.println("additionalPriceMasterResponse == "+additionalPriceMasterResponse.getId());
 				if (
 						//ins.getInwardId().getParty().getnPartyId() == additionalPriceMasterResponse.getPartyId() &&
 						additionalPriceMasterResponse.getProcessId() !=null	&& 

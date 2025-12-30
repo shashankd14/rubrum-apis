@@ -110,6 +110,9 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 		for (DeliveryItemDetails instructionslist : deliveryItemDetails) {
 			if(instructionslist.getAdditionalWeight()!=null && instructionslist.getAdditionalWeight()>0) {
 				instructionService.updateAdditionalWeight(instructionslist.getInstructionId(), instructionslist.getAdditionalWeight());
+				if (instructionslist.getSono() != null && instructionslist.getSono().length()>0 && instructionslist.getMmid() != null && instructionslist.getMmid().length()>0 ) {
+					instructionService.updateSonoMmid(instructionslist.getSono(), instructionslist.getMmid(), instructionslist.getInstructionId());
+				}
 			}
 		}
         DeliveryDetails delivery;
@@ -497,8 +500,6 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
     public PriceCalculateResponseDTO validatePriceMapping(DeliveryDto deliveryDto, Integer userId) {
 		PriceCalculateResponseDTO priceCalculateResponseDTO= new PriceCalculateResponseDTO();
         try {
-			int locationId=0;
-        	
         	LOGGER.info("in validatePriceMapping delivery api");
 			List<DeliveryItemDetails> deliveryItemDetails = deliveryDto.getDeliveryItemDetails();
 			for (DeliveryItemDetails instructionslist : deliveryItemDetails) {
@@ -508,16 +509,16 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 			}
 			boolean mainStts = false;
 			List<PriceCalculateDTO> priceDetailsList=new ArrayList<>();
+			List<PriceCalculateDTO> newPriceDetailsList=new ArrayList<>();
 			List<Integer> statusIdList=new ArrayList<>();
 			statusIdList.add(4);statusIdList.add(3);
-			
+			List<Integer> locationList  = new ArrayList<>(); 
 			List<Instruction> instructions = instructionService.findAllByInstructionIdInAndStatus(deliveryItemDetails.stream().map(d -> d.getInstructionId()).collect(Collectors.toList()), statusIdList);
 			
 			for (Instruction instruction : instructions) {
 				boolean innerStts = false;
 				InwardEntry inwardEntry = instruction.getInwardId();
 		        MaterialResponseDto materialGradeDto = materialMasterJswService.getGradeProductName(inwardEntry.getMmId());
-				locationId=inwardEntry.getParty().getnPartyId();
 
 				/*PriceCalculateDTO priceCalculateDTO = priceMasterService.calculateInstructionWisePrice(
 						inwardEntry.getParty().getnPartyId(), BigDecimal.valueOf(inwardEntry.getfThickness()),
@@ -528,12 +529,16 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 				
 				PriceCalculateDTO priceCalculateDTO = priceMasterService.calculateInstructionWisePrice(instruction, deliveryDto.getPackingRateId(), deliveryDto.getLaminationId());
 
+				locationList.add(inwardEntry.getParty().getnPartyId());
+				priceCalculateDTO.setLocationId(inwardEntry.getParty().getnPartyId());
 				priceCalculateDTO.setCoilNo(inwardEntry.getCoilNumber());
 				priceCalculateDTO.setCustomerBatchNo(inwardEntry.getCustomerBatchId());
 				priceCalculateDTO.setInstructionId(instruction.getInstructionId());
 				priceCalculateDTO.setThickness(BigDecimal.valueOf(inwardEntry.getfThickness()));
 				priceCalculateDTO.setMatGradeName(materialGradeDto.getMaterialGrade().getGradeName());
 				priceCalculateDTO.setActualWeight((instruction.getActualWeight()==null ? instruction.getPlannedWeight() : instruction.getActualWeight()));
+				priceCalculateDTO.setSono(instruction.getSono());
+				priceCalculateDTO.setMmid(instruction.getMmid());
 				Float actualTotalWeight = priceCalculateDTO.getActualWeight();
 				if (instruction.getAdditionalWeight() != null && instruction.getAdditionalWeight() > 0) {
 					priceCalculateDTO.setAdditionalWeight(instruction.getAdditionalWeight());
@@ -575,14 +580,13 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 			} else {
 			    priceCalculateResponseDTO.setRemarks("This thickness range already has a value (rate) defined. Please recheck.");
 			}
-			priceCalculateResponseDTO.setPriceDetailsList(priceDetailsList);
-			List<Integer> locationList  = new ArrayList<>(); 
-			locationList.add(locationId);
 			Map<Integer, List<String>> locationWiseSOMap = salesOrderService.fetchMappedSOList(locationList);
-			if(locationWiseSOMap!=null && locationWiseSOMap.get(locationId) != null ) {
-				priceCalculateResponseDTO.setMappedSOList(locationWiseSOMap.get(locationId));
+		       
+			for(PriceCalculateDTO priceCalculateDTO : priceDetailsList) {
+				priceCalculateDTO.setMappedSOList(locationWiseSOMap.get(priceCalculateDTO.getLocationId()));
+				newPriceDetailsList.add(priceCalculateDTO);
 			}
-      
+			priceCalculateResponseDTO.setPriceDetailsList(newPriceDetailsList);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

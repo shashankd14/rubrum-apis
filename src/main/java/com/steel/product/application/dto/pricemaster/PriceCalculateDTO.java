@@ -18,6 +18,12 @@ public class PriceCalculateDTO {
 
 	private String matGradeName;
 
+	private int locationId;
+
+	private String sono;
+
+	private String mmid;
+
 	private BigDecimal thickness;
 
 	private Float actualWeight;
@@ -35,5 +41,7 @@ public class PriceCalculateDTO {
 	private BigDecimal rate = new BigDecimal(BigInteger.ZERO, 2);
 
 	private BigDecimal totalPrice = new BigDecimal(BigInteger.ZERO, 2);
+
+	private List<String> mappedSOList = new ArrayList<>();
 
 }
