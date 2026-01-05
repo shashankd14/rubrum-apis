@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.http.ResponseEntity;
 
 import com.steel.product.application.dto.quality.ListPageSearchRequest;
+import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.jswone.request.MMIDReceiveMainRequest;
 import com.steel.product.jswone.request.POSOIntegrationRequest;
 import com.steel.product.jswone.response.PODetailsMainResponse;
@@ -34,4 +35,6 @@ public interface JSWIntegrationService {
 	ResponseEntity<Object> coilSyncStts(List<POSOIntegrationRequest> request);
 
 	PODetailsMainResponse uploadDocument(POSOIntegrationRequest req);
+
+	ResponseEntity<Object> inventoryAdjustment(DeliveryDetails request);
 }

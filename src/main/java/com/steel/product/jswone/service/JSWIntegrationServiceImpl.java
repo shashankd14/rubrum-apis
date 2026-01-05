@@ -1,11 +1,43 @@
 package com.steel.product.jswone.service;
 
+import java.io.File;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.RestTemplate;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.dto.quality.ListPageSearchRequest;
+import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.service.AWSS3Service;
 import com.steel.product.application.util.CommonUtil;
 import com.steel.product.jswone.entity.JswoneAuditTrailEntity;
@@ -38,37 +70,6 @@ import com.steel.product.jswone.response.PoGrnMainRequest;
 import com.steel.product.jswone.response.PoGrnMainResponse;
 
 import lombok.extern.log4j.Log4j2;
-
-import java.io.File;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.RestTemplate;
 
 @Service
 @Log4j2
@@ -713,6 +714,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 		req.setCustom_fields(customTypeList);
 		return req;
 	}
+	
 	@Override
 	public Map<String, Object> poWiseInwardList(POSOIntegrationRequest request) {
 		List<POWiseInwardListResponse> inwardList = new ArrayList<>();
@@ -947,17 +949,211 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 		}
 		return docList;
 	}
-	
-	public MultiValueMap<String, Object> fileList(String billId) {
 
-		// File to Upload
-		FileSystemResource fileResource = new FileSystemResource(
-				"C:/Users/kanakadri.rayi/Pictures/Screenshots/jswone_logo.JPG");
-
-		// Form data
-		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-		body.add("Attachment", fileResource);
-		return body;
+	@Override
+	public ResponseEntity<Object> inventoryAdjustment(DeliveryDetails request) {
+		PoGrnMainResponse response = new PoGrnMainResponse();
+		ResponseEntity<String> res = null;
+		JswoneAuditTrailEntity kk =new JswoneAuditTrailEntity();
+		ObjectMapper mapper = new ObjectMapper();
+		String billId="";
+		try {
+			RestTemplate restTemplate = new RestTemplate();
+			Map<String, String> propertyMap = commonUtil.getAllProperties();
+			//kk.setPoInvoiceNo(request.getDeliveryId());
+			kk.setProcessType("GRN_POST");
+			HttpHeaders headers = new HttpHeaders();
+			headers.set("Content-Type", "application/json");
+			headers.set(propertyMap.get("post_grn_headerkey"), propertyMap.get("post_grn_headervalue"));
+			PoGrnMainRequest postGRN = prepareInvAdjustmentRequest(request.getDeliveryId());
+			String postGRNReq = objectMapper.writeValueAsString(postGRN);
+			kk.setRequestObj(postGRNReq );
+			HttpEntity<String> extRequest = new HttpEntity<>(postGRNReq, headers);
+			String url = propertyMap.get("post_grn_url");
+			kk.setRequestUrl(url);
+			System.out.println("url  is  == " + url + ", postGRNReq - " + extRequest);
+			res = restTemplate.exchange(url, HttpMethod.POST, extRequest, String.class);
+			System.out.println("response is == " + res);
+			if (res.getBody() != null) {
+				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+				response = mapper.readValue(res.getBody().toString(), PoGrnMainResponse.class);
+				if(response!=null && response.getBill() != null  && response.getBill().getBill_id()!=null) {
+					kk.setBillid(response.getBill().getBill_id());
+					billId=response.getBill().getBill_id();
+					//request.setBillId(billId);
+				}
+			}
+			kk.setDestinationResponse(res.getBody().toString());
+			jswoneAuditTrailRepository.save(kk);
+			if (response != null && "0".equals( response.getCode()) ) {
+				//inwardEntryRepository.updateZohoSyncStatusByPoInvNo(request.getDeliveryId(), "SUCCESS", billId);
+				kk.setStatusCode(""+res.getStatusCode());
+				response.setCode("0");
+				response.setMessage( response.getMessage());
+			} else {
+				kk.setStatusCode(""+res.getStatusCode());
+				response.setCode( response.getCode());
+				response.setMessage( response.getMessage());
+			}
+			kk.setSourceRespone( mapper.writeValueAsString(response));
+		} catch (HttpClientErrorException | HttpServerErrorException ex) {
+			String error = ex.getResponseBodyAsString();
+			kk.setStatusCode("" + ex.getStatusCode().value());
+			kk.setDestinationResponse( error);
+			try {
+				JsonNode outer = mapper.readTree(error);
+				String outerMessage = outer.path("message").asText();
+				int start = outerMessage.indexOf("{");
+				int end = outerMessage.lastIndexOf("}");
+				if (start != -1 && end != -1 && end > start) {
+					String innerJson = outerMessage.substring(start, end + 1);
+					// Parse the inner JSON
+					JsonNode inner = mapper.readTree(innerJson);
+					String code = inner.path("code").asText();
+					String message = inner.path("message").asText();
+					response.setCode(code);
+					response.setMessage(message);
+					kk.setSourceRespone( mapper.writeValueAsString(response));
+				} else {
+					System.out.println("No inner JSON found in message");
+				}
+			} catch (Exception w) {
+				
+			}
+		} catch (Exception e) {
+            kk.setDestinationResponse( e.getMessage());
+			if (e.getMessage().contains("404")) {
+				kk.setStatusCode("404");
+				response.setCode("1002");
+				response.setMessage("Resource does not exist.");
+			}
+			if (e.getMessage().contains("400")) {
+				kk.setStatusCode("400");
+				response.setCode("4198");
+				response.setMessage("Invalid Params");
+			}
+			if (e.getMessage().contains("401")) {
+				kk.setStatusCode("401");
+				response.setCode("57");
+				response.setMessage("You are not authorized to perform this operation");
+			}
+			if (e.getMessage().contains("500")) {
+				kk.setStatusCode("400");
+				response.setCode("57");
+				response.setMessage("JSW Connector API Not Working, Please Contact JSW Admin Team ");
+			}
+		}
+		try {
+			response.setUploadDocStatus("Document upload Failed");
+			kk.setSourceRespone( mapper.writeValueAsString(response));
+		} catch (Exception e) {
+			kk.setStatusCode(""+500);
+			response.setCode("57");
+			response.setMessage("JSW Connector API Not Working, Please Contact JSW Admin Team ");
+		}
+ 		if (billId != null && billId.length() > 0) {
+			//PODetailsMainResponse uploadDocStatusResponse = uploadDocument(req);
+			//if (uploadDocStatusResponse != null && "0".equals( uploadDocStatusResponse.getCode()) ) {
+				//response.setUploadDocStatus("Document uploaded successfully");
+			//}
+		}
+		try {
+			kk.setSourceRespone( mapper.writeValueAsString(response));
+			jswoneAuditTrailRepository.save(kk);
+			String responseStr = objectMapper.writeValueAsString(response);
+	//		inwardEntryRepository.updateZohoSyncRemarks(req.getPoInvoiceNo(), responseStr, billId);
+		} catch (JsonProcessingException e) {
+		}
+		return null;// response;
 	}
+
+	private PoGrnMainRequest prepareInvAdjustmentRequest(Integer dcId) {
+		PoGrnMainRequest req = new PoGrnMainRequest();
+		List<PoGrnCustomType> customTypeList = new ArrayList<>();
+		List<PoGrnLineItem> line_items = new ArrayList<>();
+
+		List<Object[]> poDetails = null;//powseMmidDetailsRepository.getInwardDetailsByPoId(dcId);
+		BigDecimal totalValueofgods = new BigDecimal("0.00"); 
+		for (Object[] result : poDetails) {
+			List<PoGrnLineItemBatches> batches = new ArrayList<>();
+			String po_reference = (result[0] != null ? result[0].toString() : null);
+			// String po_id = (result[1] != null ? result[1].toString() : null);
+			// String mm_id = (result[2] != null ? result[2].toString() : null);
+			String mmid_details_object = (result[3] != null ? result[3].toString() : null);
+			String poinvno = (result[4] != null ? result[4].toString() : null);
+			String custBatchNo = (result[5] != null ? result[5].toString() : null);
+			String postdate = (result[6] != null ? result[6].toString() : null);
+			BigDecimal fquantity = (result[7] != null ? new BigDecimal(result[7].toString()) : null);
+			BigDecimal valueofgods = (result[8] != null ? new BigDecimal(result[8].toString()) : null);
+			totalValueofgods=totalValueofgods.add(valueofgods);
+			PODetailsLineItemResponse lineItems = new PODetailsLineItemResponse();
+			try {
+				lineItems = objectMapper.readValue(mmid_details_object, PODetailsLineItemResponse.class);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			req.setPo_number(po_reference);
+			req.setBill_number(poinvno);
+			req.setReference_number(po_reference);
+			req.setDate(postdate);
+
+			BigDecimal availQty = lineItems.getQuantity().subtract(lineItems.getQuantity_billed());
+			BigDecimal extraQty = new BigDecimal("0.00");
+			if (fquantity.compareTo(availQty) > 0) {
+				extraQty = fquantity.subtract(availQty);
+				fquantity = availQty;
+			}
+			PoGrnLineItem lineItem = new PoGrnLineItem();
+			lineItem.setItem_id(lineItems.getItem_id());
+			lineItem.setPurchase_order_line_item_id(lineItems.getLine_item_id());
+			lineItem.setSku(lineItems.getSku());
+			lineItem.setRate(lineItems.getRate());
+			lineItem.setQuantity(fquantity);
+			lineItem.setHsn_or_sac(lineItems.getHsn_or_sac());
+			lineItem.setTax_id(lineItems.getTax_id());
+			PoGrnLineItemBatches batchObj = new PoGrnLineItemBatches();
+			batchObj.setBatch_number(custBatchNo);
+			batchObj.setIn_quantity(fquantity);
+			batches.add(batchObj);
+			lineItem.setBatches(batches);
+			line_items.add(lineItem);
+
+			if (extraQty.compareTo(BigDecimal.ZERO) > 0) {
+				List<PoGrnLineItemBatches> batches_pt = new ArrayList<>();
+				PoGrnLineItem lineItem_pt = new PoGrnLineItem();
+				lineItem_pt.setItem_id(lineItems.getItem_id());
+				lineItem_pt.setPurchase_order_line_item_id(lineItems.getLine_item_id());
+				lineItem_pt.setSku(lineItems.getSku());
+				lineItem_pt.setRate(lineItems.getRate());
+				lineItem_pt.setQuantity(extraQty);
+				lineItem_pt.setHsn_or_sac(lineItems.getHsn_or_sac());
+				lineItem_pt.setTax_id(lineItems.getTax_id());
+				PoGrnLineItemBatches batchObj_pt = new PoGrnLineItemBatches();
+				batchObj_pt.setBatch_number(custBatchNo);
+				batchObj_pt.setIn_quantity(extraQty);
+				batches_pt.add(batchObj_pt);
+				lineItem_pt.setBatches(batches_pt);
+				line_items.add(lineItem_pt);
+			}
+		}
+		req.setLine_items(line_items);
+
+		PoGrnCustomType customParam = new PoGrnCustomType();
+		customParam.setApi_name("cf_refrence_no");
+		customParam.setLabel("Refrence No");
+		customParam.setData_type("Text Box (Single Line)");
+		customParam.setValue("");
+		customTypeList.add(customParam);
+
+		PoGrnCustomType customParam2 = new PoGrnCustomType();
+		customParam2.setApi_name("cf_total_value_of_goods");
+		customParam2.setLabel("Total Value Of Goods");
+		customParam2.setData_type("Text Box (Single Line)");
+		customParam2.setValue(totalValueofgods.toString());
+		customTypeList.add(customParam2);
+		req.setCustom_fields(customTypeList);
+		return req;
+	}
+	
 
 }

@@ -1,7 +1,5 @@
 package com.steel.product.jswone.controller;
 
-import io.swagger.v3.oas.annotations.tags.Tag;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,9 +10,13 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.steel.product.application.dto.quality.ListPageSearchRequest;
+import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.jswone.request.MMIDReceiveMainRequest;
 import com.steel.product.jswone.request.POSOIntegrationRequest;
 import com.steel.product.jswone.response.PODetailsLineItemResponse;
@@ -24,6 +26,8 @@ import com.steel.product.jswone.response.POListResponse;
 import com.steel.product.jswone.response.PoGrnMainResponse;
 import com.steel.product.jswone.response.SOListResponse;
 import com.steel.product.jswone.service.JSWIntegrationService;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @CrossOrigin
@@ -187,6 +191,11 @@ public class JSWIntegrationController {
 	public ResponseEntity<Object> coilSyncStts(@RequestBody List<POSOIntegrationRequest> request, HttpServletRequest httprequest) {
 		String ipAddress = httprequest.getRemoteAddr();
 		return service.coilSyncStts(request);
+	}
+
+	@PostMapping(value = "/xternal/invadjustment", produces = "application/json")
+	public ResponseEntity<Object> invadjustment(@RequestBody DeliveryDetails request) {
+		return service.inventoryAdjustment(request);
 	}
 
 }

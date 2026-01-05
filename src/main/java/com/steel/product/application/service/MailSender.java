@@ -1,10 +1,15 @@
 package com.steel.product.application.service;
 
+import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.annotation.PostConstruct;
 import javax.mail.internet.MimeMessage;
 
+import org.apache.velocity.Template;
+import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.runtime.RuntimeConstants;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
@@ -13,10 +18,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
+import com.steel.product.application.dto.support.ContactUsDTO;
 import com.steel.product.application.entity.Party;
 
 @Component("apiEmailReports")
@@ -38,6 +48,9 @@ public class MailSender {
 	
 	@Value( "${email.monthlyEmailBody}" )
     private String monthlyEmailBody;
+	
+	@Value( "${email.contactusemailtemplatepath}" )
+    private String filePath;
 	
 	private VelocityEngine velocityEngine;
 	
@@ -134,6 +147,47 @@ public class MailSender {
 			logger.info("MailSender.Fail1: "+e.getMessage());
 		}
 	}
+	
+	public ResponseEntity<Object> sendContactUsMail(ContactUsDTO contactUsDTO) {
+		logger.info("******MailSender.sendContactUsMail **************");
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		try {
+			logger.info("Name is : " + contactUsDTO.getName());
+			MimeMessage message = javaMailSender.createMimeMessage();
+
+			StringWriter writer = new StringWriter();
+			Map<Object, Object> map = new HashMap<>();
+			map.put("name", (contactUsDTO.getName() == null ? "" : contactUsDTO.getName()));
+			map.put("email", (contactUsDTO.getEmail() == null ? "" : contactUsDTO.getEmail()));
+			map.put("contact", (contactUsDTO.getContact() == null ? "" : contactUsDTO.getContact()));
+			map.put("company", (contactUsDTO.getCompany() == null ? "" : contactUsDTO.getCompany()));
+			map.put("message", (contactUsDTO.getMessage() == null ? "" : contactUsDTO.getMessage()));
+			VelocityContext context = new VelocityContext(map);
+			Template template = velocityEngine.getTemplate(filePath);
+			if (template != null) {
+				template.merge(context, writer);
+			}
+			String emailBody = writer.toString();
+
+			MimeMessageHelper helper = new MimeMessageHelper(message, true);
+			helper.setFrom(fromMailId);
+			helper.setTo(contactUsDTO.getEmail());
+			helper.setSubject("Enquiry");
+			helper.setText(emailBody, true);
+			javaMailSender.send(message);
+			logger.info("Email Sent Successfully to " + contactUsDTO.getEmail());
+		} catch (Exception e) {
+			logger.info("MailSender.Fail1: "+e.getMessage());
+			return new ResponseEntity<>("{\"status\": \"fail\", \"message\":\"failed to sent email..!\"}", headers, HttpStatus.BAD_REQUEST);
+		}
+		return new ResponseEntity<>(
+		    "{\"status\":\"success\",\"message\":\"We received your details and we will contact you shortly..!\"}",
+		    headers,
+		    HttpStatus.OK
+		);
+	}
+
 	/*
 	public void sendMonthlyReportsMail(Party party, Integer month, Integer year) {
 
