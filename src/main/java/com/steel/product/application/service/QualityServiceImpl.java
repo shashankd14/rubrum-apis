@@ -1483,6 +1483,20 @@ public class QualityServiceImpl implements QualityService {
 			customerNameCellValue.setBorder(Rectangle.NO_BORDER);
 			coilDetailsTab.addCell(customerNameCellValue);
 			document.add( Chunk.NEWLINE );
+			
+			PdfPCell createdDateCell = new PdfPCell(new Phrase("Created Date : ", font11));
+			createdDateCell.setHorizontalAlignment( Element.ALIGN_LEFT);
+			createdDateCell.setFixedHeight(fixedHeight);
+			createdDateCell.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(createdDateCell);			
+
+			PdfPCell createdDateCellValue = new PdfPCell(new Phrase(""+entity.getCreatedOn(), font11));
+			createdDateCellValue.setHorizontalAlignment( Element.ALIGN_LEFT);
+			createdDateCellValue.setFixedHeight(fixedHeight);
+			createdDateCellValue.setColspan(3);
+			createdDateCellValue.setBorder(Rectangle.NO_BORDER);
+			coilDetailsTab.addCell(createdDateCellValue);
+			document.add( Chunk.NEWLINE );
 			document.add(coilDetailsTab);
 			
 			if ("PROCESSING".equals(entity.getStageName())) {
