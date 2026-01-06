@@ -6,6 +6,7 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.error.OAuth2AccessDeniedHandler;
+import org.springframework.web.bind.annotation.PostMapping;
 
 @Configuration
 @EnableResourceServer
@@ -31,6 +32,7 @@ public class OAuth2ResourceServer extends ResourceServerConfigurerAdapter
                                             "/configuration/**",      	// swagger configuration
                                             "/oauth/**",      			// swagger configuration
                                             "/user/changePassword",     // user controller
+                                            "/support/contactus",     	// support email
                                             "/login/**"      			// login controller
                                             ).permitAll()
                             				.antMatchers("/**").authenticated() // If we commented this then token is not required to access any service

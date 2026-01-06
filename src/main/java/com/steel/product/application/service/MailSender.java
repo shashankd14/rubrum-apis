@@ -172,7 +172,7 @@ public class MailSender {
 
 			MimeMessageHelper helper = new MimeMessageHelper(message, true);
 			helper.setFrom(fromMailId);
-			helper.setTo(contactUsDTO.getEmail());
+			helper.setTo("support@workeazy.in");
 			helper.setSubject("Enquiry");
 			helper.setText(emailBody, true);
 			javaMailSender.send(message);
