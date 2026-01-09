@@ -243,7 +243,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 		try {
 
 			String jsonReq = objectMapper.writeValueAsString(request);
-			System.out.println("full req is : " + jsonReq);
+			log.info("full req is : " + jsonReq);
 
 			MaterialMasterJswEntity destEntity = new MaterialMasterJswEntity();
 			if (request.getData().getMmid() != null && request.getData().getMmid().length() > 0) {
@@ -347,7 +347,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 				try {
 					destEntity = materialMasterRepository.save(destEntity);
 				} catch (Exception e) {
-					System.out.println("error while save --  " + e.getMessage());
+					log.info("error while save --  " + e.getMessage());
 				}
 			} else {
 				return new ResponseEntity<Object>("{\"code\": \"6024\", \"message\": \"Please enter valid MMID\"}",
@@ -393,12 +393,12 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			headers.set("Authorization", propertyMap.get("podetails_Authorization"));
 			HttpEntity<String> request = new HttpEntity<>("{}", headers);
 			String url = propertyMap.get("podetails_url") + "?purchaseorder_id=" + requ.getPoId();
-			System.out.println("request is  == " + request + ", url - " + url);
+			log.info("request is  == " + request + ", url - " + url);
 			kk.setRequestObj("");
 			kk.setProcessType("PO_DETAILS");
 			kk.setRequestUrl(url);
 			ResponseEntity<String> res = restTemplate.exchange(url, HttpMethod.GET, request, String.class);
-			System.out.println("response is == " + res);
+			log.info("response is == " + res);
 			kk.setDestinationResponse(res.getBody().toString());
 			if (res.getBody() != null) {
 				ObjectMapper om = new ObjectMapper();
@@ -433,14 +433,14 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 					response.setMessage(message);
 					kk.setSourceRespone( mapper.writeValueAsString(response));
 				} else {
-					System.out.println("No inner JSON found in message");
+					log.info("No inner JSON found in message");
 				}
 			} catch (Exception w) {
 				
 			}
 			kk.setStatusCode("" + ex.getStatusCode().value());
 		} catch (Exception e) {
-			System.out.println("Error response is == " + e.getMessage());
+			log.info("Error response is == " + e.getMessage());
             kk.setDestinationResponse( e.getMessage());
 			if (e.getMessage().contains("404")) {
 				kk.setStatusCode("404");
@@ -493,7 +493,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 				} catch (JsonProcessingException e) {
 				}
 
-				System.out.println("HI lineItem == " + jsonString);
+				log.info("HI lineItem == " + jsonString);
 				if (result1.getSku() != null) {
 					POWiseMmidDetailsEntity existingEntity = powseMmidDetailsRepository.findByMmId(result1.getSku());
 					if (existingEntity != null && existingEntity.getId() > 0) {
@@ -531,9 +531,9 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			HttpEntity<String> request = new HttpEntity<>(postGRNReq, headers);
 			String url = propertyMap.get("post_grn_url");
 			kk.setRequestUrl(url);
-			System.out.println("url  is  == " + url + ", postGRNReq - " + request);
+			log.info("url  is  == " + url + ", postGRNReq - " + request);
 			res = restTemplate.exchange(url, HttpMethod.POST, request, String.class);
-			System.out.println("response is == " + res);
+			log.info("response is == " + res);
 			if (res.getBody() != null) {
 				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 				response = mapper.readValue(res.getBody().toString(), PoGrnMainResponse.class);
@@ -575,7 +575,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 					response.setMessage(message);
 					kk.setSourceRespone( mapper.writeValueAsString(response));
 				} else {
-					System.out.println("No inner JSON found in message");
+					log.info("No inner JSON found in message");
 				}
 			} catch (Exception w) {
 				
@@ -641,7 +641,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			// String mm_id = (result[2] != null ? result[2].toString() : null);
 			String mmid_details_object = (result[3] != null ? result[3].toString() : null);
 			String poinvno = (result[4] != null ? result[4].toString() : null);
-			String custBatchNo = (result[5] != null ? result[5].toString() : null);
+			String coilnumber = (result[5] != null ? result[5].toString() : null);
 			String postdate = (result[6] != null ? result[6].toString() : null);
 			BigDecimal fquantity = (result[7] != null ? new BigDecimal(result[7].toString()) : null);
 			BigDecimal valueofgods = (result[8] != null ? new BigDecimal(result[8].toString()) : null);
@@ -672,7 +672,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			lineItem.setHsn_or_sac(lineItems.getHsn_or_sac());
 			lineItem.setTax_id(lineItems.getTax_id());
 			PoGrnLineItemBatches batchObj = new PoGrnLineItemBatches();
-			batchObj.setBatch_number(custBatchNo);
+			batchObj.setBatch_number(coilnumber);
 			batchObj.setIn_quantity(fquantity);
 			batches.add(batchObj);
 			lineItem.setBatches(batches);
@@ -689,7 +689,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 				lineItem_pt.setHsn_or_sac(lineItems.getHsn_or_sac());
 				lineItem_pt.setTax_id(lineItems.getTax_id());
 				PoGrnLineItemBatches batchObj_pt = new PoGrnLineItemBatches();
-				batchObj_pt.setBatch_number(custBatchNo);
+				batchObj_pt.setBatch_number(coilnumber);
 				batchObj_pt.setIn_quantity(extraQty);
 				batches_pt.add(batchObj_pt);
 				lineItem_pt.setBatches(batches_pt);
@@ -828,10 +828,10 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			MultiValueMap<String, Object> docList = prepareDocumentUploadRequest(req.getBillId());
 			docList.forEach((key, values) -> values.removeIf(Objects::isNull));
 			HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(docList, headers);
-			System.out.println("url  is  == " + url + ", request is  - " + request);
+			log.info("url  is  == " + url + ", request is  - " + request);
 			kk.setRequestObj( request.toString());
 			res = restTemplate.exchange(url, HttpMethod.POST, request, String.class);
-			System.out.println("response is == " + res);
+			log.info("response is == " + res);
 			if (res.getBody() != null) {
 				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 				response = mapper.readValue(res.getBody().toString(), PODetailsMainResponse.class);
@@ -866,7 +866,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 					response.setMessage(message);
 					kk.setSourceRespone( mapper.writeValueAsString(response));
 				} else {
-					System.out.println("No inner JSON found in message");
+					log.info("No inner JSON found in message");
 				}
 			} catch (Exception w) {
 				
@@ -930,7 +930,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 				    	docList.add("Attachment", new FileSystemResource(file));
 				    }
 				} catch (Exception e) {
-					System.out.println("File Available "+testcertificatefileNamecc);
+					log.info("File Available "+testcertificatefileNamecc);
 				}
 			}
 			if(testcertificatefileurl!=null && testcertificatefileurl.length()>0) {
@@ -943,7 +943,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 				    	docList.add("Attachment", new FileSystemResource(file));
 				    }
 				} catch (Exception e) {
-					System.out.println("File Available "+testcertificatefileNamecc);
+					log.info("File Available "+testcertificatefileNamecc);
 				}
 			}
 		}
@@ -971,9 +971,9 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			HttpEntity<String> extRequest = new HttpEntity<>(postGRNReq, headers);
 			String url = propertyMap.get("post_grn_url");
 			kk.setRequestUrl(url);
-			System.out.println("url  is  == " + url + ", postGRNReq - " + extRequest);
+			log.info("url  is  == " + url + ", postGRNReq - " + extRequest);
 			res = restTemplate.exchange(url, HttpMethod.POST, extRequest, String.class);
-			System.out.println("response is == " + res);
+			log.info("response is == " + res);
 			if (res.getBody() != null) {
 				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 				response = mapper.readValue(res.getBody().toString(), PoGrnMainResponse.class);
@@ -1015,7 +1015,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 					response.setMessage(message);
 					kk.setSourceRespone( mapper.writeValueAsString(response));
 				} else {
-					System.out.println("No inner JSON found in message");
+					log.info("No inner JSON found in message");
 				}
 			} catch (Exception w) {
 				

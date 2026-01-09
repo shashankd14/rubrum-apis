@@ -186,16 +186,15 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 				log.info("File Uploaded Successfully. Count is == " + products.size());
 			}
 			if (request.isMasterData()) {
-				// List<MaterialMasterFileDataEntity> listFileData =repository.findAll();
-				log.info("listFileData is == " + productList.size());
+				List<MaterialMasterFileDataEntity> listFileData =repository.findAll();
+				log.info("listFileData is == " + listFileData.size());
 				// List<MaterialMasterJswEntity> materialMasterList = new ArrayList<>();
-				for (MaterialMasterFileDataEntity sourceEntity : productList) {
+				for (MaterialMasterFileDataEntity sourceEntity : listFileData) {
 					MaterialMasterJswEntity destEntity = new MaterialMasterJswEntity();
 					BeanUtils.copyProperties(sourceEntity, destEntity);
 					log.info("getMmId is == " + sourceEntity.getMmId());
 
-					MaterialMasterJswEntity oldEntity = materialMasterJswRepository
-							.findFirstByMmId(sourceEntity.getMmId());
+					MaterialMasterJswEntity oldEntity = materialMasterJswRepository.findFirstByMmId(sourceEntity.getMmId());
 					if (oldEntity != null && oldEntity.getMaterialId() > 0) {
 						destEntity.setMaterialId(oldEntity.getMaterialId());
 						destEntity.setUpdatedOn(new Date());
@@ -763,12 +762,13 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 				inwardEntry.setCreatedBy(userId);
 				inwardEntry.setUpdatedBy(userId);
 				inwardEntry.setTestCertificateNumber("");
-
+					
+				/*
 				InwardEntry checkEntity = inwdEntrySvc.getByCoilNumber1(inwardEntry.getCoilNumber());
 				if (checkEntity != null && checkEntity.getInwardEntryId() > 0) {
 					inwardEntry.setInwardEntryId(checkEntity.getInwardEntryId());
 					inwardEntry.setInstructions( checkEntity.getInstructions());
-				}
+				}*/
 
 				InwardEntry savedInwardEntry = inwdEntrySvc.saveEntry(inwardEntry);
 				if (savedInwardEntry != null && savedInwardEntry.getInwardEntryId() > 0) {
