@@ -144,6 +144,7 @@
                 <th class="t-head font-size-small" >Sub Grade</th>
                 <th class="t-head font-size-small" >Material Grade</th>
                 <th class="t-head font-size-small" >Material Desc</th>
+          		<th class="t-head font-size-small" >Remarks/So Ref#</th>
           		<th class="t-head font-size-small" >No'of PCs</th>
                 <th class="t-head font-size-small" >Delivery Weight (Kg)</th>
                 <th class="t-head font-size-small" >Value of Goods (Rs)</th>
@@ -156,13 +157,14 @@
                     <td class="font-size-x-small" th:text="${inw?.subGradeName}"></td>
                     <td class="font-size-x-small" th:text="${inw?.materialGradeName}"></td>
                     <td class="font-size-x-small" th:text="${inw?.matDescription}"></td>
+                    <td class="font-size-x-small" th:text="${ins?.remarks}"></td>
                     <td class="font-size-x-small" th:text="${ins?.actualNoOfPieces}"></td>
                     <td class="font-size-x-small" th:text="${ins?.actualWeight}"></td>
                     <td class="font-size-x-small" th:text="${#numbers.formatDecimal(ins?.valueOfGoods,1,2)}"></td>
                 </tr>
             </th:block>
             <tr>
-                <td class="t-head" colspan="7" style="text-align: center; font-weight: bold;">Total</td>
+                <td class="t-head" colspan="8" style="text-align: center; font-weight: bold;">Total</td>
                 <td class="t-head font-size-small" th:text="${#numbers.formatDecimal(deliveryChallan?.totalDeliveryWeight,2,2)}"></td>
                 <td class="t-head font-size-small" th:text="${#numbers.formatDecimal(deliveryChallan?.totalValueOfGoods,2,2)}"></td>
             </tr>

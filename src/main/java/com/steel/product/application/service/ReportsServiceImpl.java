@@ -633,7 +633,7 @@ public class ReportsServiceImpl implements ReportsService {
 			acctStatementMap.put("1",
 			new Object[] { "Order ID", "DC No", "Dispatch Date", "CoilNumber", "SC Inward ID", "Location Name","MaterialDesc",
 					"MaterialGrade", "Subgrade","Thickness", "Width", "Length", "Qty_Sheets", "Delivery Weight","Additional  Weight",
-					"Vehicle No", "Delivery Remarks", "Processing Rate", "Quality Remarks" });
+					"Vehicle No", "Remarks/SO Ref#", "Processing Rate", "Quality Remarks" });
 			int cnt = 1;
 			for (OutwardReportViewEntity kk : partyList) {
 				cnt++;
