@@ -48,9 +48,9 @@ public interface POWiseMmidDetailsRepository extends JpaRepository<POWiseMmidDet
 	List<Object[]> allpoinvlists();
 
 	@Query(value = "SELECT distinct inward.customerinvoiceno, inward.zoho_sync_stts, inward.zoho_sync_remarks, manual_po_flag, "
-			+ " bill_id, zoho_docupload_stts,zoho_docupload_remarks "
-			+ " from product_tblinwardentry inward "
-			+ " where case when :searchText is not null and LENGTH(:searchText) >0 then (inward.customerinvoiceno like %:searchText%) else 1=1 end " 
+			+ " bill_id, zoho_docupload_stts,zoho_docupload_remarks,coilnumber,customerbatchid, stts.statusname, DATE_FORMAT( inward.dinvoicedate, '%d-%m-%Y') postdate "
+			+ " from product_tblinwardentry inward , product_status stts"
+			+ " where inward.vstatus = stts.statusid and case when :searchText is not null and LENGTH(:searchText) >0 then (inward.customerinvoiceno like %:searchText%) else 1=1 end " 
 			+ " order by inwardentryid desc",
 		countQuery = "SELECT count(distinct inward.customerinvoiceno) from product_tblinwardentry inward  " + 
 				 " where case when :searchText is not null and LENGTH(:searchText) >0 then (inward.customerinvoiceno like %:searchText%) else 1=1 end ", 

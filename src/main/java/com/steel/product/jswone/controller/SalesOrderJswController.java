@@ -119,8 +119,6 @@ public class SalesOrderJswController {
 			resp.setBranch(result[36] != null ? (String) result[36] : null);
 			resp.setCam_code(result[37] != null ? (String) result[37] : null);
 			resp.setRemarks(result[38] != null ? (String) result[38] : null);
-
-
 			resp.getItemslist().add(child);
 
 			if (soMap != null && soMap.get(resp.getSoId()) != null) {

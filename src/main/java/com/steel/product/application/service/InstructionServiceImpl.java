@@ -1562,9 +1562,9 @@ public class InstructionServiceImpl implements InstructionService {
 			if (status > 1) {
 				inwardEntryRepository.updateInwardStatus(inwardEntryId, status);
 			}
-			if(!"FGtoWIP".equalsIgnoreCase(taskType)) {
-				inwardEntryRepository.updateInwardAvailableWeight(inwardEntryId, availableWeight.floatValue());
-			}
+			//if(!"FGtoWIP".equalsIgnoreCase(taskType)) {
+			inwardEntryRepository.updateInwardAvailableWeight(inwardEntryId, availableWeight.floatValue());
+			//}
 		} catch (Exception e) {
 			log.info(e.getMessage());
 		}

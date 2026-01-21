@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -60,6 +61,7 @@ import com.steel.product.jswone.request.MaterialMasterFileDataDTO;
 import com.steel.product.jswone.request.POSOIntegrationRequest;
 import com.steel.product.jswone.response.PODetailsLineItemResponse;
 import com.steel.product.jswone.response.PODetailsMainResponse;
+import com.steel.product.jswone.response.POInvoiceListChildResponse;
 import com.steel.product.jswone.response.POInvoiceListResponse;
 import com.steel.product.jswone.response.POWiseInwardListMainResponse;
 import com.steel.product.jswone.response.POWiseInwardListResponse;
@@ -750,12 +752,13 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 
 		Pageable pageable = PageRequest.of((listPageSearchRequest.getPageNo() - 1), listPageSearchRequest.getPageSize());
 
-		List<POInvoiceListResponse> inwardList = new ArrayList<>();
-		Page<Object[]> poDetails = powseMmidDetailsRepository.allpoinvlist(listPageSearchRequest.getSearchText(),
-				pageable);
+		Page<Object[]> poDetails = powseMmidDetailsRepository.allpoinvlist(listPageSearchRequest.getSearchText(), pageable);
+		Map<String, POInvoiceListResponse> soMap = new LinkedHashMap<>();
 
 		for (Object[] result : poDetails) {
 			POInvoiceListResponse kk = new POInvoiceListResponse();
+			POInvoiceListChildResponse child = new POInvoiceListChildResponse();
+
 			kk.setPoInvoiceNo(result[0] != null ? result[0].toString() : null);
 			kk.setPoInvSyncStatus(result[1] != null ? result[1].toString() : "PENDING");
 			kk.setPoInvSyncRemarks( result[2] != null ? result[2].toString() : "");
@@ -763,11 +766,27 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			kk.setBillId( result[4] != null ? result[4].toString() : "");
 			kk.setZohoDocumentUploadStts(result[5] != null ? result[5].toString() : "PENDING");
 			kk.setZohoDocumentUploadRemarks( result[6] != null ? result[6].toString() : "");
-			inwardList.add(kk);
+			
+			child.setCoilNumber(result[7] != null ? (String) result[7] : null);
+			child.setCustomerBatchId( result[8] != null ? (String) result[8] : null);
+			child.setCoilStatus( result[9] != null ? (String) result[9] : null);
+			child.setInvoiceDate((result[10] != null ? result[10].toString() : null));
+
+			if (soMap != null && soMap.get(kk.getPoInvoiceNo()) != null) {
+				POInvoiceListResponse addEntity = soMap.get(kk.getPoInvoiceNo());
+				addEntity.getCoilList().add(child);
+				soMap.put(kk.getPoInvoiceNo(), addEntity);
+			} else {
+				List<POInvoiceListChildResponse> coilList = new ArrayList<>();
+				coilList.add(child);
+				kk.setCoilList(coilList);
+				soMap.put(kk.getPoInvoiceNo(), kk);
+			}
 		}
+		List<POInvoiceListResponse> list = new ArrayList<>(soMap.values());
 
 		Map<String, Object> response = new HashMap<>();
-		response.put("content", inwardList);
+		response.put("content", list);
 		response.put("currentPage", poDetails.getNumber());
 		response.put("totalItems", poDetails.getTotalElements());
 		response.put("totalPages", poDetails.getTotalPages());

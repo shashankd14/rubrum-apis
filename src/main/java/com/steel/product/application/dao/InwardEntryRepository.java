@@ -146,7 +146,7 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 	public void updateInwardAvailableWeight(@Param("inwardId") Integer inwardId, @Param("usedWeightr") Float usedWeightr);
     
     public static final String GET_INWARD_DETAILS = " select min(stts), CAST(sum(packetweight) AS DECIMAL(10,2))  from ( "
-			+ " SELECT distinct inwardentryid as inwardid, child.status as stts, IFNULL(actualweight, plannedweight) packetweight, "
+			+ " SELECT inwardentryid as inwardid, child.status as stts, case when actualweight > 0 then actualweight else plannedweight end packetweight, "
 			+ " (SELECT count(distinct inss.instructionid) cnt FROM product_instruction inss where inss.inwardid=parent.inwardentryid  and status!=4 and inss.parentgroupid=child.groupid) as siltcutcnt  "
 			+ " FROM product_tblinwardentry parent, product_instruction child  "
 			+ " where child.isdeleted=0 and parent.inwardentryid = child.inwardid ) a  where 1=1 AND CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END and inwardid=:inwardId ";
