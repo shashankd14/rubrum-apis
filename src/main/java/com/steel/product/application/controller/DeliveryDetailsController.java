@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
@@ -28,6 +29,7 @@ import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.service.DeliveryDetailsService;
 import com.steel.product.application.service.SalesOrderService;
 import com.steel.product.application.util.CommonUtil;
+import com.steel.product.jswone.service.JSWIntegrationService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -45,6 +47,9 @@ public class DeliveryDetailsController {
     
     @Autowired
 	private CommonUtil commonUtil;
+    
+	@Autowired
+	private JSWIntegrationService service;
 
 	@GetMapping({ "/list/{pageNo}/{pageSize}" })
 	public ResponseEntity<Object> findAllWithPagination(@PathVariable int pageNo, @PathVariable int pageSize,
@@ -155,6 +160,12 @@ public class DeliveryDetailsController {
 				deliveryDto.setLaminationId(0);
 			}
 			DeliveryDetails deliveryDetails = deliveryDetailsService.save(deliveryDto, userId);
+
+			if (deliveryDetails != null && deliveryDetails.getDeliveryId() > 0) {
+				DeliveryDto dto = new DeliveryDto();
+				dto.setDeliveryId(deliveryDetails.getDeliveryId());
+				service.inventoryAdjustment(dto);
+			}
 			result = new ResponseEntity<>("Delivery details saved successfully!", HttpStatus.OK);
 		} catch (Exception e) {
 			result = new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);

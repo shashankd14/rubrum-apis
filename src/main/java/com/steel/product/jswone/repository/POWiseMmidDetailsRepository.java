@@ -18,7 +18,7 @@ public interface POWiseMmidDetailsRepository extends JpaRepository<POWiseMmidDet
 	
 	@Query(value = "SELECT pode.po_reference, inward.po_id, inward.mm_id, pode.mmid_details_object, "
 			+ " customerinvoiceno, coilnumber, DATE_FORMAT( inward.dinvoicedate, '%d-%m-%Y') postdate, "
-			+ " round((sum(fquantity ) / 1000),3) fquantity, valueofgoods "
+			+ " round((sum(fquantity ) / 1000),3) fquantity, sum(valueofgoods) "
 			+ " from product_tblinwardentry inward, jsw_powise_mmid_details pode "
 			+ " WHERE pode.mm_id = inward.mm_id and inward.po_id = pode.po_id and "
 			+ " inward.customerinvoiceno = :customerinvoiceno "
@@ -56,7 +56,13 @@ public interface POWiseMmidDetailsRepository extends JpaRepository<POWiseMmidDet
 				 " where case when :searchText is not null and LENGTH(:searchText) >0 then (inward.customerinvoiceno like %:searchText%) else 1=1 end ", 
 		nativeQuery = true)
 	Page<Object[]> allpoinvlist(@Param("searchText") String searchText, Pageable pageable);
-	
+
+	@Query(value = "SELECT inward.coilnumber, round(((fquantity ) / 1000),3) fquantity "
+			+ " from product_tblinwardentry inward, jsw_powise_mmid_details pode "
+			+ " WHERE pode.mm_id = inward.mm_id and inward.po_id = pode.po_id and "
+			+ " inward.customerinvoiceno = :customerinvoiceno and inward.mm_id = :mmid ", nativeQuery = true)
+	List<Object[]> getInwardDetailsByPoIdBatch(@Param("customerinvoiceno") String customerinvoiceno,
+			@Param("mmid") String mmid);
 	
 	
 }

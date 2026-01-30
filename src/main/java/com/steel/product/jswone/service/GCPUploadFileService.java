@@ -250,12 +250,12 @@ public class GCPUploadFileService {
 		List<StockSummaryReportViewEntity> stockReportDetailsyList = stockSummaryReportViewRepository.findAll();
 		try (PrintWriter writer = new PrintWriter(new FileWriter(filePath))) {
 			writer.println( "Coil No,SC Inward ID,MMId,MaterialDesc,MaterialGrade,Subgrade,Location Name,"
-					+ "Ageing,Thickness,Width,Value Of Goods,NetWeight,InStockWeight,WIP Qty,FG Qty,"
+					+ "Ageing,Thickness,Width,Value Of Goods, Material Length,NetWeight,InStockWeight,WIP Qty,FG Qty,"
 					+ "Quality Defects,UnprocessedWeight,Dispatched Qty" );
 			for (StockSummaryReportViewEntity kk : stockReportDetailsyList) {
 				writer.println( kk.getCoilNumber()+","+kk.getCustomerBatchId()+","+kk.getMmId()+","+kk.getMaterialDesc()+","+
 						kk.getMaterialGrade()+","+kk.getSubgrade()+","+kk.getLocationname()+","+kk.getCoilage()+","+kk.getFthickness()+","+
-						kk.getFwidth()+","+kk.getValueofgoods()+","+kk.getNetweight()+","+kk.getInstockweight()+","+
+						kk.getFwidth()+","+kk.getValueofgoods()+", "+kk.getFlength()+", "+kk.getNetweight()+","+kk.getInstockweight()+","+
 						kk.getWipqty()+","+ kk.getFgqty()+","+kk.getQualitydefects()+","+kk.getUnprocessedweight()+","+
 						kk.getDispatchedweight() );
 			}

@@ -193,4 +193,22 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
 		nativeQuery = true)
 	List<Object[]> findPacketsForPositiveTolerence(@Param("inwardId") Integer inwardId);
 
+	@Query(value = " select sono, dt, vehicleno, mmid, sum(actualweight), wearhouse_id, branch from ( "
+			+ "  SELECT ins.sono, DATE_FORMAT(dc.createdon, '%Y-%m-%d') dt,vehicleno , ins.mmid, ins.actualweight,"
+			+ " (select wearhouse_id from jsw_sales_order so, jsw_sales_order_child child where so.so_id=child.so_id and child.mm_id = ins.mmid and so.so_number = ins.sono limit 1) wearhouse_id , "
+			+ " (select branch from jsw_sales_order so, jsw_sales_order_child child, jsw_warehouse_master wh where so.so_id=child.so_id and wh.ware_house_id=child.wearhouse_id and child.mm_id = ins.mmid and so.so_number = ins.sono limit 1) branch"
+			+ " FROM product_tbl_delivery_details dc, product_instruction ins "
+			+ " WHERE ins.deliveryid=dc.deliveryid and dc.deliveryid = :dcId ) a "
+			+ " where 1=1 group by sono, dt, vehicleno, mmid, wearhouse_id, branch", nativeQuery = true)
+	public List<Object[]> prepareInvAdjustmentRequest(Integer dcId);
+	
+	@Query(value = " select actualweight, inwmmid,coilnumber from ( "
+			+ " SELECT  ins.mmid, ins.actualweight,"
+			+ " (select inw.mm_id from product_tblinwardentry inw where inw.inwardentryid = ins.inwardid limit 1) inwmmid, "
+			+ " (SELECT inw.coilnumber FROM product_tblinwardentry inw WHERE  inw.inwardentryid=ins.inwardid LIMIT 1) coilnumber"
+			+ " FROM product_tbl_delivery_details dc, product_instruction ins "
+			+ " WHERE ins.deliveryid=dc.deliveryid and dc.deliveryid = :dcId ) a "
+			+ " where mmid = :mmid", nativeQuery = true)
+	public List<Object[]> prepareInvAdjustmentFrom(Integer dcId, String mmid);
+
 }

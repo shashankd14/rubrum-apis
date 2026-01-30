@@ -15,10 +15,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.steel.product.application.dto.delivery.DeliveryDto;
 import com.steel.product.application.dto.quality.ListPageSearchRequest;
-import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.jswone.request.MMIDReceiveMainRequest;
 import com.steel.product.jswone.request.POSOIntegrationRequest;
+import com.steel.product.jswone.response.InventoryAdjustmentResponse;
 import com.steel.product.jswone.response.PODetailsLineItemResponse;
 import com.steel.product.jswone.response.PODetailsMainResponse;
 import com.steel.product.jswone.response.PODetailsResponseDTO;
@@ -194,8 +195,9 @@ public class JSWIntegrationController {
 	}
 
 	@PostMapping(value = "/xternal/invadjustment", produces = "application/json")
-	public ResponseEntity<Object> invadjustment(@RequestBody DeliveryDetails request) {
-		return service.inventoryAdjustment(request);
+	public ResponseEntity<Object> invadjustment(@RequestBody DeliveryDto request) {
+		InventoryAdjustmentResponse response = service.inventoryAdjustment(request);
+		return new ResponseEntity<Object>(response, HttpStatus.OK);
 	}
 
 }

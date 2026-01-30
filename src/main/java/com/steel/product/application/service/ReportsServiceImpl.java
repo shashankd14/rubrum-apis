@@ -529,9 +529,9 @@ public class ReportsServiceImpl implements ReportsService {
 			List<StockSummaryReportViewEntity> partyList = stockSummaryReportViewRepository.findByPartyId(partyId);
 			
 			acctStatementMap.put("1",
-			new Object[] { "Coil No", "SC Inward ID", "MMId","Location Name", "MaterialDesc", "MaterialGrade","Subgrade", "Ageing",
-			"Thickness", "Width", "Value Of Goods","NetWeight", "InStockWeight", "WIP Qty", "FG Qty", "Quality Defects",
-			"UnprocessedWeight", "Dispatched Qty" });
+			new Object[] { "Coil No", "SC Inward ID", "MMId","Location Name", "MaterialDesc", "MaterialGrade","Subgrade", 
+					"Ageing", "Thickness", "Width", "Value Of Goods","Material Length","NetWeight", "InStockWeight", "WIP Qty", 
+					"FG Qty", "Quality Defects", "UnprocessedWeight", "Dispatched Qty" });
 
 			int cnt = 1;
 			for (StockSummaryReportViewEntity kk : partyList) {
@@ -539,7 +539,7 @@ public class ReportsServiceImpl implements ReportsService {
 				acctStatementMap.put("" + cnt,
 				new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getMmId(),kk.getLocationname(), kk.getMaterialDesc(),
 				kk.getMaterialGrade(), kk.getSubgrade(), kk.getCoilage(), kk.getFthickness(),
-				kk.getFwidth(), kk.getValueofgoods(), kk.getNetweight(), kk.getInstockweight(),
+				kk.getFwidth(), kk.getValueofgoods(), kk.getFlength(), kk.getNetweight(), kk.getInstockweight(),
 				kk.getWipqty(), kk.getFgqty(), kk.getQualitydefects(), kk.getUnprocessedweight(),
 				kk.getDispatchedweight() });
 			}
