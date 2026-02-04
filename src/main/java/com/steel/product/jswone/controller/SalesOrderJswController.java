@@ -255,7 +255,7 @@ public class SalesOrderJswController {
 	}
 
 	@PostMapping(value = "/bulkaUpdate", produces = "application/json")
-	public ResponseEntity<Object> bulkApprove(
+	public ResponseEntity<Object> soBulkApprove(
 			@RequestBody SalesOrderBulkRequest request) {
 		return salesOrderService.bulkUpdate(request);
 	}

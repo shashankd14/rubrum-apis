@@ -13,4 +13,6 @@ public class PODetailsResponseDTO {
 
 	private BigDecimal quantity_billed;
 
+	private String name;
+
 }

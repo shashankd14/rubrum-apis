@@ -99,6 +99,7 @@ public class JSWIntegrationController {
 			for (PODetailsLineItemResponse result1 : resp.getPurchaseorder().getLine_items()) {
 				PODetailsResponseDTO respdto = new PODetailsResponseDTO();
 				respdto.setSku(result1.getSku());
+				respdto.setName(result1.getName());
 				respdto.setQuantity(result1.getQuantity());
 				respdto.setQuantity_billed(result1.getQuantity_billed());
 				locationwisePOList.add(respdto);

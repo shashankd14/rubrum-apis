@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import com.lowagie.text.DocumentException;
 import com.steel.product.application.dto.pdf.PdfResponseDto;
 import com.steel.product.application.dto.quality.ListPageSearchRequest;
+import com.steel.product.application.dto.salesorder.FetchMMIDBySO;
 import com.steel.product.application.dto.salesorder.SalesOrderCreateDTO;
 import com.steel.product.application.dto.salesorder.SalesOrderListDTO;
 import com.steel.product.application.dto.salesorder.SalesOrderListResponse;
@@ -207,7 +208,7 @@ public class SalesOrderController {
 
 	@PostMapping(value = "/mmidbyso", produces = "application/json")
 	public ResponseEntity<Object> mmidBySO(@RequestBody ListPageSearchRequest listPageSearchRequest) {
-		List<String> packetasList = salesOrderService.mmidBySO(listPageSearchRequest.getSoNo());
+		List<FetchMMIDBySO> packetasList = salesOrderService.mmidBySO(listPageSearchRequest.getSoNo());
 		return new ResponseEntity<Object>(packetasList, HttpStatus.OK);
 	}
 

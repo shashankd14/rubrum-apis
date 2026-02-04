@@ -5,6 +5,7 @@ import com.steel.product.application.dao.SalesOrderChildRepository;
 import com.steel.product.application.dao.SalesOrderRepository;
 import com.steel.product.application.dto.delivery.DeliveryItemDetails;
 import com.steel.product.application.dto.quality.ListPageSearchRequest;
+import com.steel.product.application.dto.salesorder.FetchMMIDBySO;
 import com.steel.product.application.dto.salesorder.SalesOrderCreateDTO;
 import com.steel.product.application.dto.salesorder.SalesOrderListDTO;
 import com.steel.product.application.dto.salesorder.SalesOrderListResponse;
@@ -34,6 +35,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.util.*;
+
+import javax.transaction.Transactional;
 
 @Service
 @Log4j2
@@ -111,6 +114,7 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 	}
 
 	@Override
+	@Transactional
 	public ResponseEntity<Object> save(List<SalesOrderCreateDTO> salesOrderPacketsListNew) {
         ResponseEntity< Object > responseEntity = null;
 		String message="Sales Order created successfully ! ";
@@ -416,11 +420,15 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 	}
 
 	@Override
-	public List<String> mmidBySO(String soNo) {
-		List<String> mappedSOList = new ArrayList<>();
+	public List<FetchMMIDBySO> mmidBySO(String soNo) {
+		List<FetchMMIDBySO> mappedSOList = new ArrayList<>();
 		List<Object[]> packetsList = salesOrderRepository.mmidBySO(soNo);
 		for (Object[] result : packetsList) {
-			mappedSOList.add(result[0] != null ? (String) result[0] : null);
+
+			FetchMMIDBySO obj = new FetchMMIDBySO();
+			obj.setMaterialName(result[2] != null ? (String) result[2] : null);
+			obj.setMmid(result[0] != null ? (String) result[0] : null);
+			mappedSOList.add(obj);
 		}
 		return mappedSOList;
 	}

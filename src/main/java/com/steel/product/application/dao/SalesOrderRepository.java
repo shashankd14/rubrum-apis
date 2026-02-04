@@ -161,7 +161,7 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrderEntity, In
 	List<Object[]> fetchMappedSOList(@Param("locationList") List<Integer> locationList);
 
 	
-	@Query(value = "SELECT distinct so_child.mm_id, so_child.soqty "
+	@Query(value = "SELECT distinct so_child.mm_id, so_child.soqty, so_child.material_name "
 			+ " FROM jsw_sales_order so, jsw_sales_order_child so_child, jsw_material_master mm "
 			+ " WHERE so_child.so_id = so.so_id and mm.mm_id = so_child.mm_id"
 			+ " AND so.is_deleted = 0 AND so_child.is_deleted = 0 AND so.so_number= :soNo ", 

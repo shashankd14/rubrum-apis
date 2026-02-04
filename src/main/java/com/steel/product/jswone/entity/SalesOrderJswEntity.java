@@ -75,6 +75,9 @@ public class SalesOrderJswEntity {
 	@Column(name = "so_status")
 	private String soStatus;
 
+	@Column(name = "cp_status")
+	private String cpStatus;
+
 	@Column(name = "remarks")
 	private String remarks;
 

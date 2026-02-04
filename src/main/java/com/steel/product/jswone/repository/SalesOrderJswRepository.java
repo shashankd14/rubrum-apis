@@ -61,6 +61,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " where parent.isdeleted=0"
 			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (parent.coilNumber like %:searchText% or parent.customerBatchId like %:searchText% or parent.customerInvoiceNo like %:searchText%) else 1=1 end " 
 			+ " and case when :partyIdsFlag=true then parent.npartyid in :partyIds else 1=1 end"
+			+ " and case when :packetStatus in (2, 3) then child.status = :packetStatus else 1=1 end "
 			+ ") a "
 			+ " where 1=1 AND CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END",
 		countQuery = "SELECT count(packet_id) from "
@@ -71,12 +72,13 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			"	left outer join product_tblpartydetails party on party.npartyid = parent.npartyid " + 
 			"	where parent.isdeleted=0 " + 
 			"	and case when :searchText is not null and LENGTH(:searchText) >0 then (parent.coilNumber like %:searchText% or parent.customerBatchId like %:searchText% or parent.customerInvoiceNo like %:searchText%) else 1=1 end " + 
-			"	and case when :partyIdsFlag=true then parent.npartyid in :partyIds else 1=1 end"
+			"	and case when :partyIdsFlag=true then parent.npartyid in :partyIds else 1=1 end  "
+			+ " and case when :packetStatus in (2, 3) then child.status = :packetStatus else 1=1 end "
 			+ ") a "
 			+ " where 1=1 AND CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END", nativeQuery = true)
 	Page<Object[]> findInventory(@Param("searchText") String searchText,
 			@Param("partyIds") List<Integer> partyIds, @Param("partyIdsFlag") boolean partyIdsFlag,
-			 Pageable pageable);
+			@Param("packetStatus") int packetStatus, Pageable pageable);
 
 	Optional<SalesOrderJswEntity> findBySoNumberIgnoreCase(String soNumber);
 

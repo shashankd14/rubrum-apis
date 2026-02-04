@@ -172,10 +172,12 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
 	public void updateAdditionalWeight(@Param("instructionId") Integer instructionId,
 			@Param("additionalWeight") Float additionalWeight);
 
-	@Modifying
-	//@Transactional
-	@Query(value = "update product_instruction set mmid= :mmid, sono= :sono where instructionid= :instructionId", nativeQuery = true)
-	public void updateSonoMmid(@Param("sono") String sono, @Param("mmid") String mmid, @Param("instructionId") int instructionId);
+	@Modifying(clearAutomatically = true)
+	@Transactional
+	@Query(value = "UPDATE product_instruction SET mmid = :mmid, sono = :sono WHERE instructionid = :instructionId", nativeQuery = true)
+	int updateSonoMmid(@Param("sono") String sono, @Param("mmid") String mmid,
+			@Param("instructionId") int instructionId);
+	
 	
 	@Modifying
 	//@Transactional

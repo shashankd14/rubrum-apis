@@ -1,5 +1,26 @@
 package com.steel.product.jswone.service;
 
+import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+
+import javax.transaction.Transactional;
+
+import org.apache.commons.beanutils.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+
 import com.steel.product.application.dao.InstructionRepository;
 import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.dto.quality.ListPageSearchRequest;
@@ -15,28 +36,15 @@ import com.steel.product.jswone.entity.StatusType;
 import com.steel.product.jswone.repository.SalesOrderAllocationJswRepository;
 import com.steel.product.jswone.repository.SalesOrderChildJswRepository;
 import com.steel.product.jswone.repository.SalesOrderJswRepository;
-import com.steel.product.jswone.request.*;
+import com.steel.product.jswone.request.SalesOrderBulkRequest;
+import com.steel.product.jswone.request.SalesOrderChildRequest;
+import com.steel.product.jswone.request.SalesOrderCustomFields;
+import com.steel.product.jswone.request.SalesOrderDetails;
+import com.steel.product.jswone.request.SalesOrderExternalRequest;
+import com.steel.product.jswone.request.SalesOrderLineItem;
+import com.steel.product.jswone.request.SalesOrderMainRequest;
 
 import lombok.extern.log4j.Log4j2;
-
-import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.*;
-
-import javax.transaction.Transactional;
-
-import org.apache.commons.beanutils.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
 
 @Service
 @Log4j2
@@ -85,6 +93,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			
 			if("approve".equals(option)){
 				salesOrderEntity.setSoStatus(StatusType.SO_APPROVED.getType());
+				salesOrderEntity.setCpStatus(StatusType.CP_PLAN_DRAFT.getType());
 				salesOrderEntity.setApprovedDate(new Date());
 				message = "Sales Order approved successfully..!";
 			}
@@ -98,9 +107,10 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				SalesOrderPacketsJswEntity childEntity = new SalesOrderPacketsJswEntity();
 				BeanUtils.copyProperties(childEntity, dto);
 				childEntity.setCreatedBy(commonUtil.getUserId());
-				childEntity.setItemStatus(StatusType.SO_CREATED.getType());
+				childEntity.setItemSoStatus(StatusType.SO_CREATED.getType());
 				if("approve".equals(option)){
-					childEntity.setItemStatus(StatusType.SO_APPROVED.getType());
+					childEntity.setItemSoStatus(StatusType.SO_APPROVED.getType());
+					childEntity.setItemCpStatus(StatusType.CP_PLAN_DRAFT.getType());
 					childEntity.setApprovedDate(new Date());
 				}
 				if("update".equals(option)){
@@ -273,8 +283,15 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				partyIds = new ArrayList<>();
 			}
 		}
+		int packetStatus =0;
+		if("FG".equals(listPageSearchRequest.getInventoryType())) {
+			packetStatus=3;	
+		}
+		if("INPROGRESS".equals(listPageSearchRequest.getInventoryType())) {
+			packetStatus=2;	
+		}
 		Page<Object[]> packetsList = salesOrderRepository.findInventory(listPageSearchRequest.getSearchText(), partyIds,
-				partyIdsFlag, pageable);
+				partyIdsFlag, packetStatus, pageable);
 		return packetsList;
 	}
 	@Override
@@ -361,7 +378,8 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				item.setSoqty(BigDecimal.valueOf(li.getQuantity()));
 				item.setTax_percentage(String.valueOf(li.getTax_percentage()));
 				item.setHsn_or_sac(li.getHsn_or_sac());
-				item.setItemStatus(StatusType.SO_CREATED.getType());
+				item.setMaterialName( li.getName());
+				item.setItemSoStatus(StatusType.SO_CREATED.getType());
 				item.setAllocatedStts("PENDING");
 				item.setIsDeleted(false);
 				item.setCreatedBy(commonUtil.getUserId());
@@ -440,39 +458,31 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 		}
 	}
 
-
 	@Override
 	public ResponseEntity<Object> update(SalesOrderExternalRequest request) {
 
-		String option = request
-				.getSalesOrder_Details()
-				.getStatus();   // CREATED / APPROVED / ON_HOLD / REJECTED
+		String option = request.getSalesOrder_Details().getStatus(); // CREATED / APPROVED / ON_HOLD / REJECTED
 
 		log.info("Updating Sales Order with status: {}", option);
 
 		if (option == null) {
-			return new ResponseEntity<>(
-					"{\"status\":\"failure\",\"message\":\"Status is required\"}",
-					HttpStatus.BAD_REQUEST
-			);
+			return new ResponseEntity<>("{\"status\":\"failure\",\"message\":\"Status is required\"}", HttpStatus.BAD_REQUEST);
 		}
 
 		switch (option.toUpperCase()) {
 
-			case "APPROVED":
-				return approveSalesOrder(request);
+		case "APPROVED":
+			return approveSalesOrder(request);
 
-			case "ON_HOLD":
-				return holdSalesOrder(request);
+		case "ON_HOLD":
+			return holdSalesOrder(request);
 
-			case "REJECTED":
-				return rejectSalesOrder(request);
+		case "REJECTED":
+			return rejectSalesOrder(request);
 
-			default:
-				return new ResponseEntity<>(
-						"{\"status\":\"failure\",\"message\":\"Invalid status value\"}",
-						HttpStatus.BAD_REQUEST
-				);
+		default:
+			return new ResponseEntity<>("{\"status\":\"failure\",\"message\":\"Invalid status value\"}",
+					HttpStatus.BAD_REQUEST);
 		}
 	}
 
@@ -480,14 +490,14 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 
 		SalesOrderDetails d = req.getSalesOrder_Details();
 
-		SalesOrderJswEntity so =
-				salesOrderRepository.findBySoNumberIgnoreCase(d.getSalesorder_number())
-						.orElseThrow(() -> new RuntimeException("SO not found"));
+		SalesOrderJswEntity so = salesOrderRepository.findBySoNumberIgnoreCase(d.getSalesorder_number())
+				.orElseThrow(() -> new RuntimeException("SO not found"));
 
 		Date standardDate = convertToDate(d.getStandard_material_date());
 		Date likelyDate = convertToDate(d.getLikely_material_date());
 
 		so.setSoStatus(StatusType.SO_APPROVED.getType());
+		so.setCpStatus(StatusType.CP_PLAN_DRAFT.getType());
 		so.setApprovedDate(new Date());
 		so.setUpdatedBy(commonUtil.getUserId());
 		so.setStandardMaterialDate(standardDate);
@@ -497,7 +507,8 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 
 		// approve child items also
 		for (SalesOrderPacketsJswEntity item : so.getItemslist()) {
-			item.setItemStatus(StatusType.SO_APPROVED.getType());
+			item.setItemSoStatus(StatusType.SO_APPROVED.getType());
+			item.setItemCpStatus(StatusType.CP_PLAN_DRAFT.getType());
 			item.setApprovedDate(new Date());
 		}
 
@@ -567,12 +578,14 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 		Date now = new Date();
 		for (SalesOrderJswEntity so : orders) {
 			so.setSoStatus(StatusType.SO_APPROVED.getType());
+			so.setCpStatus(StatusType.CP_PLAN_DRAFT.getType());
 			so.setApprovedDate(now);
 			so.setUpdatedOn(now);
 			so.setUpdatedBy(commonUtil.getUserId());
 
 			for (SalesOrderPacketsJswEntity item : so.getItemslist()) {
-				item.setItemStatus(StatusType.SO_APPROVED.getType());
+				item.setItemSoStatus(StatusType.SO_APPROVED.getType());
+				item.setItemCpStatus(StatusType.CP_PLAN_DRAFT.getType());
 				item.setApprovedDate(now);
 				item.setUpdatedOn(now);
 				item.setUpdatedBy(commonUtil.getUserId());

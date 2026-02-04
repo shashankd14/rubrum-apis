@@ -3,6 +3,7 @@ package com.steel.product.application.service;
 import com.lowagie.text.DocumentException;
 import com.steel.product.application.dto.delivery.DeliveryItemDetails;
 import com.steel.product.application.dto.quality.ListPageSearchRequest;
+import com.steel.product.application.dto.salesorder.FetchMMIDBySO;
 import com.steel.product.application.dto.salesorder.SalesOrderCreateDTO;
 import com.steel.product.application.dto.salesorder.SalesOrderListResponse;
 import com.steel.product.trading.request.DeleteRequest;
@@ -37,6 +38,6 @@ public interface SalesOrderService {
 
 	Map<Integer, List<String>> fetchMappedSOList(List<Integer> soList);
 
-	List<String> mmidBySO(String soNo);
+	List<FetchMMIDBySO> mmidBySO(String soNo);
 
 }

@@ -38,4 +38,6 @@ public class ListPageSearchRequest {
 
 	private String batchNo;
 
+	private String inventoryType;
+
 }
