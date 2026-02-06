@@ -33,7 +33,7 @@ public class SalesOrderAllocationEntity {
 	@Column(name = "instruction_id")
 	private Integer instructionId;
 
-	@Column(name = "inward_entry_d")
+	@Column(name = "inward_entry_id")
 	private Integer inwardEntryId;
 
 	@Column(name = "updated_by")

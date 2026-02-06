@@ -9,33 +9,21 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class SalesOrderChildResponse {
+public class SalesOrderCPChildResponse {
 
 	private Integer soChildId;
 
 	private String mmId;
 
-	private BigDecimal soqty;
+	private String materialDescription;
+
+	private BigDecimal itemQty;
 
 	private BigDecimal allocatedSoqty;
 
 	private String allocatedStts;
 
-	private Integer instructionId;
-
-	private Integer inwardEntryId;
-
 	private String itemStatus;
-
-	private String mm_description;
-
-	private String tax;
-
-	private String hsn;
-
-	private String wearhouse_id;
-
-	private String ware_house_name;
 
 	private List<SalesOrderChildAllocationResponse> allocationDetails = new ArrayList<>();
 

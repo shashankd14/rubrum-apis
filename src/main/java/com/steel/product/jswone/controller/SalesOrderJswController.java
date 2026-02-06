@@ -26,6 +26,9 @@ import com.steel.product.jswone.request.SalesOrderChildRequest;
 import com.steel.product.jswone.request.SalesOrderExternalRequest;
 import com.steel.product.jswone.request.SalesOrderMainRequest;
 import com.steel.product.jswone.response.InwardEntryResponseDto;
+import com.steel.product.jswone.response.SalesOrderCPChildResponse;
+import com.steel.product.jswone.response.SalesOrderCPMainResponse;
+import com.steel.product.jswone.response.SalesOrderChildAllocationResponse;
 import com.steel.product.jswone.response.SalesOrderChildResponse;
 import com.steel.product.jswone.response.SalesOrderMainResponse;
 import com.steel.product.jswone.service.SalesOrderJswService;
@@ -167,81 +170,90 @@ public class SalesOrderJswController {
 	}
 
 	@PostMapping(value = "/consolidateplanner/list", produces = "application/json")
-	public ResponseEntity<Object> consolidateplannerListAllSOs(
-			@RequestBody ListPageSearchRequest listPageSearchRequest) {
-		Map<String, Object> response = new HashMap<>();
+	public ResponseEntity<Object> consolidateplannerListAllSOs(@RequestBody ListPageSearchRequest listPageSearchRequest) {
 
-		listPageSearchRequest.getStatus().add("SO_APPROVED");
-		Page<Object[]> packetsList1 = salesOrderService.listAllSOIDs(listPageSearchRequest);
+	    Map<String, Object> response = new HashMap<>();
 
-		List<Integer> soIDsList = new ArrayList<>();
-		for (Object[] result : packetsList1) {
-			Integer soId = (result[0] != null ? (Integer) result[0] : null);
-			soIDsList.add(soId);
-		}
-		List<Object[]> packetsList = salesOrderService.listAllSOs(soIDsList);
-		SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-		Map<Integer, SalesOrderMainResponse> soMap = new LinkedHashMap<>();
-		for (Object[] result : packetsList) {
-			SalesOrderMainResponse resp = new SalesOrderMainResponse();
-			SalesOrderChildResponse child = new SalesOrderChildResponse();
+	    listPageSearchRequest.getStatus().add("SO_APPROVED");
+	    Page<Object[]> packetsList1 = salesOrderService.listAllSOIDs(listPageSearchRequest);
 
-			resp.setSoId(result[0] != null ? Integer.parseInt(result[0].toString()) : null);
-			resp.setSoNumber(result[1] != null ? (String) result[1] : null);
-			resp.setSocreatedate(result[2] != null ? sdf.format(result[2]) : null);
+	    List<Integer> soIDsList = new ArrayList<>();
+	    for (Object[] row : packetsList1) {
+	        if (row[0] != null) {
+	            soIDsList.add((Integer) row[0]);
+	        }
+	    }
 
-			resp.setDeliverymethod(result[3] != null ? (String) result[3] : null);
-			resp.setDestinationcode(result[4] != null ? (String) result[4] : null);
-			resp.setRefno(result[5] != null ? (String) result[5] : null);
-			resp.setJoplsorefno(result[6] != null ? (String) result[6] : null);
-			resp.setBizsegment(result[7] != null ? (String) result[7] : null);
-			resp.setEcommerce(result[8] != null ? (String) result[8] : null);
-			resp.setSupplysource(result[9] != null ? (String) result[9] : null);
-			resp.setTypeofsupply(result[10] != null ? (String) result[10] : null);
-			resp.setIncomingpayment(result[11] != null ? (String) result[11] : null);
-			resp.setPaymentmode(result[12] != null ? (String) result[12] : null);
-			resp.setTerms(result[13] != null ? (String) result[13] + " Days" : null);
-			resp.setCustomerCode(result[14] != null ? (String) result[14] : null);
-			resp.setTotalSoqty(result[15] != null ? (BigDecimal) result[15] : null);
-			resp.setTotalAllocatedSoqty(result[16] != null ? (BigDecimal) result[16] : null);
-			resp.setAllocatedStts(result[17] != null ? (String) result[17] : null);
-			resp.setSoStatus(result[18] != null ? (String) result[18] : null);
+	    List<Object[]> packetsList = salesOrderService.listAllSOs(soIDsList);
 
-			resp.setZbooks_so(result[19] != null ? (String) result[19] : null);
-			resp.setExpected_delivery_date(formatDate(result[20]));
-			resp.setLikely_material_date(formatDate(result[21]));
-			resp.setStandard_material_date(formatDate(result[22]));
+	    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 
-			child.setSoChildId(result[23] != null ? (Integer) result[23] : null);
-			child.setMmId(result[24] != null ? (String) result[24] : null);
-			child.setSoqty(result[27] != null ? (BigDecimal) result[27] : null);
-			child.setAllocatedSoqty(result[28] != null ? (BigDecimal) result[28] : null);
-			child.setAllocatedStts(result[29] != null ? (String) result[29] : null);
-			child.setItemStatus(result[30] != null ? (String) result[30] : null);
-			child.setWearhouse_id(result[31] != null ? (String) result[31] : null);
+	    Map<Integer, SalesOrderCPMainResponse> soMap = new LinkedHashMap<>();
+	    Map<Integer, SalesOrderCPChildResponse> soChildMap = new LinkedHashMap<>();
 
-			child.setMm_description(result[32] != null ? (String) result[32] : null);
-			child.setHsn(result[33] != null ? String.valueOf(result[33]) : null);
-			child.setTax(result[34] != null ? (String) result[34] : null);
-			child.setWare_house_name(result[35] != null ? (String) result[35] : null);
-			resp.setBranch(result[36] != null ? (String) result[36] : null);
+	    for (Object[] result : packetsList) {
 
-			resp.getItemslist().add(child);
+	        Integer soId = result[0] != null ? Integer.parseInt(result[0].toString()) : null;
 
-			if (soMap != null && soMap.get(resp.getSoId()) != null) {
-				SalesOrderMainResponse addEntity = soMap.get(resp.getSoId());
-				addEntity.getItemslist().add(child);
-				soMap.put(resp.getSoId(), addEntity);
-			} else {
-				soMap.put(resp.getSoId(), resp);
+	        /* =======================	SALES ORDER (PARENT)	======================== */
+	        SalesOrderCPMainResponse so =  soMap.getOrDefault(soId, new SalesOrderCPMainResponse());
+
+			if (!soMap.containsKey(soId)) {
+				so.setSoId(soId);
+				so.setSoNumber(result[1] != null ? (String) result[1] : null);
+				so.setExpectedDeliveryDate(result[2] != null ? sdf.format(result[2]) : null);
+				so.setCustomerCode(result[3] != null ? (String) result[3] : null);
+				so.setTotalQty(result[4] != null ? (BigDecimal) result[4] : null);
+				so.setCpStatus(result[5] != null ? (String) result[5] : null);
+				soMap.put(soId, so);
 			}
-		}
-		List<SalesOrderMainResponse> list = new ArrayList<>(soMap.values());
-		response.put("content", list);
-		response.put("currentPage", packetsList1.getNumber());
-		response.put("totalItems", packetsList1.getTotalElements());
-		response.put("totalPages", packetsList1.getTotalPages());
-		return new ResponseEntity<Object>(response, HttpStatus.OK);
+
+			/* ======================= SALES ORDER ITEM ======================== */
+			boolean isNewChild = false;
+			Integer soChildId = result[6] != null ? (Integer) result[6] : null;
+			SalesOrderCPChildResponse child = soChildMap.getOrDefault(soChildId, new SalesOrderCPChildResponse());
+
+			if (!soChildMap.containsKey(soChildId)) {
+				child.setSoChildId(soChildId);
+				//child.setInstructionId((Integer) result[7]);
+				child.setMmId((String) result[8]);
+				//child.setInwardEntryId( (Integer) result[9]);
+				child.setItemQty((BigDecimal) result[10]);
+				child.setAllocatedSoqty((BigDecimal) result[11]);
+				child.setAllocatedStts((String) result[12]);
+	            child.setItemStatus((String) result[13]);
+	            child.setMaterialDescription( (String) result[14]);
+	            soChildMap.put(soChildId, child);
+	            isNewChild = true;
+	        }
+
+			/* ======================= ALLOCATION DETAILS ======================== */
+	        SalesOrderChildAllocationResponse allocation =  new SalesOrderChildAllocationResponse();
+
+			allocation.setInstructionId(result[7] != null ? (Integer) result[7] : null);
+			allocation.setInwardId(result[9] != null ? (Integer) result[9] : null);
+			allocation.setSoAllocationId(result[15] != null ? (Integer) result[15] : null);
+			allocation.setAllocatedqty((BigDecimal) result[16]);
+			allocation.setCoilNumber(result[17] != null ? (String) result[17] : null);
+			allocation.setQty(result[18] == null ? null : BigDecimal.valueOf(((Number) result[18]).doubleValue()));
+			allocation.setPacking(result[19] != null ? (String) result[19] : null);
+			allocation.setSize("");
+			allocation.setStatus("");
+
+	        child.getAllocationDetails().add(allocation);
+
+			/* ======================= ADD ITEM TO SO ONLY ONCE ======================== */
+	        if (isNewChild) {
+	            so.getItemslist().add(child);
+	        }
+	    }
+
+	    response.put("content", new ArrayList<>(soMap.values()));
+	    response.put("currentPage", packetsList1.getNumber());
+	    response.put("totalItems", packetsList1.getTotalElements());
+	    response.put("totalPages", packetsList1.getTotalPages());
+
+	    return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@PostMapping(value = "/post", produces = "application/json")

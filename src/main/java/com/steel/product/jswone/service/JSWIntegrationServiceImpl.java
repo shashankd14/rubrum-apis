@@ -653,7 +653,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			// String mm_id = (result[2] != null ? result[2].toString() : null);
 			String mmid_details_object = (result[3] != null ? result[3].toString() : null);
 			String poinvno = (result[4] != null ? result[4].toString() : null);
-			String coilnumber = (result[5] != null ? result[5].toString() : null);
+			String coilNumber = ""; // (result[5] != null ? result[5].toString() : null);
 			String postdate = (result[6] != null ? result[6].toString() : null);
 			BigDecimal fquantity = (result[7] != null ? new BigDecimal(result[7].toString()) : null);
 			BigDecimal valueofgods = (result[8] != null ? new BigDecimal(result[8].toString()) : null);
@@ -685,14 +685,21 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			lineItem.setTax_id(lineItems.getTax_id());
 			
 			List<Object[]> poDetails1 = powseMmidDetailsRepository.getInwardDetailsByPoIdBatch(poId, lineItems.getSku());
+			int coilCount = poDetails1.size();
+			int counter=0;
 			List<PoGrnLineItemBatches> batchesList = new ArrayList<>();
 			for (Object[] resultbatch : poDetails1) {
-				String coilNumber = (resultbatch[0] != null ? resultbatch[0].toString() : null);
+				counter++;
+				coilNumber = (resultbatch[0] != null ? resultbatch[0].toString() : null);
 				BigDecimal fquantitycoil = (resultbatch[1] != null ? new BigDecimal(resultbatch[1].toString()) : null);
 				
 				PoGrnLineItemBatches batchObj = new PoGrnLineItemBatches();
 				batchObj.setBatch_number(coilNumber);
-				batchObj.setIn_quantity(fquantitycoil);
+				if (counter == coilCount) {
+					batchObj.setIn_quantity(fquantitycoil.subtract(extraQty));
+				} else {
+					batchObj.setIn_quantity(fquantitycoil);
+				}
 				batchesList.add(batchObj);
 			}
 			lineItem.setBatches(batchesList);
@@ -709,7 +716,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 				lineItem_pt.setHsn_or_sac(lineItems.getHsn_or_sac());
 				lineItem_pt.setTax_id(lineItems.getTax_id());
 				PoGrnLineItemBatches batchObj_pt = new PoGrnLineItemBatches();
-				batchObj_pt.setBatch_number(coilnumber);
+				batchObj_pt.setBatch_number(coilNumber);
 				batchObj_pt.setIn_quantity(extraQty);
 				batches_pt.add(batchObj_pt);
 				lineItem_pt.setBatches(batches_pt);
