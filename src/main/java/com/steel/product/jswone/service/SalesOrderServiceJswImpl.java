@@ -250,24 +250,24 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 	}
 
 	@Override
-	public Page<Object[]> findInventory(ListPageSearchRequest listPageSearchRequest) {
+	public Page<Object[]> findInventory(ListPageSearchRequest request) {
 		Pageable pageable = null;
-		if (listPageSearchRequest.getSortColumn() != null && listPageSearchRequest.getSortColumn().length() > 0
-				&& listPageSearchRequest.getSortOrder() != null && listPageSearchRequest.getSortOrder().length() > 0
-				&& "ASC".equalsIgnoreCase(listPageSearchRequest.getSortOrder())) {
-			pageable = PageRequest.of((listPageSearchRequest.getPageNo()-1), listPageSearchRequest.getPageSize(), Sort.by(listPageSearchRequest.getSortColumn()).ascending());
-		}else if (listPageSearchRequest.getSortColumn() != null && listPageSearchRequest.getSortColumn().length() > 0
-				&& listPageSearchRequest.getSortOrder() != null && listPageSearchRequest.getSortOrder().length() > 0
-				&& "DESC".equalsIgnoreCase(listPageSearchRequest.getSortOrder())) {
-			pageable = PageRequest.of((listPageSearchRequest.getPageNo()-1), listPageSearchRequest.getPageSize(), Sort.by(listPageSearchRequest.getSortColumn()).descending());
+		if (request.getSortColumn() != null && request.getSortColumn().length() > 0
+				&& request.getSortOrder() != null && request.getSortOrder().length() > 0
+				&& "ASC".equalsIgnoreCase(request.getSortOrder())) {
+			pageable = PageRequest.of((request.getPageNo()-1), request.getPageSize(), Sort.by(request.getSortColumn()).ascending());
+		}else if (request.getSortColumn() != null && request.getSortColumn().length() > 0
+				&& request.getSortOrder() != null && request.getSortOrder().length() > 0
+				&& "DESC".equalsIgnoreCase(request.getSortOrder())) {
+			pageable = PageRequest.of((request.getPageNo()-1), request.getPageSize(), Sort.by(request.getSortColumn()).descending());
 		} else {
-			pageable = PageRequest.of((listPageSearchRequest.getPageNo()-1), listPageSearchRequest.getPageSize(), Sort.by("inwardid").descending());
+			pageable = PageRequest.of((request.getPageNo()-1), request.getPageSize(), Sort.by("inwardid").descending());
 		}		
 				
 		List<Integer> partyIds = new ArrayList<>();
 		boolean partyIdsFlag = false;
-		if (listPageSearchRequest.getPartyId() != null && listPageSearchRequest.getPartyId() > 0) {
-			partyIds.add(listPageSearchRequest.getPartyId());
+		if (request.getPartyId() != null && request.getPartyId() > 0) {
+			partyIds.add(request.getPartyId());
 			partyIdsFlag = true;
 		} else {
 			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
@@ -284,16 +284,19 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			}
 		}
 		int packetStatus =0;
-		if("FG".equals(listPageSearchRequest.getInventoryType())) {
+		if("FG".equals(request.getInventoryType())) {
 			packetStatus=3;	
 		}
-		if("INPROGRESS".equals(listPageSearchRequest.getInventoryType())) {
+		if("INPROGRESS".equals(request.getInventoryType())) {
 			packetStatus=2;	
+		} 
+		if ("COIL".equals(request.getAllocationType()) || "INWARDSHEET".equals(request.getAllocationType())) {
+			return salesOrderRepository.findCoilInventory(request.getSearchText(), request.getAllocationType(),partyIds, partyIdsFlag, pageable);
+		} else {
+			return salesOrderRepository.findInventory(request.getSearchText(), partyIds, partyIdsFlag, packetStatus, pageable);
 		}
-		Page<Object[]> packetsList = salesOrderRepository.findInventory(listPageSearchRequest.getSearchText(), partyIds,
-				partyIdsFlag, packetStatus, pageable);
-		return packetsList;
 	}
+	
 	@Override
 	@Transactional
 	public ResponseEntity<Object> post(SalesOrderExternalRequest req, String option) {

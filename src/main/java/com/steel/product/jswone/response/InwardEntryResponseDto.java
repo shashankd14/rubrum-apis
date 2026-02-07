@@ -5,32 +5,25 @@ import lombok.Data;
 @Data
 public class InwardEntryResponseDto {
 
-    private Integer inwardEntryId;
+	private Integer inwardEntryId;
 
-    private Integer instructionId;
+	private Integer instructionId;
 
-    private String locationName;
+	private String locationName;
 
-    private String coilNumber;
+	private String coilNumber;
 
-    private String batchNumber;
+	private String material;
 
-    private String material;
+	private String materialGrade;
 
-    private String materialGrade;
+	private String mmId;
 
-    private String mmId;
+	private String customerBatchId;
 
-    private String customerBatchId;
+	private float fThickness;
 
-    private float fThickness;
+	private float fLength;
 
-    private float fLength;
-
-    private float fQuantity;
-
-    private Float fpresent;
-
-    private Float inStockWeight;
-
+	private float availQty;
 }

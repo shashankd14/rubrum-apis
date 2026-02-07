@@ -40,4 +40,6 @@ public class ListPageSearchRequest {
 
 	private String inventoryType;
 
+	private String allocationType;
+
 }

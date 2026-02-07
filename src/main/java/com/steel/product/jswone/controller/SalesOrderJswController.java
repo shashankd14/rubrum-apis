@@ -158,7 +158,7 @@ public class SalesOrderJswController {
 			resp.setMaterialGrade(result[6] != null ? (String) result[6] : null);
 			resp.setFThickness(result[7] != null ? (float) result[7] : null);
 			resp.setFLength(result[8] != null ? (float) result[8] : null);
-			resp.setFQuantity(result[9] != null ? (float) result[9] : null);
+			resp.setAvailQty(result[9] != null ? (float) result[9] : null);
 			resp.setLocationName(result[10] != null ? (String) result[10] : null);
 			list.add(resp);
 		}
@@ -215,14 +215,13 @@ public class SalesOrderJswController {
 
 			if (!soChildMap.containsKey(soChildId)) {
 				child.setSoChildId(soChildId);
-				//child.setInstructionId((Integer) result[7]);
 				child.setMmId((String) result[8]);
-				//child.setInwardEntryId( (Integer) result[9]);
 				child.setItemQty((BigDecimal) result[10]);
 				child.setAllocatedSoqty((BigDecimal) result[11]);
 				child.setAllocatedStts((String) result[12]);
 	            child.setItemStatus((String) result[13]);
 	            child.setMaterialDescription( (String) result[14]);
+	            child.setLocation( result[20] != null ? (String) result[20] : null);
 	            soChildMap.put(soChildId, child);
 	            isNewChild = true;
 	        }

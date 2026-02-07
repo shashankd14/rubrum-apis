@@ -39,7 +39,8 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " so_child.allocated_stts,so_child.item_so_status,mm.mm_description, alloca.so_allocation_id, alloca.allocated_soqty allallocated_soqty, "
 			+ " (select coilnumber from product_tblinwardentry inw where inw.inwardentryid = alloca.inward_entry_id) coilno, "
 			+ " (select ifnull(actualweight, plannedweight ) from product_instruction ins where ins.instructionid = alloca.instruction_id) packetweight, "
-			+ " 'Sticks roll' packing "
+			+ " 'Sticks roll' packing, "
+			+ " (SELECT partyname FROM product_tblpartydetails where npartyid= wm.party_id) partyname"
 			+ " FROM jsw_sales_order so "
 			+ " left OUTER JOIN jsw_sales_order_child so_child ON so_child.so_id = so.so_id and so_child.is_deleted = 0  "
 			+ " left outer JOIN jsw_sales_order_allocation alloca ON so_child.so_child_id = alloca.so_child_id"
@@ -48,8 +49,41 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " where so.is_deleted = 0 " + " and so.so_id in :soIDsList order by so.so_id desc", nativeQuery = true)
 	List<Object[]> listIdWisedetails (@Param("soIDsList") List<Integer> soIDsList);
 	
-	@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, mm_id, materialdesc, materialgrade,fthickness, flength,fquantity,  partyname,fweight,fWidth, "
-			+ "inStockWeight, actualNoOfPieces , process_status, instruction_status, classification_tag, enduser_tag_name "
+	@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, mm_id, materialdesc, materialgrade,fthickness, flength, fpresent,  partyname,fWidth, "
+			+ " inStockWeight, actualNoOfPieces , process_status, instruction_status, classification_tag, enduser_tag_name "
+			+ " from ( "
+			+ " SELECT parent.inwardentryid inwardid,  coilnumber, customerbatchid, parent.mm_id, " 
+			+ " (SELECT product_name FROM jsw_product_master a, jsw_material_master mat where a.product_id=mat.producttype_id and mat.mm_id=parent.mm_id limit 1) as  materialdesc, " 
+			+ " (SELECT grade_name FROM jsw_grade_master grade, jsw_material_master mat where grade.grade_id=mat.grade_id and mat.mm_id=parent.mm_id limit 1) as  materialgrade, "  
+			+ " fthickness, NULL  as packet_id, fWidth," 
+			+ " coalesce( parent.flength,0) flength,  fpresent, " 
+			+ " fquantity,in_stock_weight inStockWeight, 0 actualNoOfPieces, "
+			+ " NULL as process_status , " 
+			+ " NULL as instruction_status,partyname, " 
+			+ " NULL as classification_tag," 
+			+ " NULL as enduser_tag_name,0  as siltcutcnt, parent.npartyid"  
+			+ " FROM product_tblinwardentry parent, product_tblpartydetails party, jsw_material_master material"
+			+ " where fpresent>0 and parent.isdeleted=0 and  party.npartyid = parent.npartyid and parent.mm_id = material.mm_id "
+			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (parent.coilNumber like %:searchText% or parent.customerBatchId like %:searchText% or parent.customerInvoiceNo like %:searchText%) else 1=1 end " 
+			+ " and case when :allocationType = 'INWARDSHEET' then form_id = 21 else form_id != 21 end " 
+			+ " and case when :partyIdsFlag=true then parent.npartyid in :partyIds else 1=1 end"
+			+ ") a "
+			+ " where 1=1 ",
+		countQuery = "SELECT count(inwardid) from "
+			+ " (select parent.inwardentryid inwardid, coilnumber "
+			+ " FROM product_tblinwardentry parent, product_tblpartydetails party, jsw_material_master material"
+			+ " where fpresent>0 and parent.isdeleted=0 and  party.npartyid = parent.npartyid and parent.mm_id = material.mm_id  "
+			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (parent.coilNumber like %:searchText% or parent.customerBatchId like %:searchText% or parent.customerInvoiceNo like %:searchText%) else 1=1 end " 
+			+ " and case when :allocationType = 'INWARDSHEET' then form_id = 21 else form_id != 21 end " 
+			+ " and case when :partyIdsFlag=true then parent.npartyid in :partyIds else 1=1 end"
+			+ ") a "
+			+ " where 1=1", nativeQuery = true)
+	Page<Object[]> findCoilInventory(@Param("searchText") String searchText,@Param("allocationType") String allocationType,
+			@Param("partyIds") List<Integer> partyIds, @Param("partyIdsFlag") boolean partyIdsFlag,
+			 Pageable pageable);
+
+	@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, mm_id, materialdesc, materialgrade,fthickness, flength,fweight,  partyname,fWidth, "
+			+ " inStockWeight, actualNoOfPieces , process_status, instruction_status, classification_tag, enduser_tag_name "
 			+ " from ( SELECT parent.inwardentryid inwardid,  coilnumber, customerbatchid, parent.mm_id,"
 			+ " (SELECT product_name FROM jsw_product_master a, jsw_material_master mat where a.product_id=mat.producttype_id and mat.mm_id=parent.mm_id limit 1) as  materialdesc,"
 			+ " (SELECT grade_name FROM jsw_grade_master grade, jsw_material_master mat where grade.grade_id=mat.grade_id and mat.mm_id=parent.mm_id limit 1) as  materialgrade,"
@@ -60,27 +94,31 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " (select classification_name from product_packet_classification where classification_id=child.packet_classification_id) as classification_tag, "
 			+ " (select tag_name from product_enduser_tags where tag_id=child.enduser_tag_id) as enduser_tag_name,	 "
 			+ " (SELECT count(distinct a.instructionid) cnt FROM product_instruction a where a.inwardid=parent.inwardentryid and status!=4 and a.parentgroupid=child.groupid) as siltcutcnt, parent.npartyid "
-			+ " FROM product_tblinwardentry parent "
-			+ " left outer join product_instruction child on parent.inwardentryid = child.inwardid and (coalesce(actualweight,0)-coalesce(child.allocated_soqty,0)) >0 and child.isdeleted=0  "
-			+ " left outer join product_tblpartydetails party on party.npartyid = parent.npartyid  "
-			+ " where parent.isdeleted=0"
-			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (parent.coilNumber like %:searchText% or parent.customerBatchId like %:searchText% or parent.customerInvoiceNo like %:searchText%) else 1=1 end " 
-			+ " and case when :partyIdsFlag=true then parent.npartyid in :partyIds else 1=1 end"
+			+ " FROM product_tblinwardentry parent, " 
+			+ "	product_instruction child , "  
+			+ "	product_tblpartydetails party " 
+			+ "	where parent.inwardentryid = child.inwardid "
+			+ " and (child.allocated_soqty=0 or child.allocated_soqty is null ) and child.isdeleted=0  "
+			+ " and parent.isdeleted=0 and party.npartyid = parent.npartyid" 
+			+ "	and case when :searchText is not null and LENGTH(:searchText) >0 then (parent.coilNumber like %:searchText% or parent.customerBatchId like %:searchText% or parent.customerInvoiceNo like %:searchText%) else 1=1 end " 
+			+ "	and case when :partyIdsFlag=true then parent.npartyid in :partyIds else 1=1 end  "
 			+ " and case when :packetStatus in (2, 3) then child.status = :packetStatus else 1=1 end "
 			+ ") a "
-			+ " where 1=1 AND CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END",
+			+ " where fweight>0 AND CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END",
 		countQuery = "SELECT count(packet_id) from "
-			+ " (select instructionid as packet_id, "
+			+ " (select instructionid as packet_id, coalesce(actualweight, plannedweight) fweight, "
 			+ " (SELECT count(distinct inss.instructionid) cnt FROM product_instruction inss where inss.inwardid=parent.inwardentryid  and status!=4 and inss.parentgroupid=child.groupid) as siltcutcnt"
-			+ " FROM product_tblinwardentry parent" + 
-			"	left outer join product_instruction child on parent.inwardentryid = child.inwardid and (coalesce(actualweight,0)-coalesce(child.allocated_soqty,0)) >0 and child.isdeleted=0 " + 
-			"	left outer join product_tblpartydetails party on party.npartyid = parent.npartyid " + 
-			"	where parent.isdeleted=0 " + 
-			"	and case when :searchText is not null and LENGTH(:searchText) >0 then (parent.coilNumber like %:searchText% or parent.customerBatchId like %:searchText% or parent.customerInvoiceNo like %:searchText%) else 1=1 end " + 
-			"	and case when :partyIdsFlag=true then parent.npartyid in :partyIds else 1=1 end  "
+			+ " FROM product_tblinwardentry parent, " 
+			+ "	product_instruction child , "  
+			+ "	product_tblpartydetails party " 
+			+ "	where parent.inwardentryid = child.inwardid "
+			+ " and (child.allocated_soqty=0 or child.allocated_soqty is null ) and child.isdeleted=0  "
+			+ " and parent.isdeleted=0 and party.npartyid = parent.npartyid" 
+			+ "	and case when :searchText is not null and LENGTH(:searchText) >0 then (parent.coilNumber like %:searchText% or parent.customerBatchId like %:searchText% or parent.customerInvoiceNo like %:searchText%) else 1=1 end " 
+			+ "	and case when :partyIdsFlag=true then parent.npartyid in :partyIds else 1=1 end  "
 			+ " and case when :packetStatus in (2, 3) then child.status = :packetStatus else 1=1 end "
 			+ ") a "
-			+ " where 1=1 AND CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END", nativeQuery = true)
+			+ " where fweight>0 AND CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END", nativeQuery = true)
 	Page<Object[]> findInventory(@Param("searchText") String searchText,
 			@Param("partyIds") List<Integer> partyIds, @Param("partyIdsFlag") boolean partyIdsFlag,
 			@Param("packetStatus") int packetStatus, Pageable pageable);
@@ -98,8 +136,8 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 		countQuery = "SELECT count(distinct so.so_id ) " + 
 			"  FROM jsw_sales_order so, jsw_sales_order_child so_child" + 
 		  	"  where so.is_deleted = 0 and so_child.is_deleted = 0 and so_child.so_id = so.so_id" + 
-		  	"  and case when :soId is not null and LENGTH(:soId) >0 then so.so_id = :soId else so.so_id end \" \r\n" + 
-		  	"  and case when :searchText is not null and LENGTH(:searchText) >0 then (so_child.mm_id like %:searchText% or so.so_number like %:searchText%) else 1=1 end \" \r\n" + 
+		  	"  and case when :soId is not null and LENGTH(:soId) >0 then so.so_id = :soId else so.so_id end " + 
+		  	"  and case when :searchText is not null and LENGTH(:searchText) >0 then (so_child.mm_id like %:searchText% or so.so_number like %:searchText%) else 1=1 end" + 
 		  	"  order by so.so_id desc", 
 		nativeQuery = true)
 	Page<Object[]> listAllSOIDsConsolidatePlan(@Param("searchText") String searchText, @Param("soId") Integer soId, Pageable pageable);
