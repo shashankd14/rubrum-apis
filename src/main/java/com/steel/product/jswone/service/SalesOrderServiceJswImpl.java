@@ -132,8 +132,41 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 		responseEntity = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"" + message + "\"}", new HttpHeaders(), HttpStatus.OK);
 		return responseEntity;
 	}
-	
 
+	@Override
+	public Page<Object[]> listAllSOIDsCP(ListPageSearchRequest listPageSearchRequest) {
+
+		Pageable pageable = PageRequest.of((listPageSearchRequest.getPageNo() - 1),  listPageSearchRequest.getPageSize());
+		List<Integer> partyIds = new ArrayList<>();
+		boolean partyIdsFlag = false;
+		if (listPageSearchRequest.getPartyId() != null && listPageSearchRequest.getPartyId() > 0) {
+			partyIds.add(listPageSearchRequest.getPartyId());
+			partyIdsFlag = true;
+		} else {
+			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
+			if (adminUserEntity.getUserPartyMap() != null && adminUserEntity.getUserPartyMap().size() > 0) {
+				partyIds = new ArrayList<>();
+				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
+					partyIds.add(userPartyMap.getPartyId());
+					partyIdsFlag = true;
+				}
+				log.info("In partyIds === " + partyIds);
+			} else {
+				partyIdsFlag = false;
+				partyIds = new ArrayList<>();
+			}
+		}
+		Page<Object[]> packetsList = salesOrderRepository.listAllSOIDsCP(listPageSearchRequest.getSearchText(),
+				listPageSearchRequest.getSoId(), listPageSearchRequest.getStatus(), pageable);
+		return packetsList;
+	}
+
+	@Override
+	public List<Object[]> listAllSOsCP(List<Integer> soIDsList) {
+		List<Object[]> packetsList = salesOrderRepository.listIdWisedetailsCP(soIDsList);
+		return packetsList;
+	}
+	
 	@Override
 	public Page<Object[]> listAllSOIDs(ListPageSearchRequest listPageSearchRequest) {
 
@@ -167,6 +200,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 		List<Object[]> packetsList = salesOrderRepository.listIdWisedetails(soIDsList);
 		return packetsList;
 	}
+	
 	
 	@Override
 	@Transactional
@@ -284,15 +318,24 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			}
 		}
 		int packetStatus =0;
-		if("FG".equals(request.getInventoryType())) {
-			packetStatus=3;	
-		}
-		if("INPROGRESS".equals(request.getInventoryType())) {
-			packetStatus=2;	
-		} 
+		
 		if ("COIL".equals(request.getAllocationType()) || "INWARDSHEET".equals(request.getAllocationType())) {
 			return salesOrderRepository.findCoilInventory(request.getSearchText(), request.getAllocationType(),partyIds, partyIdsFlag, pageable);
+		} else if ("INWARDSHEET_PACKETS".equals(request.getAllocationType())) {
+			if("FG".equals(request.getInventoryType())) {
+				packetStatus=3;	
+			}
+			if("INPROGRESS".equals(request.getInventoryType())) {
+				packetStatus=2;	
+			} 
+			return salesOrderRepository.findInventory(request.getSearchText(), partyIds, partyIdsFlag, packetStatus, pageable);
 		} else {
+			if("FG".equals(request.getInventoryType())) {
+				packetStatus=3;	
+			}
+			if("INPROGRESS".equals(request.getInventoryType())) {
+				packetStatus=2;	
+			} 
 			return salesOrderRepository.findInventory(request.getSearchText(), partyIds, partyIdsFlag, packetStatus, pageable);
 		}
 	}

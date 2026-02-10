@@ -175,7 +175,7 @@ public class SalesOrderJswController {
 	    Map<String, Object> response = new HashMap<>();
 
 	    listPageSearchRequest.getStatus().add("SO_APPROVED");
-	    Page<Object[]> packetsList1 = salesOrderService.listAllSOIDs(listPageSearchRequest);
+	    Page<Object[]> packetsList1 = salesOrderService.listAllSOIDsCP(listPageSearchRequest);
 
 	    List<Integer> soIDsList = new ArrayList<>();
 	    for (Object[] row : packetsList1) {
@@ -184,7 +184,7 @@ public class SalesOrderJswController {
 	        }
 	    }
 
-	    List<Object[]> packetsList = salesOrderService.listAllSOs(soIDsList);
+	    List<Object[]> packetsList = salesOrderService.listAllSOsCP(soIDsList);
 
 	    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 

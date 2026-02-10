@@ -110,9 +110,9 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 		for (DeliveryItemDetails instructionslist : deliveryItemDetails) {
 			if(instructionslist.getAdditionalWeight()!=null && instructionslist.getAdditionalWeight()>0) {
 				instructionService.updateAdditionalWeight(instructionslist.getInstructionId(), instructionslist.getAdditionalWeight());
-				if (instructionslist.getSono() != null && instructionslist.getSono().length()>0 && instructionslist.getMmid() != null && instructionslist.getMmid().length()>0 ) {
-					instructionService.updateSonoMmid(instructionslist.getSono(), instructionslist.getMmid(), instructionslist.getInstructionId());
-				}
+			}
+			if (instructionslist.getSoNumber() != null && instructionslist.getSoNumber().length()>0 && instructionslist.getMmid() != null && instructionslist.getMmid().length()>0 ) {
+				instructionService.updateSonoMmid(instructionslist.getSoNumber(), instructionslist.getMmid(), instructionslist.getInstructionId());
 			}
 		}
         DeliveryDetails delivery;

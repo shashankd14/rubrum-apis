@@ -13,11 +13,17 @@ import org.springframework.http.ResponseEntity;
 
 public interface SalesOrderJswService {
 
-	ResponseEntity<Object> save(SalesOrderMainRequest salesOrderPacketsListNew, String option);
 
 	Page<Object[]> listAllSOIDs(ListPageSearchRequest listPageSearchRequest);
 	
 	List<Object[]> listAllSOs(List<Integer> soIDsList);
+	
+	
+	ResponseEntity<Object> save(SalesOrderMainRequest salesOrderPacketsListNew, String option);
+
+	Page<Object[]> listAllSOIDsCP(ListPageSearchRequest listPageSearchRequest);
+	
+	List<Object[]> listAllSOsCP(List<Integer> soIDsList);
 
 	ResponseEntity<Object> consolidatePlanner(List<SalesOrderChildRequest> salesOrderMainRequest);
 

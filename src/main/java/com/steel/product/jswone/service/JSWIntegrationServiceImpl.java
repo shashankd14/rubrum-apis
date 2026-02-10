@@ -545,7 +545,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			String url = propertyMap.get("post_grn_url");
 			kk.setRequestUrl(url);
 			log.info("url  is  == " + url + ", postGRNReq - " + request);
-			res = restTemplate.exchange(url, HttpMethod.POST, request, String.class);
+			res = restTemplate.exchange("", HttpMethod.POST, request, String.class);
 			log.info("response is == " + res);
 			if (res.getBody() != null) {
 				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -649,14 +649,12 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 		BigDecimal totalValueofgods = new BigDecimal("0.00"); 
 		for (Object[] result : poDetails) {
 			String po_reference = (result[0] != null ? result[0].toString() : null);
-			// String po_id = (result[1] != null ? result[1].toString() : null);
-			// String mm_id = (result[2] != null ? result[2].toString() : null);
-			String mmid_details_object = (result[3] != null ? result[3].toString() : null);
-			String poinvno = (result[4] != null ? result[4].toString() : null);
-			String coilNumber = ""; // (result[5] != null ? result[5].toString() : null);
-			String postdate = (result[6] != null ? result[6].toString() : null);
-			BigDecimal fquantity = (result[7] != null ? new BigDecimal(result[7].toString()) : null);
-			BigDecimal valueofgods = (result[8] != null ? new BigDecimal(result[8].toString()) : null);
+			String mmid_details_object = (result[1] != null ? result[1].toString() : null);
+			String poinvno = (result[2] != null ? result[2].toString() : null);
+			String coilNumber = ""; 
+			String postdate = (result[3] != null ? result[3].toString() : null);
+			BigDecimal fquantity = (result[4] != null ? new BigDecimal(result[4].toString()) : null);
+			BigDecimal valueofgods = (result[5] != null ? new BigDecimal(result[5].toString()) : null);
 			totalValueofgods=totalValueofgods.add(valueofgods);
 			PODetailsLineItemResponse lineItems = new PODetailsLineItemResponse();
 			try {

@@ -161,7 +161,7 @@ public class DeliveryDetailsController {
 			}
 			DeliveryDetails deliveryDetails = deliveryDetailsService.save(deliveryDto, userId);
 
-			if (deliveryDetails != null && deliveryDetails.getDeliveryId() > 0) {
+			if (deliveryDetails != null && deliveryDetails.getDeliveryId() > 0 && "Sales Order".equals((deliveryDetails.getDeliveryType()))) {
 				DeliveryDto dto = new DeliveryDto();
 				dto.setDeliveryId(deliveryDetails.getDeliveryId());
 				service.inventoryAdjustment(dto);
