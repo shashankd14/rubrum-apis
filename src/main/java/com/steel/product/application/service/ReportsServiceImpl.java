@@ -529,19 +529,22 @@ public class ReportsServiceImpl implements ReportsService {
 			List<StockSummaryReportViewEntity> partyList = stockSummaryReportViewRepository.findByPartyId(partyId);
 			
 			acctStatementMap.put("1",
-			new Object[] { "Coil No", "SC Inward ID", "MMId","Location Name", "MaterialDesc", "MaterialGrade","Subgrade", 
-					"Ageing", "Thickness", "Width", "Value Of Goods","Material Length","NetWeight", "InStockWeight", "WIP Qty", 
-					"FG Qty", "Quality Defects", "UnprocessedWeight", "Dispatched Qty" });
+			new Object[] { "Coil No", "Inward Date", "Invoice Date","SC Inward ID", "MMId","Location Name", "MaterialDesc", 
+					"MaterialGrade","Subgrade", "Ageing", "Thickness", "Width", "Value Of Goods","Material Length","NetWeight", 
+					"InStockWeight", "WIP Qty", "FG Qty", "Quality Defects", "UnprocessedWeight", "Dispatched Qty" ,
+					"uts" , "el" , "ys" });
 
 			int cnt = 1;
 			for (StockSummaryReportViewEntity kk : partyList) {
 				cnt++;
 				acctStatementMap.put("" + cnt,
-				new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getMmId(),kk.getLocationname(), kk.getMaterialDesc(),
+				new Object[] { kk.getCoilNumber(), kk.getInwarddate(), kk.getInvoicedate(),
+				kk.getCustomerBatchId(), kk.getMmId(), kk.getLocationname(), kk.getMaterialdesc(),
 				kk.getMaterialGrade(), kk.getSubgrade(), kk.getCoilage(), kk.getFthickness(),
-				kk.getFwidth(), kk.getValueofgoods(), kk.getFlength(), kk.getNetweight(), kk.getInstockweight(),
-				kk.getWipqty(), kk.getFgqty(), kk.getQualitydefects(), kk.getUnprocessedweight(),
-				kk.getDispatchedweight() });
+				kk.getFwidth(), kk.getValueofgoods(), kk.getFlength(), kk.getNetweight(),
+				kk.getInstockweight(), kk.getWipqty(), kk.getFgqty(), kk.getQualitydefects(),
+				kk.getUnprocessedweight(), kk.getDispatchedweight(), kk.getUts(),
+				kk.getEl(), kk.getYs()});
 			}
 		} catch (Exception e) {
 			LOGGER.error("Error at getStockSummaryReportDetails " + e.getMessage());

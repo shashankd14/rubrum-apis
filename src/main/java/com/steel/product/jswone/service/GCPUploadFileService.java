@@ -253,7 +253,7 @@ public class GCPUploadFileService {
 					+ "Ageing,Thickness,Width,Value Of Goods, Material Length,NetWeight,InStockWeight,WIP Qty,FG Qty,"
 					+ "Quality Defects,UnprocessedWeight,Dispatched Qty" );
 			for (StockSummaryReportViewEntity kk : stockReportDetailsyList) {
-				writer.println( kk.getCoilNumber()+","+kk.getCustomerBatchId()+","+kk.getMmId()+","+kk.getMaterialDesc()+","+
+				writer.println( kk.getCoilNumber()+","+kk.getCustomerBatchId()+","+kk.getMmId()+","+kk.getMaterialdesc()+","+
 						kk.getMaterialGrade()+","+kk.getSubgrade()+","+kk.getLocationname()+","+kk.getCoilage()+","+kk.getFthickness()+","+
 						kk.getFwidth()+","+kk.getValueofgoods()+", "+kk.getFlength()+", "+kk.getNetweight()+","+kk.getInstockweight()+","+
 						kk.getWipqty()+","+ kk.getFgqty()+","+kk.getQualitydefects()+","+kk.getUnprocessedweight()+","+

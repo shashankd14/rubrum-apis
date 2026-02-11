@@ -26,7 +26,22 @@ public class StockSummaryReportViewEntity {
 	private String customerBatchId;
 
 	@Column(name = "materialdesc")
-	private String materialDesc;
+	private String materialdesc;
+
+	@Column(name = "invoicedate")
+	private String invoicedate;
+
+	@Column(name = "inwarddate")
+	private String inwarddate;
+
+	@Column(name = "uts")
+	private String uts;
+
+	@Column(name = "el")
+	private String el;
+
+	@Column(name = "ys")
+	private String ys;
 
 	@Column(name = "materialgrade")
 	private String materialGrade;
@@ -75,7 +90,7 @@ public class StockSummaryReportViewEntity {
 
 	@Column(name = "locationname")
 	private String locationname;
-	
+
 	@Column(name = "inwardstatus")
 	private String inwardstatus;
 

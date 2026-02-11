@@ -16,7 +16,7 @@ public interface POWiseMmidDetailsRepository extends JpaRepository<POWiseMmidDet
 
 	POWiseMmidDetailsEntity findByMmId(String sku);
 	
-	@Query(value = "SELECT inward.mm_id, pode.mmid_details_object, "
+	@Query(value = "SELECT pode.po_reference, pode.mmid_details_object, "
 			+ " customerinvoiceno, DATE_FORMAT( inward.dinvoicedate, '%d-%m-%Y') postdate, "
 			+ " round((sum(fquantity ) / 1000),3) fquantity, sum(valueofgoods) "
 			+ " from product_tblinwardentry inward, jsw_powise_mmid_details pode "

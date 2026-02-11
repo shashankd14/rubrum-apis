@@ -545,7 +545,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			String url = propertyMap.get("post_grn_url");
 			kk.setRequestUrl(url);
 			log.info("url  is  == " + url + ", postGRNReq - " + request);
-			res = restTemplate.exchange("", HttpMethod.POST, request, String.class);
+			res = restTemplate.exchange(url, HttpMethod.POST, request, String.class);
 			log.info("response is == " + res);
 			if (res.getBody() != null) {
 				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
