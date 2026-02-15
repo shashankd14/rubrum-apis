@@ -14,13 +14,13 @@ import com.steel.product.jswone.entity.POWiseMmidDetailsEntity;
 @Repository
 public interface POWiseMmidDetailsRepository extends JpaRepository<POWiseMmidDetailsEntity, Integer> {
 
-	POWiseMmidDetailsEntity findByMmId(String sku);
+	POWiseMmidDetailsEntity findByMmIdAndPoId(String sku, String poid);
 	
 	@Query(value = "SELECT pode.po_reference, pode.mmid_details_object, "
 			+ " customerinvoiceno, DATE_FORMAT( inward.dinvoicedate, '%d-%m-%Y') postdate, "
 			+ " round((sum(fquantity ) / 1000),3) fquantity, sum(valueofgoods) "
 			+ " from product_tblinwardentry inward, jsw_powise_mmid_details pode "
-			+ " WHERE pode.mm_id = inward.mm_id and "
+			+ " WHERE pode.mm_id = inward.mm_id and inward.po_id = pode.po_id and "
 			+ " inward.customerinvoiceno = :customerinvoiceno "
 			+ " group by pode.po_reference,inward.po_id,inward.mm_id,"
 			+ " pode.mmid_details_object,customerinvoiceno", 
@@ -59,7 +59,7 @@ public interface POWiseMmidDetailsRepository extends JpaRepository<POWiseMmidDet
 
 	@Query(value = "SELECT inward.coilnumber, round(((fquantity ) / 1000),3) fquantity "
 			+ " from product_tblinwardentry inward, jsw_powise_mmid_details pode "
-			+ " WHERE pode.mm_id = inward.mm_id and  "
+			+ " WHERE pode.mm_id = inward.mm_id and inward.po_id = pode.po_id and"
 			+ " inward.customerinvoiceno = :customerinvoiceno and inward.mm_id = :mmid ", nativeQuery = true)
 	List<Object[]> getInwardDetailsByPoIdBatch(@Param("customerinvoiceno") String customerinvoiceno,
 			@Param("mmid") String mmid);

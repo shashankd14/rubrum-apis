@@ -506,9 +506,9 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 				} catch (JsonProcessingException e) {
 				}
 
-				log.info("HI lineItem == " + jsonString);
+				log.info("Hi lineItem == " + jsonString);
 				if (result1.getSku() != null) {
-					POWiseMmidDetailsEntity existingEntity = powseMmidDetailsRepository.findByMmId(result1.getSku());
+					POWiseMmidDetailsEntity existingEntity = powseMmidDetailsRepository.findByMmIdAndPoId(result1.getSku(), resp.getPurchaseorder().getPurchaseorder_id());
 					if (existingEntity != null && existingEntity.getId() > 0) {
 						kk.setId(existingEntity.getId());
 						kk.setCreatedOn(existingEntity.getCreatedOn());
@@ -698,7 +698,9 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 				} else {
 					batchObj.setIn_quantity(fquantitycoil);
 				}
-				batchesList.add(batchObj);
+				if(batchObj.getIn_quantity()!=null && batchObj.getIn_quantity().compareTo(BigDecimal.ZERO) > 0 ) {
+					batchesList.add(batchObj);
+				}
 			}
 			lineItem.setBatches(batchesList);
 			line_items.add(lineItem);
@@ -1094,6 +1096,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			BigDecimal totalWeight = (result[4] == null ? null : new BigDecimal(String.valueOf(result[4])));
 			req.setWarehouseId(result[5] != null ? result[5].toString() : null);
 			req.setBranchID(result[6] != null ? result[6].toString() : null);
+			BigDecimal ptWeight = (result[7] == null ? BigDecimal.ZERO : new BigDecimal(String.valueOf(result[7])));
 
 			req.setReason("Stock conversion");
 			req.setAdjustmentType("quantity");
@@ -1118,18 +1121,26 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 				fromSku.setQuantity_adjusted(totalWeight1);
 				fromSku.setUom("MT");
 				lineitem.getFromSkus().add(fromSku);
-				
-				PtQuantity ptQuantity = new PtQuantity();
-				ptQuantity.setSkuId(mmid1);
-				ptQuantity.setQuantity(new BigDecimal("0.00"));
-				ptQuantity.setUom("MT");
-				
-				InventoryAdjustmentBatch batches=new InventoryAdjustmentBatch();
-				batches.setBatch_number( coilNumber);
-				batches.setBatch_id("");
-				batches.setIn_quantity(new BigDecimal("0.00"));
-				ptQuantity.getBatches().add(batches);
-				lineitem.getPtQuantities().add(ptQuantity);
+
+				InventoryAdjustmentBatch batchesFrom=new InventoryAdjustmentBatch();
+				batchesFrom.setBatch_number( coilNumber);
+				batchesFrom.setBatch_id("");
+				batchesFrom.setIn_quantity(totalWeight1);
+				fromSku.getBatches().add(batchesFrom); 
+								
+				if (ptWeight !=null && ptWeight.compareTo(BigDecimal.ZERO) > 0) {
+					PtQuantity ptQuantity = new PtQuantity();
+					ptQuantity.setSkuId(mmid1);
+					ptQuantity.setQuantity(ptWeight);
+					ptQuantity.setUom("MT");
+
+					InventoryAdjustmentBatch batches = new InventoryAdjustmentBatch();
+					batches.setBatch_number(coilNumber);
+					batches.setBatch_id("");
+					batches.setIn_quantity(ptWeight);
+					ptQuantity.getBatches().add(batches);
+					lineitem.getPtQuantities().add(ptQuantity);
+				}
 			}
 			lineItems.add(lineitem);
 		}
