@@ -750,7 +750,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 				inwardEntry.setvProcess("");
 				inwardEntry.setTdcNo(inward.getTdcno());
 				if (inward.getValueofgoods() != null && inward.getValueofgoods().compareTo(BigDecimal.ZERO) > 0) {
-					inwardEntry.setValueOfGoods(inward.getValueofgoods().multiply(BigDecimal.valueOf(1000)));
+					inwardEntry.setValueOfGoods(inward.getValueofgoods());
 				}
 				inwardEntry.setBilledweight(0);
 				inwardEntry.setParentCoilNumber(null);

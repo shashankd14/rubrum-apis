@@ -36,6 +36,7 @@ import com.steel.product.jswone.entity.StatusType;
 import com.steel.product.jswone.repository.SalesOrderAllocationJswRepository;
 import com.steel.product.jswone.repository.SalesOrderChildJswRepository;
 import com.steel.product.jswone.repository.SalesOrderJswRepository;
+import com.steel.product.jswone.request.CPSplitRequest;
 import com.steel.product.jswone.request.SalesOrderBulkRequest;
 import com.steel.product.jswone.request.SalesOrderChildRequest;
 import com.steel.product.jswone.request.SalesOrderCustomFields;
@@ -200,7 +201,6 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 		List<Object[]> packetsList = salesOrderRepository.listIdWisedetails(soIDsList);
 		return packetsList;
 	}
-	
 	
 	@Override
 	@Transactional
@@ -645,4 +645,98 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 						+ orders.size() + "}"
 		);
 	}
+	
+	@Override
+	@Transactional
+	public ResponseEntity<Object> consolidateSplit(CPSplitRequest request) {
+		log.info("inside consolidateSplit ");
+		ResponseEntity<Object> responseEntity = null;
+		String message = "Consolidate Plan split processed successfully";
+		try {
+
+			if (request.getInwardEntryId() > 0 && request.getInstructionId() > 0) {
+				Instruction copy = splitInstruction(request.getInstructionId(), request.getSplitQty());
+
+				if (copy != null && copy.getInstructionId() > 0) {
+					responseEntity = ResponseEntity.ok("{\"status\":\"success\",\"message\": \"" + message + "\"}");
+				} else {
+					responseEntity = new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"Failed to split\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+				}
+			} else if (request.getInwardEntryId() > 0) {
+				InwardEntry copy = splitInward( request.getInwardEntryId(), request.getSplitQty(), request.getSoNumber());
+
+				if (copy != null && copy.getInwardEntryId() > 0) {
+					responseEntity = ResponseEntity.ok("{\"status\":\"success\",\"message\": \"" + message + "\"}");
+				} else {
+					responseEntity = new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"Failed to split\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+				}
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			responseEntity = new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"" + e.getMessage() + "\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return responseEntity;
+	}
+	
+	@Transactional
+	public Instruction splitInstruction(Integer id, BigDecimal splitQty) {
+
+	    Instruction original = instructionRepository.findById(id).orElseThrow(() -> new RuntimeException("Instruction not found"));
+
+	    Instruction copy = original.duplicateForSplit();
+
+	    float split = splitQty.floatValue();
+
+	    if (original.getActualWeight() != null && original.getActualWeight() > 0f) {
+	        copy.setActualWeight(split);
+	        copy.setPlannedWeight(split);
+	        copy.setDeliveryDetails(null);
+
+	        float balance = original.getActualWeight() - split;
+	        original.setActualWeight(balance);
+	        original.setPlannedWeight(balance);
+	    }
+	    else {
+	        copy.setPlannedWeight(split);
+
+	        float balance = original.getPlannedWeight() - split;
+	        original.setPlannedWeight(balance);
+	    }
+
+	    instructionRepository.save(copy);
+	    instructionRepository.save(original);
+
+	    return copy;
+	}
+
+	@Transactional
+	public InwardEntry splitInward(Integer id, BigDecimal splitQty, String soNumber) {
+
+		InwardEntry original = inwardEntryRepository.findById(id).orElseThrow(() -> new RuntimeException("Inward not found"));
+
+		InwardEntry copy = original.duplicateForSplit();
+
+		float split = splitQty.floatValue();
+
+		if (original.getFpresent() != null && original.getFpresent() > 0f) {
+			copy.setfQuantity(split);
+			copy.setGrossWeight(split);
+			copy.setFpresent(split);
+			copy.setInStockWeight(0f);
+			String newCOilNumber = copy.getCoilNumber() + "_" + soNumber;
+			copy.setCoilNumber(newCOilNumber);
+
+			original.setFpresent(original.getFpresent() - split);
+			original.setGrossWeight(original.getGrossWeight() - split);
+			original.setfQuantity(original.getfQuantity() - split);
+			inwardEntryRepository.save(copy);
+			inwardEntryRepository.save(original);
+		} else {
+			copy=null;
+		}
+		return copy;
+	}
+
+	
 }

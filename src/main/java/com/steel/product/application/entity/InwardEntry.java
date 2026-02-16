@@ -983,4 +983,61 @@ public class InwardEntry {
 		inwardEntryResponseDto.setScrapWeight(inwardEntry.getScrapWeight());
 		return inwardEntryResponseDto;
 	}
+
+	public InwardEntry duplicateForSplit() {
+
+	    InwardEntry copy = new InwardEntry();
+
+	    // ===== SIMPLE FIELDS =====
+	    copy.setCoilNumber(this.getCoilNumber());
+	    copy.setBatchNumber(this.getBatchNumber());
+	    copy.setdReceivedDate(this.getdReceivedDate());
+	    copy.setdBillDate(this.getdBillDate());
+	    copy.setPoId(this.getPoId());
+	    copy.setvLorryNo(this.getvLorryNo());
+	    copy.setdInvoiceDate(this.getdInvoiceDate());
+	    copy.setCustomerCoilId(this.getCustomerCoilId());
+	    copy.setCustomerInvoiceNo(this.getCustomerInvoiceNo());
+	    copy.setCustomerBatchId(this.getCustomerBatchId());
+	    copy.setPurposeType(this.getPurposeType());
+	    copy.setInvoicecopyFileurl(this.getInvoicecopyFileurl());
+	    copy.setInvoiceCopy(this.getInvoiceCopy());
+	    copy.setTestCertificateNumber(this.getTestCertificateNumber());
+	    copy.setTestCertificateFileUrl(this.getTestCertificateFileUrl());
+	    copy.setvInvoiceNo(this.getvInvoiceNo());
+	    copy.setMmId(this.getMmId());
+
+	    copy.setfWidth(this.getfWidth());
+	    copy.setfThickness(this.getfThickness());
+	    copy.setfLength(this.getfLength());
+	    copy.setfQuantity(this.getfQuantity());
+	    copy.setGrossWeight(this.getGrossWeight());
+	    copy.setvProcess(this.getvProcess());
+	    copy.setTdcNo(this.getTdcNo());
+	    copy.setFpresent(this.getFpresent());
+	    copy.setValueOfGoods(this.getValueOfGoods());
+	    copy.setBilledweight(this.getBilledweight());
+	    copy.setScrapWeight(this.getScrapWeight());
+	    copy.setParentCoilNumber(this.getParentCoilNumber());
+	    copy.setvParentBundleNumber(this.getvParentBundleNumber());
+	    copy.setRemarks(this.getRemarks());
+	    copy.setIsDeleted(this.getIsDeleted());
+	    copy.setInStockWeight(this.getInStockWeight());
+	    copy.setAvailableLength(this.getAvailableLength());
+	    copy.setPdfS3Url(this.getPdfS3Url());
+	    copy.setAllocatedSoqty(this.getAllocatedSoqty());
+	    copy.setLabelpdfS3Url(this.getLabelpdfS3Url());
+	    copy.setYs(this.getYs());
+	    copy.setUts(this.getUts());
+	    copy.setEl(this.getEl());
+	    copy.setManualPoFlag(this.getManualPoFlag());
+
+	    // ===== RELATION REFERENCES =====
+	    copy.setParty(this.getParty());
+	    copy.setMaterial(this.getMaterial());
+	    copy.setMaterialGrade(this.getMaterialGrade());
+	    copy.setStatus(this.getStatus());
+	    return copy;
+	}
+
 }

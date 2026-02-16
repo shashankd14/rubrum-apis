@@ -215,7 +215,7 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 			+ " (select grade.grade_name from jsw_grade_master grade where grade.grade_id=mat.grade_id limit 1) as gradename, "
 			+ " (select subgrade.subgrade_name from jsw_subgrade_master subgrade where subgrade.subgrade_id=mat.subgrade_id limit 1) as subgradename, "
 			+ " (select brand.brand_name from jsw_brand_master brand where brand.brand_id=mat.brand_id limit 1) as brandname, "
-			+ " mat.mm_id, mat.mm_description "
+			+ " inw.mm_id, mat.mm_description "
 			+ " from product_tblinwardentry inw, jsw_material_master mat, product_tblpartydetails party"
 			+ " where inw.isdeleted=0 and mat.mm_id=inw.mm_id and inw.npartyid=party.npartyid "
 			+ " and (case when :status >0 then inw.vstatus=:status else 1=1 end ) "

@@ -1,6 +1,7 @@
 package com.steel.product.jswone.service;
 
 import com.steel.product.application.dto.quality.ListPageSearchRequest;
+import com.steel.product.jswone.request.CPSplitRequest;
 import com.steel.product.jswone.request.SalesOrderBulkRequest;
 import com.steel.product.jswone.request.SalesOrderChildRequest;
 import com.steel.product.jswone.request.SalesOrderExternalRequest;
@@ -13,16 +14,14 @@ import org.springframework.http.ResponseEntity;
 
 public interface SalesOrderJswService {
 
-
 	Page<Object[]> listAllSOIDs(ListPageSearchRequest listPageSearchRequest);
-	
+
 	List<Object[]> listAllSOs(List<Integer> soIDsList);
-	
-	
+
 	ResponseEntity<Object> save(SalesOrderMainRequest salesOrderPacketsListNew, String option);
 
 	Page<Object[]> listAllSOIDsCP(ListPageSearchRequest listPageSearchRequest);
-	
+
 	List<Object[]> listAllSOsCP(List<Integer> soIDsList);
 
 	ResponseEntity<Object> consolidatePlanner(List<SalesOrderChildRequest> salesOrderMainRequest);
@@ -34,4 +33,6 @@ public interface SalesOrderJswService {
 	ResponseEntity<Object> update(SalesOrderExternalRequest salesOrderPacketsListNew);
 
 	ResponseEntity<Object> bulkUpdate(SalesOrderBulkRequest salesOrderPacketsListNew);
+
+	ResponseEntity<Object> consolidateSplit(CPSplitRequest cpSplitRequest);
 }

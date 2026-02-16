@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.steel.product.application.dto.quality.ListPageSearchRequest;
+import com.steel.product.jswone.request.CPSplitRequest;
 import com.steel.product.jswone.request.SalesOrderBulkRequest;
 import com.steel.product.jswone.request.SalesOrderChildRequest;
 import com.steel.product.jswone.request.SalesOrderExternalRequest;
@@ -61,6 +62,11 @@ public class SalesOrderJswController {
 	@PostMapping(value = "/consolidateplanner/create", produces = "application/json")
 	public ResponseEntity<Object> consolidatePlanner(@RequestBody List<SalesOrderChildRequest> salesOrderMainRequest) {
 		return salesOrderService.consolidatePlanner(salesOrderMainRequest);
+	}
+
+	@PostMapping(value = "/cp/split", produces = "application/json")
+	public ResponseEntity<Object> consolidateSplit(@RequestBody CPSplitRequest cpSplitRequest) {
+		return salesOrderService.consolidateSplit(cpSplitRequest);
 	}
 
 	@PostMapping(value = "/list", produces = "application/json")

@@ -279,5 +279,51 @@ public class Instruction {
 			instructionResponsePdfDto.setValueOfGoods(new BigDecimal(kk));
 		}
 		return instructionResponsePdfDto;
-	} 
+	}
+	
+	public Instruction duplicateForSplit() {
+
+		Instruction copy = new Instruction();
+
+		// ===== SIMPLE FIELDS =====
+		copy.setInstructionDate(this.getInstructionDate());
+		copy.setPlannedLength(this.getPlannedLength());
+		copy.setActualLength(this.getActualLength());
+		copy.setPlannedWidth(this.getPlannedWidth());
+		copy.setActualWidth(this.getActualWidth());
+		copy.setPlannedWeight(this.getPlannedWeight());
+		copy.setActualWeight(this.getActualWeight());
+		copy.setAdditionalWeight(this.getAdditionalWeight());
+		copy.setPlannedNoOfPieces(this.getPlannedNoOfPieces());
+		copy.setActualNoOfPieces(this.getActualNoOfPieces());
+		copy.setGroupId(this.getGroupId());
+		copy.setParentGroupId(this.getParentGroupId());
+		copy.setWastage(this.getWastage());
+		copy.setDamage(this.getDamage());
+		copy.setPackingWeight(this.getPackingWeight());
+		copy.setAllocatedSoqty(this.getAllocatedSoqty());
+		copy.setRemarks(this.getRemarks());
+		copy.setPriceDetails(this.getPriceDetails());
+		copy.setIsDeleted(this.getIsDeleted());
+		copy.setIsSlitAndCut(this.getIsSlitAndCut());
+		copy.setSono(this.getSono());
+		copy.setMmid(this.getMmid());
+		copy.setFinishedDate(this.getFinishedDate());
+
+		// ===== RELATION REFERENCES =====
+		copy.setInwardId(this.getInwardId());
+		copy.setProcess(this.getProcess());
+		copy.setStatus(this.getStatus());
+		copy.setPacketClassification(this.getPacketClassification());
+		copy.setEndUserTagsEntity(this.getEndUserTagsEntity());
+		copy.setRates(this.getRates());
+		copy.setDeliveryDetails(this.getDeliveryDetails());
+		copy.setPartDetails(this.getPartDetails());
+
+		// ===== PARENT LINK =====
+		this.addChildInstruction(copy);
+
+		return copy;
+	}
+
 }
