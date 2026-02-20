@@ -44,6 +44,7 @@ import com.steel.product.jswone.request.SalesOrderDetails;
 import com.steel.product.jswone.request.SalesOrderExternalRequest;
 import com.steel.product.jswone.request.SalesOrderLineItem;
 import com.steel.product.jswone.request.SalesOrderMainRequest;
+import com.steel.product.jswone.response.SalesOrderChildAllocationResponse;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -736,6 +737,30 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			copy=null;
 		}
 		return copy;
+	}
+
+	@Transactional
+	@Override
+	public ResponseEntity<Object> unAllocate(SalesOrderChildAllocationResponse req) {
+		ResponseEntity<Object> responseEntity = null;
+		Optional<SalesOrderAllocationEntity> original = soAllocationRepository.findById(req.getSoAllocationId());
+		if (original.isPresent()) {
+
+			SalesOrderAllocationEntity alloObj = original.get();
+			if (alloObj.getInstructionId() != null && alloObj.getInstructionId() > 0) {
+				instructionRepository.unAllocatCP(alloObj.getInstructionId());
+			} else {
+				if (alloObj.getInwardEntryId() != null && alloObj.getInwardEntryId() > 0) {
+					inwardEntryRepository.unAllocatCP(alloObj.getInwardEntryId());
+				}
+			}
+			//salesOrderRepository.unAllocate(req.getSoAllocationId(), alloObj.getAllocatedSoqty());
+			soAllocationRepository.deleteById(req.getSoAllocationId());
+			responseEntity = ResponseEntity.ok("{\"status\":\"success\",\"message\": \"Item has been unallocated successfully.\"}");
+		} else {
+			responseEntity = new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"Please enter valid value\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return responseEntity;
 	}
 
 	

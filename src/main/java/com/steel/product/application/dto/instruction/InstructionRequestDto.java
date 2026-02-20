@@ -11,66 +11,69 @@ import java.util.Date;
 @Setter
 public class InstructionRequestDto {
 
-    private int instructionId;
+	private int instructionId;
 
-    private Integer inwardId;
+	private Integer inwardId;
 
-    private Integer processId;
+	private Integer processId;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date instructionDate;
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+	private Date instructionDate;
 
-    private Float plannedLength;
+	private Float plannedLength;
 
-    private Float plannedWidth;
+	private Float plannedWidth;
 
-    private Float plannedWeight;
+	private Float plannedWeight;
 
-    private Integer plannedNoOfPieces;
+	private Integer plannedNoOfPieces;
 
-    private Float actualLength;
+	private Float actualLength;
 
-    private Float actualWidth;
+	private Float actualWidth;
 
-    private Float actualWeight;
+	private Float actualWeight;
 
-    private Integer actualNoOfPieces;
+	private Integer actualNoOfPieces;
 
-    private Integer status;
+	private Integer status;
 
-    private Integer packetClassificationId;
+	private Integer packetClassificationId;
 
-    private Integer endUserTagId;
+	private Integer endUserTagId;
 
-    private Integer groupId ;
+	private Integer groupId;
 
-    private Integer parentGroupId ;
+	private Integer parentGroupId;
 
-    private Integer parentInstructionId;
+	private Integer parentInstructionId;
 
-    private Float wastage;
+	private Float wastage;
 
-    private Float pt;
+	private Float pt;
 
-    private Float damage;
+	private Float damage;
 
-    private Float packingWeight;
+	private Float packingWeight;
 
-    private Float totalCoilWeight;
+	private Float totalCoilWeight;
 
-    private Integer createdBy;
+	private Integer createdBy;
 
-    private Integer updatedBy;
+	private Integer updatedBy;
 
-    private Date createdOn;
+	private Date createdOn;
 
-    private Date updatedOn;
+	private Date updatedOn;
 
-    private Boolean isDeleted;
+	private Boolean isDeleted;
 
-    private String remarks;
+	private String remarks;
 
-    private Boolean isSlitAndCut;
+	private Boolean isSlitAndCut;
 
-    private Boolean isScrapWeightUsed;
+	private InstructionRequestDto newInstruction =null;
+
+	private Boolean isScrapWeightUsed;
+
 }

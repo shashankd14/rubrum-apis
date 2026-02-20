@@ -145,11 +145,13 @@ public class DeliveryDetailsController {
 		ResponseEntity<Object> result = null;
 
 		try {
-			int sonovalidationCNt = salesOrderService.validateSoNoAndCustCode(deliveryDto.getDeliveryItemDetails());
-			if (sonovalidationCNt > 1) {
-				HttpHeaders headers = new HttpHeaders();                    
-				headers.set( "Content-Type", "application/json" );
-				return new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"The selected packets dont have the same SONO and CUSTCODE\"}", headers, HttpStatus.OK);
+			if ("Sales Order".equals((deliveryDto.getDeliveryType()))) {
+				int sonovalidationCNt = salesOrderService.validateSoNoAndCustCode(deliveryDto.getDeliveryItemDetails());
+				if (sonovalidationCNt > 1) {
+					HttpHeaders headers = new HttpHeaders();                    
+					headers.set( "Content-Type", "application/json" );
+					return new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"The selected packets dont have the same SONO and CUSTCODE\"}", headers, HttpStatus.OK);
+				}
 			}
 			
 			int userId = commonUtil.getUserId();	

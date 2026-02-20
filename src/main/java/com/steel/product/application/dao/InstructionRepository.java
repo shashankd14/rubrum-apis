@@ -178,15 +178,14 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
 	int updateSonoMmid(@Param("sono") String sono, @Param("mmid") String mmid,
 			@Param("instructionId") int instructionId);
 	
-	
+	 
 	@Modifying
-	//@Transactional
 	@Query(value = "update product_instruction set allocated_soqty = :allocatedSoqty where instructionid= :instructionId", nativeQuery = true)
 	public void consolidatePlanner(@Param("instructionId") Integer instructionId,
 			@Param("allocatedSoqty") Float totalAllocatedQty);
 	
-	@Query(value = "select inwardentryid, packet_id, CAST(weight AS DECIMAL(10,2)) weight, CAST(fquantity AS DECIMAL(10,2)) fquantity, classification_tag from"
-			+ " (SELECT parent.inwardentryid, parent.fquantity, instructionid packet_id, ifnull(actualweight, plannedweight) weight, "
+	@Query(value = "select inwardentryid, packet_id, CAST(weight AS DECIMAL(10,2)) weight, CAST(fquantity AS DECIMAL(10,2)) fquantity, classification_tag,status from"
+			+ " (SELECT parent.inwardentryid, parent.fquantity, child.status, instructionid packet_id, ifnull(actualweight, plannedweight) weight, "
 			+ " (SELECT count(distinct inss.instructionid) cnt FROM product_instruction inss where inss.inwardid=parent.inwardentryid  and status!=4 and inss.parentgroupid=child.groupid) as siltcutcnt, "
 			+ " (select classification_name from product_packet_classification where classification_id=child.packet_classification_id) as classification_tag "
 			+ " FROM product_tblinwardentry parent, product_instruction child "
@@ -194,15 +193,16 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
 			+ " where inwardentryid= :inwardId and CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END order by packet_id asc", 
 		nativeQuery = true)
 	List<Object[]> findPacketsForPositiveTolerence(@Param("inwardId") Integer inwardId);
-
-	@Query(value = " select sono, dt, vehicleno, mmid, sum(actualweight), wearhouse_id, branch,additional_weight from ( "
+	
+	@Query(value = " select sono, dt, vehicleno, mmid, sum(actualweight), wearhouse_id, branch,additional_weight, zbooks_so from ( "
 			+ "  SELECT ins.sono, DATE_FORMAT(dc.createdon, '%Y-%m-%d') dt,vehicleno , ins.mmid, ins.actualweight,"
 			+ " (select wearhouse_id from jsw_sales_order so, jsw_sales_order_child child where so.so_id=child.so_id and child.mm_id = ins.mmid and so.so_number = ins.sono limit 1) wearhouse_id , "
+			+ " (select zbooks_so from jsw_sales_order so, jsw_sales_order_child child where so.so_id=child.so_id and child.mm_id = ins.mmid and so.so_number = ins.sono limit 1) zbooks_so , "
 			+ " (select branch from jsw_sales_order so, jsw_sales_order_child child, jsw_warehouse_master wh where so.so_id=child.so_id and wh.ware_house_id=child.wearhouse_id and child.mm_id = ins.mmid and so.so_number = ins.sono limit 1) branch, "
 			+ " sum(additional_weight) additional_weight "
 			+ " FROM product_tbl_delivery_details dc, product_instruction ins "
 			+ " WHERE ins.deliveryid=dc.deliveryid and dc.deliveryid = :dcId ) a "
-			+ " where 1=1 group by sono, dt, vehicleno, mmid, wearhouse_id, branch", nativeQuery = true)
+			+ " where 1=1 group by sono, dt, vehicleno, mmid, wearhouse_id, branch, zbooks_so ", nativeQuery = true)
 	public List<Object[]> prepareInvAdjustmentRequest(Integer dcId);
 	
 	@Query(value = " select actualweight, inwmmid,coilnumber from ( "
@@ -213,5 +213,9 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
 			+ " WHERE ins.deliveryid=dc.deliveryid and dc.deliveryid = :dcId ) a "
 			+ " where mmid = :mmid", nativeQuery = true)
 	public List<Object[]> prepareInvAdjustmentFrom(Integer dcId, String mmid);
+	
+	@Modifying
+	@Query(value = "update product_instruction set allocated_soqty = 0 where instructionid= :instructionId", nativeQuery = true)
+	public void unAllocatCP(@Param("instructionId") Integer instructionId);
 
 }

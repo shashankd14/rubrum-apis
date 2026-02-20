@@ -1089,7 +1089,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 
 		for (Object[] result : poDetails) {
 			DC_InventoryAdjustmentLineItem lineitem = new DC_InventoryAdjustmentLineItem();
-			req.setSalesOrderNumber(result[0] != null ? result[0].toString() : null);
+			req.setSalesOrderNumber(result[8] != null ? result[8].toString() : null);
 			req.setDate(result[1] != null ? result[1].toString() : null);
 			req.setEwaybillVehicleNumber(result[2] != null ? result[2].toString() : null);
 			String mmid = result[3] != null ? result[3].toString() : null;

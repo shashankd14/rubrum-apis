@@ -239,11 +239,12 @@ public class SalesOrderJswController {
 			allocation.setInwardId(result[9] != null ? (Integer) result[9] : null);
 			allocation.setSoAllocationId(result[15] != null ? (Integer) result[15] : null);
 			allocation.setAllocatedqty((BigDecimal) result[16]);
-			allocation.setCoilNumber(result[17] != null ? (String) result[17] : null);
+			allocation.setCoilNumber(result[17] != null ? (String) result[17] : "");
 			allocation.setQty(result[18] == null ? null : BigDecimal.valueOf(((Number) result[18]).doubleValue()));
-			allocation.setPacking(result[19] != null ? (String) result[19] : null);
+			allocation.setPacking(result[19] != null ? (String) result[19] : "");
+			allocation.setLocationName(result[20] != null ? (String) result[20] : "");
+			allocation.setStatus(result[21] != null ? (String) result[21] : "");
 			allocation.setSize("");
-			allocation.setStatus("");
 
 	        child.getAllocationDetails().add(allocation);
 
@@ -259,6 +260,11 @@ public class SalesOrderJswController {
 	    response.put("totalPages", packetsList1.getTotalPages());
 
 	    return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@PostMapping(value = "/cp/unallocate", produces = "application/json")
+	public ResponseEntity<Object> unAllocate(@RequestBody SalesOrderChildAllocationResponse req) {
+		return salesOrderService.unAllocate(req );
 	}
 
 	@PostMapping(value = "/post", produces = "application/json")

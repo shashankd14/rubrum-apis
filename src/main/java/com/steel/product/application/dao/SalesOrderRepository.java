@@ -147,10 +147,9 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrderEntity, In
 
 	List<SalesOrderEntity> findBySoNumber(String soNumber);
 
-	@Query(value = "select distinct so_number, customer_code_id, (select tag_name from product_enduser_tags tags where tags.tag_id = so.customer_code_id ) as customer_code FROM sales_order so, sales_order_child so_child "
-			+ " where so.is_deleted = 0 and so_child.is_deleted = 0 and so_child.so_id=so.so_id "
-			+ " and so_child.instruction_id in :instructionIdList ", 
-		nativeQuery = true)
+	@Query(value = "SELECT DISTINCT pi2.sono,customerid FROM product_instruction pi2 "
+			+ "  LEFT OUTER JOIN jsw_sales_order sale ON pi2.sono = sale.so_number "
+			+ " where pi2.isdeleted = 0 and pi2.instructionid in :instructionIdList ", nativeQuery = true)
 	List<Object[]> validateSoNoAndCustCode(@Param("instructionIdList") List<Integer> instructionIdList);
 
 	@Query(value = "SELECT distinct so.so_number, wm.party_id "

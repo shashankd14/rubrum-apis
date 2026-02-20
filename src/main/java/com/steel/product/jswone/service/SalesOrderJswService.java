@@ -6,6 +6,7 @@ import com.steel.product.jswone.request.SalesOrderBulkRequest;
 import com.steel.product.jswone.request.SalesOrderChildRequest;
 import com.steel.product.jswone.request.SalesOrderExternalRequest;
 import com.steel.product.jswone.request.SalesOrderMainRequest;
+import com.steel.product.jswone.response.SalesOrderChildAllocationResponse;
 
 import java.util.List;
 
@@ -35,4 +36,6 @@ public interface SalesOrderJswService {
 	ResponseEntity<Object> bulkUpdate(SalesOrderBulkRequest salesOrderPacketsListNew);
 
 	ResponseEntity<Object> consolidateSplit(CPSplitRequest cpSplitRequest);
+
+	ResponseEntity<Object> unAllocate(SalesOrderChildAllocationResponse req);
 }

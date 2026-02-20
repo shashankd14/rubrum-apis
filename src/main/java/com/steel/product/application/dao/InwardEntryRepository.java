@@ -141,8 +141,8 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 	public void updateInwardStatus(@Param("inwardId") Integer inwardId, @Param("status") Integer status);
 
     @Modifying
-	@Transactional
-	@Query("update InwardEntry inw set inw.fpresent=(inw.fQuantity - :usedWeightr) where inw.inwardEntryId= :inwardId ")
+	//@Transactional
+	@Query("update InwardEntry inw set inw.fpresent =case when (inw.fQuantity - :usedWeightr) < 0 then 0 else (inw.fQuantity - :usedWeightr) end where inw.inwardEntryId= :inwardId ")
 	public void updateInwardAvailableWeight(@Param("inwardId") Integer inwardId, @Param("usedWeightr") Float usedWeightr);
     
     public static final String GET_INWARD_DETAILS = " select min(stts), CAST(sum(packetweight) AS DECIMAL(10,2))  from ( "
@@ -203,7 +203,6 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 	Page<Object[]> findAllEndUserTagWiseData(@Param("endUserTagId") Integer endUserTagId, Pageable pageable);
 
 	@Modifying
-	@Transactional
 	@Query(value = "update product_tblinwardentry set allocated_soqty = :allocatedSoqty where inwardentryid= :inwardentryid", nativeQuery = true)
 	public void consolidatePlanner(@Param("inwardentryid") Integer inwardentryid, @Param("allocatedSoqty") Float totalAllocatedQty);
 
@@ -406,6 +405,10 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 	@Transactional
 	@Query("update InwardEntry set zohoDocuploadRemarks= :zohoDocuploadRemarks where billId =:billId")
 	public int uploadDocumentZohoSyncRemarks(@Param("zohoDocuploadRemarks") String zohoDocuploadRemarks, @Param("billId") String billId);
+
+	@Modifying
+	@Query(value = "update product_tblinwardentry set allocated_soqty = 0 where inwardentryid= :inwardentryid", nativeQuery = true)
+	public void unAllocatCP(@Param("inwardentryid") Integer inwardentryid);
 
 
 }

@@ -18,12 +18,12 @@ public class SalesOrderChildAllocationResponse {
 	private BigDecimal allocatedqty;
 
 	private String coilNumber;
+	
+	private String locationName;
 
 	private String packing;
 
 	private String size;
-
-	private Integer pcs;
 
 	private BigDecimal qty;
 

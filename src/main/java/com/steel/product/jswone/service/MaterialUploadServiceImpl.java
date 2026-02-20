@@ -574,7 +574,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 				List<InwardFileDataDTO> products = inwardFileDetails(fullPath);
 				List<InwardFileDataEntity> productList = new ArrayList<>();
 				totalMMIDCount = products .size();
-				//System.out.println("Hi size " + products.size());
+				log.info ("Field Count Is " + totalMMIDCount);
 				for (InwardFileDataDTO dto : products) {
 					if (dto != null && dto.getBatchnumber() != null && dto.getBatchnumber().length() > 0) {
 						InwardFileDataEntity dest = new InwardFileDataEntity();
@@ -606,7 +606,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 			
 			int cnt = 0;
 			if (request.isMasterData()) {
-				List<InwardFileDataEntity> listFileData = inwardFiledataRepository.findAll(serialNo);
+				List<InwardFileDataEntity> listFileData = inwardFiledataRepository.findAll();
 				for (InwardFileDataEntity sourceEntity : listFileData) {
 					int inwardEnrtyId = saveInwardEntry(sourceEntity);
 					if (inwardEnrtyId > 0) {
@@ -789,7 +789,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 					}
 				}
 			} else {
-				System.out.println("=============== MMID not exists ===  " + inward.getMmid());
+				log.info("=============== MMID not exists ===  " + inward.getMmid()+", coil === "+inward.getCoilnumber());
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

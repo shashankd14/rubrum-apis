@@ -296,7 +296,7 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 		List<Object[]> packetsList = salesOrderRepository.validateSoNoAndCustCode(list);
 		for (Object[] result : packetsList) {
 			resp.setSoNumber(result[0] != null ? (String) result[0] : null);
-			resp.setCustomerCode(result[2] != null ? (String) result[2] : null);
+			resp.setCustomerCode(result[1] != null ? (String) result[1] : null);
 		}
 		return resp;
 	}
