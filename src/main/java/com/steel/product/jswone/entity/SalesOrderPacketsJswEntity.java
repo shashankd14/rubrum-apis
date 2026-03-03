@@ -39,7 +39,7 @@ public class SalesOrderPacketsJswEntity {
 	@Column(name = "special_instructions")
 	private String specialInstructions;
 	
-	@Column(name = "item_status")
+	@Column(name = "item_so_status")
 	private String itemStatus;
 
 	@Column(name = "created_by")

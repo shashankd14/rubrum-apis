@@ -1,5 +1,7 @@
 package com.steel.product.jswone.service;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.steel.product.application.dao.InstructionRepository;
 import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.dto.quality.ListPageSearchRequest;
@@ -8,10 +10,8 @@ import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.entity.UserPartyMap;
 import com.steel.product.application.util.CommonUtil;
-import com.steel.product.jswone.entity.SalesOrderAllocationEntity;
-import com.steel.product.jswone.entity.SalesOrderJswEntity;
-import com.steel.product.jswone.entity.SalesOrderPacketsJswEntity;
-import com.steel.product.jswone.entity.StatusType;
+import com.steel.product.jswone.entity.*;
+import com.steel.product.jswone.repository.JswoneAuditTrailRepository;
 import com.steel.product.jswone.repository.SalesOrderAllocationJswRepository;
 import com.steel.product.jswone.repository.SalesOrderChildJswRepository;
 import com.steel.product.jswone.repository.SalesOrderJswRepository;
@@ -59,6 +59,9 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 	
     @Autowired
     private InwardEntryRepository inwardEntryRepository;
+
+	@Autowired
+	private JswoneAuditTrailRepository jswoneAuditTrailRepository;
 
 	@Override
 	public ResponseEntity<Object> save(SalesOrderMainRequest salesOrderMainRequest, String option) {
@@ -280,7 +283,24 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 	@Override
 	@Transactional
 	public ResponseEntity<Object> post(SalesOrderExternalRequest req, String option) {
+
+		JswoneAuditTrailEntity audit = new JswoneAuditTrailEntity();
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		ResponseEntity<Object> finalResponse = null;
+
 		try {
+			// ----------------------- AUDIT INIT -----------------------
+			audit.setProcessType("SO_POST");
+			audit.setCreatedOn(new Date());
+
+			String rfNumber = null;
+			if (req != null && req.getSalesOrder_Details() != null) {
+				rfNumber = req.getSalesOrder_Details().getReference_number();
+			}
+			audit.setPoId(rfNumber);
+			audit.setRequestObj(req == null ? "" : mapper.writeValueAsString(req));
+
 
 			// ----------------------- Validate Mandatory Fields -----------------------
 			String missingField = validateExternalRequest(req);
@@ -304,7 +324,6 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				// ======================= UPDATE FLOW =======================
 				so = existingSoOpt.get();
 
-				// Remove existing children (orphanRemoval = true will delete them)
 				if (so.getItemslist() != null) {
 					so.getItemslist().clear();
 				}
@@ -375,19 +394,54 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				so.addItem(item);
 			}
 			salesOrderRepository.save(so);
-			return ResponseEntity.ok(
+			finalResponse = ResponseEntity.ok(
 					"{\"code\":\"success\", \"message\":\"External Sales Order processed successfully\"}"
 			);
+			return finalResponse;
 
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			return new ResponseEntity<>(
-					"{\"code\":\"failure\", \"message\": \"" + ex.getMessage() + "\"}",
+			finalResponse = new ResponseEntity<>(
+					"{\"code\":\"failure\", \"message\": \"" + safeMsg(ex.getMessage()) + "\"}",
 					HttpStatus.INTERNAL_SERVER_ERROR
 			);
+			return finalResponse;
+		}
+		finally {
+			try {
+				if (finalResponse != null) {
+					audit.setStatusCode(String.valueOf(finalResponse.getStatusCode().value()));
+					Object respBody = finalResponse.getBody();
+					if (respBody == null) {
+						audit.setSourceRespone("");
+					} else if (respBody instanceof String) {
+						audit.setSourceRespone((String) respBody);
+					} else {
+						audit.setSourceRespone(mapper.writeValueAsString(respBody));
+					}
+				} else {
+					audit.setStatusCode("500");
+					audit.setSourceRespone("{\"code\":\"failure\",\"message\":\"Unknown error\"}");
+				}
+				if (audit.getDestinationResponse() == null) {
+					audit.setDestinationResponse("");
+				}
+			} catch (Exception ignore) {
+				audit.setStatusCode("500");
+				audit.setSourceRespone("{\"code\":\"failure\",\"message\":\"Audit serialization failed\"}");
+			}
+			try {
+				jswoneAuditTrailRepository.save(audit);
+			} catch (Exception saveEx) {
+				log.error("SO_POST audit save failed", saveEx);
+			}
 		}
 	}
-	
+
+	private String safeMsg(String msg) {
+		if (msg == null) return "";
+		return msg.replace("\"", "'");
+	}
 
 	private String validateExternalRequest(SalesOrderExternalRequest req) {
 
