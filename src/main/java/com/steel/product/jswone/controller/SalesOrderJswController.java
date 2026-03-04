@@ -1,5 +1,11 @@
 package com.steel.product.jswone.controller;
 
+import com.steel.product.jswone.entity.JswoneAuditTrailEntity;
+import com.steel.product.jswone.repository.JswoneAuditTrailRepository;
+import com.steel.product.jswone.request.SalesOrderBulkRequest;
+import com.steel.product.jswone.request.SalesOrderExternalRequest;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -9,6 +15,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -19,6 +26,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.annotation.*;
 
 import com.steel.product.application.dto.quality.ListPageSearchRequest;
 import com.steel.product.jswone.request.CPSplitRequest;
@@ -33,6 +42,9 @@ import com.steel.product.jswone.response.SalesOrderChildAllocationResponse;
 import com.steel.product.jswone.response.SalesOrderChildResponse;
 import com.steel.product.jswone.response.SalesOrderMainResponse;
 import com.steel.product.jswone.service.SalesOrderJswService;
+import org.springframework.web.context.request.ServletWebRequest;
+
+import javax.servlet.http.HttpServletRequest;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -45,8 +57,51 @@ public class SalesOrderJswController {
 	private SalesOrderJswService salesOrderService;
 
 	@Autowired
+	private JswoneAuditTrailRepository jswoneAuditTrailRepository;
+
+	@Autowired
 	public SalesOrderJswController(SalesOrderJswService salesOrderService) {
 		this.salesOrderService = salesOrderService;
+	}
+
+	@ExceptionHandler(HttpMessageNotReadableException.class)
+	public ResponseEntity<Object> handleNotReadable(HttpMessageNotReadableException ex, ServletWebRequest webRequest) {
+
+		HttpServletRequest request = webRequest.getRequest();
+		String rawBody = "";
+		try {
+			rawBody = request.getReader().lines().collect(Collectors.joining("\n"));
+		} catch (Exception ignore) {
+			rawBody = "";
+		}
+
+		JswoneAuditTrailEntity audit = new JswoneAuditTrailEntity();
+		try {
+			audit.setProcessType("SO_POST");
+			audit.setCreatedOn(new Date());
+			audit.setRequestUrl(request.getRequestURI());
+			audit.setRequestObj(rawBody);
+			audit.setStatusCode("400");
+
+			String msg = ex.getMostSpecificCause() != null ? ex.getMostSpecificCause().getMessage() : ex.getMessage();
+			String resp = "{\"code\":\"failure\",\"message\":\"Invalid request payload\",\"error\":\"" + safeJson(msg) + "\"}";
+			audit.setSourceRespone(resp);
+			audit.setDestinationResponse("");
+
+			jswoneAuditTrailRepository.save(audit);
+		} catch (Exception ignore) {
+			//empty
+		}
+
+		return new ResponseEntity<>(
+				"{\"code\":\"failure\",\"message\":\"Invalid request payload\"}",
+				HttpStatus.BAD_REQUEST
+		);
+	}
+
+	private String safeJson(String s) {
+		if (s == null) return "";
+		return s.replace("\"", "'").replace("\n", " ").replace("\r", " ");
 	}
 
 	@PostMapping(value = "/create", produces = "application/json")
