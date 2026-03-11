@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <style>
+	    @page {
+		    size: A4 landscape;
+		    margin: 1cm;
+		}
+        table {
+            border-collapse: collapse;
+            border-spacing: 0;
+            margin: auto;
+        }
+
+        .t-head {
+            border-top: 1px solid #666;
+            border-bottom: 1px solid #666;
+            border-left: 1px solid #666;
+            border-right: 1px solid #666;
+            text-align: left;
+            padding: 8px;
+            height: 50px;
+        }
+
+        .t-row {
+            border-top: 1px solid #666;
+            border-bottom: 1px solid #666;
+            border-left: 1px solid #666;
+            border-right: 1px solid #666;
+            text-align: left;
+            padding: 4px;
+            height: 18px;
+        }
+
+        hr {
+            margin: 0 70px;
+        }
+
+        td {
+            line-height: 2.3rem;
+        }
+
+        .font-size-x-small {
+            font-size: x-small;
+        }
+
+        .font-size-small {
+            font-size: small;
+        }
+
+        .inline-block {
+            display: inline-block;
+        }
+
+        .border {
+            border: 1px solid black;
+        }
+
+        .w-50 {
+            width: 50%;
+        }
+
+        .w-40 {
+            width: 40%;
+        }
+
+        .w-30 {
+            width: 30%;
+        }
+
+        .w-60 {
+            width: 60%;
+        }
+
+        .w-70 {
+            width: 70%;
+        }
+
+        .w-25 {
+            width: 25%;
+        }
+    </style>
+</head>
+<body>
+	<div style="display: inline-block;margin: 1% 0;width: 100%;">
+	    <div style="width: 50%; float: left;"><img src='file:/home/ubuntu/deployments/jsw_logo_image/jswone_logo.jpg' width='150px' height='50px'/></div>
+	    <div style="width: 50%; float: right;"><h2 style="text-align:center;">JSW One Distribution Limited</h2></div>
+	</div>
+    <div>
+        <h4 style="text-align:center;">Processing Plan CUM Inspection Report</h4>
+    </div>
+    <div>
+	    <div>
+			<div class="inline-block w-60">
+				<p class="font-size-small"><strong>Order No : </strong><span th:text="${soDetails?.soNumber}"></span></p>
+				<p class="font-size-small"><strong>Processing Center: </strong><span th:text="${soDetails?.processCenter}"></span></p>
+			</div>
+			<div class="inline-block w-30">
+				<p class="font-size-small"><strong>Order Date : </strong><span th:text="${soDetails?.orderDate}"></span></p>
+				<p class="font-size-small"><strong>Product Category: </strong><span	th:text="${soDetails?.cagtegoryName}"></span></p>
+	        </div>
+	    </div>
+	    <hr style="text-align:center;color:black;"/>
+	      <div >
+			<div class="inline-block w-120">
+				<p class="font-size-small"><strong>Dear Team, </strong></p>
+				<p class="font-size-small"><strong>Please process below material as per given plan below. Please consider below instruction while processing the material and share the details of processing slots for below coil.</strong> 
+				</p>
+			</div>
+	    </div>
+	    <div style="margin-top: 1%;">
+	        <table style="width:100%">
+	            <tr>
+	                <th class="t-head font-size-small" rowspan="2">Coil ID</th>
+	                <th class="t-head font-size-small" rowspan="2">Coil Batch No</th>
+	                <th class="t-head font-size-small" rowspan="2">Coil SKU</th>
+	                <th class="t-head font-size-small" rowspan="2">Processing</th>
+	                <th class="t-head font-size-small" rowspan="2">Final Product SKU</th>
+	                <th class="t-head font-size-small" rowspan="2">Planned Qty_MT</th>
+	                <th class="t-head font-size-small" rowspan="2">Planned Qty_Nos</th>
+	                <th class="t-head font-size-small" rowspan="2">Packing Mode</th>
+	                <th class="t-head font-size-small" colspan="3">Tolerances</th>
+	                <th class="t-head font-size-small" rowspan="2">Special Instruction</th>
+	            </tr>
+	            <tr>
+	                <th class="t-head font-size-small" >Width (mm)</th>
+	                <th class="t-head font-size-small" >Diagonal (mm)</th>
+	                <th class="t-head font-size-small" >Edge Burr (mm)</th>
+	            </tr>
+                <tr th:each="ins : ${soDetails.childListResp}" style="margin-top: 2%;margin-left: -30px;">
+                    <td class="t-row font-size-x-small" th:text="${ins?.coilNo}"></td>
+                    <td class="t-row font-size-x-small" th:text="${ins?.customerBatchNo}"></td>
+                    <td class="t-row font-size-x-small" th:text="${ins?.coilSKU}"></td>
+                    <td class="t-row font-size-x-small" th:text="${ins?.processing}"></td>
+                    <td class="t-row font-size-x-small" th:text="${ins?.finalProcessingSKU}"></td>
+                    <td class="t-row font-size-x-small" th:text="${ins?.fweight}"></td>
+                    <td class="t-row font-size-x-small" th:text="${ins?.plannedNoofPieces}"></td>
+                    <td class="t-row font-size-x-small" th:text="${ins?.packingMode}"></td>
+                    <td class="t-row font-size-x-small" th:text="${ins?.fwidth}"></td>
+                    <td class="t-row font-size-x-small" th:text="${ins?.diagonal}"></td>
+                    <td class="t-row font-size-x-small" th:text="${ins?.edgeBurr}"></td>
+                    <td class="t-row font-size-x-small" th:text="${ins?.specilaInstructions}"></td>
+                </tr>
+	            <tr>
+	                <td class="t-row font-size-small"  style="text-align: center; font-weight: bold;" colspan="5">GRAND TOTAL</td>
+                	<td class="t-row font-size-small"  style="text-align: center; font-weight: bold;" th:text="${#numbers.formatDecimal(soDetails?.fweightTotal,2,2)}"></td>
+	                <td class="t-row font-size-small" ></td>
+	                <td class="t-row font-size-small" ></td>
+	                <td class="t-row font-size-small" ></td>
+	                <td class="t-row font-size-small" ></td>
+	                <td class="t-row font-size-small" ></td>
+	                <td class="t-row font-size-small" ></td>
+	            </tr>
+	        </table>
+	    </div>
+	
+	    <div style="display: inline-block;margin: 5% 0;width: 100%;">
+	        <div style="float: left;"></div>
+	        <div style="width: 29%; float: right;"></div>
+	    </div>
+	    <div style="display: inline-block;margin: 5% 0;width: 100%;">
+	        <div style="float: left;"></div>
+	        <div style="width: 29%; float: right;">Checked and Approved By</div>
+	    </div>
+    </div>
+
+</body>
+</html>

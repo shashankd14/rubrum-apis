@@ -48,14 +48,26 @@ public interface POWiseMmidDetailsRepository extends JpaRepository<POWiseMmidDet
 	List<Object[]> allpoinvlists();
 
 	@Query(value = "SELECT distinct inward.customerinvoiceno, inward.zoho_sync_stts, inward.zoho_sync_remarks, manual_po_flag, "
-			+ " bill_id, zoho_docupload_stts,zoho_docupload_remarks,coilnumber,customerbatchid, stts.statusname, DATE_FORMAT( inward.dinvoicedate, '%d-%m-%Y') postdate "
-			+ " from product_tblinwardentry inward , product_status stts"
-			+ " where inward.vstatus = stts.statusid and case when :searchText is not null and LENGTH(:searchText) >0 then (inward.customerinvoiceno like %:searchText%) else 1=1 end " 
+			+ " bill_id, zoho_docupload_stts,zoho_docupload_remarks,coilnumber,customerbatchid, stts.statusname, "
+			+ " DATE_FORMAT( inward.dinvoicedate, '%d-%m-%Y') postdate, DATE_FORMAT( inward.dreceiveddate, '%d-%m-%Y') dreceiveddate, "
+			+ " (Select partyname from product_tblpartydetails part where part.npartyid =inward.npartyid) partyname,po_reference "
+			+ " from product_tblinwardentry inward "
+			+ " left outer join jsw_po_receive_dtls po on po.po_id = inward.po_id "
+			+ " left outer join product_status stts on inward.vstatus = stts.statusid "
+			+ " where 1=1 "
+			+ " and (case when :partyId >0 then inward.npartyid=:partyId else 1=1 end )  " 
+			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (inward.coilnumber like %:searchText% or inward.customerinvoiceno like %:searchText% or po_reference like %:searchText% ) else 1=1 end " 
 			+ " order by inwardentryid desc",
-		countQuery = "SELECT count(distinct inward.customerinvoiceno) from product_tblinwardentry inward  " + 
-				 " where case when :searchText is not null and LENGTH(:searchText) >0 then (inward.customerinvoiceno like %:searchText%) else 1=1 end ", 
+		countQuery = "SELECT count(distinct inward.customerinvoiceno) "
+				+ " from product_tblinwardentry inward "
+				+ " left outer join jsw_po_receive_dtls po on po.po_id = inward.po_id "
+				+ " left outer join product_status stts on inward.vstatus = stts.statusid "
+				+ " where 1=1 "
+				+ " and (case when :partyId >0 then inward.npartyid=:partyId else 1=1 end )  " 
+				+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (inward.coilnumber like %:searchText% or inward.customerinvoiceno like %:searchText% or po_reference like %:searchText% ) else 1=1 end ", 
 		nativeQuery = true)
-	Page<Object[]> allpoinvlist(@Param("searchText") String searchText, Pageable pageable);
+	Page<Object[]> allpoinvlist(@Param("searchText") String searchText, @Param("partyId") int partyId,
+			Pageable pageable);
 
 	@Query(value = "SELECT inward.coilnumber, round(((fquantity ) / 1000),3) fquantity "
 			+ " from product_tblinwardentry inward, jsw_powise_mmid_details pode "

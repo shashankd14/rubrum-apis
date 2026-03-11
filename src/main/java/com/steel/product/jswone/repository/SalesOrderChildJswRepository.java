@@ -15,7 +15,6 @@ import com.steel.product.jswone.entity.SalesOrderPacketsJswEntity;
 public interface SalesOrderChildJswRepository extends JpaRepository<SalesOrderPacketsJswEntity, Integer> {
 
 	@Modifying
-	@Transactional
 	@Query("update SalesOrderPacketsJswEntity inw set inw.allocatedStts = :allocatedStts, "
 			+ " inw.allocatedSoqty = :allocatedSoqty,"
 			+ " inw.specialInstructions = :specialInstructions, "
@@ -29,5 +28,5 @@ public interface SalesOrderChildJswRepository extends JpaRepository<SalesOrderPa
 			@Param("userId") int userId);
 
 	SalesOrderPacketsJswEntity findBySoChildId(Integer soChildId); 
-
+	
 }

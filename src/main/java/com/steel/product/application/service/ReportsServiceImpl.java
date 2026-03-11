@@ -429,17 +429,18 @@ public class ReportsServiceImpl implements ReportsService {
 			List<InwardReportViewEntity> partyList = inwardReportViewRepository.findByPartyIdOrderByIdDesc(partyId);
 
 			acctStatementMap.put("1",
-					new Object[] { "CoilNumber", "SC Inward ID", "Created On","Location Name", "MaterialDesc", "MaterialGrade", "Subgrade","MMID", "Thickness", "Width",
+					new Object[] { "CoilNumber", "SC Inward ID", "PO Number","Created On","Location Name", "MaterialDesc", "MaterialGrade", "Subgrade","MMID", "Thickness", "Width",
 					"NetWeight", "Value of Goods", "Invoice No", "Invoice Date", "ReceivedDate", "Vehicle No",
 					"Inward Remarks", "TC No" });
 
 			int cnt = 1;
 			for (InwardReportViewEntity kk : partyList) {
 				cnt++;
-				acctStatementMap.put("" + cnt, new Object[] { kk.getCoilnumber(), kk.getCustomerbatchid(), kk.getCreatedon(), kk.getLocationname(),
-				kk.getMaterialdesc(), kk.getMaterialGrade(), kk.getSubgrade(),kk.getMmId(), kk.getFthickness(), kk.getFwidth(),
-				kk.getNetWeight(), kk.getValueofgoods(), kk.getCustomerinvoiceno(), kk.getCustomerinvoicedate(),
-				kk.getReceivedDate(), kk.getVehicleno(), kk.getRemarks(), kk.getTestcertificatenumber() });
+				acctStatementMap.put("" + cnt, new Object[] { kk.getCoilnumber(), kk.getCustomerbatchid(),
+						kk.getPonumber(), kk.getCreatedon(), kk.getLocationname(), kk.getMaterialdesc(),
+						kk.getMaterialGrade(), kk.getSubgrade(), kk.getMmId(), kk.getFthickness(), kk.getFwidth(),
+						kk.getNetWeight(), kk.getValueofgoods(), kk.getCustomerinvoiceno(), kk.getCustomerinvoicedate(),
+						kk.getReceivedDate(), kk.getVehicleno(), kk.getRemarks(), kk.getTestcertificatenumber() });
 			}
 		} catch (Exception e) {
 			LOGGER.error("Error at getInwardReportDetails " + e.getMessage());

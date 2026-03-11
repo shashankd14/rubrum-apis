@@ -28,6 +28,9 @@ public class InwardReportViewEntity {
 	@Column(name = "customerbatchid")
 	private String customerbatchid;
 
+	@Column(name = "ponumber")
+	private String ponumber;
+
 	@Column(name = "received_date")
 	private String receivedDate;
 

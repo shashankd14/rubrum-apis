@@ -274,10 +274,10 @@ public class GCPUploadFileService {
 		String filePath = folderPath + File.separator + "inwardreport_" + date + ".csv";
 		List<InwardReportViewEntity> fgReportDetails = inwardReportViewRepository.findAll();
 		try (PrintWriter writer = new PrintWriter(new FileWriter(filePath))) {
-			writer.println( "CoilNumber,SC Inward ID,MaterialDesc,MaterialGrade,Subgrade,Location Name,MMID,Thickness,Width,NetWeight,"
+			writer.println( "CoilNumber,SC Inward ID,PO Number, MaterialDesc,MaterialGrade,Subgrade,Location Name,MMID,Thickness,Width,NetWeight,"
 					+ "Value of Goods,Invoice No,Invoice Date,ReceivedDate,Vehicle No,Inward Remarks,TC No");
 			for (InwardReportViewEntity kk : fgReportDetails) {
-				writer.println(kk.getCoilnumber() + "," + kk.getCustomerbatchid() + "," + kk.getMaterialdesc() + ","
+				writer.println(kk.getCoilnumber() + "," + kk.getCustomerbatchid() + "," + kk.getPonumber()+ "," + kk.getMaterialdesc() + ","
 						+ kk.getMaterialGrade() + "," + kk.getSubgrade() + "," +kk.getLocationname()+ "," + kk.getMmId() + "," + kk.getFthickness()
 						+ "," + kk.getFwidth() + "," + kk.getNetWeight() + "," + kk.getValueofgoods() + ","
 						+ kk.getCustomerinvoiceno() + "," + kk.getCustomerinvoicedate() + "," + kk.getReceivedDate()

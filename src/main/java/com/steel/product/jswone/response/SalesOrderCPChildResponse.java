@@ -27,6 +27,8 @@ public class SalesOrderCPChildResponse {
 
 	private String location;
 
+	private String wareHouseName;;
+
 	private List<SalesOrderChildAllocationResponse> allocationDetails = new ArrayList<>();
 
 }

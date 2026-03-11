@@ -1,15 +1,14 @@
 package com.steel.product.jswone.controller;
 
-import com.steel.product.jswone.entity.JswoneAuditTrailEntity;
-import com.steel.product.jswone.repository.JswoneAuditTrailRepository;
-import com.steel.product.jswone.request.SalesOrderBulkRequest;
-import com.steel.product.jswone.request.SalesOrderExternalRequest;
-import io.swagger.v3.oas.annotations.tags.Tag;
-
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -17,19 +16,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.ServletWebRequest;
 
+import com.lowagie.text.DocumentException;
+import com.steel.product.application.dto.pdf.PdfResponseDto;
 import com.steel.product.application.dto.quality.ListPageSearchRequest;
+import com.steel.product.jswone.entity.JswoneAuditTrailEntity;
+import com.steel.product.jswone.repository.JswoneAuditTrailRepository;
 import com.steel.product.jswone.request.CPSplitRequest;
 import com.steel.product.jswone.request.SalesOrderBulkRequest;
 import com.steel.product.jswone.request.SalesOrderChildRequest;
@@ -42,9 +48,6 @@ import com.steel.product.jswone.response.SalesOrderChildAllocationResponse;
 import com.steel.product.jswone.response.SalesOrderChildResponse;
 import com.steel.product.jswone.response.SalesOrderMainResponse;
 import com.steel.product.jswone.service.SalesOrderJswService;
-import org.springframework.web.context.request.ServletWebRequest;
-
-import javax.servlet.http.HttpServletRequest;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -266,6 +269,8 @@ public class SalesOrderJswController {
 				so.setCustomerCode(result[3] != null ? (String) result[3] : null);
 				so.setTotalQty(result[4] != null ? (BigDecimal) result[4] : null);
 				so.setCpStatus(result[5] != null ? (String) result[5] : null);
+				so.setBranchId( result[1] != null ? (String) result[1] : null);
+				so.setBranchName( result[23] != null ? (String) result[23] : null);
 				soMap.put(soId, so);
 			}
 
@@ -283,6 +288,7 @@ public class SalesOrderJswController {
 	            child.setItemStatus((String) result[13]);
 	            child.setMaterialDescription( (String) result[14]);
 	            child.setLocation( result[20] != null ? (String) result[20] : null);
+	            child.setWareHouseName(result[22] != null ? (String) result[22] : null);
 	            soChildMap.put(soChildId, child);
 	            isNewChild = true;
 	        }
@@ -290,9 +296,11 @@ public class SalesOrderJswController {
 			/* ======================= ALLOCATION DETAILS ======================== */
 	        SalesOrderChildAllocationResponse allocation =  new SalesOrderChildAllocationResponse();
 
+	        Integer soAllocationId = result[15] != null ? (Integer) result[15] : 0;
+
+	        allocation.setSoAllocationId(soAllocationId);
 			allocation.setInstructionId(result[7] != null ? (Integer) result[7] : null);
 			allocation.setInwardId(result[9] != null ? (Integer) result[9] : null);
-			allocation.setSoAllocationId(result[15] != null ? (Integer) result[15] : null);
 			allocation.setAllocatedqty((BigDecimal) result[16]);
 			allocation.setCoilNumber(result[17] != null ? (String) result[17] : "");
 			allocation.setQty(result[18] == null ? null : BigDecimal.valueOf(((Number) result[18]).doubleValue()));
@@ -301,8 +309,9 @@ public class SalesOrderJswController {
 			allocation.setStatus(result[21] != null ? (String) result[21] : "");
 			allocation.setSize("");
 
-	        child.getAllocationDetails().add(allocation);
-
+			if (soAllocationId != null && soAllocationId > 0) {
+				child.getAllocationDetails().add(allocation);
+			}
 			/* ======================= ADD ITEM TO SO ONLY ONCE ======================== */
 	        if (isNewChild) {
 	            so.getItemslist().add(child);
@@ -338,6 +347,22 @@ public class SalesOrderJswController {
 		return salesOrderService.bulkUpdate(request);
 	}
 
+	@PostMapping("/pdf")
+	public ResponseEntity<PdfResponseDto> downloadDeliveryPDF(@RequestBody ListPageSearchRequest request) throws DocumentException {
+		Path file = null;
+		byte[] bytes = null;
+		StringBuilder builder = new StringBuilder();
+		try {
+
+			file = Paths.get(salesOrderService.generatePdf(request).getAbsolutePath());
+			bytes = Files.readAllBytes(file);
+			builder.append(Base64.getEncoder().encodeToString(bytes));
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		}
+		String encodedFile = builder.toString();
+		return new ResponseEntity<>(new PdfResponseDto(encodedFile), HttpStatus.OK);
+	}
 
 	private String formatDate(Object value) {
 		if (value == null)

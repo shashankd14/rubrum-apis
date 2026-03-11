@@ -109,4 +109,9 @@ public interface DeliveryDetailsRepository extends JpaRepository<DeliveryDetails
    	@Query("update DeliveryDetails dc set dc.tallyStatus = 'COMPLETED', dc.tallyDate = CURRENT_TIMESTAMP where dc.deliveryId in (:dcList) ")
    	public void updateTallyStatus(@Param("dcList") List<Integer> dcList);
     
+	@Modifying
+	@Transactional
+	@Query("update DeliveryDetails set invAdjRemarks= :invAdjRemarks, zohoSyncStts = :zohoSyncStts where deliveryId =:deliveryId")
+	public int updateZohoSyncRemarks( @Param("deliveryId") int deliveryId, @Param("invAdjRemarks") String invAdjRemarks, @Param("zohoSyncStts") String zohoSyncStts);
+
 }

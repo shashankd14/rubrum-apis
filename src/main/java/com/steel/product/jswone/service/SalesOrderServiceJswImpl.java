@@ -1,5 +1,9 @@
 package com.steel.product.jswone.service;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -12,6 +16,7 @@ import javax.transaction.Transactional;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,18 +25,28 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring5.SpringTemplateEngine;
+import org.xhtmlrenderer.pdf.ITextRenderer;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lowagie.text.DocumentException;
 import com.steel.product.application.dao.InstructionRepository;
 import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.dto.quality.ListPageSearchRequest;
+import com.steel.product.application.dto.salesorder.SalesOrderListDTO;
+import com.steel.product.application.dto.salesorder.SalesOrderListResponse;
 import com.steel.product.application.entity.AdminUserEntity;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.entity.UserPartyMap;
 import com.steel.product.application.util.CommonUtil;
-import com.steel.product.jswone.entity.*;
+import com.steel.product.jswone.entity.JswoneAuditTrailEntity;
+import com.steel.product.jswone.entity.SalesOrderAllocationEntity;
+import com.steel.product.jswone.entity.SalesOrderJswEntity;
+import com.steel.product.jswone.entity.SalesOrderPacketsJswEntity;
+import com.steel.product.jswone.entity.StatusType;
 import com.steel.product.jswone.repository.JswoneAuditTrailRepository;
 import com.steel.product.jswone.repository.SalesOrderAllocationJswRepository;
 import com.steel.product.jswone.repository.SalesOrderChildJswRepository;
@@ -72,6 +87,9 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 
 	@Autowired
 	private JswoneAuditTrailRepository jswoneAuditTrailRepository;
+	
+	@Autowired
+	private SpringTemplateEngine templateEngine;
 
 	@Override
 	public ResponseEntity<Object> save(SalesOrderMainRequest salesOrderMainRequest, String option) {
@@ -217,23 +235,25 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				BigDecimal balanceQtyRequired = new BigDecimal("0.00");
 				BigDecimal totalAllocatedQty = new BigDecimal("0.00");
 				
-				SalesOrderPacketsJswEntity oldEntity = childRepository.findBySoChildId(request.getSoChildId());
-				BigDecimal allocatedQty = (oldEntity.getAllocatedSoqty() == null? BigDecimal.ZERO : oldEntity.getAllocatedSoqty());
+				SalesOrderPacketsJswEntity childEntity = childRepository.findBySoChildId(request.getSoChildId());
+				//BigDecimal allocatedQty = (childEntity.getAllocatedSoqty() == null? BigDecimal.ZERO : childEntity.getAllocatedSoqty());
 
+				BigDecimal allocatedQty = Optional.ofNullable(soAllocationRepository.getTotalAllocatedQtyBySoChildId(request.getSoChildId())).orElse(BigDecimal.ZERO);
+				
 				if (request.getAllocatedSoqty() == null) {
-					return new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"Please entered valid value in allocation quantity\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+					return new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"Please enter valid value in allocation quantity\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 				}
 				if (request.getAllocatedSoqty().compareTo(BigDecimal.ZERO) <= 0) {
-					return new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"Please entered valid value in allocation quantity\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+					return new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"Please enter valid value in allocation quantity\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 				}
-				if (request.getAllocatedSoqty().compareTo(oldEntity.getSoqty()) > 0) {
+				if (request.getAllocatedSoqty().compareTo(childEntity.getSoqty()) > 0) {
 					return new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"Entered quantity should be less than required quantity\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 				}
 				
-				balanceQtyRequired = oldEntity.getSoqty().subtract(allocatedQty);
+				balanceQtyRequired = childEntity.getSoqty().subtract(allocatedQty);
 				totalAllocatedQty = request.getAllocatedSoqty().add(allocatedQty);
 
-				if (balanceQtyRequired.compareTo(BigDecimal.ZERO) == 0 && "COMPLETED".equals(oldEntity.getAllocatedStts())) {
+				if (balanceQtyRequired.compareTo(BigDecimal.ZERO) == 0 && "COMPLETED".equals(childEntity.getAllocatedStts())) {
 					return new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"This item has already been allocated.\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 				}
 				if (balanceQtyRequired.compareTo(request.getAllocatedSoqty()) < 0) {
@@ -263,19 +283,21 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				if (request.getInstructionId() != null && request.getInstructionId() > 0 && request.getInwardEntryId() != null && request.getInwardEntryId() > 0 ) {
 					Optional<Instruction> instructionList = instructionRepository.findInstructionById(request.getInstructionId());
 					if (instructionList != null && instructionList.isPresent()) {
+						SalesOrderJswEntity soEntity  = salesOrderRepository.findBySoId(request.getSoId());
 						Instruction instruction = instructionList.get();
 						float instructionAllocatedQty = (instruction.getAllocatedSoqty() == null? 0.0f : instruction.getAllocatedSoqty());
 						Float totalAllocatedItemQty = instructionAllocatedQty + request.getAllocatedSoqty().floatValue();
-						instructionRepository.consolidatePlanner(request.getInstructionId(), totalAllocatedItemQty);
+						instructionRepository.consolidatePlanner(request.getInstructionId(), totalAllocatedItemQty, childEntity.getMmId(), soEntity.getSoNumber());
 					}
 				} else {
 					Optional<InwardEntry> inwardList = inwardEntryRepository.findById(request.getInwardEntryId());
 					if (inwardList != null && inwardList.isPresent()) {
+						SalesOrderJswEntity soEntity  = salesOrderRepository.findBySoId(request.getSoId());
 						InwardEntry inwardEntry = inwardList.get();
 						float inwardAllocatedQty = (inwardEntry.getAllocatedSoqty() == null? 0.0f : inwardEntry.getAllocatedSoqty());
 
 						Float totalAllocatedItemQty = inwardAllocatedQty + request.getAllocatedSoqty().floatValue();
-						inwardEntryRepository.consolidatePlanner(request.getInwardEntryId(), totalAllocatedItemQty);
+						inwardEntryRepository.consolidatePlanner(request.getInwardEntryId(), totalAllocatedItemQty, childEntity.getMmId(), soEntity.getSoNumber());
 					}
 				}
 			}
@@ -808,8 +830,15 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 					inwardEntryRepository.unAllocatCP(alloObj.getInwardEntryId());
 				}
 			}
-			//salesOrderRepository.unAllocate(req.getSoAllocationId(), alloObj.getAllocatedSoqty());
 			soAllocationRepository.deleteById(req.getSoAllocationId());
+			
+			BigDecimal total = Optional.ofNullable(soAllocationRepository.getTotalAllocatedQtyBySoChildId(alloObj.getSoChildId())).orElse(BigDecimal.ZERO);
+			
+			if (total != null && total.compareTo(BigDecimal.ZERO) > 0) {
+				childRepository.consolidatePlanner(alloObj.getSoChildId(), total, "PENDING", "", commonUtil.getUserId());
+			} else {
+				childRepository.consolidatePlanner(alloObj.getSoChildId(), BigDecimal.ZERO, "PENDING", "", commonUtil.getUserId());			
+			}
 			responseEntity = ResponseEntity.ok("{\"status\":\"success\",\"message\": \"Item has been unallocated successfully.\"}");
 		} else {
 			responseEntity = new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"Please enter valid value\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -817,5 +846,106 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 		return responseEntity;
 	}
 
+	@Override
+	public File generatePdf(ListPageSearchRequest request) throws IOException, DocumentException {
+		Context context = getSODetailsContext(request);
+		String html = loadAndFillSOTemplate(context);
+		return renderPdfInstruction(html, "so", "" + request.getSoId(), "SO_PDF");
+	}
+	
+	private Context getSODetailsContext(ListPageSearchRequest request) {
+		Context context = new Context();
+		List<Object[]> packetsList = salesOrderRepository.soDetailsBySoId(request.getSoId());
+
+		SalesOrderListResponse resp = new SalesOrderListResponse();
+		Float dweightTotal=0f;
+
+		for (Object[] result : packetsList) {
+			SalesOrderListDTO child = new SalesOrderListDTO();
+
+			resp.setPartyId(result[8] != null ? Integer.parseInt(result[8].toString()) : null);
+			resp.setPartyName(result[9] != null ? (String) result[9] : null);
+			resp.setSoStatus(result[12] != null ? (String) result[12] : null);
+			resp.setSoNumber(result[14] != null ? (String) result[14] : null);
+			resp.setSoId(result[15] != null ? Integer.parseInt(result[15].toString()) : null);
+			resp.setCustomerCode(result[18] != null ? (String) result[18] : null);
+			resp.setOrderDate(result[19] != null ? (String) result[19] : null);
+			resp.setCagtegoryName(result[20] != null ? (String) result[20] : null);
+			resp.setProcessCenter( resp.getPartyName());
+
+			child.setInstructionId(result[0] != null ? (Integer) result[0] : null);
+			child.setInwardEntryId(result[1] != null ? (Integer) result[1] : null);
+			child.setPlannedNoofPieces( result[21] != null ? (Integer) result[21] : null);
+			child.setCoilNo(result[2] != null ? (String) result[2] : null);
+			
+			child.setCustomerBatchNo(result[3] != null ? (String) result[3] : null);
+			child.setMaterialGrade(result[4] != null ? (String) result[4] : null);
+			child.setMaterialDesc(result[5] != null ? (String) result[5] : null);
+			child.setFthickness(result[6] != null ? (Float) result[6] : null);
+			child.setProcessing("CTL");
+			child.setPackingMode("Loose Bundle");
+			child.setSpecilaInstructions("Loose Bundle");
+			child.setDiagonal("Max. 3.00");
+			child.setEdgeBurr("Max 3% of Thick");
+
+			try {
+				Float dweight;
+				Float dwidth;
+				Float dlength;
+				dweight = (result[7] != null ? (Float) result[7] : null);
+				dwidth = (result[10] != null ? (Float) result[10] : null);
+				dlength = (result[11] != null ? (Float) result[11] : null);
+				child.setFwidth(dwidth.floatValue());
+				child.setFweight(dweight.floatValue());
+				child.setFlenghth(dlength.floatValue());
+			} catch (ClassCastException e) {
+				Double dweight1 = (result[7] != null ? (Double) result[7] : null);
+				Double dwidth1 = (result[10] != null ? (Double) result[10] : null);
+				Double dlength1 = (result[11] != null ? (Double) result[11] : null);
+				child.setFwidth(dwidth1.floatValue());
+				child.setFweight(dweight1.floatValue());
+				child.setFlenghth(dlength1.floatValue());
+			}
+			String formName = (result[22] != null ? (String) result[22] : null);
+			String coilSKU		= formName+" "+child.getMaterialGrade()+ " "+child.getFthickness() + " X  "+ child.getFwidth() + " X  "+ child.getFlenghth();
+			String packetSKU	= "Sheet"+" "+child.getMaterialGrade()+ " "+child.getFthickness() + " X  "+ child.getFwidth()  + " X  "+ child.getFlenghth();
+
+			child.setCoilSKU(coilSKU);
+			child.setFinalProcessingSKU(packetSKU);
+
+			dweightTotal=dweightTotal+child.getFweight();
+			child.setPacketStatus(result[13] != null ? (String) result[13] : null);
+			resp.getChildListResp().add(child);
+		}
+		resp.setFweightTotal(dweightTotal.floatValue());
+		context.setVariable("soDetails", resp);
+		return context;
+	}
+
+	private String loadAndFillSOTemplate(Context context) {
+		return templateEngine.process("sonew_view", context);
+	}
+
+	private File renderPdfInstruction(String html, String filename, String id, String processType)
+			throws IOException, DocumentException {
+		File file = File.createTempFile("aspen-steel-" + filename, ".pdf");
+		File labelFile = File.createTempFile("so_details_" + id, ".pdf");
+		OutputStream outputStream = new FileOutputStream(file);
+		ITextRenderer renderer = new ITextRenderer(20f * 4f / 3f, 20);
+		renderer.setDocumentFromString(html, new ClassPathResource("/").getURL().toExternalForm());
+		renderer.layout();
+		renderer.createPDF(outputStream);
+
+		outputStream.close();
+		file.deleteOnExit();
+		labelFile.deleteOnExit();
+		return file;
+	}
+	
+	
+	
+	
+	
+	
 	
 }

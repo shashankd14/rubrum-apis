@@ -29,6 +29,10 @@ public class DeliveryResponseDto {
     private String customerInvoiceNo;
 
     private Date customerInvoiceDate;
+    
+    private String invAdjRemarks;
+
+    private String zohoSyncStts;
 
     private List<InstructionResponseDto> instruction;
 
@@ -134,6 +138,22 @@ public class DeliveryResponseDto {
 
 	public void setLaminationId(Integer laminationId) {
 		this.laminationId = laminationId;
+	}
+
+	public String getInvAdjRemarks() {
+		return invAdjRemarks;
+	}
+
+	public void setInvAdjRemarks(String invAdjRemarks) {
+		this.invAdjRemarks = invAdjRemarks;
+	}
+
+	public String getZohoSyncStts() {
+		return zohoSyncStts;
+	}
+
+	public void setZohoSyncStts(String zohoSyncStts) {
+		this.zohoSyncStts = zohoSyncStts;
 	}
 
 

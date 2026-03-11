@@ -203,9 +203,10 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 	Page<Object[]> findAllEndUserTagWiseData(@Param("endUserTagId") Integer endUserTagId, Pageable pageable);
 
 	@Modifying
-	@Query(value = "update product_tblinwardentry set allocated_soqty = :allocatedSoqty where inwardentryid= :inwardentryid", nativeQuery = true)
-	public void consolidatePlanner(@Param("inwardentryid") Integer inwardentryid, @Param("allocatedSoqty") Float totalAllocatedQty);
-
+	@Query(value = "update product_tblinwardentry set allocated_soqty = :allocatedSoqty, allocated_mmid= :mmId, sono= :soNo where inwardentryid= :inwardentryid", nativeQuery = true)
+	public void consolidatePlanner(@Param("inwardentryid") Integer inwardentryid,
+			@Param("allocatedSoqty") Float totalAllocatedQty, @Param("mmId") String mmId, @Param("soNo") String soNo);
+	
 	@Query(value = "select inwardentryid, coilnumber, coilage, fthickness, flength, fwidth, material, "
 			+ " gradename, subgradename,brandname, partyname,customerbatchid, mm_id, mm_description from ("
 			+ " select distinct inw.inwardentryid ,inw.coilnumber, DATEDIFF(curdate(), date_format(inw.dreceiveddate, '%Y-%m-%d')) coilage,"
@@ -387,8 +388,9 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 
 	@Modifying
 	@Transactional
-	@Query("update InwardEntry set zohoSyncStts= :status, bill_id = :billId where customerinvoiceno=:customerinvoiceno")
-	public int updateZohoSyncStatusByPoInvNo(@Param("customerinvoiceno") String customerinvoiceno, @Param("status") String status, String billId);
+	@Query("update InwardEntry set zohoSyncStts= :status, bill_id = :billId, batch_id=:batchId where customerinvoiceno=:customerinvoiceno")
+	public int updateZohoSyncStatusByPoInvNo(@Param("customerinvoiceno") String customerinvoiceno,
+			@Param("status") String status, @Param("billId") String billId, @Param("batchId") String batchId);
 
 	@Modifying
 	@Transactional
@@ -409,6 +411,5 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 	@Modifying
 	@Query(value = "update product_tblinwardentry set allocated_soqty = 0 where inwardentryid= :inwardentryid", nativeQuery = true)
 	public void unAllocatCP(@Param("inwardentryid") Integer inwardentryid);
-
 
 }

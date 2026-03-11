@@ -24,8 +24,8 @@ public class WarehouseMasterJswEntity {
 	@Column(name = "ware_house_id")
 	private String wareHouseId;
 
-	@Column(name = "branch")
-	private String branch;
+	@Column(name = "branch_id")
+	private String branchId;
 
 	@Column(name = "address")
 	private String address;

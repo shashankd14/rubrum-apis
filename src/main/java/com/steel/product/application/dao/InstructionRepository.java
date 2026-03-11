@@ -167,7 +167,6 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
 			@Param("classificationId") Integer classificationId);
 
 	@Modifying
-	//@Transactional
 	@Query(value = "update product_instruction set additional_weight= :additionalWeight where instructionid= :instructionId", nativeQuery = true)
 	public void updateAdditionalWeight(@Param("instructionId") Integer instructionId,
 			@Param("additionalWeight") Float additionalWeight);
@@ -178,37 +177,37 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
 	int updateSonoMmid(@Param("sono") String sono, @Param("mmid") String mmid,
 			@Param("instructionId") int instructionId);
 	
-	 
 	@Modifying
-	@Query(value = "update product_instruction set allocated_soqty = :allocatedSoqty where instructionid= :instructionId", nativeQuery = true)
-	public void consolidatePlanner(@Param("instructionId") Integer instructionId,
-			@Param("allocatedSoqty") Float totalAllocatedQty);
-	
+	@Query(value = "update product_instruction set allocated_soqty = :allocatedSoqty, mmid= :mmId, sono= :soNo where instructionid= :instructionId", nativeQuery = true)
+	public void consolidatePlanner(@Param("instructionId") Integer instructionId, @Param("allocatedSoqty") Float totalAllocatedQty, 
+			@Param("mmId") String mmId, @Param("soNo") String soNo);
+
 	@Query(value = "select inwardentryid, packet_id, CAST(weight AS DECIMAL(10,2)) weight, CAST(fquantity AS DECIMAL(10,2)) fquantity, classification_tag,status from"
 			+ " (SELECT parent.inwardentryid, parent.fquantity, child.status, instructionid packet_id, ifnull(actualweight, plannedweight) weight, "
 			+ " (SELECT count(distinct inss.instructionid) cnt FROM product_instruction inss where inss.inwardid=parent.inwardentryid  and status!=4 and inss.parentgroupid=child.groupid) as siltcutcnt, "
 			+ " (select classification_name from product_packet_classification where classification_id=child.packet_classification_id) as classification_tag "
 			+ " FROM product_tblinwardentry parent, product_instruction child "
-			+ " where child.isdeleted=0 and parent.inwardentryid = child.inwardid and child.status in (3,4) ) a "
+			+ " where child.isdeleted=0 and parent.inwardentryid = child.inwardid and child.status in (2,3,4) ) a "
 			+ " where inwardentryid= :inwardId and CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END order by packet_id asc", 
 		nativeQuery = true)
 	List<Object[]> findPacketsForPositiveTolerence(@Param("inwardId") Integer inwardId);
 	
-	@Query(value = " select sono, dt, vehicleno, mmid, sum(actualweight), wearhouse_id, branch,additional_weight, zbooks_so from ( "
+	@Query(value = " select sono, dt, vehicleno, mmid, round((sum(actualweight) / 1000),3) , wearhouse_id, branch_id, round((additional_weight / 1000),3), zbooks_so from ( "
 			+ "  SELECT ins.sono, DATE_FORMAT(dc.createdon, '%Y-%m-%d') dt,vehicleno , ins.mmid, ins.actualweight,"
 			+ " (select wearhouse_id from jsw_sales_order so, jsw_sales_order_child child where so.so_id=child.so_id and child.mm_id = ins.mmid and so.so_number = ins.sono limit 1) wearhouse_id , "
 			+ " (select zbooks_so from jsw_sales_order so, jsw_sales_order_child child where so.so_id=child.so_id and child.mm_id = ins.mmid and so.so_number = ins.sono limit 1) zbooks_so , "
-			+ " (select branch from jsw_sales_order so, jsw_sales_order_child child, jsw_warehouse_master wh where so.so_id=child.so_id and wh.ware_house_id=child.wearhouse_id and child.mm_id = ins.mmid and so.so_number = ins.sono limit 1) branch, "
+			+ " (select so.branch_id from jsw_sales_order so, jsw_sales_order_child child, jsw_warehouse_master wh where so.so_id=child.so_id and wh.ware_house_id=child.wearhouse_id and child.mm_id = ins.mmid and so.so_number = ins.sono limit 1) branch_id, "
 			+ " sum(additional_weight) additional_weight "
 			+ " FROM product_tbl_delivery_details dc, product_instruction ins "
 			+ " WHERE ins.deliveryid=dc.deliveryid and dc.deliveryid = :dcId ) a "
-			+ " where 1=1 group by sono, dt, vehicleno, mmid, wearhouse_id, branch, zbooks_so ", nativeQuery = true)
+			+ " where 1=1 group by sono, dt, vehicleno, mmid, wearhouse_id, branch_id, zbooks_so ", nativeQuery = true)
 	public List<Object[]> prepareInvAdjustmentRequest(Integer dcId);
 	
-	@Query(value = " select actualweight, inwmmid,coilnumber from ( "
-			+ " SELECT  ins.mmid, ins.actualweight,"
+	@Query(value = " select round((actualweight / 1000),3), inwmmid,coilnumber,batch_id from ( "
+			+ " SELECT ins.mmid, ins.actualweight, "
 			+ " (select inw.mm_id from product_tblinwardentry inw where inw.inwardentryid = ins.inwardid limit 1) inwmmid, "
-			+ " (SELECT inw.coilnumber FROM product_tblinwardentry inw WHERE  inw.inwardentryid=ins.inwardid LIMIT 1) coilnumber"
+			+ " (SELECT inw.coilnumber FROM product_tblinwardentry inw WHERE inw.inwardentryid=ins.inwardid LIMIT 1) coilnumber,"
+			+ " (SELECT inw.batch_id FROM product_tblinwardentry inw WHERE inw.inwardentryid=ins.inwardid LIMIT 1) batch_id"
 			+ " FROM product_tbl_delivery_details dc, product_instruction ins "
 			+ " WHERE ins.deliveryid=dc.deliveryid and dc.deliveryid = :dcId ) a "
 			+ " where mmid = :mmid", nativeQuery = true)

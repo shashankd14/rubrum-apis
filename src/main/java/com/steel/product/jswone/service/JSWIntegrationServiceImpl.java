@@ -36,6 +36,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.steel.product.application.dao.DeliveryDetailsRepository;
 import com.steel.product.application.dao.InstructionRepository;
 import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.dto.delivery.DeliveryDto;
@@ -114,6 +115,9 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 
 	@Autowired
 	private InwardEntryRepository inwardEntryRepository;
+
+	@Autowired
+	private DeliveryDetailsRepository deliveryDetailsRepository;
 	
 	@Autowired
 	private InstructionRepository instructionRepository;
@@ -530,6 +534,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 		JswoneAuditTrailEntity kk =new JswoneAuditTrailEntity();
 		ObjectMapper mapper = new ObjectMapper();
 		String billId="";
+	    String batchId = "";
 		try {
 			RestTemplate restTemplate = new RestTemplate();
 			Map<String, String> propertyMap = commonUtil.getAllProperties();
@@ -555,11 +560,26 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 					billId=response.getBill().getBill_id();
 					req.setBillId(billId);
 				}
+				
+			    try {
+					JsonNode root = mapper.readTree(res.getBody().toString());
+					JsonNode bill = root.path("bill");
+					JsonNode lineItems = bill.path("line_items");
+					if (lineItems.isArray() && lineItems.size() > 0) {
+						JsonNode batches = lineItems.get(0).path("batches");
+						if (batches.isArray() && batches.size() > 0) {
+							batchId = batches.get(0).path("batch_id").asText(null);
+							log.info("Batch ID = " + batchId);
+						}
+					}
+				} catch (Exception e) {
+				}
 			}
+			
 			kk.setDestinationResponse(res.getBody().toString());
 			jswoneAuditTrailRepository.save(kk);
 			if (response != null && "0".equals( response.getCode()) ) {
-				inwardEntryRepository.updateZohoSyncStatusByPoInvNo(req.getPoInvoiceNo(), "SUCCESS", billId);
+				inwardEntryRepository.updateZohoSyncStatusByPoInvNo(req.getPoInvoiceNo(), "SUCCESS", billId, batchId);
 				kk.setStatusCode(""+res.getStatusCode());
 				response.setCode("0");
 				response.setMessage( response.getMessage());
@@ -569,6 +589,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 				response.setMessage( response.getMessage());
 			}
 			kk.setSourceRespone( mapper.writeValueAsString(response));
+			inwardEntryRepository.updateZohoSyncRemarks(req.getPoInvoiceNo(),  response.getMessage(), billId);
 		} catch (HttpClientErrorException | HttpServerErrorException ex) {
 			String error = ex.getResponseBodyAsString();
 			kk.setStatusCode("" + ex.getStatusCode().value());
@@ -587,6 +608,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 					response.setCode(code);
 					response.setMessage(message);
 					kk.setSourceRespone( mapper.writeValueAsString(response));
+					inwardEntryRepository.updateZohoSyncRemarks(req.getPoInvoiceNo(), outerMessage, billId);
 				} else {
 					log.info("No inner JSON found in message");
 				}
@@ -633,8 +655,6 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 		try {
 			kk.setSourceRespone( mapper.writeValueAsString(response));
 			jswoneAuditTrailRepository.save(kk);
-			String responseStr = objectMapper.writeValueAsString(response);
-			inwardEntryRepository.updateZohoSyncRemarks(req.getPoInvoiceNo(), responseStr, billId);
 		} catch (JsonProcessingException e) {
 		}
 		return response;
@@ -773,11 +793,12 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 	}
 
 	@Override
-	public Map<String, Object> allpoinvlist(ListPageSearchRequest listPageSearchRequest) {
+	public Map<String, Object> allpoinvlist(ListPageSearchRequest request) {
 
-		Pageable pageable = PageRequest.of((listPageSearchRequest.getPageNo() - 1), listPageSearchRequest.getPageSize());
+		Pageable pageable = PageRequest.of((request.getPageNo() - 1), request.getPageSize());
 
-		Page<Object[]> poDetails = powseMmidDetailsRepository.allpoinvlist(listPageSearchRequest.getSearchText(), pageable);
+		Page<Object[]> poDetails = powseMmidDetailsRepository.allpoinvlist(request.getSearchText(), (request.getPartyId() == null ? 0 : request.getPartyId()), pageable);
+		
 		Map<String, POInvoiceListResponse> soMap = new LinkedHashMap<>();
 
 		for (Object[] result : poDetails) {
@@ -790,11 +811,14 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			kk.setManualPoFlag( result[3] != null ? result[3].toString() : "Y");
 			kk.setBillId( result[4] != null ? result[4].toString() : "");
 			kk.setZohoDocumentUploadStts(result[5] != null ? result[5].toString() : "PENDING");
-			kk.setZohoDocumentUploadRemarks( result[6] != null ? result[6].toString() : "");
+			kk.setZohoDocumentUploadRemarks(result[6] != null ? result[6].toString() : "");
+			kk.setInwardDate((result[11] != null ? result[11].toString() : null));
+			kk.setLocationName((result[12] != null ? result[12].toString() : null));
+			kk.setPoNumber( (result[13] != null ? result[13].toString() : null));
 			
 			child.setCoilNumber(result[7] != null ? (String) result[7] : null);
-			child.setCustomerBatchId( result[8] != null ? (String) result[8] : null);
-			child.setCoilStatus( result[9] != null ? (String) result[9] : null);
+			child.setCustomerBatchId(result[8] != null ? (String) result[8] : null);
+			child.setCoilStatus(result[9] != null ? (String) result[9] : null);
 			child.setInvoiceDate((result[10] != null ? result[10].toString() : null));
 
 			if (soMap != null && soMap.get(kk.getPoInvoiceNo()) != null) {
@@ -1034,9 +1058,9 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 				response.setMessage( response.getMessage());
 			}
 			audit.setSourceRespone( mapper.writeValueAsString(response));
+			deliveryDetailsRepository.updateZohoSyncRemarks(request.getDeliveryId(), response.getMessage(), "SUCCESS");
 		} catch (HttpClientErrorException | HttpServerErrorException ex) {
 			String error = ex.getResponseBodyAsString();
-			log.info("error === "+error);
 			audit.setStatusCode("" + ex.getStatusCode().value());
 			audit.setDestinationResponse( error);
 			try {
@@ -1045,6 +1069,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 				String message = outer.path("message").asText();
 				response.setCode(code);
 				response.setMessage(message);
+				deliveryDetailsRepository.updateZohoSyncRemarks(request.getDeliveryId(), message, "FAIL");
 			} catch (Exception w) {
 				
 			}
@@ -1115,16 +1140,18 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 				BigDecimal totalWeight1 = (resultfrom[0] == null ? null : new BigDecimal(String.valueOf(resultfrom[0])));
 				String mmid1 = resultfrom[1] != null ? resultfrom[1].toString() : null;
 				String coilNumber = resultfrom[2] != null ? resultfrom[2].toString() : null;
+				String batchId = resultfrom[3] != null ? resultfrom[3].toString() : null;
 				
 				FromSku fromSku = new FromSku();
 				fromSku.setSkuId(mmid1);
-				fromSku.setQuantity_adjusted(totalWeight1);
-				fromSku.setUom("MT");
+				//fromSku.setQuantity_adjusted(totalWeight1); 
+				fromSku.setQuantity_adjusted(totalWeight1.abs().negate());
+				fromSku.setUom("MT"); 
 				lineitem.getFromSkus().add(fromSku);
 
 				InventoryAdjustmentBatch batchesFrom=new InventoryAdjustmentBatch();
 				batchesFrom.setBatch_number( coilNumber);
-				batchesFrom.setBatch_id("");
+				batchesFrom.setBatch_id(batchId);
 				batchesFrom.setIn_quantity(totalWeight1);
 				fromSku.getBatches().add(batchesFrom); 
 								
@@ -1136,7 +1163,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 
 					InventoryAdjustmentBatch batches = new InventoryAdjustmentBatch();
 					batches.setBatch_number(coilNumber);
-					batches.setBatch_id("");
+					batches.setBatch_id(batchId);
 					batches.setIn_quantity(ptWeight);
 					ptQuantity.getBatches().add(batches);
 					lineitem.getPtQuantities().add(ptQuantity);

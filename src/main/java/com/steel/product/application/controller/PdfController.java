@@ -11,6 +11,8 @@ import com.steel.product.application.dto.pdf.PdfResponseDto;
 import com.steel.product.application.service.PdfService;
 import com.steel.product.application.service.QualityService;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,7 @@ import java.util.Base64;
 
 @RestController
 @CrossOrigin
+@Log4j2
 @RequestMapping("/pdf")
 public class PdfController {
 	
@@ -62,7 +65,8 @@ public class PdfController {
 
     @PostMapping("/delivery")
     public ResponseEntity<PdfResponseDto> downloadDeliveryPDF(@RequestBody DeliveryPdfDto deliveryPdfDto, HttpServletResponse response) {
-        Path file = null;
+    	log.info("Inside downloadDeliveryPDF");
+    	Path file = null;
         byte[] bytes = null;
         StringBuilder builder = new StringBuilder();
         try {

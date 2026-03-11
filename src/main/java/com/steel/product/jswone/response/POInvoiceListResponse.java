@@ -21,6 +21,12 @@ public class POInvoiceListResponse {
 	private String zohoDocumentUploadStts;
 
 	private String zohoDocumentUploadRemarks;
+
+	private String inwardDate;
+
+	private String locationName;
+
+	private String poNumber;
 	
 	private List<POInvoiceListChildResponse> coilList = new ArrayList<>();
 

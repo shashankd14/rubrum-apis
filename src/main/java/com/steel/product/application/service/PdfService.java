@@ -75,7 +75,8 @@ public class PdfService {
     }
 
     public File generateDeliveryPdf(DeliveryPdfDto deliveryPdfDto) throws IOException, org.dom4j.DocumentException, DocumentException {
-        Context context = getDeliveryContext(deliveryPdfDto);
+    	log.info("Inside generateDeliveryPdf");
+    	Context context = getDeliveryContext(deliveryPdfDto);
         String html = loadAndFillDeliveryTemplate(context, deliveryPdfDto);
         int deliverId=0;
         
@@ -86,6 +87,7 @@ public class PdfService {
             	deliverId = instruction.getDeliveryDetails().getDeliveryId();
             }
         }
+    	log.info("Before rendering the PDF");
         return renderPdfInstruction(html, "delivery", ""+deliverId, "DC_PDF");
     }
 
@@ -143,12 +145,13 @@ public class PdfService {
 				fileUrl = awsS3Service.uploadPDFFileToS3Bucket(bucketName, file, id);
 				instructionService.updateS3PlanPDF(id, fileUrl);
 			} else if("DC_PDF".equals(processType)) {
+				log.info("uploading the file to AWS for DC_PDF  == "+"DC_"+id+", file == "+file);
 				fileUrl = awsS3Service.uploadPDFFileToS3Bucket(bucketName, file, "DC_"+id);
 				instructionService.updateS3DCPDF(Integer.parseInt(id), "DC_"+id);
 			}
-			System.out.println("fileUrl == "+fileUrl);
+			log.info("fileUrl == "+fileUrl);
 		} catch (Exception e) {
-			System.out.println("Error while uploading pdf - " + e.getMessage());
+			log.info("Error while uploading pdf - " + e.getMessage());
 		}
        
 		// below code is for label print file save in S3

@@ -512,7 +512,9 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 			List<PriceCalculateDTO> priceDetailsList=new ArrayList<>();
 			List<PriceCalculateDTO> newPriceDetailsList=new ArrayList<>();
 			List<Integer> statusIdList=new ArrayList<>();
-			statusIdList.add(4);statusIdList.add(3);
+			statusIdList.add(4);
+			statusIdList.add(3);
+			
 			List<Integer> locationList  = new ArrayList<>(); 
 			List<Instruction> instructions = instructionService.findAllByInstructionIdInAndStatus(deliveryItemDetails.stream().map(d -> d.getInstructionId()).collect(Collectors.toList()), statusIdList);
 			
@@ -616,7 +618,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 		PriceCalculateResponseDTO priceCalculateResponseDTO= new PriceCalculateResponseDTO();
         try {
 			LOGGER.info("in validatePriceMapping delivery api");
-			//List<DeliveryItemDetails> inwardList = deliveryDto.getInwardList();
+			List<Integer> locationList  = new ArrayList<>(); 
 			boolean mainStts = false;
 			List<PriceCalculateDTO> priceDetailsList=new ArrayList<>();
 
@@ -624,10 +626,12 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 				Integer inwardId  =  req.getInwardId();
 				InwardEntry inwardEntry =  inwardEntryService.getByEntryId(inwardId);
 		        MaterialResponseDto materialGradeDto = materialMasterJswService.getGradeProductName(inwardEntry.getMmId());
-					 
+				
 				boolean innerStts = false;
 				PriceCalculateDTO priceCalculateDTO = priceMasterService.calculateInwardWisePrice(inwardEntry, deliveryDto.getPackingRateId(), deliveryDto.getLaminationId());
 
+		        locationList.add(inwardEntry.getParty().getnPartyId());
+		        priceCalculateDTO.setLocationId(inwardEntry.getParty().getnPartyId());
 				priceCalculateDTO.setCoilNo(inwardEntry.getCoilNumber());
 				priceCalculateDTO.setCustomerBatchNo(inwardEntry.getCustomerBatchId());
 				priceCalculateDTO.setInstructionId(inwardEntry.getInwardEntryId());
@@ -669,15 +673,21 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 				priceDetailsList.add(priceCalculateDTO);
 				mainStts = innerStts;
 			}
-			
+			Map<Integer, List<String>> locationWiseSOMap = salesOrderService.fetchMappedSOList(locationList);
+			List<PriceCalculateDTO> newPriceDetailsList=new ArrayList<>();
+
 			priceCalculateResponseDTO.setValidationStatus(mainStts);
 			if(priceCalculateResponseDTO.isValidationStatus()) {
 			    priceCalculateResponseDTO.setRemarks("Thickness range found for all selected Inwards");
 			} else {
 			    priceCalculateResponseDTO.setRemarks("This thickness range already has a value (rate) defined. Please recheck.");
 			}
-			priceCalculateResponseDTO.setPriceDetailsList(priceDetailsList);
-      
+
+			for(PriceCalculateDTO priceCalculateDTO : priceDetailsList) {
+				priceCalculateDTO.setMappedSOList(locationWiseSOMap.get(priceCalculateDTO.getLocationId()));
+				newPriceDetailsList.add(priceCalculateDTO);
+			}
+			priceCalculateResponseDTO.setPriceDetailsList(newPriceDetailsList);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

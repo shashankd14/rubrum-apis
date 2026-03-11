@@ -21,6 +21,10 @@ public class SalesOrderCPMainResponse {
 
 	private String cpStatus;
 
+	private String branchId;
+
+	private String branchName;
+	
 	private String expectedDeliveryDate;
 
 	private List<SalesOrderCPChildResponse> itemslist = new ArrayList<>();

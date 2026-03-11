@@ -65,6 +65,12 @@ public class DeliveryDetails {
     @Column(name = "tally_date")
     private Date tallyDate;
 
+    @Column(name = "inv_adj_remarks")
+    private String invAdjRemarks;
+
+    @Column(name = "zoho_sync_stts")
+    private String zohoSyncStts;
+
     @OneToMany(mappedBy = "deliveryDetails", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH,
             CascadeType.REFRESH })
     private Set<Instruction> instructions;
@@ -200,8 +206,8 @@ public class DeliveryDetails {
         deliveryResponseDto.setVehicleNo(deliveryDetails.getVehicleNo());
         deliveryResponseDto.setPackingRateId( deliveryDetails.getPackingRateId());
         deliveryResponseDto.setLaminationId( deliveryDetails.getLaminationId() );
-  
-//        deliveryResponseDto.setInstruction(deliveryDetails.getInstruction().stream().map(i -> Instruction.valueOf(i)).collect(Collectors.toList()));
+        deliveryResponseDto.setInvAdjRemarks( deliveryDetails.getInvAdjRemarks() );
+        deliveryResponseDto.setZohoSyncStts( deliveryDetails.getZohoSyncStts() );
         return deliveryResponseDto;
     }
 
@@ -243,6 +249,22 @@ public class DeliveryDetails {
 
 	public void setDeliveryType(String deliveryType) {
 		this.deliveryType = deliveryType;
+	}
+
+	public String getInvAdjRemarks() {
+		return invAdjRemarks;
+	}
+
+	public void setInvAdjRemarks(String invAdjRemarks) {
+		this.invAdjRemarks = invAdjRemarks;
+	}
+
+	public String getZohoSyncStts() {
+		return zohoSyncStts;
+	}
+
+	public void setZohoSyncStts(String zohoSyncStts) {
+		this.zohoSyncStts = zohoSyncStts;
 	}
     
     

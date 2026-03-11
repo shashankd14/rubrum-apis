@@ -1,5 +1,6 @@
 package com.steel.product.jswone.service;
 
+import com.lowagie.text.DocumentException;
 import com.steel.product.application.dto.quality.ListPageSearchRequest;
 import com.steel.product.jswone.request.CPSplitRequest;
 import com.steel.product.jswone.request.SalesOrderBulkRequest;
@@ -8,6 +9,8 @@ import com.steel.product.jswone.request.SalesOrderExternalRequest;
 import com.steel.product.jswone.request.SalesOrderMainRequest;
 import com.steel.product.jswone.response.SalesOrderChildAllocationResponse;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -38,4 +41,6 @@ public interface SalesOrderJswService {
 	ResponseEntity<Object> consolidateSplit(CPSplitRequest cpSplitRequest);
 
 	ResponseEntity<Object> unAllocate(SalesOrderChildAllocationResponse req);
+
+	File generatePdf(ListPageSearchRequest request) throws IOException, DocumentException;
 }
