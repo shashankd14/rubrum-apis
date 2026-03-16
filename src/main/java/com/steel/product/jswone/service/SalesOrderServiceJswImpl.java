@@ -234,7 +234,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			for (SalesOrderChildRequest request : salesOrderPacketsListNew) {
 				BigDecimal balanceQtyRequired = new BigDecimal("0.00");
 				BigDecimal totalAllocatedQty = new BigDecimal("0.00");
-				
+
 				SalesOrderPacketsJswEntity childEntity = childRepository.findBySoChildId(request.getSoChildId());
 				//BigDecimal allocatedQty = (childEntity.getAllocatedSoqty() == null? BigDecimal.ZERO : childEntity.getAllocatedSoqty());
 
@@ -243,25 +243,26 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				if (request.getAllocatedSoqty() == null) {
 					return new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"Please enter valid value in allocation quantity\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 				}
-				if (request.getAllocatedSoqty().compareTo(BigDecimal.ZERO) <= 0) {
+				BigDecimal allocatedSoqty = request.getAllocatedSoqty().multiply(new BigDecimal("1000"));
+				if (allocatedSoqty.compareTo(BigDecimal.ZERO) <= 0) {
 					return new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"Please enter valid value in allocation quantity\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 				}
-				if (request.getAllocatedSoqty().compareTo(childEntity.getSoqty()) > 0) {
+				if (allocatedSoqty.compareTo(childEntity.getSoqty()) > 0) {
 					return new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"Entered quantity should be less than required quantity\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 				}
 				
 				balanceQtyRequired = childEntity.getSoqty().subtract(allocatedQty);
-				totalAllocatedQty = request.getAllocatedSoqty().add(allocatedQty);
+				totalAllocatedQty = allocatedSoqty.add(allocatedQty);
 
 				if (balanceQtyRequired.compareTo(BigDecimal.ZERO) == 0 && "COMPLETED".equals(childEntity.getAllocatedStts())) {
 					return new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"This item has already been allocated.\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 				}
-				if (balanceQtyRequired.compareTo(request.getAllocatedSoqty()) < 0) {
+				if (balanceQtyRequired.compareTo(allocatedSoqty) < 0) {
 					return new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"Enter the required quantity only ("+balanceQtyRequired+") }", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 				}
 				
 				String allocationStts = "PENDING";
-				if (balanceQtyRequired.compareTo(request.getAllocatedSoqty()) == 0) {
+				if (balanceQtyRequired.compareTo(allocatedSoqty) == 0) {
 					allocationStts = "COMPLETED";
 				}
 				childRepository.consolidatePlanner(request.getSoChildId(), 
@@ -275,7 +276,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				allocation.setInwardEntryId(request.getInwardEntryId());
 				allocation.setSoChildId(request.getSoChildId());
 				allocation.setSoId(request.getSoId());
-				allocation.setAllocatedSoqty(request.getAllocatedSoqty());
+				allocation.setAllocatedSoqty(allocatedSoqty);
 				allocation.setAllocatedStts(allocationStts);
 				allocation.setAllocationBy(commonUtil.getUserId());
 				soAllocationRepository.save(allocation);
@@ -286,7 +287,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 						SalesOrderJswEntity soEntity  = salesOrderRepository.findBySoId(request.getSoId());
 						Instruction instruction = instructionList.get();
 						float instructionAllocatedQty = (instruction.getAllocatedSoqty() == null? 0.0f : instruction.getAllocatedSoqty());
-						Float totalAllocatedItemQty = instructionAllocatedQty + request.getAllocatedSoqty().floatValue();
+						Float totalAllocatedItemQty = instructionAllocatedQty + allocatedSoqty.floatValue();
 						instructionRepository.consolidatePlanner(request.getInstructionId(), totalAllocatedItemQty, childEntity.getMmId(), soEntity.getSoNumber());
 					}
 				} else {
@@ -296,7 +297,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 						InwardEntry inwardEntry = inwardList.get();
 						float inwardAllocatedQty = (inwardEntry.getAllocatedSoqty() == null? 0.0f : inwardEntry.getAllocatedSoqty());
 
-						Float totalAllocatedItemQty = inwardAllocatedQty + request.getAllocatedSoqty().floatValue();
+						Float totalAllocatedItemQty = inwardAllocatedQty + allocatedSoqty.floatValue();
 						inwardEntryRepository.consolidatePlanner(request.getInwardEntryId(), totalAllocatedItemQty, childEntity.getMmId(), soEntity.getSoNumber());
 					}
 				}
@@ -345,24 +346,27 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 		}
 		int packetStatus =0;
 		
-		if ("COIL".equals(request.getAllocationType()) || "INWARDSHEET".equals(request.getAllocationType())) {
-			return salesOrderRepository.findCoilInventory(request.getSearchText(), request.getAllocationType(),partyIds, partyIdsFlag, pageable);
+		if ("COIL".equals(request.getAllocationType())  ) {
+			return salesOrderRepository.findCoilInventory(request.getSearchText(), 
+					partyIds, partyIdsFlag, request.getSoChildMmid(), pageable);
 		} else if ("INWARDSHEET_PACKETS".equals(request.getAllocationType())) {
-			if("FG".equals(request.getInventoryType())) {
-				packetStatus=3;	
+			if ("FG".equals(request.getInventoryType())) {
+				packetStatus = 3;
 			}
-			if("INPROGRESS".equals(request.getInventoryType())) {
-				packetStatus=2;	
-			} 
-			return salesOrderRepository.findInventory(request.getSearchText(), partyIds, partyIdsFlag, packetStatus, pageable);
+			if ("INPROGRESS".equals(request.getInventoryType())) {
+				packetStatus = 2;
+			}
+			return salesOrderRepository.findInventory(request.getSearchText(), partyIds, partyIdsFlag, packetStatus,
+					request.getSoChildMmid(), pageable);
 		} else {
-			if("FG".equals(request.getInventoryType())) {
-				packetStatus=3;	
+			if ("FG".equals(request.getInventoryType())) {
+				packetStatus = 3;
 			}
-			if("INPROGRESS".equals(request.getInventoryType())) {
-				packetStatus=2;	
-			} 
-			return salesOrderRepository.findInventory(request.getSearchText(), partyIds, partyIdsFlag, packetStatus, pageable);
+			if ("INPROGRESS".equals(request.getInventoryType())) {
+				packetStatus = 2;
+			}
+			return salesOrderRepository.findInventory(request.getSearchText(), partyIds, partyIdsFlag, packetStatus,
+					request.getSoChildMmid(), pageable);
 		}
 	}
 	
@@ -438,7 +442,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			so.setZbooksSo(d.getSalesorder_id());
 			so.setUpdatedBy(commonUtil.getUserId());
 			so.setUpdatedOn(new Date());
-			so.setTotalSoqty(BigDecimal.valueOf(d.getTotal_quantity()));
+			so.setTotalSoqty(BigDecimal.valueOf(d.getTotal_quantity()).multiply(new BigDecimal("1000")));
 
 			// ----------------------- Branch -----------------------
 			if (d.getBranch_id() != null) {
@@ -463,7 +467,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 
 				item.setSoId(so);
 				item.setMmId(li.getSku());
-				item.setSoqty(BigDecimal.valueOf(li.getQuantity()));
+				item.setSoqty(BigDecimal.valueOf(li.getQuantity()).multiply(new BigDecimal("1000")));
 				item.setTax_percentage(String.valueOf(li.getTax_percentage()));
 				item.setHsn_or_sac(li.getHsn_or_sac());
 				item.setMaterialName( li.getName());
@@ -730,9 +734,10 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 		ResponseEntity<Object> responseEntity = null;
 		String message = "Consolidate Plan split processed successfully";
 		try {
+			BigDecimal splitQty = request.getSplitQty().multiply(new BigDecimal("1000"));
 
 			if (request.getInwardEntryId() > 0 && request.getInstructionId() > 0) {
-				Instruction copy = splitInstruction(request.getInstructionId(), request.getSplitQty());
+				Instruction copy = splitInstruction(request.getInstructionId(), splitQty);
 
 				if (copy != null && copy.getInstructionId() > 0) {
 					responseEntity = ResponseEntity.ok("{\"status\":\"success\",\"message\": \"" + message + "\"}");
@@ -740,7 +745,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 					responseEntity = new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"Failed to split\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 				}
 			} else if (request.getInwardEntryId() > 0) {
-				InwardEntry copy = splitInward( request.getInwardEntryId(), request.getSplitQty(), request.getSoNumber());
+				InwardEntry copy = splitInward( request.getInwardEntryId(), splitQty, request.getSoNumber());
 
 				if (copy != null && copy.getInwardEntryId() > 0) {
 					responseEntity = ResponseEntity.ok("{\"status\":\"success\",\"message\": \"" + message + "\"}");

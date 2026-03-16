@@ -388,9 +388,15 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 
 	@Modifying
 	@Transactional
-	@Query("update InwardEntry set zohoSyncStts= :status, bill_id = :billId, batch_id=:batchId where customerinvoiceno=:customerinvoiceno")
+	@Query("update InwardEntry set zohoSyncStts= :status, bill_id = :billId where customerinvoiceno=:customerinvoiceno")
 	public int updateZohoSyncStatusByPoInvNo(@Param("customerinvoiceno") String customerinvoiceno,
-			@Param("status") String status, @Param("billId") String billId, @Param("batchId") String batchId);
+			@Param("status") String status, @Param("billId") String billId);
+
+	@Modifying
+	@Transactional
+	@Query("update InwardEntry set batch_id=:batchId where customerinvoiceno=:customerinvoiceno and coilNumber=:coilNumber ")
+	public int updateBatchIdByPoInvNo(@Param("customerinvoiceno") String customerinvoiceno,
+			@Param("coilNumber") String coilNumber, @Param("batchId") String batchId);
 
 	@Modifying
 	@Transactional

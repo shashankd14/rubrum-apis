@@ -15,7 +15,7 @@ public interface SalesOrderAllocationJswRepository extends JpaRepository<SalesOr
 
 	List<SalesOrderAllocationEntity> findByInwardEntryId(int inwardEntryId);
 
-	@Query(value = "SELECT SUM(allocated_soqty) FROM jsw_sales_order_allocation WHERE so_child_id = :soChildId", nativeQuery = true)
+	@Query(value = "SELECT round((SUM(allocated_soqty) / 1000),3) FROM jsw_sales_order_allocation WHERE so_child_id = :soChildId", nativeQuery = true)
 	BigDecimal getTotalAllocatedQtyBySoChildId(@Param("soChildId") Integer soChildId);
 
 }

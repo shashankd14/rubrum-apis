@@ -222,7 +222,7 @@ public class SalesOrderJswController {
 			resp.setMaterialGrade(result[6] != null ? (String) result[6] : null);
 			resp.setFThickness(result[7] != null ? (float) result[7] : null);
 			resp.setFLength(result[8] != null ? (float) result[8] : null);
-			resp.setAvailQty(result[9] != null ? (float) result[9] : null);
+			resp.setAvailQty(result[9] != null ? BigDecimal.valueOf(((Number) result[9]).doubleValue()) : null);
 			resp.setLocationName(result[10] != null ? (String) result[10] : null);
 			list.add(resp);
 		}

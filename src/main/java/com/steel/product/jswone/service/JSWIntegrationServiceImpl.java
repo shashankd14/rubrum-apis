@@ -534,7 +534,6 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 		JswoneAuditTrailEntity kk =new JswoneAuditTrailEntity();
 		ObjectMapper mapper = new ObjectMapper();
 		String billId="";
-	    String batchId = "";
 		try {
 			RestTemplate restTemplate = new RestTemplate();
 			Map<String, String> propertyMap = commonUtil.getAllProperties();
@@ -555,21 +554,28 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			if (res.getBody() != null) {
 				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 				response = mapper.readValue(res.getBody().toString(), PoGrnMainResponse.class);
-				if(response!=null && response.getBill() != null  && response.getBill().getBill_id()!=null) {
+				if (response != null && response.getBill() != null && response.getBill().getBill_id() != null) {
 					kk.setBillid(response.getBill().getBill_id());
-					billId=response.getBill().getBill_id();
+					billId = response.getBill().getBill_id();
 					req.setBillId(billId);
 				}
-				
-			    try {
+
+				try {
 					JsonNode root = mapper.readTree(res.getBody().toString());
 					JsonNode bill = root.path("bill");
 					JsonNode lineItems = bill.path("line_items");
-					if (lineItems.isArray() && lineItems.size() > 0) {
-						JsonNode batches = lineItems.get(0).path("batches");
-						if (batches.isArray() && batches.size() > 0) {
-							batchId = batches.get(0).path("batch_id").asText(null);
-							log.info("Batch ID = " + batchId);
+
+					if (lineItems.isArray()) {
+						for (JsonNode lineItem : lineItems) {
+							JsonNode batches = lineItem.path("batches");
+							if (batches.isArray()) {
+								for (JsonNode batch : batches) {
+									String batchId = batch.path("batch_id").asText(null);
+									String coilNumber = batch.path("batch_number").asText(null);
+									log.info("Batch ID: " + batchId+", Coil Number: " + coilNumber);
+									inwardEntryRepository.updateBatchIdByPoInvNo(req.getPoInvoiceNo(), coilNumber, batchId);
+								}
+							}
 						}
 					}
 				} catch (Exception e) {
@@ -579,7 +585,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			kk.setDestinationResponse(res.getBody().toString());
 			jswoneAuditTrailRepository.save(kk);
 			if (response != null && "0".equals( response.getCode()) ) {
-				inwardEntryRepository.updateZohoSyncStatusByPoInvNo(req.getPoInvoiceNo(), "SUCCESS", billId, batchId);
+				inwardEntryRepository.updateZohoSyncStatusByPoInvNo(req.getPoInvoiceNo(), "SUCCESS", billId);
 				kk.setStatusCode(""+res.getStatusCode());
 				response.setCode("0");
 				response.setMessage( response.getMessage());
@@ -589,7 +595,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 				response.setMessage( response.getMessage());
 			}
 			kk.setSourceRespone( mapper.writeValueAsString(response));
-			inwardEntryRepository.updateZohoSyncRemarks(req.getPoInvoiceNo(),  response.getMessage(), billId);
+			inwardEntryRepository.updateZohoSyncRemarks(req.getPoInvoiceNo(), response.getMessage(), billId);
 		} catch (HttpClientErrorException | HttpServerErrorException ex) {
 			String error = ex.getResponseBodyAsString();
 			kk.setStatusCode("" + ex.getStatusCode().value());
@@ -1131,7 +1137,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 
 			ToSku toSku = new ToSku();
 			toSku.setSkuId(mmid);
-			toSku.setQuantity_adjusted(totalWeight);
+			toSku.setQuantity_adjusted(totalWeight.add(ptWeight));
 			toSku.setUom("MT");
 			lineitem.setToSku(toSku);
 

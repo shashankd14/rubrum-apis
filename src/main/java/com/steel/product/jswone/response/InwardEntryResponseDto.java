@@ -1,5 +1,7 @@
 package com.steel.product.jswone.response;
 
+import java.math.BigDecimal;
+
 import lombok.Data;
 
 @Data
@@ -21,9 +23,9 @@ public class InwardEntryResponseDto {
 
 	private String customerBatchId;
 
-	private float fThickness;
+	private Float fThickness;
 
-	private float fLength;
+	private Float fLength;
 
-	private float availQty;
+	private BigDecimal availQty;
 }
