@@ -7,6 +7,7 @@ import com.steel.product.jswone.request.SalesOrderBulkRequest;
 import com.steel.product.jswone.request.SalesOrderChildRequest;
 import com.steel.product.jswone.request.SalesOrderExternalRequest;
 import com.steel.product.jswone.request.SalesOrderMainRequest;
+import com.steel.product.jswone.response.CoilAllocationDTO;
 import com.steel.product.jswone.response.SalesOrderChildAllocationResponse;
 
 import java.io.File;
@@ -43,4 +44,7 @@ public interface SalesOrderJswService {
 	ResponseEntity<Object> unAllocate(SalesOrderChildAllocationResponse req);
 
 	File generatePdf(ListPageSearchRequest request) throws IOException, DocumentException;
+
+	List<CoilAllocationDTO> coilAllocationDetails(SalesOrderChildRequest request);
+
 }

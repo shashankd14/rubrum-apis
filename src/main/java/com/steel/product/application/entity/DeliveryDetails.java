@@ -71,6 +71,9 @@ public class DeliveryDetails {
     @Column(name = "zoho_sync_stts")
     private String zohoSyncStts;
 
+    @Column(name = "sales_invoice_no")
+    private String salesInvoiceNo;
+
     @OneToMany(mappedBy = "deliveryDetails", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH,
             CascadeType.REFRESH })
     private Set<Instruction> instructions;
@@ -189,10 +192,10 @@ public class DeliveryDetails {
         this.instructions = instruction;
     }
 
-    public static DeliveryResponseDto valueOf(DeliveryDetails deliveryDetails){
-        DeliveryResponseDto deliveryResponseDto = new DeliveryResponseDto();
-        deliveryResponseDto.setDeliveryId(deliveryDetails.getDeliveryId());
-        deliveryResponseDto.setCustomerInvoiceDate(deliveryDetails.getCustomerInvoiceDate());
+	public static DeliveryResponseDto valueOf(DeliveryDetails deliveryDetails) {
+		DeliveryResponseDto deliveryResponseDto = new DeliveryResponseDto();
+		deliveryResponseDto.setDeliveryId(deliveryDetails.getDeliveryId());
+		deliveryResponseDto.setCustomerInvoiceDate(deliveryDetails.getCustomerInvoiceDate());
 		deliveryResponseDto.setCustomerInvoiceNo(deliveryDetails.getCustomerInvoiceNo());
 		Double additionalWeight = deliveryDetails.getInstructions().stream()
 				.filter(d -> d.getAdditionalWeight() != null).mapToDouble(d -> d.getAdditionalWeight().floatValue())
@@ -200,16 +203,17 @@ public class DeliveryDetails {
 		deliveryResponseDto.setTotalWeight(deliveryDetails.getTotalWeight() + additionalWeight.floatValue());
 		deliveryResponseDto.setCreatedBy(deliveryDetails.getCreatedBy());
 		deliveryResponseDto.setDeleted(deliveryDetails.getDeleted());
-        deliveryResponseDto.setCreatedOn(deliveryDetails.getCreatedOn());
-        deliveryResponseDto.setUpdatedBy(deliveryDetails.getUpdatedBy());
-        deliveryResponseDto.setUpdatedOn(deliveryDetails.getUpdatedOn());
-        deliveryResponseDto.setVehicleNo(deliveryDetails.getVehicleNo());
-        deliveryResponseDto.setPackingRateId( deliveryDetails.getPackingRateId());
-        deliveryResponseDto.setLaminationId( deliveryDetails.getLaminationId() );
-        deliveryResponseDto.setInvAdjRemarks( deliveryDetails.getInvAdjRemarks() );
-        deliveryResponseDto.setZohoSyncStts( deliveryDetails.getZohoSyncStts() );
-        return deliveryResponseDto;
-    }
+		deliveryResponseDto.setCreatedOn(deliveryDetails.getCreatedOn());
+		deliveryResponseDto.setUpdatedBy(deliveryDetails.getUpdatedBy());
+		deliveryResponseDto.setUpdatedOn(deliveryDetails.getUpdatedOn());
+		deliveryResponseDto.setVehicleNo(deliveryDetails.getVehicleNo());
+		deliveryResponseDto.setPackingRateId(deliveryDetails.getPackingRateId());
+		deliveryResponseDto.setLaminationId(deliveryDetails.getLaminationId());
+		deliveryResponseDto.setInvAdjRemarks(deliveryDetails.getInvAdjRemarks());
+		deliveryResponseDto.setZohoSyncStts(deliveryDetails.getZohoSyncStts());
+		deliveryResponseDto.setSalesInvoiceNo(deliveryDetails.getSalesInvoiceNo());
+		return deliveryResponseDto;
+	}
 
 	public Integer getPackingRateId() {
 		return packingRateId;
@@ -265,6 +269,14 @@ public class DeliveryDetails {
 
 	public void setZohoSyncStts(String zohoSyncStts) {
 		this.zohoSyncStts = zohoSyncStts;
+	}
+
+	public String getSalesInvoiceNo() {
+		return salesInvoiceNo;
+	}
+
+	public void setSalesInvoiceNo(String salesInvoiceNo) {
+		this.salesInvoiceNo = salesInvoiceNo;
 	}
     
     

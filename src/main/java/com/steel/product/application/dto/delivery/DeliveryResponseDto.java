@@ -33,6 +33,8 @@ public class DeliveryResponseDto {
     private String invAdjRemarks;
 
     private String zohoSyncStts;
+    
+    private String salesInvoiceNo;
 
     private List<InstructionResponseDto> instruction;
 
@@ -154,6 +156,14 @@ public class DeliveryResponseDto {
 
 	public void setZohoSyncStts(String zohoSyncStts) {
 		this.zohoSyncStts = zohoSyncStts;
+	}
+
+	public String getSalesInvoiceNo() {
+		return salesInvoiceNo;
+	}
+
+	public void setSalesInvoiceNo(String salesInvoiceNo) {
+		this.salesInvoiceNo = salesInvoiceNo;
 	}
 
 

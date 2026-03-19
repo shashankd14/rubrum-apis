@@ -18,13 +18,19 @@ public class PriceCalculateDTO {
 
 	private String matGradeName;
 
+	private String subGradeName;
+
 	private int locationId;
 
 	private String sono;
 
 	private String mmid;
 
-	private BigDecimal thickness;
+	private Float thickness;
+
+	private Float width;
+
+	private Float length;
 
 	private Float actualWeight;
 

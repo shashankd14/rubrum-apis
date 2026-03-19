@@ -41,6 +41,7 @@ import com.steel.product.jswone.request.SalesOrderBulkRequest;
 import com.steel.product.jswone.request.SalesOrderChildRequest;
 import com.steel.product.jswone.request.SalesOrderExternalRequest;
 import com.steel.product.jswone.request.SalesOrderMainRequest;
+import com.steel.product.jswone.response.CoilAllocationDTO;
 import com.steel.product.jswone.response.InwardEntryResponseDto;
 import com.steel.product.jswone.response.SalesOrderCPChildResponse;
 import com.steel.product.jswone.response.SalesOrderCPMainResponse;
@@ -208,6 +209,7 @@ public class SalesOrderJswController {
 	@PostMapping(value = "/findinventory", produces = "application/json")
 	public ResponseEntity<Object> findInventory(@RequestBody ListPageSearchRequest listPageSearchRequest) {
 		Map<String, Object> response = new HashMap<>();
+		listPageSearchRequest.setPageSize(100);
 		Page<Object[]> packetsList1 = salesOrderService.findInventory(listPageSearchRequest);
 		List<InwardEntryResponseDto> list = new ArrayList<>();
 
@@ -226,6 +228,27 @@ public class SalesOrderJswController {
 			resp.setLocationName(result[10] != null ? (String) result[10] : null);
 			list.add(resp);
 		}
+		
+		if ("INWARDSHEET_PACKETS".equals(listPageSearchRequest.getAllocationType())) {
+			listPageSearchRequest.setAllocationType("INWARDSHEET");
+			packetsList1 = salesOrderService.findInventory(listPageSearchRequest);
+			for (Object[] result : packetsList1) {
+				InwardEntryResponseDto resp = new InwardEntryResponseDto();
+				resp.setInstructionId(result[0] != null ? Integer.parseInt(result[0].toString()) : null);
+				resp.setInwardEntryId(result[1] != null ? Integer.parseInt(result[1].toString()) : null);
+				resp.setCoilNumber(result[2] != null ? (String) result[2] : null);
+				resp.setCustomerBatchId(result[3] != null ? (String) result[3] : null);
+				resp.setMmId(result[4] != null ? (String) result[4] : null);
+				resp.setMaterial(result[5] != null ? (String) result[5] : null);
+				resp.setMaterialGrade(result[6] != null ? (String) result[6] : null);
+				resp.setFThickness(result[7] != null ? (float) result[7] : null);
+				resp.setFLength(result[8] != null ? (float) result[8] : null);
+				resp.setAvailQty(result[9] != null ? BigDecimal.valueOf(((Number) result[9]).doubleValue()) : null);
+				resp.setLocationName(result[10] != null ? (String) result[10] : null);
+				list.add(resp);
+			}
+		}
+		
 		response.put("content", list);
 		response.put("currentPage", packetsList1.getNumber());
 		response.put("totalItems", packetsList1.getTotalElements());
@@ -303,7 +326,7 @@ public class SalesOrderJswController {
 			allocation.setInwardId(result[9] != null ? (Integer) result[9] : null);
 			allocation.setAllocatedqty((BigDecimal) result[16]);
 			allocation.setCoilNumber(result[17] != null ? (String) result[17] : "");
-			allocation.setQty(result[18] == null ? null : BigDecimal.valueOf(((Number) result[18]).doubleValue()));
+			allocation.setNoofPieces(result[18] != null ? ((Number) result[18]).intValue() : 0);
 			allocation.setPacking(result[19] != null ? (String) result[19] : "");
 			allocation.setLocationName(result[20] != null ? (String) result[20] : "");
 			allocation.setStatus(result[21] != null ? (String) result[21] : "");
@@ -383,4 +406,9 @@ public class SalesOrderJswController {
 		return value.toString(); // fallback
 	}
 
+	@PostMapping(value = "/coil/allocationdetails", produces = "application/json")
+	public ResponseEntity<Object> coilAllocationDetails(@RequestBody SalesOrderChildRequest request) {
+		List<CoilAllocationDTO> packetsList = salesOrderService.coilAllocationDetails(request);
+		return new ResponseEntity<>(packetsList, HttpStatus.OK);
+	}
 }

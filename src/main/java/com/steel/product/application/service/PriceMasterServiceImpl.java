@@ -376,7 +376,7 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 				priceCalculateDTO.setCoilNo(ins.getInwardId().getCoilNumber());
 				priceCalculateDTO.setCustomerBatchNo( ins.getInwardId().getCustomerBatchId());
 				//priceCalculateDTO.setMatGradeName( ins.getInwardId().getMaterialGrade().getGradeName());
-				priceCalculateDTO.setThickness(BigDecimal.valueOf( ins.getInwardId().getfThickness()));
+				priceCalculateDTO.setThickness( ins.getInwardId().getfThickness());
 				priceCalculateDTO.setActualWeight( ins.getActualWeight());
 				
 				BigDecimal amount =new BigDecimal("0.00");

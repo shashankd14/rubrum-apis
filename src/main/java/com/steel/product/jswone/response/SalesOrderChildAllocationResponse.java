@@ -25,7 +25,7 @@ public class SalesOrderChildAllocationResponse {
 
 	private String size;
 
-	private BigDecimal qty;
+	private Integer noofPieces;
 
 	private String status;
 

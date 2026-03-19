@@ -9,6 +9,7 @@ import com.steel.product.application.dto.delivery.TallyUpdateStatusDTO;
 import com.steel.product.application.dto.delivery.TallyUpdateSttsRequestDTO;
 import com.steel.product.application.dto.delivery.ValidatePriceMappingDTO;
 import com.steel.product.application.dto.material.MaterialResponseDto;
+import com.steel.product.application.dto.materialGradeDto.MaterialGradeDto;
 import com.steel.product.application.dto.pricemaster.PriceCalculateDTO;
 import com.steel.product.application.dto.pricemaster.PriceCalculateResponseDTO;
 import com.steel.product.application.entity.AdminUserEntity;
@@ -521,8 +522,9 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 			for (Instruction instruction : instructions) {
 				boolean innerStts = false;
 				InwardEntry inwardEntry = instruction.getInwardId();
-		        MaterialResponseDto materialGradeDto = materialMasterJswService.getGradeProductName(inwardEntry.getMmId());
-
+		        MaterialResponseDto materialResponseDto = materialMasterJswService.getGradeProductName(inwardEntry.getMmId());
+		        MaterialGradeDto materialGradeDto = materialMasterJswService.getSubGradeName(inwardEntry.getMmId());
+		        
 				/*PriceCalculateDTO priceCalculateDTO = priceMasterService.calculateInstructionWisePrice(
 						inwardEntry.getParty().getnPartyId(), BigDecimal.valueOf(inwardEntry.getfThickness()),
 						instruction.getProcess().getProcessId(), inwardEntry.getMaterialGrade().getGradeId(),
@@ -537,9 +539,12 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 				priceCalculateDTO.setCoilNo(inwardEntry.getCoilNumber());
 				priceCalculateDTO.setCustomerBatchNo(inwardEntry.getCustomerBatchId());
 				priceCalculateDTO.setInstructionId(instruction.getInstructionId());
-				priceCalculateDTO.setThickness(BigDecimal.valueOf(inwardEntry.getfThickness()));
-				priceCalculateDTO.setMatGradeName(materialGradeDto.getMaterialGrade().getGradeName());
+				priceCalculateDTO.setThickness( inwardEntry.getfThickness());
+				priceCalculateDTO.setMatGradeName(materialResponseDto.getMaterialGrade().getGradeName());
+				priceCalculateDTO.setSubGradeName(materialGradeDto.getSubGradeName());
 				priceCalculateDTO.setActualWeight((instruction.getActualWeight()==null ? instruction.getPlannedWeight() : instruction.getActualWeight()));
+				priceCalculateDTO.setWidth( (instruction.getActualWidth() == null ? instruction.getPlannedWidth() : instruction.getActualWidth()));
+				priceCalculateDTO.setLength( (instruction.getActualLength() == null ? instruction.getPlannedLength() : instruction.getActualLength()));
 				priceCalculateDTO.setSono(instruction.getSono());
 				priceCalculateDTO.setMmid(instruction.getMmid());
 				Float actualTotalWeight = priceCalculateDTO.getActualWeight();
@@ -635,7 +640,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 				priceCalculateDTO.setCoilNo(inwardEntry.getCoilNumber());
 				priceCalculateDTO.setCustomerBatchNo(inwardEntry.getCustomerBatchId());
 				priceCalculateDTO.setInstructionId(inwardEntry.getInwardEntryId());
-				priceCalculateDTO.setThickness(BigDecimal.valueOf(inwardEntry.getfThickness()));
+				priceCalculateDTO.setThickness( inwardEntry.getfThickness());
 				priceCalculateDTO.setMatGradeName(materialGradeDto.getMaterialGrade().getGradeName());
 				priceCalculateDTO.setActualWeight(inwardEntry.getFpresent());
 				Float actualTotalWeight = priceCalculateDTO.getActualWeight();

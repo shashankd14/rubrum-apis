@@ -9,4 +9,6 @@ public class InventoryAdjustmentResponse {
 
 	private String message;
 
+	private String data;
+
 }

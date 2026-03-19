@@ -1064,7 +1064,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 				response.setMessage( response.getMessage());
 			}
 			audit.setSourceRespone( mapper.writeValueAsString(response));
-			deliveryDetailsRepository.updateZohoSyncRemarks(request.getDeliveryId(), response.getMessage(), "SUCCESS");
+			deliveryDetailsRepository.updateZohoSyncRemarks(request.getDeliveryId(), response.getMessage(), "SUCCESS", response.getData() );
 		} catch (HttpClientErrorException | HttpServerErrorException ex) {
 			String error = ex.getResponseBodyAsString();
 			audit.setStatusCode("" + ex.getStatusCode().value());
@@ -1075,7 +1075,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 				String message = outer.path("message").asText();
 				response.setCode(code);
 				response.setMessage(message);
-				deliveryDetailsRepository.updateZohoSyncRemarks(request.getDeliveryId(), message, "FAIL");
+				deliveryDetailsRepository.updateZohoSyncRemarks(request.getDeliveryId(), message, "FAIL", "");
 			} catch (Exception w) {
 				
 			}

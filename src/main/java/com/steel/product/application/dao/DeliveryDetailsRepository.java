@@ -111,7 +111,8 @@ public interface DeliveryDetailsRepository extends JpaRepository<DeliveryDetails
     
 	@Modifying
 	@Transactional
-	@Query("update DeliveryDetails set invAdjRemarks= :invAdjRemarks, zohoSyncStts = :zohoSyncStts where deliveryId =:deliveryId")
-	public int updateZohoSyncRemarks( @Param("deliveryId") int deliveryId, @Param("invAdjRemarks") String invAdjRemarks, @Param("zohoSyncStts") String zohoSyncStts);
+	@Query("update DeliveryDetails set invAdjRemarks= :invAdjRemarks, zohoSyncStts = :zohoSyncStts, salesInvoiceNo = :salesInvoiceNo where deliveryId =:deliveryId")
+	public int updateZohoSyncRemarks(@Param("deliveryId") int deliveryId, @Param("invAdjRemarks") String invAdjRemarks,
+			@Param("zohoSyncStts") String zohoSyncStts, @Param("salesInvoiceNo") String salesInvoiceNo);
 
 }
