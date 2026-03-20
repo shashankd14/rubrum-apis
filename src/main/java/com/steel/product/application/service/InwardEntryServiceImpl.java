@@ -273,7 +273,8 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 
 	@Override
 	public List<InwardEntry> findDeliveryItemsByInstructionIds(List<Integer> instructionIds) {
-		return inwdEntryRepo.findDeliveryItemsByInstructionIds(instructionIds);
+		List<InwardEntry> list = inwdEntryRepo.findDeliveryItemsByInstructionIds(instructionIds);
+		return list;
 	}
 
 	@Override

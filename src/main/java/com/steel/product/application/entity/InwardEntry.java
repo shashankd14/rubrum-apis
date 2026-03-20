@@ -722,7 +722,11 @@ public class InwardEntry {
         inwardEntryPdfDto.setFQuantity(inwardEntry.getfQuantity());
         inwardEntryPdfDto.setMatDescription(inwardEntry.getMmId()!= null ? materialService.getProductName( inwardEntry.getMmId()).getDescription() : null);
         inwardEntryPdfDto.setMaterialGradeName(inwardEntry.getMmId()!= null ? materialService.getGradeName(inwardEntry.getMmId()).getGradeName() : null);
-        inwardEntryPdfDto.setSubGradeName( inwardEntry.getMmId()!= null ? materialService.getSubGradeName(inwardEntry.getMmId()).getSubGradeName() : null);
+        try {
+			inwardEntryPdfDto.setSubGradeName( inwardEntry.getMmId()!= null ? materialService.getSubGradeName(inwardEntry.getMmId()).getSubGradeName() : null);
+		} catch (Exception e) {
+			inwardEntryPdfDto.setSubGradeName("");
+		}
         //inwardEntryPdfDto.setMatDescription(inwardEntry.getMaterial() != null ? inwardEntry.getMaterial().getDescription() : "");
        // inwardEntryPdfDto.setMaterialGradeName(inwardEntry.getMaterialGrade() != null ? inwardEntry.getMaterialGrade().getGradeName() : "");
         inwardEntryPdfDto.setFThickness(inwardEntry.getfThickness());

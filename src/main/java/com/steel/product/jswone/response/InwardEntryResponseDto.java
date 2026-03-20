@@ -27,5 +27,7 @@ public class InwardEntryResponseDto {
 
 	private Float fLength;
 
+	private Integer noofPieces;
+	
 	private BigDecimal availQty;
 }

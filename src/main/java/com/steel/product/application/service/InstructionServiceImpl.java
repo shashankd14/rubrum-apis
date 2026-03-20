@@ -954,7 +954,11 @@ public class InstructionServiceImpl implements InstructionService {
 		inwardEntryPdfDto.setMaterialGradeName(materialGradeDto.getMaterialGrade().getGradeName());
 		inwardEntryPdfDto.setMatDescription(materialGradeDto.getDescription());
 		MaterialGradeDto materialGradeDtos = materialMasterJswService.getSubGradeName( inwardEntry.getMmId());
-		inwardEntryPdfDto.setSubGradeName(materialGradeDtos.getSubGradeName());
+		if(materialGradeDtos!=null && materialGradeDtos.getSubGradeName() !=null && materialGradeDtos.getSubGradeName().length()>0) {
+			inwardEntryPdfDto.setSubGradeName(materialGradeDtos.getSubGradeName());
+		} else {
+			inwardEntryPdfDto.setSubGradeName("");
+		}
 
         Map<Integer, String> kqpParamsList;
 		try {

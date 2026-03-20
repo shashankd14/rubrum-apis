@@ -79,16 +79,17 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " (SELECT partyname FROM product_tblpartydetails where npartyid= wm.party_id) partyname,"
 			+ " (select statusname from product_tblinwardentry inw, product_status stts where inw.inwardentryid = alloca.inward_entry_id and inw.vstatus = stts.statusid ) stts, "
 			+ " so.branch_id, ware_house_name, "
-			+ " (select branch_name from jsw_branch_master brnch where brnch.branch_id = so.branch_id) brnchname "
+			+ " (select concat(inw.fthickness,'*',fwidth,'*',flength) from product_tblinwardentry inw where inw.inwardentryid = alloca.inward_entry_id) fthickness "
 			+ " FROM jsw_sales_order so "
 			+ " left OUTER JOIN jsw_sales_order_child so_child ON so_child.so_id = so.so_id and so_child.is_deleted = 0  "
 			+ " left outer JOIN jsw_sales_order_allocation alloca ON so_child.so_child_id = alloca.so_child_id"
 			+ " LEFT OUTER JOIN jsw_material_master mm ON mm.mm_id = so_child.mm_id"
 			+ " left OUTER join jsw_warehouse_master wm on wm.ware_house_id = so_child.wearhouse_id "
-			+ " where so.is_deleted = 0 " + " and so.so_id in :soIDsList order by so.so_id desc", nativeQuery = true)
+			+ " where so.is_deleted = 0 and so.so_id in :soIDsList order by so.so_id desc", 
+			nativeQuery = true)
 	List<Object[]> listIdWisedetailsCP(@Param("soIDsList") List<Integer> soIDsList);
 	
-	@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, mm_id, materialdesc, materialgrade, fthickness, flength, round((fpresent / 1000),3), partyname "
+	@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, mm_id, materialdesc, materialgrade, fthickness, flength, round((fpresent / 1000),3), partyname,0 noofpieces "
 			+ " from ( "
 			+ " SELECT parent.inwardentryid inwardid,  coilnumber, customerbatchid, parent.mm_id, " 
 			+ " (SELECT product_name FROM jsw_product_master a, jsw_material_master mat where a.product_id=mat.producttype_id and mat.mm_id=parent.mm_id limit 1) as  materialdesc, " 
@@ -134,18 +135,16 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			@Param("width") BigDecimal width,
 			Pageable pageable);
 
-	@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, mm_id, materialdesc, materialgrade,fthickness, flength, round((fweight / 1000),3), partyname,fWidth, "
-			+ " inStockWeight, actualNoOfPieces , process_status, instruction_status, classification_tag, enduser_tag_name "
+	@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, mm_id, materialdesc, materialgrade,fthickness, flength, round((fweight / 1000),3), partyname,"
+			+ "  noofpieces "
 			+ " from ( SELECT parent.inwardentryid inwardid,  coilnumber, customerbatchid, parent.mm_id,"
 			+ " (SELECT product_name FROM jsw_product_master a, jsw_material_master mat where a.product_id=mat.producttype_id and mat.mm_id=parent.mm_id limit 1) as  materialdesc,"
 			+ " (SELECT grade_name FROM jsw_grade_master grade, jsw_material_master mat where grade.grade_id=mat.grade_id and mat.mm_id=parent.mm_id limit 1) as  materialgrade,"
 			+ "	fthickness, instructionid as packet_id,  coalesce(actualwidth, plannedwidth) fWidth, coalesce( parent.flength,0) flength, "
-			+ " coalesce(actualweight, plannedweight) fweight, fquantity,in_stock_weight inStockWeight, plannednoofpieces actualNoOfPieces,"
-			+ " (select processname from product_process where processid=child.processid) as process_status ,"
-			+ " (select statusname from product_status where statusid=child.status) as instruction_status,partyname, "
-			+ " (select classification_name from product_packet_classification where classification_id=child.packet_classification_id) as classification_tag, "
-			+ " (select tag_name from product_enduser_tags where tag_id=child.enduser_tag_id) as enduser_tag_name,	 "
-			+ " (SELECT count(distinct a.instructionid) cnt FROM product_instruction a where a.inwardid=parent.inwardentryid and status!=4 and a.parentgroupid=child.groupid) as siltcutcnt, parent.npartyid "
+			+ " coalesce(child.actualweight, child.plannedweight) fweight, fquantity, partyname,  "
+			+ " coalesce(child.actualnoofpieces, child.plannednoofpieces) noofpieces, "
+			+ " (SELECT count(distinct a.instructionid) cnt FROM product_instruction a where a.inwardid=parent.inwardentryid and status!=4 and a.parentgroupid=child.groupid) as siltcutcnt, "
+			+ " parent.npartyid "
 			+ " FROM product_tblinwardentry parent, " 
 			+ "	product_instruction child, "  
 			+ "	product_tblpartydetails party, " 
@@ -196,7 +195,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			Pageable pageable);
 
 	@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, mm_id, materialdesc, materialgrade,fthickness, flength, "
-			+ " round((fweight / 1000),3), partyname "
+			+ " round((fweight / 1000),3), partyname, 0 as actualNoOfPieces "
 			+ " from ( 	"
 			+ " SELECT parent.inwardentryid inwardid,  coilnumber, customerbatchid, parent.mm_id,  "
 			+ " (SELECT product_name FROM jsw_product_master a, jsw_material_master mat where a.product_id=mat.producttype_id and mat.mm_id=parent.mm_id limit 1) as  materialdesc,  "

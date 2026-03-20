@@ -356,12 +356,10 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			
 			MaterialMasterJswEntity entity = materialMasterJswRepository.findFirstByMmId(request.getSoChildMmid());
 
-			log.info("getGradeId: {}, getSubgradeId: {}, getThickness: {}, getWidth: {}",
-					entity.getGradeId(), entity.getSubgradeId(), entity.getThickness(), entity.getWidth());
+			log.info("getGradeId: {}, getSubgradeId: {}, getThickness: {}, getWidth: {}",entity.getGradeId(), entity.getSubgradeId(), entity.getThickness(), entity.getWidth());
 			return salesOrderRepository.findCoilInventory(request.getSearchText(), partyIds, partyIdsFlag,
 					entity.getGradeId(), entity.getSubgradeId(), entity.getThickness(), entity.getWidth(), pageable);
 			
-			//return salesOrderRepository.findCoilInventory(request.getSearchText(), partyIds, partyIdsFlag, request.getSoChildMmid(), pageable);
 		} else if ("INWARDSHEET_PACKETS".equals(request.getAllocationType())) {
 			if ("FG".equals(request.getInventoryType())) {
 				packetStatus = 3;
@@ -371,9 +369,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			}
 			MaterialMasterJswEntity entity = materialMasterJswRepository.findFirstByMmId(request.getSoChildMmid());
 			
-			log.info("getGradeId: {}, getSubgradeId: {}, getThickness: {}, getWidth: {}, getLength: {}",
-					entity.getGradeId(), entity.getSubgradeId(), entity.getThickness(), entity.getWidth(),
-					entity.getLength());
+			log.info("getGradeId: {}, getSubgradeId: {}, getThickness: {}, getWidth: {}, getLength: {}", entity.getGradeId(), entity.getSubgradeId(), entity.getThickness(), entity.getWidth(), entity.getLength());
 			return salesOrderRepository.findPacketInventory(request.getSearchText(), partyIds, partyIdsFlag, packetStatus,
 					 entity.getGradeId(), entity.getSubgradeId(), entity.getThickness(), 
 					entity.getWidth(),entity.getLength(), pageable);

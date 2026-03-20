@@ -51,11 +51,13 @@ import com.steel.product.jswone.response.SalesOrderMainResponse;
 import com.steel.product.jswone.service.SalesOrderJswService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.extern.log4j.Log4j2;
 
 @RestController
 @CrossOrigin
 @Tag(name = "Sales Order", description = "Sales Order")
 @RequestMapping({ "/salesorder" })
+@Log4j2
 public class SalesOrderJswController {
 
 	private SalesOrderJswService salesOrderService;
@@ -226,6 +228,7 @@ public class SalesOrderJswController {
 			resp.setFLength(result[8] != null ? (float) result[8] : null);
 			resp.setAvailQty(result[9] != null ? BigDecimal.valueOf(((Number) result[9]).doubleValue()) : null);
 			resp.setLocationName(result[10] != null ? (String) result[10] : null);
+			resp.setNoofPieces(result[11] != null ? ((Number) result[11]).intValue() : 0);
 			list.add(resp);
 		}
 		
@@ -245,6 +248,7 @@ public class SalesOrderJswController {
 				resp.setFLength(result[8] != null ? (float) result[8] : null);
 				resp.setAvailQty(result[9] != null ? BigDecimal.valueOf(((Number) result[9]).doubleValue()) : null);
 				resp.setLocationName(result[10] != null ? (String) result[10] : null);
+				resp.setNoofPieces(result[11] != null ? ((Number) result[11]).intValue() : 0);
 				list.add(resp);
 			}
 		}
@@ -330,7 +334,7 @@ public class SalesOrderJswController {
 			allocation.setPacking(result[19] != null ? (String) result[19] : "");
 			allocation.setLocationName(result[20] != null ? (String) result[20] : "");
 			allocation.setStatus(result[21] != null ? (String) result[21] : "");
-			allocation.setSize("");
+			allocation.setSize( result[24] != null ? (String) result[24] : "");
 
 			if (soAllocationId != null && soAllocationId > 0) {
 				child.getAllocationDetails().add(allocation);

@@ -273,10 +273,13 @@ public class Instruction {
 		//}
 		instructionResponsePdfDto.setDeliveryDetails(instruction.getDeliveryDetails() != null ? DeliveryDetails.valueOf(instruction.getDeliveryDetails()) : null);
 		instructionResponsePdfDto.setRemarks(instruction.getRemarks());
-		if (inwardEntry != null) {
-			float kk = (actualWeight / inwardEntry.getfQuantity()) * inwardEntry.getValueOfGoods().floatValue();
-			
-			instructionResponsePdfDto.setValueOfGoods(new BigDecimal(kk));
+		try {
+			if (inwardEntry != null) {
+				float kk = (actualWeight / inwardEntry.getfQuantity()) * inwardEntry.getValueOfGoods().floatValue();
+				instructionResponsePdfDto.setValueOfGoods(new BigDecimal(kk));
+			}
+		} catch (Exception e) {
+			 
 		}
 		return instructionResponsePdfDto;
 	}
