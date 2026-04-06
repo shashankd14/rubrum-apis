@@ -29,6 +29,8 @@ public class ListPageSearchRequest {
 	private String sortOrder;
 
 	private List<String> status = new ArrayList<>();
+	
+	private List<String> warehouseList = new ArrayList<>();
 
 	private int planId;
 

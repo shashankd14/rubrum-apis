@@ -12,9 +12,9 @@ import com.steel.product.jswone.entity.BranchMasterEntity;
 @Repository
 public interface BranchMasterRepository extends JpaRepository<BranchMasterEntity, Integer> {
 
-	@Query(value = "select jbm.branch_id, jbm.branch_name, pt.npartyid, pt.partyname"
-			+ " from jsw_branch_master jbm, product_tblpartydetails pt"
-			+ " where jbm.branch_id =pt.branch_id order by branch_name asc ", nativeQuery = true)
+	@Query(value = "select jbm.id, jbm.branch_name, wareh.ware_house_id, wareh.ware_house_name"
+			+ " from jsw_branch_master jbm, jsw_warehouse_master wareh "
+			+ " where jbm.branch_id =wareh.branch_id order by jbm.branch_name asc ", nativeQuery = true)
 	List<Object[]> findAllBranchDetails();
 
 }

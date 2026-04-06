@@ -27,7 +27,7 @@ public interface SalesOrderJswService {
 
 	Page<Object[]> listAllSOIDsCP(ListPageSearchRequest listPageSearchRequest);
 
-	List<Object[]> listAllSOsCP(List<Integer> soIDsList);
+	List<Object[]> listAllSOsCP(List<Integer> soIDsList, boolean warehouseFlag, List<String> warehouseList);
 
 	ResponseEntity<Object> consolidatePlanner(List<SalesOrderChildRequest> salesOrderMainRequest);
 

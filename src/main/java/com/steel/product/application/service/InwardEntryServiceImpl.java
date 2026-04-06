@@ -604,4 +604,73 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 		List<Object[]> packetsList = inwdEntryRepo.wipListNewQueryWithPlanId(searchText);
 		return packetsList;
 	}
+
+	@Override
+	public Page<Object[]> listAllocatedCoils(SearchListPageRequest searchListPageRequest) {
+
+		LOGGER.info("In listAllocatedCoils page ");
+		Pageable pageable = null;
+		if (searchListPageRequest.getSortColumn() != null && searchListPageRequest.getSortColumn().length() > 0
+				&& searchListPageRequest.getSortOrder() != null && searchListPageRequest.getSortOrder().length() > 0
+				&& "ASC".equalsIgnoreCase(searchListPageRequest.getSortOrder())) {
+			pageable = PageRequest.of((searchListPageRequest.getPageNo()-1), searchListPageRequest.getPageSize(), Sort.by(searchListPageRequest.getSortColumn()).ascending());
+		}else if (searchListPageRequest.getSortColumn() != null && searchListPageRequest.getSortColumn().length() > 0
+				&& searchListPageRequest.getSortOrder() != null && searchListPageRequest.getSortOrder().length() > 0
+				&& "DESC".equalsIgnoreCase(searchListPageRequest.getSortOrder())) {
+			pageable = PageRequest.of((searchListPageRequest.getPageNo()-1), searchListPageRequest.getPageSize(), Sort.by(searchListPageRequest.getSortColumn()).descending());
+		} else {
+			if(searchListPageRequest.getPageNo() == null ) {
+				searchListPageRequest.setPageNo(1);
+			}
+			pageable = PageRequest.of((searchListPageRequest.getPageNo()-1), searchListPageRequest.getPageSize(), Sort.by("inwardentryid").descending());
+		}
+		
+		List<Integer> partyIds = new ArrayList<>();
+		boolean partyIdsFlag = false;
+		if (searchListPageRequest.getPartyId() != null && searchListPageRequest.getPartyId().length() > 0) {
+			partyIds.add(Integer.parseInt(searchListPageRequest.getPartyId()));
+			partyIdsFlag = true;
+		} else {
+			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
+			if (adminUserEntity.getUserPartyMap() != null && adminUserEntity.getUserPartyMap().size() > 0) {
+				partyIds = new ArrayList<>();
+				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
+					partyIds.add(userPartyMap.getPartyId());
+					partyIdsFlag = true;
+				}
+				LOGGER.info("In partyIds === " + partyIds);
+			} else {
+				partyIdsFlag = false;
+				partyIds = new ArrayList<>();
+			}
+		}
+		
+		Page<Object[]> pageResult = inwdEntryRepo.listAllocatedCoils(
+				searchListPageRequest.getSearchText(),  
+				searchListPageRequest.getStatus(),
+				partyIds,
+				partyIdsFlag,   
+				searchListPageRequest.getMaterialFilterValue(),
+				searchListPageRequest.getGradeFilterValue(),
+				searchListPageRequest.getSubgradeFilterValue() ,
+				searchListPageRequest.getBrandFilterValue(),
+				searchListPageRequest.getThicknessMinValue(),
+				searchListPageRequest.getThicknessMaxValue(), 
+				searchListPageRequest.getLengthMinValue(),
+				searchListPageRequest.getLengthMaxValue(), 
+				searchListPageRequest.getWidthMinValue(),
+				searchListPageRequest.getWidthMaxValue(), 
+				searchListPageRequest.getAgeingMinValue(),
+				searchListPageRequest.getAgeingMaxValue(),
+				searchListPageRequest.getScInwardIdFilter(),
+				searchListPageRequest.getBatchNoFilter(),
+				pageable);
+		 
+		return pageResult;
+	}
+
+	
+	
+	
+	
 }

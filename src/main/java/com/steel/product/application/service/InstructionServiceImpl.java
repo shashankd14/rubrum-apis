@@ -1,21 +1,52 @@
 package com.steel.product.application.service;
 
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.steel.product.application.dao.DeliveryDetailsRepository;
 import com.steel.product.application.dao.InstructionRepository;
 import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.dao.PartDetailsRepository;
-import com.steel.product.application.dto.instruction.*;
+import com.steel.product.application.dto.instruction.CutInstructionDeleteRequest;
+import com.steel.product.application.dto.instruction.InstructionFinishDto;
+import com.steel.product.application.dto.instruction.InstructionRequestDto;
+import com.steel.product.application.dto.instruction.InstructionResponseDto;
+import com.steel.product.application.dto.instruction.InstructionSaveRequestDto;
+import com.steel.product.application.dto.instruction.SlitInstructionDeleteRequest;
+import com.steel.product.application.dto.instruction.UpdateClassificationDTO;
 import com.steel.product.application.dto.material.MaterialResponseDto;
 import com.steel.product.application.dto.materialGradeDto.MaterialGradeDto;
-import com.steel.product.application.dto.partDetails.PartDetailsResponse;
 import com.steel.product.application.dto.partDetails.PartDetailsRequest;
+import com.steel.product.application.dto.partDetails.PartDetailsResponse;
 import com.steel.product.application.dto.pdf.InstructionResponsePdfDto;
 import com.steel.product.application.dto.pdf.InwardEntryPdfDto;
 import com.steel.product.application.dto.pdf.PartDetailsPdfResponse;
 import com.steel.product.application.dto.qrcode.QRCodeResponse;
 import com.steel.product.application.dto.quality.KQPPartyMappingResponse;
-import com.steel.product.application.entity.*;
+import com.steel.product.application.entity.EndUserTagsEntity;
+import com.steel.product.application.entity.Instruction;
+import com.steel.product.application.entity.InwardEntry;
+import com.steel.product.application.entity.PacketClassification;
+import com.steel.product.application.entity.PartDetails;
 import com.steel.product.application.entity.Process;
+import com.steel.product.application.entity.Status;
 import com.steel.product.application.exception.MockException;
 import com.steel.product.application.mapper.InstructionMapper;
 import com.steel.product.application.mapper.PartDetailsMapper;
@@ -26,18 +57,6 @@ import com.steel.product.jswone.repository.SalesOrderAllocationJswRepository;
 import com.steel.product.jswone.service.MaterialMasterJswService;
 
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
-import java.text.DecimalFormat;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @Log4j2
@@ -82,7 +101,10 @@ public class InstructionServiceImpl implements InstructionService {
 
 	@Autowired
 	CommonUtil commonUtil;
-    
+	
+	@Autowired
+	SalesOrderAllocationJswRepository soAllocation;
+	
 	@Autowired
 	public InstructionServiceImpl(InstructionRepository instructionRepository,
 			InwardEntryRepository inwardEntryRepository, InwardEntryService inwardService,
@@ -1509,6 +1531,7 @@ public class InstructionServiceImpl implements InstructionService {
         for (PartDetails pd : instructionPlanAndListMap.keySet()) {
             List<InstructionRequestDto> list = instructionPlanAndListMap.get(pd);
             for (InstructionRequestDto requestDto : list) {
+            	
                 Instruction instruction = instructionMapper.toEntity(requestDto);
                 if(requestDto.getPacketClassificationId()!=null && requestDto.getPacketClassificationId() >0 ) {
                     instruction.setPacketClassification(savedPacketClassifications.get(requestDto.getPacketClassificationId()));
@@ -1551,6 +1574,14 @@ public class InstructionServiceImpl implements InstructionService {
 			}
         	inwardEntry.setUpdatedBy(userId);
             inwardService.saveEntry(inwardEntry);
+            for (InstructionSaveRequestDto instructionSaveRequestDto : instructionSaveRequestDtos) {
+    			for (InstructionRequestDto instructionRequestChildDto : instructionSaveRequestDto.getInstructionRequestDTOs()) {
+					if (instructionRequestChildDto.getSoAllocationId() > 0) {
+	                	List<Instruction> list = instructionRepository.findBySonoAndMmidAndInwardIdAndPlannedWeight(instructionRequestChildDto.getSoRefNo(), instructionRequestChildDto.getMmid(), inwardEntry, instructionRequestChildDto.getPlannedWeight());
+	                	soAllocation.updateAllocation(instructionRequestChildDto.getSoAllocationId(), list.get(0).getInstructionId());
+					}
+    			}
+    		}
         }
         return new ResponseEntity<Object>(partDetailsResponseList, headers, HttpStatus.CREATED);
     }

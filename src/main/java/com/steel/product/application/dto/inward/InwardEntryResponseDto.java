@@ -103,6 +103,10 @@ public class InwardEntryResponseDto {
 	private Float uts;
 
 	private Float el;
+
+	private String sono;
+
+	private String allocatedMmid;
 	
 	private String invoicecopyFileurl;
     
@@ -480,6 +484,22 @@ public class InwardEntryResponseDto {
 
 	public void setInvoicecopyFileurl(String invoicecopyFileurl) {
 		this.invoicecopyFileurl = invoicecopyFileurl;
+	}
+
+	public String getSono() {
+		return sono;
+	}
+
+	public void setSono(String sono) {
+		this.sono = sono;
+	}
+
+	public String getAllocatedMmid() {
+		return allocatedMmid;
+	}
+
+	public void setAllocatedMmid(String allocatedMmid) {
+		this.allocatedMmid = allocatedMmid;
 	} 
 	
 	

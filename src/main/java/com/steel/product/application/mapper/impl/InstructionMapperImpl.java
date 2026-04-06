@@ -58,6 +58,11 @@ public class InstructionMapperImpl implements InstructionMapper {
         instruction.setWastage( instructionRequestDto.getWastage() );
         instruction.setDamage( instructionRequestDto.getDamage() );
         instruction.setPackingWeight( instructionRequestDto.getPackingWeight() );
+        instruction.setSono(instructionRequestDto.getSoRefNo());
+        if(instructionRequestDto.getSoRefNo() !=null && instructionRequestDto.getSoRefNo().length() >0 ) {
+            instruction.setAllocatedSoqty(instructionRequestDto.getPlannedWeight());
+        }
+        instruction.setMmid(instructionRequestDto.getMmid());
         instruction.setRemarks( instructionRequestDto.getRemarks() );
         instruction.setCreatedBy( instructionRequestDto.getCreatedBy() );
         instruction.setUpdatedBy( instructionRequestDto.getUpdatedBy() );

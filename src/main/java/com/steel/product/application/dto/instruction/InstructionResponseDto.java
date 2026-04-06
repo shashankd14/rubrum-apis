@@ -15,10 +15,12 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.Column;
+
 @Getter
 @Setter
 public class InstructionResponseDto {
-	
+
 	private Integer instructionId;
 
 	private Integer inwardEntryId;
@@ -90,6 +92,12 @@ public class InstructionResponseDto {
 
 	private String pdfS3Url;
 
+	private Float allocatedSoqty;
+
+	private String sono;
+
+	private String mmid;
+	
 	private BigDecimal plannedYieldLossRatio;
 
 	private BigDecimal actualYieldLossRatio;

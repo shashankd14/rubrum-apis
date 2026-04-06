@@ -1,7 +1,7 @@
 package com.steel.product.jswone.repository;
 
 import java.math.BigDecimal;
-import javax.transaction.Transactional;
+import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -27,6 +27,8 @@ public interface SalesOrderChildJswRepository extends JpaRepository<SalesOrderPa
 			@Param("specialInstructions") String specialInstructions, 
 			@Param("userId") int userId);
 
-	SalesOrderPacketsJswEntity findBySoChildId(Integer soChildId); 
+	SalesOrderPacketsJswEntity findBySoChildId(Integer soChildId);
+
+	List<SalesOrderPacketsJswEntity> findBySoId_SoId(Integer soId); 
 	
 }

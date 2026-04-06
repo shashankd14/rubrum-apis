@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 import lombok.Data;
 
 @Data
-public class InwardEntryResponseDto {
+public class InwardEntryResponseDetails {
 
 	private Integer inwardEntryId;
 
@@ -26,6 +26,8 @@ public class InwardEntryResponseDto {
 	private Float fThickness;
 
 	private Float fLength;
+
+	private Float fWidth;
 
 	private Integer noofPieces;
 	

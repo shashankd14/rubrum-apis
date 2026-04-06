@@ -1,6 +1,7 @@
 package com.steel.product.application.dao;
 
 import com.steel.product.application.entity.Instruction;
+import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.entity.Status;
 import com.steel.product.application.mapper.TotalLengthAndWeight;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -123,7 +124,6 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
     public List<Instruction> findAllByInstructionIdInAndStatus(@Param("instructionIds") List<Integer> instructionIds, @Param("statusId") List<Integer> statusId);
 
 	@Modifying
-	//@Transactional
 	@Query("update Instruction set groupId =:groupId where instructionId in :instructionIds ")
 	public void updateInstructionGroupId(@Param("groupId") int groupId, @Param("instructionIds") List<Integer> instructionIds);
 
@@ -194,9 +194,9 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
 	
 	@Query(value = " select sono, dt, vehicleno, mmid, round((sum(actualweight) / 1000),3) , wearhouse_id, branch_id, round((additional_weight / 1000),3), zbooks_so from ( "
 			+ "  SELECT ins.sono, DATE_FORMAT(dc.createdon, '%Y-%m-%d') dt,vehicleno , ins.mmid, ins.actualweight,"
-			+ " (select wearhouse_id from jsw_sales_order so, jsw_sales_order_child child where so.so_id=child.so_id and child.mm_id = ins.mmid and so.so_number = ins.sono limit 1) wearhouse_id , "
-			+ " (select zbooks_so from jsw_sales_order so, jsw_sales_order_child child where so.so_id=child.so_id and child.mm_id = ins.mmid and so.so_number = ins.sono limit 1) zbooks_so , "
-			+ " (select so.branch_id from jsw_sales_order so, jsw_sales_order_child child, jsw_warehouse_master wh where so.so_id=child.so_id and wh.ware_house_id=child.wearhouse_id and child.mm_id = ins.mmid and so.so_number = ins.sono limit 1) branch_id, "
+			+ " (select wearhouse_id from jsw_sales_order so, jsw_sales_order_child child where so.so_id=child.so_id and child.mm_id = ins.mmid and so.refno = ins.sono limit 1) wearhouse_id , "
+			+ " (select zbooks_so from jsw_sales_order so, jsw_sales_order_child child where so.so_id=child.so_id and child.mm_id = ins.mmid and so.refno = ins.sono limit 1) zbooks_so , "
+			+ " (select so.branch_id from jsw_sales_order so, jsw_sales_order_child child, jsw_warehouse_master wh where so.so_id=child.so_id and wh.ware_house_id=child.wearhouse_id and child.mm_id = ins.mmid and so.refno = ins.sono limit 1) branch_id, "
 			+ " sum(additional_weight) additional_weight "
 			+ " FROM product_tbl_delivery_details dc, product_instruction ins "
 			+ " WHERE ins.deliveryid=dc.deliveryid and dc.deliveryid = :dcId ) a "
@@ -217,4 +217,11 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
 	@Query(value = "update product_instruction set allocated_soqty = 0 where instructionid= :instructionId", nativeQuery = true)
 	public void unAllocatCP(@Param("instructionId") Integer instructionId);
 
+	List<Instruction> findBySonoAndMmidAndInwardIdAndPlannedWeight(
+	        String sono,
+	        String mmid,
+	        InwardEntry inwardId,
+	        Float plannedWeight
+	);
+	
 }

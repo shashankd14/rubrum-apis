@@ -5,8 +5,8 @@ import lombok.Data;
 @Data
 public class BranchMasterListRespose {
 
-	private int locationId;
+	private String warehouseId;
 
-	private String locationName;
+	private String warehouseName;
 
 }

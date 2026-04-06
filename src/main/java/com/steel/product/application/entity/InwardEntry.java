@@ -199,6 +199,12 @@ public class InwardEntry {
 	@Column(name = "zoho_docupload_remarks")
 	private String zohoDocuploadRemarks;
 
+	@Column(name = "sono")
+	private String sono;
+	
+	@Column(name = "allocated_mmid")
+	private String allocatedMmid;
+
 	public void addInstruction(Instruction instruction){
 		if(this.instructions == null){
 			this.instructions = new LinkedHashSet<>();
@@ -1044,4 +1050,101 @@ public class InwardEntry {
 	    return copy;
 	}
 
+	public static InwardEntryResponseDto valueOfResponseAllocatedPackets(InwardEntry inwardEntry, Map<String, String> matDescMap) {
+		InwardEntryResponseDto inwardEntryResponseDto = new InwardEntryResponseDto();
+		inwardEntryResponseDto.setInwardEntryId(inwardEntry.getInwardEntryId());
+		inwardEntryResponseDto.setParty(inwardEntry.getParty() != null ? Party.valueOf(inwardEntry.getParty()) : null);
+		inwardEntryResponseDto.setCoilNumber(inwardEntry.getCoilNumber());
+		inwardEntryResponseDto.setTdcNo( inwardEntry.getTdcNo() );
+		inwardEntryResponseDto.setBatchNumber(inwardEntry.getBatchNumber());
+		inwardEntryResponseDto.setCustomerBatchId(inwardEntry.getCustomerBatchId());
+		inwardEntryResponseDto.setfQuantity(inwardEntry.getfQuantity());
+		MaterialResponseDto kk =new MaterialResponseDto();
+		kk.setMmDescConcatenated(matDescMap.get( inwardEntry.getMmId()));
+		inwardEntryResponseDto.setMaterial(kk);
+		inwardEntryResponseDto.setfThickness(inwardEntry.getfThickness());
+		inwardEntryResponseDto.setfWidth(inwardEntry.getfWidth());
+		inwardEntryResponseDto.setGrossWeight(inwardEntry.getGrossWeight());
+		inwardEntryResponseDto.setCreatedOn(inwardEntry.getCreatedOn());
+		inwardEntryResponseDto.setInstruction(inwardEntry.getInstructions() != null ? inwardEntry.getInstructions()
+				.stream().filter(i -> !i.getIsDeleted() && i.getAllocatedSoqty() !=null && i.getAllocatedSoqty() > 0 && i.getSono() != null)
+				.map(i -> Instruction.valueOf(i)).collect(Collectors.toList()) : null);
+		
+		if (inwardEntryResponseDto.getInstruction() != null && inwardEntryResponseDto.getInstruction().size() > 0) {
+			Collections.sort(inwardEntryResponseDto.getInstruction(), new MyInstructionIdComp());
+		}
+		
+		inwardEntryResponseDto.setPurposeType(inwardEntry.getPurposeType());
+		inwardEntryResponseDto.setdReceivedDate(inwardEntry.getdReceivedDate());
+		inwardEntryResponseDto.setvLorryNo(inwardEntry.getvLorryNo());
+		inwardEntryResponseDto.setvInvoiceNo(inwardEntry.getvInvoiceNo());
+		inwardEntryResponseDto.setTestCertificateNumber(inwardEntry.getTestCertificateNumber());
+		inwardEntryResponseDto.setRemarks(inwardEntry.getRemarks());
+		inwardEntryResponseDto.setdInvoiceDate(inwardEntry.getdInvoiceDate());
+		inwardEntryResponseDto.setValueOfGoods(inwardEntry.getValueOfGoods());
+		inwardEntryResponseDto.setCreatedBy(inwardEntry.getCreatedBy());
+		inwardEntryResponseDto.setCreatedOn(inwardEntry.getCreatedOn());
+		inwardEntryResponseDto.setUpdatedBy(inwardEntry.getUpdatedBy());
+		inwardEntryResponseDto.setUpdatedOn(inwardEntry.getUpdatedOn());
+		inwardEntryResponseDto.setStatus(inwardEntry.getStatus());
+		inwardEntryResponseDto.setfQuantity(inwardEntry.getfQuantity());
+		inwardEntryResponseDto.setFpresent(inwardEntry.getFpresent());
+		inwardEntryResponseDto.setInStockWeight(inwardEntry.getInStockWeight());
+		inwardEntryResponseDto.setDeleted(inwardEntry.getDeleted());
+		inwardEntryResponseDto.setfLength(inwardEntry.getfLength());
+		inwardEntryResponseDto.setAvailableLength(inwardEntry.getAvailableLength());
+		inwardEntryResponseDto.setCustomerInvoiceNo(inwardEntry.getCustomerInvoiceNo());
+		inwardEntryResponseDto.setParentCoilNumber(inwardEntry.getParentCoilNumber());
+		inwardEntryResponseDto.setScrapWeight( inwardEntry.getScrapWeight() );
+		inwardEntryResponseDto.setMmId( inwardEntry.getMmId()  );
+		inwardEntryResponseDto.setAllocatedMmid(inwardEntry.getAllocatedMmid());
+		inwardEntryResponseDto.setSono( inwardEntry.getSono() );
+		long daysBetween = 0;
+		try {
+			// Today's date
+			LocalDate today = LocalDate.now();
+			Calendar calendar = Calendar.getInstance();
+			Date date = inwardEntry.getCreatedOn();
+			if (inwardEntry.getdReceivedDate() != null) {
+				date = inwardEntry.getdReceivedDate();
+			}
+			calendar.setTime(date); // convert Date to Calendar
+			int year = calendar.get(Calendar.YEAR);
+			int month = calendar.get(Calendar.MONTH) + 1; // 0-based, so add 1
+			int day = calendar.get(Calendar.DAY_OF_MONTH);
+			LocalDate oldDate = LocalDate.of(year, month, day);
+			daysBetween = ChronoUnit.DAYS.between(oldDate, today);
+			inwardEntryResponseDto.setAgeing(daysBetween);
+		} catch (Exception e) {
+			inwardEntryResponseDto.setAgeing(daysBetween);
+		}
+		return inwardEntryResponseDto;
+	}
+
+	public String getZohoDocuploadRemarks() {
+		return zohoDocuploadRemarks;
+	}
+
+	public void setZohoDocuploadRemarks(String zohoDocuploadRemarks) {
+		this.zohoDocuploadRemarks = zohoDocuploadRemarks;
+	}
+
+	public String getSono() {
+		return sono;
+	}
+
+	public void setSono(String sono) {
+		this.sono = sono;
+	}
+
+	public String getAllocatedMmid() {
+		return allocatedMmid;
+	}
+
+	public void setAllocatedMmid(String allocatedMmid) {
+		this.allocatedMmid = allocatedMmid;
+	}
+	
+	
+	
 }

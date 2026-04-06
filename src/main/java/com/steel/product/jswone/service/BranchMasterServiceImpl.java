@@ -36,8 +36,8 @@ public class BranchMasterServiceImpl implements BranchMasterService {
 			
 			dto.setBranchId( result[0] != null ? Integer.parseInt(result[0].toString()) : null);
 			dto.setBranchName( result[1] != null ? (String) result[1] : null);
-			childdto.setLocationId( result[2] != null ? Integer.parseInt(result[2].toString()) : null);
-			childdto.setLocationName(result[3] != null ? (String) result[3] : null);
+			childdto.setWarehouseId( result[2] != null ? (String)result[2] : null);
+			childdto.setWarehouseName(result[3] != null ? (String) result[3] : null);
 			dto.getLocationList().add(childdto);
 			if (soMap != null && soMap.get(dto.getBranchId() ) != null) {
 				BranchMasterDTO addEntity = soMap.get(dto.getBranchId() );

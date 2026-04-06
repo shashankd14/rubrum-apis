@@ -149,8 +149,10 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				}
 				childEntity.setAllocatedStts("PENDING");
 				childEntity.setIsDeleted(false);
+				BigDecimal childSoqty = childEntity.getSoqty().multiply(new BigDecimal("1000"));
+				childEntity.setSoqty(childSoqty);
+				totalqty = totalqty.add(childSoqty);
 				salesOrderEntity.addItem(childEntity);
-				totalqty = totalqty.add(childEntity.getSoqty());
 			}
 			salesOrderEntity.setTotalSoqty( totalqty);
 			salesOrderRepository.save(salesOrderEntity);
@@ -165,34 +167,24 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 	@Override
 	public Page<Object[]> listAllSOIDsCP(ListPageSearchRequest listPageSearchRequest) {
 
-		Pageable pageable = PageRequest.of((listPageSearchRequest.getPageNo() - 1),  listPageSearchRequest.getPageSize());
-		List<Integer> partyIds = new ArrayList<>();
-		//boolean partyIdsFlag = false;
-		if (listPageSearchRequest.getPartyId() != null && listPageSearchRequest.getPartyId() > 0) {
-			partyIds.add(listPageSearchRequest.getPartyId());
-			//partyIdsFlag = true;
-		} else {
-			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
-			if (adminUserEntity.getUserPartyMap() != null && adminUserEntity.getUserPartyMap().size() > 0) {
-				partyIds = new ArrayList<>();
-				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
-					partyIds.add(userPartyMap.getPartyId());
-					//partyIdsFlag = true;
-				}
-				log.info("In partyIds === " + partyIds);
-			} else {
-				//partyIdsFlag = false;
-				partyIds = new ArrayList<>();
-			}
+		Pageable pageable = PageRequest.of((listPageSearchRequest.getPageNo() - 1), listPageSearchRequest.getPageSize());
+		boolean warehouseFlag = false;
+
+		if (listPageSearchRequest.getWarehouseList() != null && listPageSearchRequest.getWarehouseList().size() > 0) {
+			warehouseFlag = true;
 		}
+
 		Page<Object[]> packetsList = salesOrderRepository.listAllSOIDsCP(listPageSearchRequest.getSearchText(),
-				listPageSearchRequest.getSoId(), listPageSearchRequest.getStatus(), pageable);
+				listPageSearchRequest.getSoId(), 
+				listPageSearchRequest.getStatus(),
+				warehouseFlag,
+				listPageSearchRequest.getWarehouseList(), pageable);
 		return packetsList;
 	}
 
 	@Override
-	public List<Object[]> listAllSOsCP(List<Integer> soIDsList) {
-		List<Object[]> packetsList = salesOrderRepository.listIdWisedetailsCP(soIDsList);
+	public List<Object[]> listAllSOsCP(List<Integer> soIDsList, boolean warehouseFlag, List<String> warehouseList) {
+		List<Object[]> packetsList = salesOrderRepository.listIdWisedetailsCP(soIDsList, warehouseFlag, warehouseList);
 		return packetsList;
 	}
 	
@@ -237,10 +229,12 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 		ResponseEntity<Object> responseEntity = null;
 		String message = "Consolidate planner created successfully..!";
 		try {
+
+			Integer soId=0;
 			for (SalesOrderChildRequest request : salesOrderPacketsListNew) {
 				BigDecimal balanceQtyRequired = new BigDecimal("0.00");
 				BigDecimal totalAllocatedQty = new BigDecimal("0.00");
-
+				soId = request.getSoId();
 				SalesOrderPacketsJswEntity childEntity = childRepository.findBySoChildId(request.getSoChildId());
 				//BigDecimal allocatedQty = (childEntity.getAllocatedSoqty() == null? BigDecimal.ZERO : childEntity.getAllocatedSoqty());
 
@@ -249,7 +243,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				if (request.getAllocatedSoqty() == null) {
 					return new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"Please enter valid value in allocation quantity\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 				}
-				BigDecimal allocatedSoqty = request.getAllocatedSoqty().multiply(new BigDecimal("1000"));
+				BigDecimal allocatedSoqty = request.getAllocatedSoqty();
 				if (allocatedSoqty.compareTo(BigDecimal.ZERO) <= 0) {
 					return new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"Please enter valid value in allocation quantity\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 				}
@@ -271,11 +265,13 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				if (balanceQtyRequired.compareTo(allocatedSoqty) == 0) {
 					allocationStts = "COMPLETED";
 				}
-				childRepository.consolidatePlanner(request.getSoChildId(), 
-						totalAllocatedQty,
-						allocationStts,
-						request.getSpecialInstructions(), 
-						commonUtil.getUserId());
+				
+				childEntity.setAllocatedStts( allocationStts);
+				childEntity.setAllocatedSoqty( totalAllocatedQty);
+				childEntity.setSpecialInstructions( request.getSpecialInstructions());
+				childEntity.setAllocationBy( commonUtil.getUserId());
+				childEntity.setAllocationDate(new Date());
+				childRepository.save(childEntity);
 				
 				SalesOrderAllocationEntity allocation = new SalesOrderAllocationEntity();
 				allocation.setInstructionId(request.getInstructionId());
@@ -294,7 +290,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 						Instruction instruction = instructionList.get();
 						float instructionAllocatedQty = (instruction.getAllocatedSoqty() == null? 0.0f : instruction.getAllocatedSoqty());
 						Float totalAllocatedItemQty = instructionAllocatedQty + allocatedSoqty.floatValue();
-						instructionRepository.consolidatePlanner(request.getInstructionId(), totalAllocatedItemQty, childEntity.getMmId(), soEntity.getSoNumber());
+						instructionRepository.consolidatePlanner(request.getInstructionId(), totalAllocatedItemQty, childEntity.getMmId(), soEntity.getRefno());
 					}
 				} else {
 					Optional<InwardEntry> inwardList = inwardEntryRepository.findById(request.getInwardEntryId());
@@ -304,10 +300,20 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 						float inwardAllocatedQty = (inwardEntry.getAllocatedSoqty() == null? 0.0f : inwardEntry.getAllocatedSoqty());
 
 						Float totalAllocatedItemQty = inwardAllocatedQty + allocatedSoqty.floatValue();
-						inwardEntryRepository.consolidatePlanner(request.getInwardEntryId(), totalAllocatedItemQty, childEntity.getMmId(), soEntity.getSoNumber());
+						inwardEntryRepository.consolidatePlanner(request.getInwardEntryId(), totalAllocatedItemQty, childEntity.getMmId(), soEntity.getRefno());
 					}
 				}
 			}
+			List<SalesOrderPacketsJswEntity> allocations = childRepository.findBySoId_SoId(soId);
+			
+			boolean allAllocated = allocations.stream().allMatch(a -> a.getSoqty() != null && a.getAllocatedSoqty().compareTo(a.getSoqty()) >= 0);
+			SalesOrderJswEntity order = salesOrderRepository.findById(soId).orElseThrow(() -> new RuntimeException("SO not found"));
+			if (allAllocated) {
+				order.setCpStatus("CP_PLAN_ISSUED");
+			} else {
+				order.setCpStatus("CP_PLAN_DRAFT");
+			}
+			salesOrderRepository.save(order);
 			responseEntity = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"" + message + "\"}", new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -315,7 +321,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 		}
 		return responseEntity;
 	}
-
+	
 	@Override
 	public Page<Object[]> findInventory(ListPageSearchRequest request) {
 		Pageable pageable = null;
@@ -358,7 +364,8 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 
 			log.info("getGradeId: {}, getSubgradeId: {}, getThickness: {}, getWidth: {}",entity.getGradeId(), entity.getSubgradeId(), entity.getThickness(), entity.getWidth());
 			return salesOrderRepository.findCoilInventory(request.getSearchText(), partyIds, partyIdsFlag,
-					entity.getGradeId(), entity.getSubgradeId(), entity.getThickness(), entity.getWidth(), pageable);
+					entity.getGradeId(), entity.getSubgradeId(), entity.getThickness(), entity.getWidth(), 
+					entity.getFormId(), pageable);
 			
 		} else if ("INWARDSHEET_PACKETS".equals(request.getAllocationType())) {
 			if ("FG".equals(request.getInventoryType())) {
@@ -450,7 +457,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			so.setZbooksSo(d.getSalesorder_id());
 			so.setUpdatedBy(commonUtil.getUserId());
 			so.setUpdatedOn(new Date());
-			so.setTotalSoqty(BigDecimal.valueOf(d.getTotal_quantity()).multiply(new BigDecimal("1000")));
+			so.setTotalSoqty(BigDecimal.valueOf(d.getTotal_quantity()));
 
 			// ----------------------- Branch -----------------------
 			if (d.getBranch_id() != null) {
@@ -475,7 +482,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 
 				item.setSoId(so);
 				item.setMmId(li.getSku());
-				item.setSoqty(BigDecimal.valueOf(li.getQuantity()).multiply(new BigDecimal("1000")));
+				item.setSoqty(BigDecimal.valueOf(li.getQuantity()));
 				item.setTax_percentage(String.valueOf(li.getTax_percentage()));
 				item.setHsn_or_sac(li.getHsn_or_sac());
 				item.setMaterialName( li.getName());
@@ -654,14 +661,12 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 		);
 	}
 
-
 	private ResponseEntity<Object> holdSalesOrder(SalesOrderExternalRequest req) {
 
 		SalesOrderDetails d = req.getSalesOrder_Details();
 
-		SalesOrderJswEntity so =
-				salesOrderRepository.findBySoNumberIgnoreCase(d.getSalesorder_number())
-						.orElseThrow(() -> new RuntimeException("SO not found"));
+		SalesOrderJswEntity so = salesOrderRepository.findBySoNumberIgnoreCase(d.getSalesorder_number())
+				.orElseThrow(() -> new RuntimeException("SO not found"));
 
 		so.setSoStatus(StatusType.SO_HOLD.getType());
 		so.setUpdatedOn(new Date());
@@ -669,9 +674,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 		so.setRemarks(d.getRemarks());
 		so.setCamCode(d.getCam_code());
 		salesOrderRepository.save(so);
-		return ResponseEntity.ok(
-				"{\"status\":\"success\",\"message\":\"Sales Order put on hold Successfully.\"}"
-		);
+		return ResponseEntity.ok("{\"status\":\"success\",\"message\":\"Sales Order put on hold Successfully.\"}");
 	}
 
 	private ResponseEntity<Object> rejectSalesOrder(SalesOrderExternalRequest req) {
@@ -742,7 +745,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 		ResponseEntity<Object> responseEntity = null;
 		String message = "Consolidate Plan split processed successfully";
 		try {
-			BigDecimal splitQty = request.getSplitQty().multiply(new BigDecimal("1000"));
+			BigDecimal splitQty = request.getSplitQty();
 
 			if (request.getInwardEntryId() > 0 && request.getInstructionId() > 0) {
 				Instruction copy = splitInstruction(request.getInstructionId(), splitQty);
@@ -963,7 +966,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 
 		for (Object[] result : packetsList) {
 			CoilAllocationDTO dto = new CoilAllocationDTO();
-			Integer soId = result[0] != null ? Integer.parseInt(result[0].toString()) : null;
+			//Integer soId = result[0] != null ? Integer.parseInt(result[0].toString()) : null;
 			//dto.setSoId(soId);
 			dto.setSoNumber(result[1] != null ? (String) result[1] : null);
 			dto.setExpectedDeliveryDate(result[2] != null ? sdf.format(result[2]) : null);
@@ -985,8 +988,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			//dto.setWareHouseName(result[22] != null ? (String) result[22] : null);
 
 			/* ======================= ALLOCATION DETAILS ======================== */
-			// Integer soAllocationId = result[15] != null ? (Integer) result[15] : 0;
-			// dto.setSoAllocationId(0);
+			dto.setSoAllocationId(result[15] != null ? (Integer) result[15] : 0);
 			dto.setInstructionId(result[7] != null ? (Integer) result[7] : null);
 			dto.setInwardId(result[9] != null ? (Integer) result[9] : null);
 			dto.setAllocatedqty((BigDecimal) result[16]);
@@ -998,7 +1000,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			dto.setWidth(result[22] != null ? Float.valueOf(result[22].toString()) : null);
 			dto.setLength(result[23] != null ? Float.valueOf(result[23].toString()) : null);
 			dto.setLocationName(result[24] != null ? (String) result[24] : "");
-			//dto.setSize("");
+			dto.setRefno(result[25] != null ? (String) result[25] : null);
 			dtoList.add(dto);
 		}
 

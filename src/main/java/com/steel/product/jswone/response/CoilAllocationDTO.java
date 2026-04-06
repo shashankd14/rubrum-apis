@@ -11,6 +11,8 @@ public class CoilAllocationDTO {
 
 	private String soNumber;
 
+	private String refno;
+
 	private String customerCode;
 
 	// private BigDecimal totalQty;
@@ -45,7 +47,7 @@ public class CoilAllocationDTO {
 
 	private Integer instructionId;
 
-	// private Integer soAllocationId;
+	private Integer soAllocationId;
 
 	private BigDecimal allocatedqty;
 

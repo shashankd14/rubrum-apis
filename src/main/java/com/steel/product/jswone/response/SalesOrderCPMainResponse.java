@@ -19,6 +19,8 @@ public class SalesOrderCPMainResponse {
 
 	private BigDecimal totalQty;
 
+	private String refno;
+	
 	private String cpStatus;
 
 	private String branchId;

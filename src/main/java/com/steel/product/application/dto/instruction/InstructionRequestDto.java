@@ -70,6 +70,12 @@ public class InstructionRequestDto {
 
 	private String remarks;
 
+	private String soRefNo;
+	
+	private int soAllocationId;
+
+	private String mmid;
+
 	private Boolean isSlitAndCut;
 
 	private InstructionRequestDto newInstruction =null;

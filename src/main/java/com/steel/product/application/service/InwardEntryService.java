@@ -78,4 +78,6 @@ public interface InwardEntryService {
 
 	InwardEntry getByCoilNumber1(String coilNumber);
 
+	Page<Object[]> listAllocatedCoils(SearchListPageRequest searchListPageRequest);
+
 }

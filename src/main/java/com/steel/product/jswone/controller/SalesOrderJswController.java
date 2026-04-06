@@ -32,8 +32,12 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.ServletWebRequest;
 
 import com.lowagie.text.DocumentException;
+import com.steel.product.application.dto.inward.InwardEntryResponseDto;
+import com.steel.product.application.dto.inward.SearchListPageRequest;
 import com.steel.product.application.dto.pdf.PdfResponseDto;
 import com.steel.product.application.dto.quality.ListPageSearchRequest;
+import com.steel.product.application.entity.InwardEntry;
+import com.steel.product.application.service.InwardEntryService;
 import com.steel.product.jswone.entity.JswoneAuditTrailEntity;
 import com.steel.product.jswone.repository.JswoneAuditTrailRepository;
 import com.steel.product.jswone.request.CPSplitRequest;
@@ -42,7 +46,7 @@ import com.steel.product.jswone.request.SalesOrderChildRequest;
 import com.steel.product.jswone.request.SalesOrderExternalRequest;
 import com.steel.product.jswone.request.SalesOrderMainRequest;
 import com.steel.product.jswone.response.CoilAllocationDTO;
-import com.steel.product.jswone.response.InwardEntryResponseDto;
+import com.steel.product.jswone.response.InwardEntryResponseDetails;
 import com.steel.product.jswone.response.SalesOrderCPChildResponse;
 import com.steel.product.jswone.response.SalesOrderCPMainResponse;
 import com.steel.product.jswone.response.SalesOrderChildAllocationResponse;
@@ -60,15 +64,16 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class SalesOrderJswController {
 
-	private SalesOrderJswService salesOrderService;
+	@Autowired
+	private 
+	SalesOrderJswService salesOrderService;
 
 	@Autowired
-	private JswoneAuditTrailRepository jswoneAuditTrailRepository;
-
+	private 
+	JswoneAuditTrailRepository jswoneAuditTrailRepository;
+	
 	@Autowired
-	public SalesOrderJswController(SalesOrderJswService salesOrderService) {
-		this.salesOrderService = salesOrderService;
-	}
+	private InwardEntryService inwdEntrySvc;
 
 	@ExceptionHandler(HttpMessageNotReadableException.class)
 	public ResponseEntity<Object> handleNotReadable(HttpMessageNotReadableException ex, ServletWebRequest webRequest) {
@@ -112,6 +117,7 @@ public class SalesOrderJswController {
 
 	@PostMapping(value = "/create", produces = "application/json")
 	public ResponseEntity<Object> save(@RequestBody SalesOrderMainRequest salesOrderMainRequest) {
+		log.info("inside SalesOrderJswController.create");
 		return salesOrderService.save(salesOrderMainRequest, "create");
 	}
 
@@ -211,12 +217,12 @@ public class SalesOrderJswController {
 	@PostMapping(value = "/findinventory", produces = "application/json")
 	public ResponseEntity<Object> findInventory(@RequestBody ListPageSearchRequest listPageSearchRequest) {
 		Map<String, Object> response = new HashMap<>();
-		listPageSearchRequest.setPageSize(100);
+		//listPageSearchRequest.setPageSize(100);
 		Page<Object[]> packetsList1 = salesOrderService.findInventory(listPageSearchRequest);
-		List<InwardEntryResponseDto> list = new ArrayList<>();
+		List<InwardEntryResponseDetails> list = new ArrayList<>();
 
 		for (Object[] result : packetsList1) {
-			InwardEntryResponseDto resp = new InwardEntryResponseDto();
+			InwardEntryResponseDetails resp = new InwardEntryResponseDetails();
 			resp.setInstructionId(result[0] != null ? Integer.parseInt(result[0].toString()) : null);
 			resp.setInwardEntryId(result[1] != null ? Integer.parseInt(result[1].toString()) : null);
 			resp.setCoilNumber(result[2] != null ? (String) result[2] : null);
@@ -229,6 +235,7 @@ public class SalesOrderJswController {
 			resp.setAvailQty(result[9] != null ? BigDecimal.valueOf(((Number) result[9]).doubleValue()) : null);
 			resp.setLocationName(result[10] != null ? (String) result[10] : null);
 			resp.setNoofPieces(result[11] != null ? ((Number) result[11]).intValue() : 0);
+			resp.setFWidth(result[12] != null ? (float) result[12] : null);
 			list.add(resp);
 		}
 		
@@ -236,7 +243,7 @@ public class SalesOrderJswController {
 			listPageSearchRequest.setAllocationType("INWARDSHEET");
 			packetsList1 = salesOrderService.findInventory(listPageSearchRequest);
 			for (Object[] result : packetsList1) {
-				InwardEntryResponseDto resp = new InwardEntryResponseDto();
+				InwardEntryResponseDetails resp = new InwardEntryResponseDetails();
 				resp.setInstructionId(result[0] != null ? Integer.parseInt(result[0].toString()) : null);
 				resp.setInwardEntryId(result[1] != null ? Integer.parseInt(result[1].toString()) : null);
 				resp.setCoilNumber(result[2] != null ? (String) result[2] : null);
@@ -249,6 +256,7 @@ public class SalesOrderJswController {
 				resp.setAvailQty(result[9] != null ? BigDecimal.valueOf(((Number) result[9]).doubleValue()) : null);
 				resp.setLocationName(result[10] != null ? (String) result[10] : null);
 				resp.setNoofPieces(result[11] != null ? ((Number) result[11]).intValue() : 0);
+				resp.setFWidth(result[12] != null ? (float) result[12] : null);
 				list.add(resp);
 			}
 		}
@@ -274,8 +282,11 @@ public class SalesOrderJswController {
 	            soIDsList.add((Integer) row[0]);
 	        }
 	    }
-
-	    List<Object[]> packetsList = salesOrderService.listAllSOsCP(soIDsList);
+	    boolean warehouseFlag = false;
+	    if (listPageSearchRequest.getWarehouseList() !=null && listPageSearchRequest.getWarehouseList().size()>0 ) {
+			warehouseFlag = true;
+		}
+	    List<Object[]> packetsList = salesOrderService.listAllSOsCP(soIDsList, warehouseFlag, listPageSearchRequest.getWarehouseList());
 
 	    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 
@@ -292,12 +303,13 @@ public class SalesOrderJswController {
 			if (!soMap.containsKey(soId)) {
 				so.setSoId(soId);
 				so.setSoNumber(result[1] != null ? (String) result[1] : null);
+				so.setRefno( result[25] != null ? (String) result[25] : null);
 				so.setExpectedDeliveryDate(result[2] != null ? sdf.format(result[2]) : null);
 				so.setCustomerCode(result[3] != null ? (String) result[3] : null);
 				so.setTotalQty(result[4] != null ? (BigDecimal) result[4] : null);
-				so.setCpStatus(result[5] != null ? (String) result[5] : null);
-				so.setBranchId( result[1] != null ? (String) result[1] : null);
-				so.setBranchName( result[23] != null ? (String) result[23] : null);
+				so.setBranchId( result[26] != null ? (String) result[26] : null);
+				so.setBranchName( result[27] != null ? (String) result[27] : null);
+			    so.setCpStatus(result[5] != null ? (String) result[5] : null);
 				soMap.put(soId, so);
 			}
 
@@ -314,8 +326,9 @@ public class SalesOrderJswController {
 				child.setAllocatedStts((String) result[12]);
 	            child.setItemStatus((String) result[13]);
 	            child.setMaterialDescription( (String) result[14]);
-	            child.setLocation( result[20] != null ? (String) result[20] : null);
-	            child.setWareHouseName(result[22] != null ? (String) result[22] : null);
+	            //child.setLocation( result[20] != null ? (String) result[20] : null);
+	            child.setWareHouseName(result[23] != null ? (String) result[23] : null);
+	            child.setWareHouseId(result[22] != null ? (String) result[22] : null);
 	            soChildMap.put(soChildId, child);
 	            isNewChild = true;
 	        }
@@ -415,4 +428,28 @@ public class SalesOrderJswController {
 		List<CoilAllocationDTO> packetsList = salesOrderService.coilAllocationDetails(request);
 		return new ResponseEntity<>(packetsList, HttpStatus.OK);
 	}
+
+	@PostMapping({ "/allocatedcoils" })
+	public ResponseEntity<Object> allocatedCoils(@RequestBody SearchListPageRequest searchListPageRequest) {
+		Map<String, Object> response = new HashMap<>();
+		log.info("in partywiselist ");
+		Page<Object[]> packetsList1 = inwdEntrySvc.listAllocatedCoils(searchListPageRequest);
+		Map<String, String> matDescMap = new HashMap<>();
+
+		List<Integer> inwardIdList = new ArrayList<>();
+		for (Object[] result : packetsList1) {
+			Integer inwardId = (result[0] != null ? (Integer) result[0] : null);
+			inwardIdList.add(inwardId);
+			matDescMap.put((result[12] != null ? (String) result[12] : null),(result[13] != null ? (String) result[13] : null));
+		}
+		log.info("In inwardIdList === " + matDescMap);
+		List<InwardEntry> pageResult = inwdEntrySvc.locationWiseListByInwardId(inwardIdList);
+		List<InwardEntryResponseDto> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponseAllocatedPackets(inw, matDescMap)).collect(Collectors.toList());
+		response.put("content", inwardList);
+		response.put("currentPage", packetsList1.getNumber());
+		response.put("totalItems", packetsList1.getTotalElements());
+		response.put("totalPages", packetsList1.getTotalPages());
+		return new ResponseEntity<Object>(response, HttpStatus.OK);
+	}
+	 
 }
