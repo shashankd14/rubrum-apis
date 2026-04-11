@@ -20,5 +20,7 @@ public class SalesOrderCustomFields {
     private String cf_delivery_method;
 
     private String cf_freight_value;
+
+    private String cf_expected_delivery_date;
 }
 
