@@ -43,8 +43,6 @@ public interface SalesOrderJswService {
 
 	ResponseEntity<Object> unAllocate(SalesOrderChildAllocationResponse req);
 
-	File generatePdf(ListPageSearchRequest request) throws IOException, DocumentException;
-
 	List<CoilAllocationDTO> coilAllocationDetails(SalesOrderChildRequest request);
 
 }

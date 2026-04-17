@@ -18,7 +18,7 @@ public class SalesOrderChildAllocationResponse {
 	private BigDecimal allocatedqty;
 
 	private String coilNumber;
-	
+
 	private String locationName;
 
 	private String packing;
@@ -27,6 +27,6 @@ public class SalesOrderChildAllocationResponse {
 
 	private Integer noofPieces;
 
-	private String status;
+	private String status; 
 
 }

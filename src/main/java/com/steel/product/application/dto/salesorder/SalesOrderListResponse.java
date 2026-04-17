@@ -30,6 +30,8 @@ public class SalesOrderListResponse {
 	
 	private String processCenter;
 	
+	private String pdfGenerationPart;
+	
 	List<SalesOrderListDTO> childListResp = new ArrayList<>();
 
 }

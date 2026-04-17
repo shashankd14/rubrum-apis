@@ -53,6 +53,7 @@ import com.steel.product.jswone.response.SalesOrderChildAllocationResponse;
 import com.steel.product.jswone.response.SalesOrderChildResponse;
 import com.steel.product.jswone.response.SalesOrderMainResponse;
 import com.steel.product.jswone.service.SalesOrderJswService;
+import com.steel.product.jswone.service.SalesOrderPDFJswService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.log4j.Log4j2;
@@ -65,8 +66,10 @@ import lombok.extern.log4j.Log4j2;
 public class SalesOrderJswController {
 
 	@Autowired
-	private 
-	SalesOrderJswService salesOrderService;
+	private SalesOrderJswService salesOrderService;
+
+	@Autowired
+	private SalesOrderPDFJswService sopdfService;
 
 	@Autowired
 	private 
@@ -310,6 +313,7 @@ public class SalesOrderJswController {
 				so.setBranchId( result[26] != null ? (String) result[26] : null);
 				so.setBranchName( result[27] != null ? (String) result[27] : null);
 			    so.setCpStatus(result[5] != null ? (String) result[5] : null);
+			    so.setPdfGenerationPart(result[28] != null ? (String) result[28] : null);
 				soMap.put(soId, so);
 			}
 
@@ -348,6 +352,7 @@ public class SalesOrderJswController {
 			allocation.setLocationName(result[20] != null ? (String) result[20] : "");
 			allocation.setStatus(result[21] != null ? (String) result[21] : "");
 			allocation.setSize( result[24] != null ? (String) result[24] : "");
+			//allocation.setPdfGenerationPart(result[28] != null ? (String) result[28] : null);
 
 			if (soAllocationId != null && soAllocationId > 0) {
 				child.getAllocationDetails().add(allocation);
@@ -388,13 +393,13 @@ public class SalesOrderJswController {
 	}
 
 	@PostMapping("/pdf")
-	public ResponseEntity<PdfResponseDto> downloadDeliveryPDF(@RequestBody ListPageSearchRequest request) throws DocumentException {
+	public ResponseEntity<PdfResponseDto> downloadSOPDF(@RequestBody ListPageSearchRequest request) throws DocumentException {
 		Path file = null;
 		byte[] bytes = null;
 		StringBuilder builder = new StringBuilder();
 		try {
 
-			file = Paths.get(salesOrderService.generatePdf(request).getAbsolutePath());
+			file = Paths.get(sopdfService.generatePdf(request).getAbsolutePath());
 			bytes = Files.readAllBytes(file);
 			builder.append(Base64.getEncoder().encodeToString(bytes));
 		} catch (IOException ex) {

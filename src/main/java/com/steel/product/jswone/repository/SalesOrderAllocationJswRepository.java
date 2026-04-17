@@ -3,6 +3,8 @@ package com.steel.product.jswone.repository;
 import java.math.BigDecimal;
 import java.util.List;
 
+import javax.transaction.Transactional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -20,8 +22,12 @@ public interface SalesOrderAllocationJswRepository extends JpaRepository<SalesOr
 	BigDecimal getTotalAllocatedQtyBySoChildId(@Param("soChildId") Integer soChildId);
 
 	@Modifying
-	@Query("update SalesOrderAllocationEntity inw set inw.instructionId = :instructionId where inw.so_allocation_id = :so_allocation_id")
-	void updateAllocation(@Param("so_allocation_id") Integer so_allocation_id,
-			@Param("instructionId") int instructionId);
+	@Query("update SalesOrderAllocationEntity inw set inw.instructionId = :instructionId where inw.soAllocationId = :so_allocation_id")
+	void updateAllocation(@Param("so_allocation_id") Integer so_allocation_id, @Param("instructionId") int instructionId);
 
+	@Modifying
+	@Transactional
+	@Query("update SalesOrderAllocationEntity inw set inw.pdfGenerationPart = :pdfGenerationPart where inw.soAllocationId in :soAllocationList")
+	void updatePDFGenerationPart(@Param("pdfGenerationPart") String pdfGenerationPart, @Param("soAllocationList") List<Integer> soAllocationList);
+	
 }

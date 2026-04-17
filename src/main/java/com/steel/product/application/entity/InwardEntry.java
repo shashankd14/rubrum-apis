@@ -201,6 +201,9 @@ public class InwardEntry {
 
 	@Column(name = "sono")
 	private String sono;
+
+	@Column(name = "batch_id")
+	private String batchId;
 	
 	@Column(name = "allocated_mmid")
 	private String allocatedMmid;

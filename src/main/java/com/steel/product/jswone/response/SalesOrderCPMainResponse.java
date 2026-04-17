@@ -29,6 +29,8 @@ public class SalesOrderCPMainResponse {
 	
 	private String expectedDeliveryDate;
 
+	private String pdfGenerationPart;
+
 	private List<SalesOrderCPChildResponse> itemslist = new ArrayList<>();
 
 }

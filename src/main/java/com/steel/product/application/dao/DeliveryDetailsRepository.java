@@ -33,7 +33,7 @@ public interface DeliveryDetailsRepository extends JpaRepository<DeliveryDetails
 	public Page<DeliveryDetails> findAllDeliveries(@Param("searchText") String searchText,
 			@Param("partyIds") List<Integer> partyIds,   Pageable pageable);
     
-    @Query("select dd from DeliveryDetails dd join dd.instructions ins join ins.inwardId inw where dd.createdBy in (:userIds) and dd.isDeleted is false and ins.deliveryDetails is not null and "
+    @Query("select dd from DeliveryDetails dd join dd.instructions ins join ins.inwardId inw where dd.isDeleted is false and ins.deliveryDetails is not null and "
     		+ " ( inw.coilNumber like %:searchText% or inw.customerBatchId like %:searchText% or "
     		+ " inw.customerInvoiceNo like %:searchText% or inw.party.partyName like %:searchText% ) group by inw, dd")
     public Page<DeliveryDetails> findAllDeliveries(@Param("searchText") String searchText, Pageable pageable);

@@ -13,6 +13,8 @@ public class SalesOrderListDTO {
 
 	private Integer instructionId;
 
+	private int soAllocationId;
+
 	private Integer inwardEntryId;
 
 	private String coilNo;
@@ -41,6 +43,8 @@ public class SalesOrderListDTO {
 
 	private String materialDesc;
 
+	private String materialDetails;
+
 	private String subGrade;
 
 	private String brand;
@@ -53,6 +57,8 @@ public class SalesOrderListDTO {
 
 	private String edgeBurr;
 
+	private String width;
+
 	private Float fthickness;
 
 	private Float fwidth;
@@ -60,11 +66,15 @@ public class SalesOrderListDTO {
 	private Float flenghth;
 
 	private Float fweight;
-	
+
+	private Float allocatedQty;
+
 	private Integer partyId;
 
+	private int soChildId;
+
 	private int plannedNoofPieces;
-	
-	private List<String > mappedSOList = new ArrayList<>();
+
+	private List<String> mappedSOList = new ArrayList<>();
 
 }

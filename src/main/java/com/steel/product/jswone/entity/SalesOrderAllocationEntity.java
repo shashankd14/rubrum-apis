@@ -16,7 +16,7 @@ public class SalesOrderAllocationEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "so_allocation_id")
-	private Integer so_allocation_id;
+	private Integer soAllocationId;
 
 	@Column(name = "so_child_id")
 	private Integer soChildId;
@@ -49,4 +49,7 @@ public class SalesOrderAllocationEntity {
 	@UpdateTimestamp
 	@Column(name = "updated_on")
 	private Date updatedOn;
+	
+	@Column(name = "pdf_generation_part")
+	private String pdfGenerationPart;
 }

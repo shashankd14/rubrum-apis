@@ -9,7 +9,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.transaction.Transactional;
@@ -62,6 +64,8 @@ import com.steel.product.jswone.request.SalesOrderExternalRequest;
 import com.steel.product.jswone.request.SalesOrderLineItem;
 import com.steel.product.jswone.request.SalesOrderMainRequest;
 import com.steel.product.jswone.response.CoilAllocationDTO;
+import com.steel.product.jswone.response.SalesOrderCPChildResponse;
+import com.steel.product.jswone.response.SalesOrderCPMainResponse;
 import com.steel.product.jswone.response.SalesOrderChildAllocationResponse;
 
 import lombok.extern.log4j.Log4j2;
@@ -364,8 +368,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 
 			log.info("getGradeId: {}, getSubgradeId: {}, getThickness: {}, getWidth: {}",entity.getGradeId(), entity.getSubgradeId(), entity.getThickness(), entity.getWidth());
 			return salesOrderRepository.findCoilInventory(request.getSearchText(), partyIds, partyIdsFlag,
-					entity.getGradeId(), entity.getSubgradeId(), entity.getThickness(), entity.getWidth(), 
-					entity.getFormId(), pageable);
+					entity.getGradeId(), entity.getSubgradeId(), entity.getThickness(), entity.getWidth(), pageable);
 			
 		} else if ("INWARDSHEET_PACKETS".equals(request.getAllocationType())) {
 			if ("FG".equals(request.getInventoryType())) {
@@ -860,82 +863,6 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			responseEntity = new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"Please enter valid value\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		return responseEntity;
-	}
-
-	@Override
-	public File generatePdf(ListPageSearchRequest request) throws IOException, DocumentException {
-		Context context = getSODetailsContext(request);
-		String html = loadAndFillSOTemplate(context);
-		return renderPdfInstruction(html, "so", "" + request.getSoId(), "SO_PDF");
-	}
-	
-	private Context getSODetailsContext(ListPageSearchRequest request) {
-		Context context = new Context();
-		List<Object[]> packetsList = salesOrderRepository.soDetailsBySoId(request.getSoId());
-
-		SalesOrderListResponse resp = new SalesOrderListResponse();
-		Float dweightTotal=0f;
-
-		for (Object[] result : packetsList) {
-			SalesOrderListDTO child = new SalesOrderListDTO();
-
-			resp.setPartyId(result[8] != null ? Integer.parseInt(result[8].toString()) : null);
-			resp.setPartyName(result[9] != null ? (String) result[9] : null);
-			resp.setSoStatus(result[12] != null ? (String) result[12] : null);
-			resp.setSoNumber(result[14] != null ? (String) result[14] : null);
-			resp.setSoId(result[15] != null ? Integer.parseInt(result[15].toString()) : null);
-			resp.setCustomerCode(result[18] != null ? (String) result[18] : null);
-			resp.setOrderDate(result[19] != null ? (String) result[19] : null);
-			resp.setCagtegoryName(result[20] != null ? (String) result[20] : null);
-			resp.setProcessCenter( resp.getPartyName());
-
-			child.setInstructionId(result[0] != null ? (Integer) result[0] : null);
-			child.setInwardEntryId(result[1] != null ? (Integer) result[1] : null);
-			child.setPlannedNoofPieces( result[21] != null ? (Integer) result[21] : null);
-			child.setCoilNo(result[2] != null ? (String) result[2] : null);
-			
-			child.setCustomerBatchNo(result[3] != null ? (String) result[3] : null);
-			child.setMaterialGrade(result[4] != null ? (String) result[4] : null);
-			child.setMaterialDesc(result[5] != null ? (String) result[5] : null);
-			child.setFthickness(result[6] != null ? (Float) result[6] : null);
-			child.setProcessing("CTL");
-			child.setPackingMode("Loose Bundle");
-			child.setSpecilaInstructions("Loose Bundle");
-			child.setDiagonal("Max. 3.00");
-			child.setEdgeBurr("Max 3% of Thick");
-
-			try {
-				Float dweight;
-				Float dwidth;
-				Float dlength;
-				dweight = (result[7] != null ? (Float) result[7] : null);
-				dwidth = (result[10] != null ? (Float) result[10] : null);
-				dlength = (result[11] != null ? (Float) result[11] : null);
-				child.setFwidth(dwidth.floatValue());
-				child.setFweight(dweight.floatValue());
-				child.setFlenghth(dlength.floatValue());
-			} catch (ClassCastException e) {
-				Double dweight1 = (result[7] != null ? (Double) result[7] : null);
-				Double dwidth1 = (result[10] != null ? (Double) result[10] : null);
-				Double dlength1 = (result[11] != null ? (Double) result[11] : null);
-				child.setFwidth(dwidth1.floatValue());
-				child.setFweight(dweight1.floatValue());
-				child.setFlenghth(dlength1.floatValue());
-			}
-			String formName = (result[22] != null ? (String) result[22] : null);
-			String coilSKU		= formName+" "+child.getMaterialGrade()+ " "+child.getFthickness() + " X  "+ child.getFwidth() + " X  "+ child.getFlenghth();
-			String packetSKU	= "Sheet"+" "+child.getMaterialGrade()+ " "+child.getFthickness() + " X  "+ child.getFwidth()  + " X  "+ child.getFlenghth();
-
-			child.setCoilSKU(coilSKU);
-			child.setFinalProcessingSKU(packetSKU);
-
-			dweightTotal=dweightTotal+child.getFweight();
-			child.setPacketStatus(result[13] != null ? (String) result[13] : null);
-			resp.getChildListResp().add(child);
-		}
-		resp.setFweightTotal(dweightTotal.floatValue());
-		context.setVariable("soDetails", resp);
-		return context;
 	}
 
 	private String loadAndFillSOTemplate(Context context) {

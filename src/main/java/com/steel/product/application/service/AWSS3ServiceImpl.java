@@ -249,7 +249,7 @@ public class AWSS3ServiceImpl implements AWSS3Service {
     }
     
 	public static void mainaa(String[] args) {
-		String kk = new BCryptPasswordEncoder().encode("account_contractor") ;
+		String kk = new BCryptPasswordEncoder().encode("vIkraNt#mankar") ;
 		System.out.println("Hi encoded value    "+kk);
 		//kk = new BCryptPasswordEncoder().encode("admin@123") ;
 		//System.out.println("Hi aknak22 =="+kk);		

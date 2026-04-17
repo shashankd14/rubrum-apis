@@ -394,7 +394,7 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 
 	@Modifying
 	@Transactional
-	@Query("update InwardEntry set batch_id=:batchId where customerinvoiceno=:customerinvoiceno and coilNumber=:coilNumber ")
+	@Query("update InwardEntry set batchId = :batchId where customerinvoiceno=:customerinvoiceno and coilNumber=:coilNumber ")
 	public int updateBatchIdByPoInvNo(@Param("customerinvoiceno") String customerinvoiceno,
 			@Param("coilNumber") String coilNumber, @Param("batchId") String batchId);
 

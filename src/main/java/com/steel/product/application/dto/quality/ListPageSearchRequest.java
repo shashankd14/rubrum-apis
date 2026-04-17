@@ -46,4 +46,6 @@ public class ListPageSearchRequest {
 
 	private String allocationType;
 
+	private String pdfGenerationPart;
+
 }

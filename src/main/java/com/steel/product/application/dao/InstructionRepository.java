@@ -199,7 +199,7 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
 			+ " (select so.branch_id from jsw_sales_order so, jsw_sales_order_child child, jsw_warehouse_master wh where so.so_id=child.so_id and wh.ware_house_id=child.wearhouse_id and child.mm_id = ins.mmid and so.refno = ins.sono limit 1) branch_id, "
 			+ " sum(additional_weight) additional_weight "
 			+ " FROM product_tbl_delivery_details dc, product_instruction ins "
-			+ " WHERE ins.deliveryid=dc.deliveryid and dc.deliveryid = :dcId ) a "
+			+ " WHERE ins.deliveryid=dc.deliveryid and dc.deliveryid = :dcId group by mmid  ) a "
 			+ " where 1=1 group by sono, dt, vehicleno, mmid, wearhouse_id, branch_id, zbooks_so ", nativeQuery = true)
 	public List<Object[]> prepareInvAdjustmentRequest(Integer dcId);
 	
