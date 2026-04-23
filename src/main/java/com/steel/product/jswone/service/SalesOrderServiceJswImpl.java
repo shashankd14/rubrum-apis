@@ -9,7 +9,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -37,8 +37,6 @@ import com.lowagie.text.DocumentException;
 import com.steel.product.application.dao.InstructionRepository;
 import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.dto.quality.ListPageSearchRequest;
-import com.steel.product.application.dto.salesorder.SalesOrderListDTO;
-import com.steel.product.application.dto.salesorder.SalesOrderListResponse;
 import com.steel.product.application.entity.AdminUserEntity;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
@@ -64,8 +62,6 @@ import com.steel.product.jswone.request.SalesOrderExternalRequest;
 import com.steel.product.jswone.request.SalesOrderLineItem;
 import com.steel.product.jswone.request.SalesOrderMainRequest;
 import com.steel.product.jswone.response.CoilAllocationDTO;
-import com.steel.product.jswone.response.SalesOrderCPChildResponse;
-import com.steel.product.jswone.response.SalesOrderCPMainResponse;
 import com.steel.product.jswone.response.SalesOrderChildAllocationResponse;
 
 import lombok.extern.log4j.Log4j2;
@@ -74,23 +70,23 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 
-    @Autowired
+	@Autowired
 	private SalesOrderJswRepository salesOrderRepository;
 
-    @Autowired
+	@Autowired
 	private SalesOrderChildJswRepository childRepository;
 
-    @Autowired
+	@Autowired
 	private SalesOrderAllocationJswRepository soAllocationRepository;
 
-    @Autowired
+	@Autowired
 	private CommonUtil commonUtil;
-	
-    @Autowired
-    private InstructionRepository instructionRepository;
-	
-    @Autowired
-    private InwardEntryRepository inwardEntryRepository;
+
+	@Autowired
+	private InstructionRepository instructionRepository;
+
+	@Autowired
+	private InwardEntryRepository inwardEntryRepository;
 
 	@Autowired
 	private JswoneAuditTrailRepository jswoneAuditTrailRepository;
@@ -107,7 +103,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 		ResponseEntity<Object> responseEntity = null;
 		String message = "Sales Order created successfully..!";
 		try {
-			
+
 			BigDecimal totalqty = new BigDecimal("0.00");
 			SalesOrderJswEntity salesOrderEntity = new SalesOrderJswEntity();
 			BeanUtils.copyProperties(salesOrderEntity, salesOrderMainRequest);
@@ -115,24 +111,26 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			salesOrderEntity.setAllocatedStts("PENDING");
 			salesOrderEntity.setIsDeleted(false);
 			salesOrderEntity.setSoStatus(StatusType.SO_CREATED.getType());
-			
+
 			if ("create".equals(option)) {
-				Optional<SalesOrderJswEntity> kk = salesOrderRepository.findBySoNumberIgnoreCase(salesOrderMainRequest.getSoNumber());
-				if(kk.isPresent()) {
-					return new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"Entered SO Number already exists.\"}", new HttpHeaders(),
-							HttpStatus.INTERNAL_SERVER_ERROR);
+				Optional<SalesOrderJswEntity> kk = salesOrderRepository
+						.findBySoNumberIgnoreCase(salesOrderMainRequest.getSoNumber());
+				if (kk.isPresent()) {
+					return new ResponseEntity<>(
+							"{\"status\": \"failure\", \"message\": \"Entered SO Number already exists.\"}",
+							new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 				}
 			}
-			
-			if("approve".equals(option)){
+
+			if ("approve".equals(option)) {
 				salesOrderEntity.setSoStatus(StatusType.SO_APPROVED.getType());
 				salesOrderEntity.setCpStatus(StatusType.CP_PLAN_DRAFT.getType());
 				salesOrderEntity.setApprovedDate(new Date());
 				message = "Sales Order approved successfully..!";
 			}
-			if("update".equals(option)){
+			if ("update".equals(option)) {
 				salesOrderEntity.setSoStatus(StatusType.SO_CREATED.getType());
-				salesOrderEntity.setUpdatedOn( new Date());
+				salesOrderEntity.setUpdatedOn(new Date());
 				salesOrderEntity.setUpdatedBy(commonUtil.getUserId());
 				message = "Sales Order updated successfully..!";
 			}
@@ -141,13 +139,13 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				BeanUtils.copyProperties(childEntity, dto);
 				childEntity.setCreatedBy(commonUtil.getUserId());
 				childEntity.setItemSoStatus(StatusType.SO_CREATED.getType());
-				if("approve".equals(option)){
+				if ("approve".equals(option)) {
 					childEntity.setItemSoStatus(StatusType.SO_APPROVED.getType());
-					childEntity.setItemCpStatus(StatusType.CP_PLAN_DRAFT.getType());
+					//childEntity.setItemSoStatus(StatusType.CP_PLAN_DRAFT.getType());
 					childEntity.setApprovedDate(new Date());
 				}
-				if("update".equals(option)){
-					childEntity.setUpdatedOn( new Date());
+				if ("update".equals(option)) {
+					childEntity.setUpdatedOn(new Date());
 					childEntity.setUpdatedBy(commonUtil.getUserId());
 					message = "Sales Order updated successfully..!";
 				}
@@ -158,20 +156,23 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				totalqty = totalqty.add(childSoqty);
 				salesOrderEntity.addItem(childEntity);
 			}
-			salesOrderEntity.setTotalSoqty( totalqty);
+			salesOrderEntity.setTotalSoqty(totalqty);
 			salesOrderRepository.save(salesOrderEntity);
 		} catch (Exception e) {
 			e.printStackTrace();
-			responseEntity = new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"" + e.getMessage() + "\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+			responseEntity = new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"" + e.getMessage() + "\"}",
+					new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		responseEntity = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"" + message + "\"}", new HttpHeaders(), HttpStatus.OK);
+		responseEntity = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"" + message + "\"}",
+				new HttpHeaders(), HttpStatus.OK);
 		return responseEntity;
 	}
 
 	@Override
 	public Page<Object[]> listAllSOIDsCP(ListPageSearchRequest listPageSearchRequest) {
 
-		Pageable pageable = PageRequest.of((listPageSearchRequest.getPageNo() - 1), listPageSearchRequest.getPageSize());
+		Pageable pageable = PageRequest.of((listPageSearchRequest.getPageNo() - 1),
+				listPageSearchRequest.getPageSize());
 		boolean warehouseFlag = false;
 
 		if (listPageSearchRequest.getWarehouseList() != null && listPageSearchRequest.getWarehouseList().size() > 0) {
@@ -179,9 +180,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 		}
 
 		Page<Object[]> packetsList = salesOrderRepository.listAllSOIDsCP(listPageSearchRequest.getSearchText(),
-				listPageSearchRequest.getSoId(), 
-				listPageSearchRequest.getStatus(),
-				warehouseFlag,
+				listPageSearchRequest.getSoId(), listPageSearchRequest.getStatus(), warehouseFlag,
 				listPageSearchRequest.getWarehouseList(), pageable);
 		return packetsList;
 	}
@@ -191,27 +190,28 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 		List<Object[]> packetsList = salesOrderRepository.listIdWisedetailsCP(soIDsList, warehouseFlag, warehouseList);
 		return packetsList;
 	}
-	
+
 	@Override
 	public Page<Object[]> listAllSOIDs(ListPageSearchRequest listPageSearchRequest) {
 
-		Pageable pageable = PageRequest.of((listPageSearchRequest.getPageNo() - 1),  listPageSearchRequest.getPageSize());
+		Pageable pageable = PageRequest.of((listPageSearchRequest.getPageNo() - 1),
+				listPageSearchRequest.getPageSize());
 		List<Integer> partyIds = new ArrayList<>();
-		//boolean partyIdsFlag = false;
+		// boolean partyIdsFlag = false;
 		if (listPageSearchRequest.getPartyId() != null && listPageSearchRequest.getPartyId() > 0) {
 			partyIds.add(listPageSearchRequest.getPartyId());
-			//partyIdsFlag = true;
+			// partyIdsFlag = true;
 		} else {
 			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
 			if (adminUserEntity.getUserPartyMap() != null && adminUserEntity.getUserPartyMap().size() > 0) {
 				partyIds = new ArrayList<>();
 				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
 					partyIds.add(userPartyMap.getPartyId());
-					//partyIdsFlag = true;
+					// partyIdsFlag = true;
 				}
 				log.info("In partyIds === " + partyIds);
 			} else {
-				//partyIdsFlag = false;
+				// partyIdsFlag = false;
 				partyIds = new ArrayList<>();
 			}
 		}
@@ -225,7 +225,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 		List<Object[]> packetsList = salesOrderRepository.listIdWisedetails(soIDsList);
 		return packetsList;
 	}
-	
+
 	@Override
 	@Transactional
 	public ResponseEntity<Object> consolidatePlanner(List<SalesOrderChildRequest> salesOrderPacketsListNew) {
@@ -234,49 +234,67 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 		String message = "Consolidate planner created successfully..!";
 		try {
 
-			Integer soId=0;
+			Integer soId = 0;
 			for (SalesOrderChildRequest request : salesOrderPacketsListNew) {
 				BigDecimal balanceQtyRequired = new BigDecimal("0.00");
 				BigDecimal totalAllocatedQty = new BigDecimal("0.00");
 				soId = request.getSoId();
 				SalesOrderPacketsJswEntity childEntity = childRepository.findBySoChildId(request.getSoChildId());
-				//BigDecimal allocatedQty = (childEntity.getAllocatedSoqty() == null? BigDecimal.ZERO : childEntity.getAllocatedSoqty());
+				// BigDecimal allocatedQty = (childEntity.getAllocatedSoqty() == null?
+				// BigDecimal.ZERO : childEntity.getAllocatedSoqty());
 
-				BigDecimal allocatedQty = Optional.ofNullable(soAllocationRepository.getTotalAllocatedQtyBySoChildId(request.getSoChildId())).orElse(BigDecimal.ZERO);
-				
+				BigDecimal allocatedQty = Optional
+						.ofNullable(soAllocationRepository.getTotalAllocatedQtyBySoChildId(request.getSoChildId()))
+						.orElse(BigDecimal.ZERO);
+
 				if (request.getAllocatedSoqty() == null) {
-					return new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"Please enter valid value in allocation quantity\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+					return new ResponseEntity<>(
+							"{\"status\": \"failure\", \"message\": \"Please enter valid value in allocation quantity\"}",
+							new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 				}
 				BigDecimal allocatedSoqty = request.getAllocatedSoqty();
 				if (allocatedSoqty.compareTo(BigDecimal.ZERO) <= 0) {
-					return new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"Please enter valid value in allocation quantity\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+					return new ResponseEntity<>(
+							"{\"status\": \"failure\", \"message\": \"Please enter valid value in allocation quantity\"}",
+							new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 				}
 				if (allocatedSoqty.compareTo(childEntity.getSoqty()) > 0) {
-					return new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"Entered quantity should be less than required quantity\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+					return new ResponseEntity<>(
+							"{\"status\": \"failure\", \"message\": \"Entered quantity should be less than required quantity\"}",
+							new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 				}
-				
+
 				balanceQtyRequired = childEntity.getSoqty().subtract(allocatedQty);
 				totalAllocatedQty = allocatedSoqty.add(allocatedQty);
 
-				if (balanceQtyRequired.compareTo(BigDecimal.ZERO) == 0 && "COMPLETED".equals(childEntity.getAllocatedStts())) {
-					return new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"This item has already been allocated.\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+				if (balanceQtyRequired.compareTo(BigDecimal.ZERO) == 0
+						&& "COMPLETED".equals(childEntity.getAllocatedStts())) {
+					return new ResponseEntity<>(
+							"{\"status\": \"failure\", \"message\": \"This item has already been allocated.\"}",
+							new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 				}
 				if (balanceQtyRequired.compareTo(allocatedSoqty) < 0) {
-					return new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"Enter the required quantity only ("+balanceQtyRequired+") }", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+					return new ResponseEntity<>(
+							"{\"status\": \"failure\", \"message\": \"Enter the required quantity only ("
+									+ balanceQtyRequired + ") }",
+							new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 				}
-				
+
 				String allocationStts = "PENDING";
 				if (balanceQtyRequired.compareTo(allocatedSoqty) == 0) {
 					allocationStts = "COMPLETED";
+					childEntity.setItemSoStatus("Allocated");
+				} else {
+					childEntity.setItemSoStatus("Allocated - Partially");
 				}
-				
-				childEntity.setAllocatedStts( allocationStts);
-				childEntity.setAllocatedSoqty( totalAllocatedQty);
-				childEntity.setSpecialInstructions( request.getSpecialInstructions());
-				childEntity.setAllocationBy( commonUtil.getUserId());
+
+				childEntity.setAllocatedStts(allocationStts);
+				childEntity.setAllocatedSoqty(totalAllocatedQty);
+				childEntity.setSpecialInstructions(request.getSpecialInstructions());
+				childEntity.setAllocationBy(commonUtil.getUserId());
 				childEntity.setAllocationDate(new Date());
 				childRepository.save(childEntity);
-				
+
 				SalesOrderAllocationEntity allocation = new SalesOrderAllocationEntity();
 				allocation.setInstructionId(request.getInstructionId());
 				allocation.setInwardEntryId(request.getInwardEntryId());
@@ -286,61 +304,66 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				allocation.setAllocatedStts(allocationStts);
 				allocation.setAllocationBy(commonUtil.getUserId());
 				soAllocationRepository.save(allocation);
-				
-				if (request.getInstructionId() != null && request.getInstructionId() > 0 && request.getInwardEntryId() != null && request.getInwardEntryId() > 0 ) {
+
+				if (request.getInstructionId() != null && request.getInstructionId() > 0 && request.getInwardEntryId() != null && request.getInwardEntryId() > 0) {
 					Optional<Instruction> instructionList = instructionRepository.findInstructionById(request.getInstructionId());
 					if (instructionList != null && instructionList.isPresent()) {
-						SalesOrderJswEntity soEntity  = salesOrderRepository.findBySoId(request.getSoId());
+						SalesOrderJswEntity soEntity = salesOrderRepository.findBySoId(request.getSoId());
 						Instruction instruction = instructionList.get();
-						float instructionAllocatedQty = (instruction.getAllocatedSoqty() == null? 0.0f : instruction.getAllocatedSoqty());
+						float instructionAllocatedQty = (instruction.getAllocatedSoqty() == null ? 0.0f	: instruction.getAllocatedSoqty());
 						Float totalAllocatedItemQty = instructionAllocatedQty + allocatedSoqty.floatValue();
 						instructionRepository.consolidatePlanner(request.getInstructionId(), totalAllocatedItemQty, childEntity.getMmId(), soEntity.getRefno());
 					}
 				} else {
 					Optional<InwardEntry> inwardList = inwardEntryRepository.findById(request.getInwardEntryId());
 					if (inwardList != null && inwardList.isPresent()) {
-						SalesOrderJswEntity soEntity  = salesOrderRepository.findBySoId(request.getSoId());
+						SalesOrderJswEntity soEntity = salesOrderRepository.findBySoId(request.getSoId());
 						InwardEntry inwardEntry = inwardList.get();
-						float inwardAllocatedQty = (inwardEntry.getAllocatedSoqty() == null? 0.0f : inwardEntry.getAllocatedSoqty());
+						float inwardAllocatedQty = (inwardEntry.getAllocatedSoqty() == null ? 0.0f : inwardEntry.getAllocatedSoqty());
 
 						Float totalAllocatedItemQty = inwardAllocatedQty + allocatedSoqty.floatValue();
 						inwardEntryRepository.consolidatePlanner(request.getInwardEntryId(), totalAllocatedItemQty, childEntity.getMmId(), soEntity.getRefno());
 					}
 				}
 			}
-			List<SalesOrderPacketsJswEntity> allocations = childRepository.findBySoId_SoId(soId);
-			
-			boolean allAllocated = allocations.stream().allMatch(a -> a.getSoqty() != null && a.getAllocatedSoqty().compareTo(a.getSoqty()) >= 0);
-			SalesOrderJswEntity order = salesOrderRepository.findById(soId).orElseThrow(() -> new RuntimeException("SO not found"));
-			if (allAllocated) {
-				order.setCpStatus("CP_PLAN_ISSUED");
-			} else {
-				order.setCpStatus("CP_PLAN_DRAFT");
-			}
-			salesOrderRepository.save(order);
+			//updateCPStatus(soId);
+			/*
+			 * List<SalesOrderPacketsJswEntity> allocations =
+			 * childRepository.findBySoId_SoId(soId);
+			 * 
+			 * boolean allAllocated = allocations.stream().allMatch(a -> a.getSoqty() !=
+			 * null && a.getAllocatedSoqty().compareTo(a.getSoqty()) >= 0);
+			 * SalesOrderJswEntity order =
+			 * salesOrderRepository.findById(soId).orElseThrow(() -> new
+			 * RuntimeException("SO not found")); if (allAllocated) {
+			 * order.setCpStatus("CP_PLAN_ISSUED"); } else {
+			 * order.setCpStatus("CP_PLAN_DRAFT"); } salesOrderRepository.save(order);
+			 */
 			responseEntity = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"" + message + "\"}", new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
-			responseEntity = new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"" + e.getMessage() + "\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+			responseEntity = new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"" + e.getMessage() + "\"}",	new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		return responseEntity;
 	}
-	
+
 	@Override
 	public Page<Object[]> findInventory(ListPageSearchRequest request) {
 		Pageable pageable = null;
-		if (request.getSortColumn() != null && request.getSortColumn().length() > 0
-				&& request.getSortOrder() != null && request.getSortOrder().length() > 0
-				&& "ASC".equalsIgnoreCase(request.getSortOrder())) {
-			pageable = PageRequest.of((request.getPageNo()-1), request.getPageSize(), Sort.by(request.getSortColumn()).ascending());
-		}else if (request.getSortColumn() != null && request.getSortColumn().length() > 0
+		if (request.getSortColumn() != null && request.getSortColumn().length() > 0 && request.getSortOrder() != null
+				&& request.getSortOrder().length() > 0 && "ASC".equalsIgnoreCase(request.getSortOrder())) {
+			pageable = PageRequest.of((request.getPageNo() - 1), request.getPageSize(),
+					Sort.by(request.getSortColumn()).ascending());
+		} else if (request.getSortColumn() != null && request.getSortColumn().length() > 0
 				&& request.getSortOrder() != null && request.getSortOrder().length() > 0
 				&& "DESC".equalsIgnoreCase(request.getSortOrder())) {
-			pageable = PageRequest.of((request.getPageNo()-1), request.getPageSize(), Sort.by(request.getSortColumn()).descending());
+			pageable = PageRequest.of((request.getPageNo() - 1), request.getPageSize(),
+					Sort.by(request.getSortColumn()).descending());
 		} else {
-			pageable = PageRequest.of((request.getPageNo()-1), request.getPageSize(), Sort.by("inwardid").descending());
-		}		
-				
+			pageable = PageRequest.of((request.getPageNo() - 1), request.getPageSize(),
+					Sort.by("inwardid").descending());
+		}
+
 		List<Integer> partyIds = new ArrayList<>();
 		boolean partyIdsFlag = false;
 		if (request.getPartyId() != null && request.getPartyId() > 0) {
@@ -350,26 +373,27 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
 			if (adminUserEntity.getUserPartyMap() != null && adminUserEntity.getUserPartyMap().size() > 0) {
 				partyIds = new ArrayList<>();
-				//for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
-					//partyIds.add(userPartyMap.getPartyId());
-					//partyIdsFlag = true;
-				//}
+				// for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
+				// partyIds.add(userPartyMap.getPartyId());
+				// partyIdsFlag = true;
+				// }
 				log.info("In partyIds === " + partyIds);
 			} else {
 				partyIdsFlag = false;
 				partyIds = new ArrayList<>();
 			}
 		}
-		int packetStatus =0;
-		
-		if ("COIL".equals(request.getAllocationType())  ) {
-			
+		int packetStatus = 0;
+
+		if ("COIL".equals(request.getAllocationType())) {
+
 			MaterialMasterJswEntity entity = materialMasterJswRepository.findFirstByMmId(request.getSoChildMmid());
 
-			log.info("getGradeId: {}, getSubgradeId: {}, getThickness: {}, getWidth: {}",entity.getGradeId(), entity.getSubgradeId(), entity.getThickness(), entity.getWidth());
+			log.info("getGradeId: {}, getSubgradeId: {}, getThickness: {}, getWidth: {}", entity.getGradeId(),
+					entity.getSubgradeId(), entity.getThickness(), entity.getWidth());
 			return salesOrderRepository.findCoilInventory(request.getSearchText(), partyIds, partyIdsFlag,
 					entity.getGradeId(), entity.getSubgradeId(), entity.getThickness(), entity.getWidth(), pageable);
-			
+
 		} else if ("INWARDSHEET_PACKETS".equals(request.getAllocationType())) {
 			if ("FG".equals(request.getInventoryType())) {
 				packetStatus = 3;
@@ -378,16 +402,18 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				packetStatus = 2;
 			}
 			MaterialMasterJswEntity entity = materialMasterJswRepository.findFirstByMmId(request.getSoChildMmid());
-			
-			log.info("getGradeId: {}, getSubgradeId: {}, getThickness: {}, getWidth: {}, getLength: {}", entity.getGradeId(), entity.getSubgradeId(), entity.getThickness(), entity.getWidth(), entity.getLength());
-			return salesOrderRepository.findPacketInventory(request.getSearchText(), partyIds, partyIdsFlag, packetStatus,
-					 entity.getGradeId(), entity.getSubgradeId(), entity.getThickness(), 
-					entity.getWidth(),entity.getLength(), pageable);
+
+			log.info("getGradeId: {}, getSubgradeId: {}, getThickness: {}, getWidth: {}, getLength: {}",
+					entity.getGradeId(), entity.getSubgradeId(), entity.getThickness(), entity.getWidth(),
+					entity.getLength());
+			return salesOrderRepository.findPacketInventory(request.getSearchText(), partyIds, partyIdsFlag,
+					packetStatus, entity.getGradeId(), entity.getSubgradeId(), entity.getThickness(), entity.getWidth(),
+					entity.getLength(), pageable);
 		} else {
 			return salesOrderRepository.findSheetInventory(request.getSoChildMmid(), pageable);
 		}
 	}
-	
+
 	@Override
 	@Transactional
 	public ResponseEntity<Object> post(SalesOrderExternalRequest req, String option) {
@@ -409,14 +435,11 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			audit.setPoId(rfNumber);
 			audit.setRequestObj(req == null ? "" : mapper.writeValueAsString(req));
 
-
 			// ----------------------- Validate Mandatory Fields -----------------------
 			String missingField = validateExternalRequest(req);
 			if (missingField != null) {
-				return new ResponseEntity<>(
-						"{\"code\":\"failure\", \"message\": \"" + missingField + " is required\"}",
-						HttpStatus.BAD_REQUEST
-				);
+				return new ResponseEntity<>("{\"code\":\"failure\", \"message\": \"" + missingField + " is required\"}",
+						HttpStatus.BAD_REQUEST);
 			}
 
 			// ----------------------- Extract Header Fields -----------------------
@@ -424,7 +447,8 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			SalesOrderCustomFields c = req.getCustom_fields();
 
 			// ----------------------- FIND EXISTING SO BY SO_NUMBER -----------------------
-			Optional<SalesOrderJswEntity> existingSoOpt = salesOrderRepository.findBySoNumberAndIsDeletedFalse(d.getSalesorder_number());
+			Optional<SalesOrderJswEntity> existingSoOpt = salesOrderRepository
+					.findBySoNumberAndIsDeletedFalse(d.getSalesorder_number());
 
 			SalesOrderJswEntity so;
 
@@ -458,9 +482,10 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			so.setSupplysource(c.getCf_supply_source());
 			so.setTypeofsupply(d.getDelivery_method());
 			so.setZbooksSo(d.getSalesorder_id());
+			so.setCpStatus("UnAllocated");
 			so.setUpdatedBy(commonUtil.getUserId());
 			so.setUpdatedOn(new Date());
-			so.setTotalSoqty(BigDecimal.valueOf(d.getTotal_quantity()));
+			so.setTotalSoqty(BigDecimal.valueOf(d.getTotal_quantity()).multiply(new BigDecimal("1000")));
 
 			// ----------------------- Branch -----------------------
 			if (d.getBranch_id() != null) {
@@ -485,11 +510,11 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 
 				item.setSoId(so);
 				item.setMmId(li.getSku());
-				item.setSoqty(BigDecimal.valueOf(li.getQuantity()));
+				item.setSoqty(BigDecimal.valueOf(li.getQuantity()).multiply(new BigDecimal("1000")));
 				item.setTax_percentage(String.valueOf(li.getTax_percentage()));
 				item.setHsn_or_sac(li.getHsn_or_sac());
-				item.setMaterialName( li.getName());
-				item.setItemSoStatus(StatusType.SO_CREATED.getType());
+				item.setMaterialName(li.getName());
+				item.setItemSoStatus("Unallocated");
 				item.setAllocatedStts("PENDING");
 				item.setIsDeleted(false);
 				item.setCreatedBy(commonUtil.getUserId());
@@ -503,20 +528,17 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				so.addItem(item);
 			}
 			salesOrderRepository.save(so);
-			finalResponse = ResponseEntity.ok(
-					"{\"code\":\"success\", \"message\":\"External Sales Order processed successfully\"}"
-			);
+			finalResponse = ResponseEntity
+					.ok("{\"code\":\"success\", \"message\":\"External Sales Order processed successfully\"}");
 			return finalResponse;
 
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			finalResponse = new ResponseEntity<>(
 					"{\"code\":\"failure\", \"message\": \"" + safeMsg(ex.getMessage()) + "\"}",
-					HttpStatus.INTERNAL_SERVER_ERROR
-			);
+					HttpStatus.INTERNAL_SERVER_ERROR);
 			return finalResponse;
-		}
-		finally {
+		} finally {
 			try {
 				if (finalResponse != null) {
 					audit.setStatusCode(String.valueOf(finalResponse.getStatusCode().value()));
@@ -548,45 +570,64 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 	}
 
 	private String safeMsg(String msg) {
-		if (msg == null) return "";
+		if (msg == null)
+			return "";
 		return msg.replace("\"", "'");
 	}
 
 	private String validateExternalRequest(SalesOrderExternalRequest req) {
 
 		// SalesOrder_Details
-		if (req.getSalesOrder_Details() == null) return "SalesOrder_Details";
+		if (req.getSalesOrder_Details() == null)
+			return "SalesOrder_Details";
 
 		SalesOrderDetails d = req.getSalesOrder_Details();
-		if (isEmpty(d.getSalesorder_number())) return "SalesOrder_Details.salesorder_number";
-		if (isEmpty(d.getDate())) return "SalesOrder_Details.date";
-		if (isEmpty(d.getStatus())) return "SalesOrder_Details.status";
-		if (isEmpty(d.getReference_number())) return "SalesOrder_Details.reference_number";
-		if (isEmpty(d.getCustomer_id())) return "SalesOrder_Details.customer_id";
-		if (isEmpty(d.getDelivery_method())) return "SalesOrder_Details.delivery_method";
-		if (isEmpty(d.getBranch_id())) return "SalesOrder_Details.branch_id";
-		if (d.getTotal_quantity() == null) return "SalesOrder_Details.total_quantity";
+		if (isEmpty(d.getSalesorder_number()))
+			return "SalesOrder_Details.salesorder_number";
+		if (isEmpty(d.getDate()))
+			return "SalesOrder_Details.date";
+		if (isEmpty(d.getStatus()))
+			return "SalesOrder_Details.status";
+		if (isEmpty(d.getReference_number()))
+			return "SalesOrder_Details.reference_number";
+		if (isEmpty(d.getCustomer_id()))
+			return "SalesOrder_Details.customer_id";
+		if (isEmpty(d.getDelivery_method()))
+			return "SalesOrder_Details.delivery_method";
+		if (isEmpty(d.getBranch_id()))
+			return "SalesOrder_Details.branch_id";
+		if (d.getTotal_quantity() == null)
+			return "SalesOrder_Details.total_quantity";
 
 		// Line Items
-		if (req.getLine_items() == null || req.getLine_items().isEmpty()) return "line_items";
+		if (req.getLine_items() == null || req.getLine_items().isEmpty())
+			return "line_items";
 		for (SalesOrderLineItem li : req.getLine_items()) {
-			if (isEmpty(li.getSku())) return "line_items.sku";
-			if (isEmpty(li.getWarehouse_id())) return "line_items.warehouse_id";
+			if (isEmpty(li.getSku()))
+				return "line_items.sku";
+			if (isEmpty(li.getWarehouse_id()))
+				return "line_items.warehouse_id";
 
 		}
 
 		// payments
-		if (req.getPayment_terms() == null) return "payment_terms";
-		if (isEmpty(req.getPayment_terms_label())) return "payment_terms_label";
+		if (req.getPayment_terms() == null)
+			return "payment_terms";
+		if (isEmpty(req.getPayment_terms_label()))
+			return "payment_terms_label";
 
 		// custom fields
-		if (req.getCustom_fields() == null) return "custom_fields";
+		if (req.getCustom_fields() == null)
+			return "custom_fields";
 
 		SalesOrderCustomFields c = req.getCustom_fields();
 
-		if (isEmpty(c.getCf_biz_segment())) return "custom_fields.cf_biz_segment";
-		if (isEmpty(c.getCf_supply_source())) return "custom_fields.cf_supply_source";
-		if (isEmpty(c.getCf_delivery_method())) return "custom_fields.cf_delivery_method";
+		if (isEmpty(c.getCf_biz_segment()))
+			return "custom_fields.cf_biz_segment";
+		if (isEmpty(c.getCf_supply_source()))
+			return "custom_fields.cf_supply_source";
+		if (isEmpty(c.getCf_delivery_method()))
+			return "custom_fields.cf_delivery_method";
 
 		return null; // ALL OK
 	}
@@ -611,7 +652,8 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 		log.info("Updating Sales Order with status: {}", option);
 
 		if (option == null) {
-			return new ResponseEntity<>("{\"status\":\"failure\",\"message\":\"Status is required\"}", HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>("{\"status\":\"failure\",\"message\":\"Status is required\"}",
+					HttpStatus.BAD_REQUEST);
 		}
 
 		switch (option.toUpperCase()) {
@@ -652,16 +694,14 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 
 		// approve child items also
 		for (SalesOrderPacketsJswEntity item : so.getItemslist()) {
-			item.setItemSoStatus(StatusType.SO_APPROVED.getType());
-			item.setItemCpStatus(StatusType.CP_PLAN_DRAFT.getType());
+			item.setItemSoStatus("Unallocated");
+			//item.setItemCpStatus(StatusType.CP_PLAN_DRAFT.getType());
 			item.setApprovedDate(new Date());
 		}
 
 		salesOrderRepository.save(so);
 
-		return ResponseEntity.ok(
-				"{\"status\":\"success\",\"message\":\"Sales Order approved Successfully.\"}"
-		);
+		return ResponseEntity.ok("{\"status\":\"success\",\"message\":\"Sales Order approved Successfully.\"}");
 	}
 
 	private ResponseEntity<Object> holdSalesOrder(SalesOrderExternalRequest req) {
@@ -684,9 +724,8 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 
 		SalesOrderDetails d = req.getSalesOrder_Details();
 
-		SalesOrderJswEntity so =
-				salesOrderRepository.findBySoNumberIgnoreCase(d.getSalesorder_number())
-						.orElseThrow(() -> new RuntimeException("SO not found"));
+		SalesOrderJswEntity so = salesOrderRepository.findBySoNumberIgnoreCase(d.getSalesorder_number())
+				.orElseThrow(() -> new RuntimeException("SO not found"));
 
 		so.setSoStatus(StatusType.SO_REJECTED.getType());
 		so.setRemarks(d.getRemarks());
@@ -695,9 +734,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 		so.setRemarks(d.getRemarks());
 		so.setCamCode(d.getCam_code());
 		salesOrderRepository.save(so);
-		return ResponseEntity.ok(
-				"{\"status\":\"success\",\"message\":\"Sales Order rejected Successfully.\"}"
-		);
+		return ResponseEntity.ok("{\"status\":\"success\",\"message\":\"Sales Order rejected Successfully.\"}");
 	}
 
 	@Override
@@ -705,8 +742,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 	public ResponseEntity<Object> bulkUpdate(SalesOrderBulkRequest request) {
 
 		if (request.getSoIds() == null || request.getSoIds().isEmpty()) {
-			return ResponseEntity.badRequest()
-					.body("{\"status\":\"failure\",\"message\":\"SO ID list is empty\"}");
+			return ResponseEntity.badRequest().body("{\"status\":\"failure\",\"message\":\"SO ID list is empty\"}");
 		}
 
 		List<SalesOrderJswEntity> orders = salesOrderRepository.findAllById(request.getSoIds());
@@ -725,8 +761,8 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			so.setUpdatedBy(commonUtil.getUserId());
 
 			for (SalesOrderPacketsJswEntity item : so.getItemslist()) {
-				item.setItemSoStatus(StatusType.SO_APPROVED.getType());
-				item.setItemCpStatus(StatusType.CP_PLAN_DRAFT.getType());
+				item.setItemSoStatus("Unallocated");
+				//item.setItemCpStatus(StatusType.CP_PLAN_DRAFT.getType());
 				item.setApprovedDate(now);
 				item.setUpdatedOn(now);
 				item.setUpdatedBy(commonUtil.getUserId());
@@ -735,12 +771,10 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 
 		salesOrderRepository.saveAll(orders);
 
-		return ResponseEntity.ok(
-				"{\"status\":\"success\",\"message\":\"Sales Orders approved successfully\",\"count\":"
-						+ orders.size() + "}"
-		);
+		return ResponseEntity.ok("{\"status\":\"success\",\"message\":\"Sales Orders approved successfully\",\"count\":"
+				+ orders.size() + "}");
 	}
-	
+
 	@Override
 	@Transactional
 	public ResponseEntity<Object> consolidateSplit(CPSplitRequest request) {
@@ -756,60 +790,64 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				if (copy != null && copy.getInstructionId() > 0) {
 					responseEntity = ResponseEntity.ok("{\"status\":\"success\",\"message\": \"" + message + "\"}");
 				} else {
-					responseEntity = new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"Failed to split\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+					responseEntity = new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"Failed to split\"}",
+							new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 				}
 			} else if (request.getInwardEntryId() > 0) {
-				InwardEntry copy = splitInward( request.getInwardEntryId(), splitQty, request.getSoNumber());
+				InwardEntry copy = splitInward(request.getInwardEntryId(), splitQty, request.getSoNumber());
 
 				if (copy != null && copy.getInwardEntryId() > 0) {
 					responseEntity = ResponseEntity.ok("{\"status\":\"success\",\"message\": \"" + message + "\"}");
 				} else {
-					responseEntity = new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"Failed to split\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+					responseEntity = new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"Failed to split\"}",
+							new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 				}
 			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			responseEntity = new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"" + e.getMessage() + "\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+			responseEntity = new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"" + e.getMessage() + "\"}",
+					new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		return responseEntity;
 	}
-	
+
 	@Transactional
 	public Instruction splitInstruction(Integer id, BigDecimal splitQty) {
 
-	    Instruction original = instructionRepository.findById(id).orElseThrow(() -> new RuntimeException("Instruction not found"));
+		Instruction original = instructionRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("Instruction not found"));
 
-	    Instruction copy = original.duplicateForSplit();
+		Instruction copy = original.duplicateForSplit();
 
-	    float split = splitQty.floatValue();
+		float split = splitQty.floatValue();
 
-	    if (original.getActualWeight() != null && original.getActualWeight() > 0f) {
-	        copy.setActualWeight(split);
-	        copy.setPlannedWeight(split);
-	        copy.setDeliveryDetails(null);
+		if (original.getActualWeight() != null && original.getActualWeight() > 0f) {
+			copy.setActualWeight(split);
+			copy.setPlannedWeight(split);
+			copy.setDeliveryDetails(null);
 
-	        float balance = original.getActualWeight() - split;
-	        original.setActualWeight(balance);
-	        original.setPlannedWeight(balance);
-	    }
-	    else {
-	        copy.setPlannedWeight(split);
+			float balance = original.getActualWeight() - split;
+			original.setActualWeight(balance);
+			original.setPlannedWeight(balance);
+		} else {
+			copy.setPlannedWeight(split);
 
-	        float balance = original.getPlannedWeight() - split;
-	        original.setPlannedWeight(balance);
-	    }
+			float balance = original.getPlannedWeight() - split;
+			original.setPlannedWeight(balance);
+		}
 
-	    instructionRepository.save(copy);
-	    instructionRepository.save(original);
+		instructionRepository.save(copy);
+		instructionRepository.save(original);
 
-	    return copy;
+		return copy;
 	}
 
 	@Transactional
 	public InwardEntry splitInward(Integer id, BigDecimal splitQty, String soNumber) {
 
-		InwardEntry original = inwardEntryRepository.findById(id).orElseThrow(() -> new RuntimeException("Inward not found"));
+		InwardEntry original = inwardEntryRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("Inward not found"));
 
 		InwardEntry copy = original.duplicateForSplit();
 
@@ -829,11 +867,11 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			inwardEntryRepository.save(copy);
 			inwardEntryRepository.save(original);
 		} else {
-			copy=null;
+			copy = null;
 		}
 		return copy;
 	}
-
+ 
 	@Transactional
 	@Override
 	public ResponseEntity<Object> unAllocate(SalesOrderChildAllocationResponse req) {
@@ -850,17 +888,20 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				}
 			}
 			soAllocationRepository.deleteById(req.getSoAllocationId());
-			
-			BigDecimal total = Optional.ofNullable(soAllocationRepository.getTotalAllocatedQtyBySoChildId(alloObj.getSoChildId())).orElse(BigDecimal.ZERO);
-			
-			if (total != null && total.compareTo(BigDecimal.ZERO) > 0) {
-				childRepository.consolidatePlanner(alloObj.getSoChildId(), total, "PENDING", "", commonUtil.getUserId());
+
+			BigDecimal allocatedSoqty = Optional
+					.ofNullable(soAllocationRepository.getTotalAllocatedQtyBySoChildId(alloObj.getSoChildId()))
+					.orElse(BigDecimal.ZERO);
+
+			if (allocatedSoqty != null && allocatedSoqty.compareTo(BigDecimal.ZERO) > 0) {
+				childRepository.consolidatePlanner(alloObj.getSoChildId(), allocatedSoqty, "PENDING", "", commonUtil.getUserId());
 			} else {
-				childRepository.consolidatePlanner(alloObj.getSoChildId(), BigDecimal.ZERO, "PENDING", "", commonUtil.getUserId());			
+				childRepository.consolidatePlanner(alloObj.getSoChildId(), BigDecimal.ZERO, "PENDING", "", commonUtil.getUserId());
 			}
 			responseEntity = ResponseEntity.ok("{\"status\":\"success\",\"message\": \"Item has been unallocated successfully.\"}");
 		} else {
-			responseEntity = new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"Please enter valid value\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+			responseEntity = new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"Please enter valid value\"}", new HttpHeaders(),
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		return responseEntity;
 	}
@@ -888,31 +929,32 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 	@Override
 	public List<CoilAllocationDTO> coilAllocationDetails(SalesOrderChildRequest request) {
 		List<Object[]> packetsList = salesOrderRepository.coilAllocationDetails(request.getInwardEntryId());
-	    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+		SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 		List<CoilAllocationDTO> dtoList = new ArrayList<>();
 
 		for (Object[] result : packetsList) {
 			CoilAllocationDTO dto = new CoilAllocationDTO();
-			//Integer soId = result[0] != null ? Integer.parseInt(result[0].toString()) : null;
-			//dto.setSoId(soId);
-			dto.setSoNumber(result[1] != null ? (String) result[1] : null);
+			// Integer soId = result[0] != null ? Integer.parseInt(result[0].toString()) :
+			// null;
+			// dto.setSoId(soId);
+			// dto.setSoNumber(result[1] != null ? (String) result[1] : null);
 			dto.setExpectedDeliveryDate(result[2] != null ? sdf.format(result[2]) : null);
 			dto.setCustomerCode(result[3] != null ? (String) result[3] : null);
-			//dto.setTotalQty(result[4] != null ? (BigDecimal) result[4] : null);
+			// dto.setTotalQty(result[4] != null ? (BigDecimal) result[4] : null);
 			dto.setCpStatus(result[5] != null ? (String) result[5] : null);
-			//dto.setBranchId(result[1] != null ? (String) result[1] : null);
-			//dto.setBranchName(result[23] != null ? (String) result[23] : null);
+			// dto.setBranchId(result[1] != null ? (String) result[1] : null);
+			// dto.setBranchName(result[23] != null ? (String) result[23] : null);
 
 			Integer soChildId = result[6] != null ? (Integer) result[6] : null;
-			//dto.setSoChildId(soChildId);
+			// dto.setSoChildId(soChildId);
 			dto.setMmId((String) result[8]);
 			dto.setItemQty((BigDecimal) result[10]);
 			dto.setAllocatedSoqty((BigDecimal) result[11]);
 			dto.setAllocatedStts((String) result[12]);
-			//dto.setItemStatus((String) result[13]);
+			// dto.setItemStatus((String) result[13]);
 			dto.setMaterialDescription((String) result[14]);
-			//dto.setLocation(result[20] != null ? (String) result[20] : null);
-			//dto.setWareHouseName(result[22] != null ? (String) result[22] : null);
+			// dto.setLocation(result[20] != null ? (String) result[20] : null);
+			// dto.setWareHouseName(result[22] != null ? (String) result[22] : null);
 
 			/* ======================= ALLOCATION DETAILS ======================== */
 			dto.setSoAllocationId(result[15] != null ? (Integer) result[15] : 0);
@@ -920,7 +962,8 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			dto.setInwardId(result[9] != null ? (Integer) result[9] : null);
 			dto.setAllocatedqty((BigDecimal) result[16]);
 			dto.setCoilNumber(result[17] != null ? (String) result[17] : "");
-			// dto.setQty(result[18] == null ? null : BigDecimal.valueOf(((Number) result[18]).doubleValue()));
+			// dto.setQty(result[18] == null ? null : BigDecimal.valueOf(((Number)
+			// result[18]).doubleValue()));
 			dto.setSubGrade(result[19] != null ? (String) result[19] : "");
 			dto.setGrade(result[20] != null ? (String) result[20] : "");
 			dto.setThickness(result[21] != null ? Float.valueOf(result[21].toString()) : null);
@@ -930,8 +973,193 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			dto.setRefno(result[25] != null ? (String) result[25] : null);
 			dtoList.add(dto);
 		}
-
 		return dtoList;
 	}
-	
+
+	@Override
+	public void updateCPStatus(int soId) {
+		try {
+
+			Map<Integer, List<String>> soChildStatusMap = new HashMap<>();
+			List<Object[]> list = salesOrderRepository.getAllSODetailsWithAllocationStatus();
+			for (Object[] result : list) {				
+				Object value = result[1];
+				Integer soChildId = null;
+				if (value != null) {
+				    if (value instanceof Number) {
+				        soChildId = ((Number) value).intValue();
+				    } else {
+				        soChildId = Integer.parseInt(value.toString());
+				    }
+				}
+				String inwardStatus = result[4] != null ? (String) result[4] : null;
+				String packetStatus = result[5] != null ? (String) result[5] : null;
+
+				// override logic
+				if (packetStatus != null && !packetStatus.isEmpty()) {
+					inwardStatus = packetStatus;
+				}
+
+				if (soChildId != null) {
+					soChildStatusMap.computeIfAbsent(soChildId, k -> new ArrayList<>()).add(inwardStatus);
+				}
+			}
+			Map<Integer, String> finalStatusMap = new HashMap<>();
+
+			for (Map.Entry<Integer, List<String>> entry : soChildStatusMap.entrySet()) {
+
+				List<String> statuses = entry.getValue();
+
+				boolean allReceived = true;
+				boolean allWip = true;
+				boolean allReady = true;
+				boolean allDispatched = true;
+
+				for (String st : statuses) {
+					if (!"RECEIVED".equalsIgnoreCase(st)) {
+						allReceived = false;
+					}
+					if (!"IN PROGRESS".equalsIgnoreCase(st)) {
+						allWip = false;
+					}
+					if (!"READY TO DELIVER".equalsIgnoreCase(st)) {
+						allReady = false;
+					}
+					if (!"DISPATCHED".equalsIgnoreCase(st)) {
+						allDispatched = false;
+					}
+				}
+
+				String finalStatus = "RECEIVED";
+				if (allDispatched) {
+					finalStatus = "DISPATCHED";
+				} else if (allReady) {
+					finalStatus = "READY TO DELIVER";
+				} else if (allWip) {
+					finalStatus = "IN PROGRESS";
+				} else if (allReceived) {
+					finalStatus = "RECEIVED";
+				} else {
+					finalStatus = "RECEIVED";
+				}
+				finalStatusMap.put(entry.getKey(), finalStatus);
+			}
+
+			for (Map.Entry<Integer, String> entry : finalStatusMap.entrySet()) {
+				String status = entry.getValue();
+				int soChildId = entry.getKey();
+				childRepository.updateItemCPStataus("Allocated - " + status, soChildId);
+			}
+
+			List<SalesOrderPacketsJswEntity> allocations = childRepository.findBySoId_SoId(soId);
+
+			boolean allAllocated = allocations.stream().allMatch(a -> a.getSoqty() != null && a.getAllocatedSoqty() != null && a.getAllocatedSoqty().compareTo(a.getSoqty()) >= 0);
+			if (allAllocated) {
+				if (allAllocated) {
+					salesOrderRepository.updateCPStataus(StatusType.CP_PLAN_ISSUED.toString(), soId);
+				} else {
+					salesOrderRepository.updateCPStataus(StatusType.CP_PLAN_DRAFT.toString(), soId);
+				}
+			}
+
+			List<Object[]> allocations1 = salesOrderRepository.getAllSODetailsWithPacketStatus();
+			Map<Integer, List<String>> soStatusMap = new HashMap<>();
+			for (Object[] result : allocations1) {
+
+				// --- Safe ID extraction ---
+				Integer soIdDummy = null;
+				Object value = result[0];
+
+				if (value instanceof Number) {
+					soIdDummy = ((Number) value).intValue();
+				} else if (value != null) {
+					soIdDummy = Integer.parseInt(value.toString());
+				}
+
+				// --- Safe string extraction ---
+				String item_so_status = result[3] != null ? result[3].toString() : null;
+
+				// --- Populate map ---
+				if (soIdDummy != null && item_so_status != null) {
+					soStatusMap.computeIfAbsent(soIdDummy, k -> new ArrayList<>()).add(item_so_status);
+				}
+			}
+			
+			Map<Integer, String> finalSOStatusMap = new HashMap<>();
+
+			for (Map.Entry<Integer, List<String>> entry : soStatusMap.entrySet()) {
+
+				List<String> statuses = entry.getValue();
+
+				boolean allocated = true;
+				boolean allocatedPartially = true;
+				boolean allocatedReceived = true;
+				boolean allocatedInProgress = true;
+				boolean allocatedReadyToDeliver = true;
+				boolean allocatedDispatched = true;
+
+				for (String st : statuses) {
+					if (!"Allocated".equalsIgnoreCase(st)) {
+						allocated = false;
+					}
+					if (!"Allocated - Partially".equalsIgnoreCase(st)) {
+						allocatedPartially = false;
+					}
+					if (!"Allocated - RECEIVED".equalsIgnoreCase(st)) {
+						allocatedReceived = false;
+					}
+					if (!"Allocated - IN PROGRESS".equalsIgnoreCase(st)) {
+						allocatedInProgress = false;
+					}
+					if (!"Allocated - READY TO DELIVER".equalsIgnoreCase(st)) {
+						allocatedReadyToDeliver = false;
+					}
+					if (!"Allocated - DISPATCHED".equalsIgnoreCase(st)) {
+						allocatedDispatched = false;
+					}
+				}
+
+				String finalStatus = StatusType.CP_PLAN_DRAFT.toString();
+				if (allocated || allocatedPartially) {
+					finalStatus = StatusType.CP_PLAN_ISSUED.toString();
+				} else if (allocatedReceived) {
+					finalStatus = StatusType.CP_PLAN_INPROGRESS.toString();
+				} else if (allocatedInProgress) {
+					finalStatus = StatusType.CP_PLAN_INPROGRESS.toString();
+				} else if (allocatedReadyToDeliver) {
+					finalStatus = StatusType.CP_PLAN_INPROGRESS.toString();
+				} else if (allocatedDispatched) {
+					finalStatus = StatusType.CP_PAN_COMPLETED.toString();
+				} else {
+					finalStatus = StatusType.CP_PLAN_DRAFT.toString();
+				}
+				finalSOStatusMap.put(entry.getKey(), finalStatus);
+			}
+
+			for (Map.Entry<Integer, String> entry : finalSOStatusMap.entrySet()) {
+				String finalSOStatus = entry.getValue();
+				/*String finalSOStatus = entry.getValue();
+				
+				if ("Allocated".equals(status)) {
+					finalSOStatus = StatusType.CP_PLAN_ISSUED.toString();
+				} else if ("Allocated - DISPATCHED".equals(status)) {
+					finalSOStatus = StatusType.CP_PAN_COMPLETED.toString();
+				} else {
+					System.out.println("status == " + status);
+					// "Allocated - RECEIVED".equals(status)
+					// "Allocated - IN PROGRESS".equals(status)
+					// "Allocated - RECEIVED".equals(status)
+					// "Allocated - READY TO DELIVER".equals(status)
+					finalSOStatus = StatusType.CP_PLAN_INPROGRESS.toString();
+				}*/
+				int soId11 = entry.getKey();
+				System.out.println("hi soId == "+soId11+", status== "+finalSOStatus);
+				salesOrderRepository.updateCPStataus(finalSOStatus, soId11);
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 }

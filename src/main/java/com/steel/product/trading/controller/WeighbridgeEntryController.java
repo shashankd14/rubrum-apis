@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @CrossOrigin
 @Tag(name = "WeighbridgeEntry Master", description = "WeighbridgeEntry Master")
-@RequestMapping({ "/trading" })
 public class WeighbridgeEntryController {
 
 	@Autowired

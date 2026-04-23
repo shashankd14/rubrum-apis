@@ -67,7 +67,7 @@ public class SalesOrderPDFServiceJswImpl implements SalesOrderPDFJswService {
 
 		Map<String, SalesOrderListResponse> mapp = soDetailsBySoId(request);
 
-		File file = File.createTempFile("qirpdf_" + request.getSoId(), ".pdf");
+		File file = File.createTempFile("soAllocation_" + request.getSoId(), ".pdf");
 		Document document = new Document(PageSize.A4.rotate());
 
 		try {
@@ -317,7 +317,7 @@ public class SalesOrderPDFServiceJswImpl implements SalesOrderPDFJswService {
 	        child.setPlannedNoofPieces(result[19] != null ? ((Number) result[19]).intValue() : 0);
 	        child.setPackingMode(result[20] != null ? (String) result[20] : "");
 	        child.setFweight(result[10] != null ? ((BigDecimal) result[10]).floatValue() : null);
-	        child.setAllocatedQty(result[11] != null ? ((BigDecimal) result[11]).floatValue() : null);
+	        child.setAllocatedQty(result[16] != null ? ((BigDecimal) result[16]).floatValue() : null);
 	        child.setPartyName(partyName);
 
 	        child.setDiagonal("Max. 3.00");

@@ -4,9 +4,12 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
+import javax.transaction.Transactional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -116,7 +119,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " and mat.mm_id = parent.mm_id " 
 			+ " and mat.grade_id = :gradeId "
 			+ " and mat.subgrade_id= :subgradeId "
-			+ " and mat.form_id= :formId "
+			+ " and mat.form_id not in (21)"
 			+ " and mat.thickness= :thickness "
 			+ " AND parent.fwidth = :width "
 			+ " and case when :partyIdsFlag=true then parent.npartyid in :partyIds else 1=1 end"
@@ -132,7 +135,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " and mat.mm_id = parent.mm_id " 
 			+ " and mat.grade_id = :gradeId "
 			+ " and mat.subgrade_id= :subgradeId "
-			+ " and mat.form_id !=21 "
+			+ " and mat.form_id not in (21) "
 			+ " and mat.thickness= :thickness "
 			+ " AND parent.fwidth = :width "
 			+ " and case when :partyIdsFlag=true then parent.npartyid in :partyIds else 1=1 end"
@@ -296,11 +299,36 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " where so_child.so_id = so.so_id and so_child.is_deleted = 0 "
 			+ " and so_child.so_child_id = alloca.so_child_id"
 			+ " and inward.inwardentryid = alloca.inward_entry_id and so.so_id = alloca.so_id "
-		  	+"  and case when :pdfGenerationPart is not null and LENGTH(:pdfGenerationPart) >0 then alloca.pdf_generation_part= :pdfGenerationPart else alloca.pdf_generation_part is null end" 
+		  	+"  and case when :pdfGenerationPart is not null and LENGTH(:pdfGenerationPart) >0 then alloca.pdf_generation_part= :pdfGenerationPart else (alloca.pdf_generation_part IS NULL OR alloca.pdf_generation_part = '') end" 
 			+ " and mm.mm_id = so_child.mm_id and so_child.so_id = so.so_id "
 			+ " and alloca.so_id = :soId and so.is_deleted = 0 "
 			+ " order by so_child.so_child_id asc ", nativeQuery = true)
-	//List<Object[]> soDetailsBySoId(@Param("soId") Integer soId);
 	List<Object[]> soDetailsBySoId(@Param("soId") Integer soId, @Param("pdfGenerationPart") String pdfGenerationPart);
-	
+
+	@Modifying
+	@Transactional
+	@Query(value = "update jsw_sales_order set cp_status= :cpStatus where so_id =:soId", nativeQuery = true)
+	public int updateCPStataus(@Param("cpStatus") String cpStatus, @Param("soId") int soId);
+
+	@Query(value = "SELECT alloca.so_id, CAST(alloca.so_child_id AS SIGNED) AS so_child_id, so_allocation_id, so.cp_status, "
+			+ " inward_stts.statusname AS inward_stts, packet_stts.statusname AS packet_stts, "
+			+ " alloca.inward_entry_id, alloca.instruction_id "
+			+ " FROM jsw_sales_order so"
+			+ " JOIN jsw_sales_order_child so_child ON so_child.so_id = so.so_id  AND so_child.is_deleted = 0 "
+			+ " JOIN jsw_sales_order_allocation alloca ON so_child.so_child_id = alloca.so_child_id AND so.so_id = alloca.so_id"
+			+ " JOIN product_tblinwardentry inward ON inward.inwardentryid = alloca.inward_entry_id"
+			+ " LEFT JOIN product_instruction ins ON ins.instructionid = alloca.instruction_id"
+			+ " LEFT JOIN product_status inward_stts ON inward_stts.statusid = inward.vstatus"
+			+ " LEFT JOIN product_status packet_stts ON packet_stts.statusid = ins.status"
+			+ " WHERE so_child.allocated_stts='COMPLETED' and so.cp_status not in ('CP_PAN_COMPLETED') "
+			+ " order by alloca.so_id desc ", nativeQuery = true)
+	List<Object[]> getAllSODetailsWithAllocationStatus();
+
+	@Query(value = "SELECT so_child.so_id, CAST(so_child.so_child_id AS SIGNED) AS so_child_id,"
+			+ "  so.cp_status, so_child.item_so_status"
+			+ " FROM jsw_sales_order so"
+			+ " JOIN jsw_sales_order_child so_child ON so_child.so_id = so.so_id  AND so_child.is_deleted = 0 "
+			+ " WHERE so.cp_status not in ('CP_PAN_COMPLETED') order by so_child.so_id desc", nativeQuery = true)
+	List<Object[]> getAllSODetailsWithPacketStatus();
+
 }

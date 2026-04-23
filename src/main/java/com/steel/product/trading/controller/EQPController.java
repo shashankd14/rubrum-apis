@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @CrossOrigin
 @Tag(name = "EQP", description = "EQP")
-@RequestMapping({ "/trading" })
 public class EQPController {
 
 	@Autowired

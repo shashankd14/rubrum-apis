@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @CrossOrigin
 @Tag(name = "Location Master", description = "Location Master")
-@RequestMapping({ "/trading" })
 public class LocationController {
 
 	@Autowired

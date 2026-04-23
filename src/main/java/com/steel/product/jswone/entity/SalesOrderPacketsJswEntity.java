@@ -45,8 +45,8 @@ public class SalesOrderPacketsJswEntity {
 	@Column(name = "item_so_status")
 	private String itemSoStatus;
 	
-	@Column(name = "item_cp_status")
-	private String itemCpStatus;
+	//@Column(name = "item_cp_status")
+	//private String itemCpStatus;
 
 	@Column(name = "created_by")
 	private Integer createdBy;

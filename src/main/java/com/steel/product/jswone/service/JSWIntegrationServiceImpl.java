@@ -1127,7 +1127,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			BigDecimal totalWeight = (result[4] == null ? null : new BigDecimal(String.valueOf(result[4])));
 			req.setWarehouseId(result[5] != null ? result[5].toString() : null);
 			req.setBranchID(result[6] != null ? result[6].toString() : null);
-			BigDecimal ptWeight = (result[7] == null ? BigDecimal.ZERO : new BigDecimal(String.valueOf(result[7])));
+			BigDecimal totalPTWeight = (result[7] == null ? BigDecimal.ZERO : new BigDecimal(String.valueOf(result[7])));
 
 			req.setReason("Stock conversion");
 			req.setAdjustmentType("quantity");
@@ -1137,7 +1137,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 
 			ToSku toSku = new ToSku();
 			toSku.setSkuId(mmid);
-			toSku.setQuantity_adjusted(totalWeight.add(ptWeight));
+			toSku.setQuantity_adjusted(totalWeight.add(totalPTWeight));
 			toSku.setUom("MT");
 			lineitem.setToSku(toSku);
 
@@ -1147,7 +1147,8 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 				String mmid1 = resultfrom[1] != null ? resultfrom[1].toString() : null;
 				String coilNumber = resultfrom[2] != null ? resultfrom[2].toString() : null;
 				String batchId = resultfrom[3] != null ? resultfrom[3].toString() : null;
-				
+				BigDecimal ptWeight = (resultfrom[4] == null ? BigDecimal.ZERO : new BigDecimal(String.valueOf(resultfrom[4])));
+
 				FromSku fromSku = new FromSku();
 				fromSku.setSkuId(mmid1);
 				//fromSku.setQuantity_adjusted(totalWeight1); 

@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @CrossOrigin
 @Tag(name = "Inward Trading", description = "Inward Trading")
-@RequestMapping({ "/trading" })
 public class InwardTradingController {
 
 	@Autowired

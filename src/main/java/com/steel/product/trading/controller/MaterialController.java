@@ -35,7 +35,6 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @CrossOrigin
 @Tag(name = "Material Master", description = "Material Master")
-@RequestMapping({ "/trading" })
 public class MaterialController {
 
 	@Autowired

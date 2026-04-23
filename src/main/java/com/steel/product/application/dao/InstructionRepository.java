@@ -193,7 +193,7 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
 	List<Object[]> findPacketsForPositiveTolerence(@Param("inwardId") Integer inwardId);
 	
 	@Query(value = " select sono, dt, vehicleno, mmid, round((sum(actualweight) / 1000),3) , wearhouse_id, branch_id, round((additional_weight / 1000),3), zbooks_so from ( "
-			+ "  SELECT ins.sono, DATE_FORMAT(dc.createdon, '%Y-%m-%d') dt,vehicleno , ins.mmid, ins.actualweight,"
+			+ "  SELECT ins.sono, DATE_FORMAT(dc.createdon, '%Y-%m-%d') dt,vehicleno , ins.mmid, sum(ins.actualweight) actualweight,"
 			+ " (select wearhouse_id from jsw_sales_order so, jsw_sales_order_child child where so.so_id=child.so_id and child.mm_id = ins.mmid and so.refno = ins.sono limit 1) wearhouse_id , "
 			+ " (select zbooks_so from jsw_sales_order so, jsw_sales_order_child child where so.so_id=child.so_id and child.mm_id = ins.mmid and so.refno = ins.sono limit 1) zbooks_so , "
 			+ " (select so.branch_id from jsw_sales_order so, jsw_sales_order_child child, jsw_warehouse_master wh where so.so_id=child.so_id and wh.ware_house_id=child.wearhouse_id and child.mm_id = ins.mmid and so.refno = ins.sono limit 1) branch_id, "
@@ -203,11 +203,11 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
 			+ " where 1=1 group by sono, dt, vehicleno, mmid, wearhouse_id, branch_id, zbooks_so ", nativeQuery = true)
 	public List<Object[]> prepareInvAdjustmentRequest(Integer dcId);
 	
-	@Query(value = " select round((actualweight / 1000),3), inwmmid,coilnumber,batch_id from ( "
+	@Query(value = " select round((actualweight / 1000),3), inwmmid,coilnumber, batch_id, round((additional_weight / 1000),3) from ( "
 			+ " SELECT ins.mmid, ins.actualweight, "
 			+ " (select inw.mm_id from product_tblinwardentry inw where inw.inwardentryid = ins.inwardid limit 1) inwmmid, "
 			+ " (SELECT inw.coilnumber FROM product_tblinwardentry inw WHERE inw.inwardentryid=ins.inwardid LIMIT 1) coilnumber,"
-			+ " (SELECT inw.batch_id FROM product_tblinwardentry inw WHERE inw.inwardentryid=ins.inwardid LIMIT 1) batch_id"
+			+ " (SELECT inw.batch_id FROM product_tblinwardentry inw WHERE inw.inwardentryid=ins.inwardid LIMIT 1) batch_id, additional_weight"
 			+ " FROM product_tbl_delivery_details dc, product_instruction ins "
 			+ " WHERE ins.deliveryid=dc.deliveryid and dc.deliveryid = :dcId ) a "
 			+ " where mmid = :mmid", nativeQuery = true)

@@ -9,7 +9,7 @@ public class CoilAllocationDTO {
 
 	// private Integer soId;
 
-	private String soNumber;
+	//private String soNumber;
 
 	private String refno;
 

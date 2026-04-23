@@ -45,4 +45,6 @@ public interface SalesOrderJswService {
 
 	List<CoilAllocationDTO> coilAllocationDetails(SalesOrderChildRequest request);
 
+	void updateCPStatus(int soId);
+
 }

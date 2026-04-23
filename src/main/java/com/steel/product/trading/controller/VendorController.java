@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @CrossOrigin
 @Tag(name = "Vendor Master", description = "Vendor Master")
-@RequestMapping({ "/trading" })
 public class VendorController {
 
 	@Autowired
