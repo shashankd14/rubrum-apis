@@ -1,6 +1,7 @@
 package com.steel.product.jswone.service;
 
 import com.lowagie.text.DocumentException;
+import com.steel.product.application.dto.inward.SearchListPageRequest;
 import com.steel.product.application.dto.quality.ListPageSearchRequest;
 import com.steel.product.jswone.request.CPSplitRequest;
 import com.steel.product.jswone.request.SalesOrderBulkRequest;
@@ -47,4 +48,5 @@ public interface SalesOrderJswService {
 
 	void updateCPStatus(int soId);
 
+	List<Object[]> dashboard(SearchListPageRequest req);
 }

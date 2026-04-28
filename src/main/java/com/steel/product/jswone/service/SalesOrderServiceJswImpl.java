@@ -36,6 +36,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lowagie.text.DocumentException;
 import com.steel.product.application.dao.InstructionRepository;
 import com.steel.product.application.dao.InwardEntryRepository;
+import com.steel.product.application.dto.inward.SearchListPageRequest;
 import com.steel.product.application.dto.quality.ListPageSearchRequest;
 import com.steel.product.application.entity.AdminUserEntity;
 import com.steel.product.application.entity.Instruction;
@@ -1162,4 +1163,9 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 		}
 	}
 
+	@Override
+	public List<Object[]> dashboard(SearchListPageRequest req) {
+		List<Object[]> packetsList = salesOrderRepository.dashboard();
+		return packetsList;
+	}
 }

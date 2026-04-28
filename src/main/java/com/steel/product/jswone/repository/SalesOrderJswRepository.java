@@ -115,7 +115,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " jsw_material_master mat "
 			+ " where fpresent>0 and parent.isdeleted=0 and  party.npartyid = parent.npartyid "
 			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (parent.coilNumber like %:searchText% or parent.customerBatchId like %:searchText% or parent.customerInvoiceNo like %:searchText%) else 1=1 end " 
-			+ " and vstatus in (2,3) " 
+			+ " and vstatus in (1,2,3) " 
 			+ " and mat.mm_id = parent.mm_id " 
 			+ " and mat.grade_id = :gradeId "
 			+ " and mat.subgrade_id= :subgradeId "
@@ -131,7 +131,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " jsw_material_master mat "
 			+ " where fpresent>0 and parent.isdeleted=0 and  party.npartyid = parent.npartyid "
 			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (parent.coilNumber like %:searchText% or parent.customerBatchId like %:searchText% or parent.customerInvoiceNo like %:searchText%) else 1=1 end " 
-			+ " and vstatus in (2,3) " 
+			+ " and vstatus in (1,2,3) " 
 			+ " and mat.mm_id = parent.mm_id " 
 			+ " and mat.grade_id = :gradeId "
 			+ " and mat.subgrade_id= :subgradeId "
@@ -165,7 +165,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ "	product_instruction child, "  
 			+ "	product_tblpartydetails party, " 
 			+ "	jsw_material_master mat " 
-			+ "	where child.status in (2,3) and parent.vstatus in (2,3) and parent.inwardentryid = child.inwardid "
+			+ "	where child.status in (1,2,3) and parent.vstatus in (1,2,3) and parent.inwardentryid = child.inwardid "
 			+ " and (child.allocated_soqty=0 or child.allocated_soqty is null ) and child.isdeleted=0  "
 			+ " and parent.isdeleted=0 and party.npartyid = parent.npartyid" 
 			+ " and mat.mm_id = parent.mm_id " 
@@ -185,7 +185,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ "	product_instruction child, "  
 			+ "	product_tblpartydetails party, " 
 			+ "	jsw_material_master mat " 
-			+ "	where child.status in (2,3) and parent.vstatus in (2,3) and parent.inwardentryid = child.inwardid "
+			+ "	where child.status in (1,2,3) and parent.vstatus in (1,2,3) and parent.inwardentryid = child.inwardid "
 			+ " and (child.allocated_soqty=0 or child.allocated_soqty is null ) and child.isdeleted=0  "
 			+ " and parent.isdeleted=0 and party.npartyid = parent.npartyid" 
 			+ " and mat.mm_id = parent.mm_id " 
@@ -331,4 +331,36 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " WHERE so.cp_status not in ('CP_PAN_COMPLETED') order by so_child.so_id desc", nativeQuery = true)
 	List<Object[]> getAllSODetailsWithPacketStatus();
 
+	@Query(value = "SELECT \r\n" + 
+			"    CAST((\r\n" + 
+			"        SELECT COUNT(so_id)\r\n" + 
+			"        FROM jsw_sales_order\r\n" + 
+			"        WHERE MONTH(socreatedate) = MONTH(CURDATE())\r\n" + 
+			"          AND YEAR(socreatedate) = YEAR(CURDATE())\r\n" + 
+			"    ) AS SIGNED) AS totalOrders,\r\n" + 
+			"\r\n" + 
+			"    (\r\n" + 
+			"        SELECT SUM(total_soqty)\r\n" + 
+			"        FROM jsw_sales_order\r\n" + 
+			"        WHERE MONTH(socreatedate) = MONTH(CURDATE())\r\n" + 
+			"          AND YEAR(socreatedate) = YEAR(CURDATE())\r\n" + 
+			"    ) AS totalOrders_totalWeight,\r\n" + 
+			"\r\n" + 
+			"    CAST((\r\n" + 
+			"        SELECT COUNT(so_id)\r\n" + 
+			"        FROM jsw_sales_order\r\n" + 
+			"        WHERE so_status = 'SO_APPROVED'\r\n" + 
+			"          AND MONTH(socreatedate) = MONTH(CURDATE())\r\n" + 
+			"          AND YEAR(socreatedate) = YEAR(CURDATE())\r\n" + 
+			"    ) AS SIGNED) AS totalOrders1,\r\n" + 
+			"\r\n" + 
+			"    (\r\n" + 
+			"        SELECT SUM(total_soqty)\r\n" + 
+			"        FROM jsw_sales_order\r\n" + 
+			"        WHERE so_status = 'SO_APPROVED'\r\n" + 
+			"          AND MONTH(socreatedate) = MONTH(CURDATE())\r\n" + 
+			"          AND YEAR(socreatedate) = YEAR(CURDATE())\r\n" + 
+			"    ) AS totalOrders_totalWeight1 ", nativeQuery = true)
+	List<Object[]> dashboard( );
+	
 }

@@ -485,5 +485,5 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 			@Param("scInwardIdFilter") String scInwardIdFilter,
 			@Param("batchNoFilter") String batchNoFilter,
 			Pageable pageable);
-	
+
 }
