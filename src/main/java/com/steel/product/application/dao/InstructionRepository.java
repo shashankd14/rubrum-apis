@@ -217,11 +217,7 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
 	@Query(value = "update product_instruction set allocated_soqty = 0 where instructionid= :instructionId", nativeQuery = true)
 	public void unAllocatCP(@Param("instructionId") Integer instructionId);
 
-	List<Instruction> findBySonoAndMmidAndInwardIdAndPlannedWeight(
-	        String sono,
-	        String mmid,
-	        InwardEntry inwardId,
-	        Float plannedWeight
-	);
+	List<Instruction> findBySonoAndMmidAndInwardIdAndPlannedWeight(String sono, String mmid, InwardEntry inwardId,
+			Float plannedWeight);
 	
 }

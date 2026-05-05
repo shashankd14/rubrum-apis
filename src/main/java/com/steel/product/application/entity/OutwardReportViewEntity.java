@@ -73,6 +73,9 @@ public class OutwardReportViewEntity {
 	@Column(name = "vehicleno")
 	private String vehicleno;
 
+	@Column(name = "sales_invoice_no")
+	private String salesInvoiceNo;
+
 	@Column(name = "party_id")
 	private int partyId;
 

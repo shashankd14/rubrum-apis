@@ -258,7 +258,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 	SalesOrderJswEntity findBySoId(Integer soId);
 
 	@Query(value = "select distinct so.so_id,so.so_number,so.expected_delivery_date,so.customerid, so.total_soqty,so.cp_status,"
-			+ " so_child.so_child_id,instruction_id,so_child.mm_id,inward_entry_id, so_child.soqty, so_child.allocated_soqty,"
+			+ " so_child.so_child_id,instruction_id,so_child.mm_id,inward_entry_id, so_child.soqty, alloca.allocated_soqty,"
 			+ " so_child.allocated_stts,so_child.item_so_status,mm.mm_description, alloca.so_allocation_id,alloca.allocated_soqty allocated_s, "
 			+ " (select coilnumber from product_tblinwardentry inw where inw.inwardentryid = alloca.inward_entry_id) coilno, "
 			+ " (select ifnull(actualweight, plannedweight ) from product_instruction ins where ins.instructionid = alloca.instruction_id) packetweight, "
@@ -335,32 +335,39 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			"    CAST((\r\n" + 
 			"        SELECT COUNT(so_id)\r\n" + 
 			"        FROM jsw_sales_order\r\n" + 
-			"        WHERE MONTH(socreatedate) = MONTH(CURDATE())\r\n" + 
-			"          AND YEAR(socreatedate) = YEAR(CURDATE())\r\n" + 
+			"        WHERE MONTH(created_on) = MONTH(CURDATE())\r\n" + 
+			"          AND YEAR(created_on) = YEAR(CURDATE())\r\n" + 
 			"    ) AS SIGNED) AS totalOrders,\r\n" + 
 			"\r\n" + 
 			"    (\r\n" + 
 			"        SELECT SUM(total_soqty)\r\n" + 
 			"        FROM jsw_sales_order\r\n" + 
-			"        WHERE MONTH(socreatedate) = MONTH(CURDATE())\r\n" + 
-			"          AND YEAR(socreatedate) = YEAR(CURDATE())\r\n" + 
+			"        WHERE MONTH(created_on) = MONTH(CURDATE())\r\n" + 
+			"          AND YEAR(created_on) = YEAR(CURDATE())\r\n" + 
 			"    ) AS totalOrders_totalWeight,\r\n" + 
 			"\r\n" + 
 			"    CAST((\r\n" + 
 			"        SELECT COUNT(so_id)\r\n" + 
 			"        FROM jsw_sales_order\r\n" + 
 			"        WHERE so_status = 'SO_APPROVED'\r\n" + 
-			"          AND MONTH(socreatedate) = MONTH(CURDATE())\r\n" + 
-			"          AND YEAR(socreatedate) = YEAR(CURDATE())\r\n" + 
+			"          AND MONTH(approved_date) = MONTH(CURDATE())\r\n" + 
+			"          AND YEAR(approved_date) = YEAR(CURDATE())\r\n" + 
 			"    ) AS SIGNED) AS totalOrders1,\r\n" + 
 			"\r\n" + 
 			"    (\r\n" + 
 			"        SELECT SUM(total_soqty)\r\n" + 
 			"        FROM jsw_sales_order\r\n" + 
 			"        WHERE so_status = 'SO_APPROVED'\r\n" + 
-			"          AND MONTH(socreatedate) = MONTH(CURDATE())\r\n" + 
-			"          AND YEAR(socreatedate) = YEAR(CURDATE())\r\n" + 
+			"          AND MONTH(approved_date) = MONTH(CURDATE())\r\n" + 
+			"          AND YEAR(approved_date) = YEAR(CURDATE())\r\n" + 
 			"    ) AS totalOrders_totalWeight1 ", nativeQuery = true)
 	List<Object[]> dashboard( );
+	
+	@Query(value = " select distinct so.so_number,chld.mm_id from" + 
+			" jsw_sales_order so, jsw_sales_order_child chld, jsw_sales_order_allocation allo, jsw_material_master mm" + 
+			" where so.so_id=allo.so_id and so.so_id=chld.so_id and allo.so_child_id=chld.so_child_id" + 
+			" and mm.mm_id =chld.mm_id and mm.form_id=21 "+ 
+			" and allo.inward_entry_id=:inwardId", nativeQuery = true)
+	List<Object[]> fetchMappedSheetSONo(@Param("inwardId") int inwardId);
 	
 }

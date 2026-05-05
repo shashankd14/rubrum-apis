@@ -64,6 +64,7 @@ import com.steel.product.jswone.request.SalesOrderLineItem;
 import com.steel.product.jswone.request.SalesOrderMainRequest;
 import com.steel.product.jswone.response.CoilAllocationDTO;
 import com.steel.product.jswone.response.SalesOrderChildAllocationResponse;
+import com.steel.product.jswone.response.SalesOrderSheetResponse;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -1168,4 +1169,20 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 		List<Object[]> packetsList = salesOrderRepository.dashboard();
 		return packetsList;
 	}
+
+	@Override
+	public SalesOrderSheetResponse fetchMappedSheetSONo(int inwardId) {
+		SalesOrderSheetResponse kk = null;
+		try {
+			kk = new SalesOrderSheetResponse();
+			List<Object[]> packetsList = salesOrderRepository.fetchMappedSheetSONo(inwardId);
+			for (Object[] result : packetsList) {
+				kk.setRefNo(result[01] != null ? (String) result[0] : null);
+				kk.setMmid(result[1] != null ? (String) result[1] : null);
+			}
+		} catch (Exception e) {
+		}
+		return kk;
+	}
+	
 }

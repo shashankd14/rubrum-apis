@@ -299,13 +299,13 @@ public class GCPUploadFileService {
 		List<OutwardReportViewEntity> outwardReportDetails = outwardReportViewRepository.findAll();
 		try (PrintWriter writer = new PrintWriter(new FileWriter(filePath))) {
 			writer.println( "Order ID,DC No,Dispatch Date,CoilNumber,SC Inward ID,MaterialDesc,MaterialGrade,"
-					+ " Subgrade,Location Name,Thickness,Width,Length,Qty_Sheets,Delivery Weight,Additional  Weight,Vehicle No,Processing Rate,Quality Remarks" );
+					+ " Subgrade,Location Name,Thickness,Width,Length,Qty_Sheets,Delivery Weight,Additional  Weight,Vehicle No,Sales Invoice No,Processing Rate,Quality Remarks" );
 			for (OutwardReportViewEntity kk : outwardReportDetails) {
 				writer.println("" + "," + kk.getDeliveryid() + "," + kk.getCreatedon() + "," + kk.getCoilnumber() + ","
 						+ kk.getCustomerbatchid() + "," + kk.getMaterialdesc() + "," + kk.getMaterialgrade() + ","
 						+ kk.getSubgrade() + "," + kk.getLocationname()+ "," + kk.getFthickness() + "," + kk.getFwidth() + "," 
 						+ kk.getFlength()+ "," + kk.getNoofpieces() + "," + kk.getDeliveryWeight() + "," + 
-						kk.getAdditionalWeight() + ","+ kk.getVehicleno() + "," + "" + "," + "");
+						kk.getAdditionalWeight() + ","+ kk.getVehicleno() +"," + kk.getSalesInvoiceNo()+"," + "" + "," + "");
 			}
 		}
 		return filePath;

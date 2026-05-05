@@ -19,7 +19,9 @@ import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.entity.Status;
 import com.steel.product.application.entity.UserPartyMap;
 import com.steel.product.application.util.CommonUtil;
+import com.steel.product.jswone.response.SalesOrderSheetResponse;
 import com.steel.product.jswone.service.MaterialMasterJswService;
+import com.steel.product.jswone.service.SalesOrderJswService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,6 +55,9 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
     private InwardEntryService inwardEntryService;
 
     private PriceMasterService priceMasterService;
+    
+	@Autowired
+	private SalesOrderJswService salesOrderJswService;
 
 	private CommonUtil commonUtil;
 
@@ -631,6 +636,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 				Integer inwardId  =  req.getInwardId();
 				InwardEntry inwardEntry =  inwardEntryService.getByEntryId(inwardId);
 		        MaterialResponseDto materialGradeDto = materialMasterJswService.getGradeProductName(inwardEntry.getMmId());
+		        SalesOrderSheetResponse soDetails = salesOrderJswService.fetchMappedSheetSONo(inwardId);
 				
 				boolean innerStts = false;
 				PriceCalculateDTO priceCalculateDTO = priceMasterService.calculateInwardWisePrice(inwardEntry, deliveryDto.getPackingRateId(), deliveryDto.getLaminationId());
@@ -643,6 +649,11 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 				priceCalculateDTO.setThickness( inwardEntry.getfThickness());
 				priceCalculateDTO.setMatGradeName(materialGradeDto.getMaterialGrade().getGradeName());
 				priceCalculateDTO.setActualWeight(inwardEntry.getFpresent());
+				if (soDetails != null && soDetails.getRefNo() != null && soDetails.getRefNo().length() > 0) {
+					priceCalculateDTO.setSono(soDetails.getRefNo());
+					priceCalculateDTO.setMmid(soDetails.getMmid());
+				}
+				
 				Float actualTotalWeight = priceCalculateDTO.getActualWeight();
 				if (req.getAdditionalWeight() != null && req.getAdditionalWeight() > 0) {
 					priceCalculateDTO.setAdditionalWeight(req.getAdditionalWeight());
