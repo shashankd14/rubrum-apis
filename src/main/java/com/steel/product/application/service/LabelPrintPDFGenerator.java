@@ -676,19 +676,13 @@ public class LabelPrintPDFGenerator {
 					// VERY IMPORTANT
 					imgCell.setPaddingBottom(0f);
 					imgCell.setBorder(Rectangle.NO_BORDER);
-
 					qrTable.addCell(imgCell);
-
 					PdfPCell textCell = new PdfPCell(new Phrase("Scan to download TC", valueFont));
-
 					textCell.setHorizontalAlignment(Element.ALIGN_CENTER);
-
 					// CONTROL GAP HERE
 					textCell.setPaddingTop(0f);
 					textCell.setPaddingBottom(2f);
-
 					textCell.setBorder(Rectangle.NO_BORDER);
-
 					qrTable.addCell(textCell);
 
 					document.add(qrTable);
@@ -698,45 +692,46 @@ public class LabelPrintPDFGenerator {
 					 */
 
 					Paragraph company = new Paragraph("JSW ONE DISTRIBUTION LIMITED", titleFont);
-
 					company.setAlignment(Element.ALIGN_CENTER);
 					company.setSpacingAfter(8f);
-
 					document.add(company);
-
+					
 					/*
-					 * =============== == MAIN TABLE ==================
+					 * ===================== TABLE 1 =====================================
 					 */
 
-					PdfPTable table = new PdfPTable(2);
+					PdfPTable table1 = new PdfPTable(2);
+					table1.setWidthPercentage(100);
+					table1.setWidths(new float[] { 40f, 60f });
+					addCompactRow(table1, "Commodity", "");
+					addCompactRow(table1, "Grade/Specification", response.getMaterialDesc());
+					addCompactRow(table1, "Brand", response.getCompanyName());
+					addCompactRow(table1, "Coil/Pack No.",""+response.getInstructionId());
+					addCompactRow(table1, "Batch No.", response.getCoilBatchNo());
+					table1.setSpacingAfter(6f);
+					document.add(table1);
+					
+					/*
+					 * ===================== TABLE 2 =====================================
+					 */
 
-					table.setWidthPercentage(100);
-					table.setWidths(new float[] { 40f, 60f });
+					PdfPTable table2 = new PdfPTable(2);
+					table2.setWidthPercentage(100);
+					table2.setWidths(new float[] { 40f, 60f });
+					addCompactRow(table2, "Size", "T:" + response.getFthickness() + " W:" + response.getActualwidth() + " L:" + response.getActuallength());
+					addCompactRow(table2, "No. of Sheets", String.valueOf(response.getPlannedNoOfPieces()));
+					table2.setSpacingAfter(6f);
+					document.add(table2);
+					/*
+					 * ===================== TABLE 3 =====================================
+					 */
 
-					// IMPORTANT: compact spacing
-					table.setSpacingBefore(2f);
-					table.setSpacingAfter(2f);
-
-					addCompactRow(table, "Commodity", "");
-
-					addCompactRow(table, "Grade/Specification", response.getMaterialDesc());
-
-					addCompactRow(table, "Brand", response.getCompanyName());
-
-					addCompactRow(table, "Coil/Pack No.", "" + response.getInstructionId());
-
-					addCompactRow(table, "Batch No.", response.getCoilBatchNo());
-
-					addCompactRow(table, "Size", "T:" + response.getFthickness() + " W:" + response.getActualwidth()
-							+ " L:" + response.getActuallength());
-
-					addCompactRow(table, "No. of Sheets", String.valueOf(response.getPlannedNoOfPieces()));
-
-					addCompactRow(table, "Inspected By", "");
-
-					addCompactRow(table, "Bundle/Packet Id", "" + response.getInstructionId());
-
-					document.add(table);
+					PdfPTable table3 = new PdfPTable(2);
+					table3.setWidthPercentage(100);
+					table3.setWidths(new float[] { 40f, 60f });
+					addCompactRow(table3, "Inspected By", "");
+					addCompactRow(table3, "Bundle/Packet Id", ""+response.getInstructionId());
+					document.add(table3);
 				}
 
 				document.close();
