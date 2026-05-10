@@ -156,7 +156,7 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
 	public void updateS3PlanLabelPDF(@Param("partDetailsId") String partDetailsId, @Param("url") String url);
 
 	@Modifying
-	//@Transactional
+	@Transactional
 	@Query("update PartDetails set labelpdfFgS3Url=:url, labelUpdatedTime=CURRENT_TIMESTAMP where partDetailsId= :partDetailsId ")
 	public void updateS3FGLabelPDF(@Param("partDetailsId") String partDetailsId, @Param("url") String url);
 

@@ -33,7 +33,7 @@ public interface DeliveryDetailsRepository extends JpaRepository<DeliveryDetails
 	public Page<DeliveryDetails> findAllDeliveries(@Param("searchText") String searchText,
 			@Param("partyIds") List<Integer> partyIds,   Pageable pageable);
     
-    @Query("select dd from DeliveryDetails dd join dd.instructions ins join ins.inwardId inw where dd.isDeleted is false and ins.deliveryDetails is not null and "
+    @Query("select distinct dd from DeliveryDetails dd join dd.instructions ins join ins.inwardId inw where dd.isDeleted is false and ins.deliveryDetails is not null and "
     		+ " ( inw.coilNumber like %:searchText% or inw.customerBatchId like %:searchText% or "
     		+ " inw.customerInvoiceNo like %:searchText% or inw.party.partyName like %:searchText% ) group by inw, dd")
     public Page<DeliveryDetails> findAllDeliveries(@Param("searchText") String searchText, Pageable pageable);
@@ -115,4 +115,40 @@ public interface DeliveryDetailsRepository extends JpaRepository<DeliveryDetails
 	public int updateZohoSyncRemarks(@Param("deliveryId") int deliveryId, @Param("invAdjRemarks") String invAdjRemarks,
 			@Param("zohoSyncStts") String zohoSyncStts, @Param("salesInvoiceNo") String salesInvoiceNo);
 
+	@Query(value = "SELECT DISTINCT ptdd.deliveryid, totalweight"
+			+ " FROM product_tblinwardentry inw,  product_instruction inss,  "
+			+ " product_tbl_delivery_details ptdd,  product_tblpartydetails party "
+			+ " WHERE inw.npartyid=party.npartyid and inw.inwardentryid = inss.inwardid  "
+			+ " AND ptdd.deliveryid = inss.deliveryid  "
+			+ " and (inw.coilnumber like %:searchText% or inw.customerbatchid like %:searchText% or inw.customerinvoiceno like %:searchText% or party.partyname like %:searchText% ) "
+			+ " and (case when :partyIdsFlag=true then inw.npartyid in :partyIds else 1=1 end ) "
+			+ " AND inss.deliveryid IS NOT NULL order by ptdd.deliveryid desc", 
+			countQuery = "SELECT count(DISTINCT ptdd.deliveryid)"
+			+ "	FROM product_tblinwardentry inw,  product_instruction inss,  "
+			+ "	product_tbl_delivery_details ptdd,  product_tblpartydetails party "
+			+ "	WHERE inw.npartyid=party.npartyid and inw.inwardentryid = inss.inwardid  "
+			+ "	AND ptdd.deliveryid = inss.deliveryid  "
+			+ "	and (inw.coilnumber like %:searchText% or inw.customerbatchid like %:searchText% or inw.customerinvoiceno like %:searchText% or party.partyname like %:searchText% ) "
+			+ "	and (case when :partyIdsFlag=true then inw.npartyid in :partyIds else 1=1 end ) "
+			+ "	AND inss.deliveryid IS NOT NULL order by ptdd.deliveryid desc", 
+		nativeQuery = true)
+	Page<Object[]> listAllDeliveryList(
+			@Param("searchText") String searchText,
+			@Param("partyIds") List<Integer> partyIds, 
+			@Param("partyIdsFlag") boolean partyIdsFlag,
+			Pageable pageable);
+	
+	@Query(value = " SELECT DISTINCT ptdd.deliveryId, vehicleNo, packing_rate_id,lamination_id,"
+			+ " totalWeight, ptdd.createdby, ptdd.updatedby, ptdd.createdon, ptdd.updatedon,"
+			+ " ptdd.customerInvoiceNo, ptdd.customerInvoiceDate, ptdd.inv_adj_remarks,ptdd.zoho_sync_stts,"
+			+ " ptdd.sales_invoice_no, ptdd.isdeleted,party.partyname "
+			+ " FROM product_tblinwardentry inw, product_instruction inss,"
+			+ " product_tbl_delivery_details ptdd, product_tblpartydetails party"
+			+ " WHERE inw.npartyid = party.npartyid"
+			+ " AND inw.inwardentryid = inss.inwardid AND ptdd.deliveryid = inss.deliveryid"
+			+ " AND inss.deliveryid IS NOT NULL and ptdd.deliveryId in :deliveryIdList "
+			+ " ORDER BY ptdd.deliveryid DESC ", 
+		nativeQuery = true)
+	List<Object[]> getDeliveryDetails(@Param("deliveryIdList") List<Integer> deliveryIdList);
+	
 }

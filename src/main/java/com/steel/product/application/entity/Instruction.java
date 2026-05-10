@@ -1,23 +1,34 @@
 package com.steel.product.application.entity;
 
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.steel.product.application.dto.instruction.InstructionResponseDto;
 import com.steel.product.application.dto.pdf.InstructionResponsePdfDto;
+
 import lombok.Getter;
 import lombok.Setter;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
-
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
-import javax.persistence.*;
-
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Entity
 @Getter
@@ -202,7 +213,7 @@ public class Instruction {
 		instructionResponseDto.setPlannedYieldLossRatio(instruction.getPartDetails() != null ? instruction.getPartDetails().getPlannedYieldLossRatio(): null);
 		instructionResponseDto.setActualYieldLossRatio(instruction.getPartDetails() != null ? instruction.getPartDetails().getActualYieldLossRatio(): null);
 		instructionResponseDto.setPdfS3Url(instruction.getPartDetails() != null ? instruction.getPartDetails().getPdfS3Url() : null);
-        return instructionResponseDto;
+		return instructionResponseDto;
     }
 
 	public static InstructionResponsePdfDto valueOfInstructionPdf(Instruction instruction, InwardEntry inwardEntry) {

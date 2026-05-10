@@ -5,9 +5,11 @@ import com.steel.product.application.dto.delivery.DeliveryDto;
 import com.steel.product.application.dto.delivery.DeliveryPacketsDto;
 import com.steel.product.application.dto.delivery.TallyUpdateSttsRequestDTO;
 import com.steel.product.application.dto.delivery.ValidatePriceMappingDTO;
+import com.steel.product.application.dto.inward.SearchListPageRequest;
 import com.steel.product.application.dto.pricemaster.PriceCalculateResponseDTO;
 import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.Instruction;
+import com.steel.product.application.entity.InwardEntry;
 
 import java.util.List;
 
@@ -44,5 +46,9 @@ public interface DeliveryDetailsService {
 	Page<DeliveryDetails> findAllDeliveriesForBillingNew(int pageNo, int pageSize);
 
 	public PriceCalculateResponseDTO calculateInwardWisePrice(ValidatePriceMappingDTO deliveryDto, Integer userId);
+
+	public Page<Object[]> listAllDeliveryList(int pageNo, int pageSize, String searchText, String partyId);
+
+	List<DeliveryPacketsDto> getDeliveryDetails(List<Integer> deliveryIdList);
 
 }

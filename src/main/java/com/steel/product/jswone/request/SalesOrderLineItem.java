@@ -1,8 +1,8 @@
 package com.steel.product.jswone.request;
 
-import lombok.Data;
+import java.math.BigDecimal;
 
-import javax.validation.constraints.NotBlank;
+import lombok.Data;
 
 @Data
 public class SalesOrderLineItem {
@@ -21,7 +21,7 @@ public class SalesOrderLineItem {
 
     private Double rate;
 
-    private Integer quantity;
+    private BigDecimal quantity;
 
     private String unit;
 
@@ -29,7 +29,7 @@ public class SalesOrderLineItem {
 
     private String tax_name;
 
-    private Integer tax_percentage;
+    private BigDecimal tax_percentage;
 
     private Double item_total;
 

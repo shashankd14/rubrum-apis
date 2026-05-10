@@ -487,7 +487,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			so.setCpStatus("UnAllocated");
 			so.setUpdatedBy(commonUtil.getUserId());
 			so.setUpdatedOn(new Date());
-			so.setTotalSoqty(BigDecimal.valueOf(d.getTotal_quantity()).multiply(new BigDecimal("1000")));
+			so.setTotalSoqty( d.getTotal_quantity().multiply(new BigDecimal("1000")));
 
 			// ----------------------- Branch -----------------------
 			if (d.getBranch_id() != null) {
@@ -512,7 +512,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 
 				item.setSoId(so);
 				item.setMmId(li.getSku());
-				item.setSoqty(BigDecimal.valueOf(li.getQuantity()).multiply(new BigDecimal("1000")));
+				item.setSoqty( li.getQuantity() .multiply(new BigDecimal("1000")));
 				item.setTax_percentage(String.valueOf(li.getTax_percentage()));
 				item.setHsn_or_sac(li.getHsn_or_sac());
 				item.setMaterialName(li.getName());

@@ -1,10 +1,35 @@
 package com.steel.product.application.service;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+
 import com.steel.product.application.dao.DeliveryDetailsRepository;
 import com.steel.product.application.dto.TallyBillingInvoiceListDTO;
 import com.steel.product.application.dto.delivery.DeliveryDto;
 import com.steel.product.application.dto.delivery.DeliveryItemDetails;
 import com.steel.product.application.dto.delivery.DeliveryPacketsDto;
+import com.steel.product.application.dto.delivery.DeliveryResponseDto;
 import com.steel.product.application.dto.delivery.TallyUpdateStatusDTO;
 import com.steel.product.application.dto.delivery.TallyUpdateSttsRequestDTO;
 import com.steel.product.application.dto.delivery.ValidatePriceMappingDTO;
@@ -22,24 +47,6 @@ import com.steel.product.application.util.CommonUtil;
 import com.steel.product.jswone.response.SalesOrderSheetResponse;
 import com.steel.product.jswone.service.MaterialMasterJswService;
 import com.steel.product.jswone.service.SalesOrderJswService;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.math.RoundingMode;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
@@ -635,7 +642,8 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 			for (DeliveryItemDetails req : deliveryDto.getInwardList()) {
 				Integer inwardId  =  req.getInwardId();
 				InwardEntry inwardEntry =  inwardEntryService.getByEntryId(inwardId);
-		        MaterialResponseDto materialGradeDto = materialMasterJswService.getGradeProductName(inwardEntry.getMmId());
+		        MaterialResponseDto materialResponseDto = materialMasterJswService.getGradeProductName(inwardEntry.getMmId());
+		        MaterialGradeDto materialGradeDto = materialMasterJswService.getSubGradeName(inwardEntry.getMmId());
 		        SalesOrderSheetResponse soDetails = salesOrderJswService.fetchMappedSheetSONo(inwardId);
 				
 				boolean innerStts = false;
@@ -647,8 +655,11 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 				priceCalculateDTO.setCustomerBatchNo(inwardEntry.getCustomerBatchId());
 				priceCalculateDTO.setInstructionId(inwardEntry.getInwardEntryId());
 				priceCalculateDTO.setThickness( inwardEntry.getfThickness());
-				priceCalculateDTO.setMatGradeName(materialGradeDto.getMaterialGrade().getGradeName());
+				priceCalculateDTO.setWidth( inwardEntry.getfWidth());
+				priceCalculateDTO.setLength( inwardEntry.getfLength() );
 				priceCalculateDTO.setActualWeight(inwardEntry.getFpresent());
+				priceCalculateDTO.setMatGradeName(materialResponseDto.getMaterialGrade().getGradeName());
+				priceCalculateDTO.setSubGradeName(materialGradeDto.getSubGradeName());
 				if (soDetails != null && soDetails.getRefNo() != null && soDetails.getRefNo().length() > 0) {
 					priceCalculateDTO.setSono(soDetails.getRefNo());
 					priceCalculateDTO.setMmid(soDetails.getMmid());
@@ -708,6 +719,68 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 			e.printStackTrace();
 		}
 		return priceCalculateResponseDTO;
+	}
+
+    @Override
+    public Page<Object[]> listAllDeliveryList(int pageNo, int pageSize, String searchText, String partyId) {
+    	Pageable pageable = PageRequest.of((pageNo-1), pageSize);
+    	
+    	List<Integer> partyIds = new ArrayList<>();
+		boolean partyIdsFlag = false;
+		if(partyId!=null && partyId.length()>0) {
+			partyIds.add(Integer.parseInt(partyId));
+			partyIdsFlag = true;
+		} else {
+			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
+			if (adminUserEntity.getUserPartyMap() != null && adminUserEntity.getUserPartyMap().size() > 0) {
+				partyIds = new ArrayList<>();
+				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
+					partyIds.add(userPartyMap.getPartyId());
+					partyIdsFlag = true;
+				}
+				LOGGER.info("In partyIds === " + partyIds);
+			} else {
+				partyIdsFlag = false;
+				partyIds = new ArrayList<>();
+			}
+		}
+
+		Page<Object[]> deliveryList = deliveryDetailsRepo.listAllDeliveryList(searchText, partyIds, partyIdsFlag,
+				pageable);
+		
+		
+		
+		return deliveryList;
+	}
+
+	@Override
+	public List<DeliveryPacketsDto> getDeliveryDetails(List<Integer> deliveryIdList) {
+		List<Object[]> deliveryList = deliveryDetailsRepo.getDeliveryDetails(deliveryIdList);
+		List<DeliveryPacketsDto> packetsList = new ArrayList<DeliveryPacketsDto>();
+		for (Object[] result : deliveryList) {
+			DeliveryPacketsDto parent = new DeliveryPacketsDto();
+
+			DeliveryResponseDto  deliveryDetails=new DeliveryResponseDto();
+			deliveryDetails.setDeliveryId(result[0] != null ? (Integer) result[0] : null); 
+			deliveryDetails.setVehicleNo(result[1] != null ? (String) result[1] : null); 
+			deliveryDetails.setPackingRateId(result[2] != null ? (Integer) result[2] : null); 
+			deliveryDetails.setLaminationId(result[3] != null ? (Integer) result[3] : null); 
+			deliveryDetails.setTotalWeight(result[4] != null ? ((Number) result[4]).floatValue() : null);
+			deliveryDetails.setCreatedBy(result[5] != null ? (Integer) result[5] : null); 
+			deliveryDetails.setUpdatedBy (result[6] != null ? (Integer) result[6] : null); 
+			deliveryDetails.setCreatedOn(result[7] != null ? (Date) result[7] : null); 
+			deliveryDetails.setUpdatedOn (result[8] != null ? (Date) result[8] : null); 
+			deliveryDetails.setCustomerInvoiceNo(result[9] != null ? (String) result[9] : null); 
+			deliveryDetails.setCustomerInvoiceDate(result[10] != null ? (Date) result[10] : null); 
+			deliveryDetails.setInvAdjRemarks(result[11] != null ? (String) result[11] : null); 
+			deliveryDetails.setZohoSyncStts(result[12] != null ? (String) result[12] : null); 
+			deliveryDetails.setSalesInvoiceNo(result[13] != null ? (String) result[13] : null); 
+			deliveryDetails.setDeleted(result[14] != null ? (Boolean) result[14] : null); 
+			parent.setPartyName(result[15] != null ? (String) result[15] : null); 
+			parent.setDeliveryDetails(deliveryDetails); 
+			packetsList.add(parent);
+		}
+		return packetsList;
 	}
 
 }

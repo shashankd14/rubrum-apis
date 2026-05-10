@@ -1,5 +1,9 @@
 package com.steel.product.application.dto.instruction;
 
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.steel.product.application.dto.delivery.DeliveryResponseDto;
 import com.steel.product.application.dto.inward.InwardEntryResponseDto;
@@ -8,14 +12,9 @@ import com.steel.product.application.dto.process.ProcessDto;
 import com.steel.product.application.dto.status.StatusDto;
 import com.steel.product.application.entity.EndUserTagsEntity;
 import com.steel.product.application.entity.PacketClassification;
+
 import lombok.Getter;
 import lombok.Setter;
-
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
-
-import javax.persistence.Column;
 
 @Getter
 @Setter
@@ -26,6 +25,16 @@ public class InstructionResponseDto {
 	private Integer inwardEntryId;
 
 	private InwardEntryResponseDto inwardEntryResponseDto;
+
+	private String customerBatchId;
+
+	private String coilNumber;
+	
+    private String material;
+
+    private String materialGrade;
+
+    private float fThickness;
 
 	private ProcessDto process;
 
@@ -97,7 +106,7 @@ public class InstructionResponseDto {
 	private String sono;
 
 	private String mmid;
-	
+
 	private BigDecimal plannedYieldLossRatio;
 
 	private BigDecimal actualYieldLossRatio;

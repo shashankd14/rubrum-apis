@@ -1,5 +1,6 @@
 package com.steel.product.application.controller;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,20 +24,26 @@ import org.springframework.web.bind.annotation.RestController;
 import com.steel.product.application.dto.delivery.DeliveryDto;
 import com.steel.product.application.dto.delivery.DeliveryPacketsDto;
 import com.steel.product.application.dto.delivery.ValidatePriceMappingDTO;
+import com.steel.product.application.dto.instruction.InstructionResponseDto;
 import com.steel.product.application.dto.pricemaster.PriceCalculateResponseDTO;
 import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.Instruction;
+import com.steel.product.application.entity.Process;
+import com.steel.product.application.entity.Status;
 import com.steel.product.application.service.DeliveryDetailsService;
 import com.steel.product.application.service.SalesOrderService;
 import com.steel.product.application.util.CommonUtil;
 import com.steel.product.jswone.service.JSWIntegrationService;
+import com.steel.product.jswone.service.MaterialMasterJswService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.extern.log4j.Log4j2;
 
 @RestController
 @CrossOrigin
 @Tag(name = "Delivery Details", description = "Delivery Details")
 @RequestMapping("/delivery")
+@Log4j2
 public class DeliveryDetailsController {
 
     @Autowired
@@ -51,8 +58,11 @@ public class DeliveryDetailsController {
 	@Autowired
 	private JSWIntegrationService service;
 
-	@GetMapping({ "/list/{pageNo}/{pageSize}" })
-	public ResponseEntity<Object> findAllWithPagination(@PathVariable int pageNo, @PathVariable int pageSize,
+	@Autowired
+	MaterialMasterJswService materialService;
+	
+	/*@GetMapping("/list/{pageNo}/{pageSize}")
+	public ResponseEntity<Object> findAllWithPaginationOld(@PathVariable int pageNo, @PathVariable int pageSize,
 			@RequestParam(required = false, name = "searchText") String searchText,
 			@RequestParam(required = false, name = "partyId") String partyId) {
 
@@ -64,25 +74,82 @@ public class DeliveryDetailsController {
 		response.put("totalItems", pageResult.getTotalElements());
 		response.put("totalPages", pageResult.getTotalPages());
 		return new ResponseEntity<Object>(response, HttpStatus.OK);
-	}
-	
-    @GetMapping("/listold")
-    public ResponseEntity<Object> getAll(){
-        try{
-            List<DeliveryPacketsDto> deliveryDetailsList = deliveryDetailsService.deliveryList();
-            return new ResponseEntity<>(deliveryDetailsList, HttpStatus.OK);
-        }catch(Exception e){
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+	}*/
 
-    @GetMapping("/getById/{deliveryId}")
+	@GetMapping("/list/{pageNo}/{pageSize}")
+	public ResponseEntity<Object> findAllDeliveryList(@PathVariable int pageNo, @PathVariable int pageSize,
+			@RequestParam(required = false, name = "searchText") String searchText,
+			@RequestParam(required = false, name = "partyId") String partyId) {
+		log.info("in findAllDeliveryList ");
+		
+		Map<String, Object> response = new HashMap<>();
+		Page<Object[]> packetsList1 = deliveryDetailsService.listAllDeliveryList(pageNo, pageSize, searchText, partyId);
+
+		List<Integer> deliveryIdList  = new ArrayList<>();
+		for (Object[] result : packetsList1) {
+			Integer inwardId = (result[0] != null ? (Integer) result[0] : null);
+			deliveryIdList.add(inwardId);
+		}
+		
+		log.info("In findAllDeliveryList === " + deliveryIdList);
+		List<DeliveryPacketsDto> deliveryDetails = deliveryDetailsService.getDeliveryDetails(deliveryIdList);
+		 
+		response.put("content", deliveryDetails);
+		response.put("currentPage", packetsList1.getNumber());
+		response.put("totalItems", packetsList1.getTotalElements());
+		response.put("totalPages", packetsList1.getTotalPages());
+		
+		return new ResponseEntity<Object>(response, HttpStatus.OK);
+	}
+
+	@GetMapping("/getById/{deliveryId}")
 	public ResponseEntity<Object> getById(@PathVariable("deliveryId") int deliveryId) {
 		try {
-			List<Instruction> deliveredInstructionsById = deliveryDetailsService
-					.getInstructionsByDeliveryId(deliveryId);
-			return new ResponseEntity<>(deliveredInstructionsById.stream().map(ins -> Instruction.valueOf(ins))
-					.collect(Collectors.toList()), HttpStatus.OK);
+			List<Instruction> deliveredInstructionsById = deliveryDetailsService.getInstructionsByDeliveryId(deliveryId);
+			
+			List<InstructionResponseDto> resp=new ArrayList<>();
+			for (Instruction instruction : deliveredInstructionsById){
+				InstructionResponseDto instructionResponseDto = new InstructionResponseDto();
+				instructionResponseDto.setStatus(Status.valueOf(instruction.getStatus()));
+				instructionResponseDto.setParentInstructionId(instruction.getParentInstruction() != null ? instruction.getParentInstruction().getInstructionId() : null);
+				instructionResponseDto.setPacketClassification(instruction.getPacketClassification() != null ? instruction.getPacketClassification(): null);
+				instructionResponseDto.setEndUserTagsentity( instruction.getEndUserTagsEntity() != null ? instruction.getEndUserTagsEntity(): null);		
+				instructionResponseDto.setInstructionDate(instruction.getInstructionDate());
+		        instructionResponseDto.setInstructionId(instruction.getInstructionId());
+		        instructionResponseDto.setProcess(instruction.getProcess() != null ? Process.valueOf(instruction.getProcess()) : null);
+		        instructionResponseDto.setPlannedWeight(instruction.getPlannedWeight());
+		        instructionResponseDto.setPlannedWidth(instruction.getPlannedWidth());
+		        instructionResponseDto.setPlannedLength(instruction.getPlannedLength());
+		        instructionResponseDto.setPlannedNoOfPieces(instruction.getPlannedNoOfPieces());
+		        instructionResponseDto.setActualWidth(instruction.getActualWidth());
+		        instructionResponseDto.setActualWeight(instruction.getActualWeight());
+		        instructionResponseDto.setActualLength(instruction.getActualLength());
+		        instructionResponseDto.setActualNoOfPieces(instruction.getActualNoOfPieces());
+		        instructionResponseDto.setInwardEntryId(instruction.getInwardId() != null ? instruction.getInwardId().getInwardEntryId() : null);
+		        instructionResponseDto.setIsDeleted(instruction.getIsDeleted());
+		        instructionResponseDto.setGroupId(instruction.getGroupId());
+		        instructionResponseDto.setDamage(instruction.getDamage());
+		        instructionResponseDto.setPackingWeight(instruction.getPackingWeight());
+		        instructionResponseDto.setWastage(instruction.getWastage());
+		        instructionResponseDto.setRemarks(instruction.getRemarks());
+		        instructionResponseDto.setParentGroupId(instruction.getParentGroupId());
+		        instructionResponseDto.setDeliveryDetails(instruction.getDeliveryDetails() != null ? DeliveryDetails.valueOf(instruction.getDeliveryDetails()) : null);
+		        instructionResponseDto.setChildInstructions((instruction.getChildInstructions() != null && !instruction.getChildInstructions().isEmpty())
+		                ? instruction.getChildInstructions().stream().map(ci -> Instruction.valueOf(ci)).collect(Collectors.toList()) : null);
+		        instructionResponseDto.setIsSlitAndCut(instruction.getIsSlitAndCut());
+				instructionResponseDto.setPartId(instruction.getPartDetails() != null ? instruction.getPartDetails().getId() : null);
+				instructionResponseDto.setPartDetailsId(instruction.getPartDetails() != null ? instruction.getPartDetails().getPartDetailsId(): null);
+				instructionResponseDto.setPlannedYieldLossRatio(instruction.getPartDetails() != null ? instruction.getPartDetails().getPlannedYieldLossRatio(): null);
+				instructionResponseDto.setActualYieldLossRatio(instruction.getPartDetails() != null ? instruction.getPartDetails().getActualYieldLossRatio(): null);
+				instructionResponseDto.setPdfS3Url(instruction.getPartDetails() != null ? instruction.getPartDetails().getPdfS3Url() : null);
+				instructionResponseDto.setCoilNumber(instruction.getInwardId().getCoilNumber());
+				instructionResponseDto.setCustomerBatchId(instruction.getInwardId().getCustomerBatchId());
+				instructionResponseDto.setFThickness( instruction.getInwardId().getfThickness());
+				instructionResponseDto.setMaterial(instruction.getInwardId().getMmId()!= null ? materialService.getProductName( instruction.getInwardId().getMmId()).getDescription() : null);
+				instructionResponseDto.setMaterialGrade(instruction.getInwardId().getMmId()!= null ? materialService.getGradeName(instruction.getInwardId().getMmId()).getGradeName() : null);
+				resp.add(instructionResponseDto);
+			}
+			return new ResponseEntity<>(resp, HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}

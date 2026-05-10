@@ -1,8 +1,8 @@
 package com.steel.product.jswone.request;
 
-import lombok.Data;
+import java.math.BigDecimal;
 
-import javax.validation.constraints.NotBlank;
+import lombok.Data;
 
 @Data
 public class SalesOrderDetails {
@@ -41,7 +41,7 @@ public class SalesOrderDetails {
 
     private String cam_code;
 
-    private Integer total_quantity;
+    private BigDecimal total_quantity;
 
-    private Integer balance;
+    private BigDecimal balance;
 }
