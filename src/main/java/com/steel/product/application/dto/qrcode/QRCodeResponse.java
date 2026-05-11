@@ -58,5 +58,10 @@ public class QRCodeResponse {
 	private String companyName;
 
 	private String companyEmail;
-	
+
+	private String subcategoryName;
+
+	private String leafcategoryName;
+
+	private String subgradeName; 
 }

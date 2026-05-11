@@ -549,18 +549,16 @@ public class LabelPrintPDFGenerator {
 		byte[] pngData = null;
 
 		try {
-
 			StringBuilder text = new StringBuilder();
-			text.append("Coil NO : " + resp.getCoilNo());
-			text.append("\nPacket Id : " + resp.getInstructionId());
-			text.append("\nCustomer BatchNo : " + resp.getCustomerBatchNo());
-			text.append("\nCustomer Name : " + resp.getPartyName());
-			text.append("\nMaterial Description : " + resp.getMaterialDesc());
-			text.append("\nMaterial Grade : " + resp.getMaterialGrade());
-			text.append("\nT * W * L : " + resp.getFthickness() + " * " + resp.getActualwidth() + " * "
-					+ resp.getActuallength());
-			text.append("\nNet Weight : " + resp.getActualweight());
-			text.append("\nEnd User Tag : " + resp.getEndUserTag());
+			text.append("Commodity : " + resp.getSubcategoryName() +" - "+ resp.getLeafcategoryName()+" - "+"Sheet");
+			text.append("\nGrade/Specification : " + resp.getSubgradeName());
+			text.append("\nBrand : " + "One Helix");
+			text.append("\nCoil/Pack No : " + resp.getCustomerBatchNo());
+			text.append("\nBatch No : " + resp.getCoilNo());
+			text.append("\nSize : " + resp.getFthickness() + " * " + resp.getActualwidth() + " * " + resp.getActuallength() +" (mm)");
+			text.append("\nNo. of Sheets : " + String.valueOf(resp.getPlannedNoOfPieces()));
+			text.append("\nInspected By : " + " ");
+			text.append("\nBundle/Packet Id : " + resp.getInstructionId());
 
 			QRCodeWriter qrCodeWriter = new QRCodeWriter();
 			BitMatrix bitMatrix = qrCodeWriter.encode(text.toString(), BarcodeFormat.QR_CODE, 60, 67);
@@ -618,6 +616,9 @@ public class LabelPrintPDFGenerator {
 			resp.setFinishedDate(result[20] != null ? (String) result[20] : "");
 			resp.setCompanyName(result[21] != null ? (String) result[21] : "");
 			resp.setCompanyEmail(result[22] != null ? (String) result[22] : "");
+			resp.setSubcategoryName( result[23] != null ? (String) result[23] : "");
+			resp.setLeafcategoryName(result[24] != null ? (String) result[24] : "");
+			resp.setSubgradeName( result[25] != null ? (String) result[25] : "");
 			qirList.add(resp);
 		}
 		return qirList;
@@ -703,11 +704,11 @@ public class LabelPrintPDFGenerator {
 					PdfPTable table1 = new PdfPTable(2);
 					table1.setWidthPercentage(100);
 					table1.setWidths(new float[] { 40f, 60f });
-					addCompactRow(table1, "Commodity", "");
-					addCompactRow(table1, "Grade/Specification", response.getMaterialDesc());
-					addCompactRow(table1, "Brand", response.getCompanyName());
-					addCompactRow(table1, "Coil/Pack No.",""+response.getInstructionId());
-					addCompactRow(table1, "Batch No.", response.getCoilBatchNo());
+					addCompactRow(table1, "Commodity", response.getSubcategoryName() +" - "+ response.getLeafcategoryName()+" - "+"Sheet");
+					addCompactRow(table1, "Grade/Specification", response.getSubgradeName());
+					addCompactRow(table1, "Brand", "One Helix");
+					addCompactRow(table1, "Coil/Pack No", ""+response.getCustomerBatchNo() );
+					addCompactRow(table1, "Batch No", response.getCoilNo());
 					table1.setSpacingAfter(6f);
 					document.add(table1);
 					
@@ -718,7 +719,7 @@ public class LabelPrintPDFGenerator {
 					PdfPTable table2 = new PdfPTable(2);
 					table2.setWidthPercentage(100);
 					table2.setWidths(new float[] { 40f, 60f });
-					addCompactRow(table2, "Size", "T:" + response.getFthickness() + " W:" + response.getActualwidth() + " L:" + response.getActuallength());
+					addCompactRow(table2, "Size", response.getFthickness() + " * " + response.getActualwidth() + " * " + response.getActuallength() +" (mm)");
 					addCompactRow(table2, "No. of Sheets", String.valueOf(response.getPlannedNoOfPieces()));
 					table2.setSpacingAfter(6f);
 					document.add(table2);
