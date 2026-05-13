@@ -495,8 +495,8 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			}
 
 			// ----------------------- Expected Delivery Date -----------------------
-			if (d.getExpected_shipment_date() != null) {
-				Date original = convertToDate(d.getExpected_shipment_date());
+			if (c.getCf_expected_delivery_date()!= null) {
+				Date original = convertToDate(c.getCf_expected_delivery_date());
 				so.setExpectedDeliveryDate(original);
 
 				Calendar cal = Calendar.getInstance();

@@ -348,15 +348,27 @@ public class SalesOrderJswController {
 			allocation.setSoAllocationId(soAllocationId);
 			allocation.setInstructionId(result[7] != null ? (Integer) result[7] : null);
 			allocation.setInwardId(result[9] != null ? (Integer) result[9] : null);
+			
+			if (allocation.getInwardId() != null && allocation.getInwardId() > 0) {
+				allocation.setAllocationType("RM");
+			}
+			if (allocation.getInstructionId() != null && allocation.getInstructionId() > 0) {
+				allocation.setAllocationType("FG");
+			}
 			allocation.setAllocatedqty((BigDecimal) result[16]);
 			allocation.setCoilNumber(result[17] != null ? (String) result[17] : "");
+			allocation.setCustomerBatchId( result[29] != null ? (String) result[29] : "");
 			allocation.setNoofPieces(result[18] != null ? ((Number) result[18]).intValue() : 0);
 			allocation.setPacking(result[19] != null ? (String) result[19] : "");
 			allocation.setLocationName(result[20] != null ? (String) result[20] : "");
 			allocation.setStatus(result[21] != null ? (String) result[21] : "");
 			allocation.setSize(result[24] != null ? (String) result[24] : "");
-			// allocation.setPdfGenerationPart(result[28] != null ? (String) result[28] :
-			// null);
+			
+			String materialDesc = (result[30] != null ? (String) result[30] : "");
+			String materialGrade = (result[31] != null ? (String) result[31] : "");
+
+			String coilSKU = materialGrade + materialDesc + " * " + allocation.getSize();
+			allocation.setProductDetails(coilSKU);
 
 			if (soAllocationId != null && soAllocationId > 0) {
 				child.getAllocationDetails().add(allocation);

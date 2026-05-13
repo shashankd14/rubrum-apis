@@ -19,6 +19,10 @@ public class SalesOrderChildAllocationResponse {
 
 	private String coilNumber;
 
+	private String customerBatchId;
+
+	private String productDetails;
+
 	private String locationName;
 
 	private String packing;
@@ -27,6 +31,8 @@ public class SalesOrderChildAllocationResponse {
 
 	private Integer noofPieces;
 
-	private String status; 
+	private String status;
+
+	private String allocationType;
 
 }
