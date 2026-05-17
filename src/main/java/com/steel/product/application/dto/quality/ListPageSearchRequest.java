@@ -38,7 +38,7 @@ public class ListPageSearchRequest {
 
 	private int location;
 
-	private int branchId;
+	private String branchId;
 
 	private String batchNo;
 
@@ -48,4 +48,5 @@ public class ListPageSearchRequest {
 
 	private String pdfGenerationPart;
 
+	private String filterStatus;
 }

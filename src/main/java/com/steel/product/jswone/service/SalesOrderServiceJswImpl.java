@@ -54,6 +54,7 @@ import com.steel.product.jswone.repository.MaterialMasterJswRepository;
 import com.steel.product.jswone.repository.SalesOrderAllocationJswRepository;
 import com.steel.product.jswone.repository.SalesOrderChildJswRepository;
 import com.steel.product.jswone.repository.SalesOrderJswRepository;
+import com.steel.product.jswone.repository.WarehouseMasterRepository;
 import com.steel.product.jswone.request.CPSplitRequest;
 import com.steel.product.jswone.request.SalesOrderBulkRequest;
 import com.steel.product.jswone.request.SalesOrderChildRequest;
@@ -98,6 +99,9 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 
 	@Autowired
 	private MaterialMasterJswRepository materialMasterJswRepository;
+
+	@Autowired
+	private WarehouseMasterRepository warehouseMasterRepository;
 
 	@Override
 	public ResponseEntity<Object> save(SalesOrderMainRequest salesOrderMainRequest, String option) {
@@ -384,7 +388,16 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				partyIdsFlag = false;
 				partyIds = new ArrayList<>();
 			}
+			
+			List<Object[]> partyList = warehouseMasterRepository.partyIdsByBranchId(request.getBranchId());
+			for (Object[] row : partyList) {
+				if (row[0] != null) {
+					partyIdsFlag = true;
+					partyIds.add((Integer) row[0]);
+				}
+			}
 		}
+		
 		int packetStatus = 0;
 
 		if ("COIL".equals(request.getAllocationType())) {
@@ -1087,8 +1100,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				}
 			}
 			
-			Map<Integer, String> finalSOStatusMap = new HashMap<>();
-
+			Map<Integer, String> finalCPStatusMap = new HashMap<>();
 			for (Map.Entry<Integer, List<String>> entry : soStatusMap.entrySet()) {
 
 				List<String> statuses = entry.getValue();
@@ -1121,44 +1133,41 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 					}
 				}
 
-				String finalStatus = StatusType.CP_PLAN_DRAFT.toString();
+				String finalCPStatus = StatusType.CP_PLAN_DRAFT.toString();
+				String finalSOStatus = "SO_APPROVED";
 				if (allocated || allocatedPartially) {
-					finalStatus = StatusType.CP_PLAN_ISSUED.toString();
+					finalCPStatus = StatusType.CP_PLAN_ISSUED.toString();
+					finalSOStatus = "SO_APPROVED";
 				} else if (allocatedReceived) {
-					finalStatus = StatusType.CP_PLAN_INPROGRESS.toString();
+					finalCPStatus = StatusType.CP_PLAN_INPROGRESS.toString();
+					finalSOStatus = "PENDING_APPROVAL";
 				} else if (allocatedInProgress) {
-					finalStatus = StatusType.CP_PLAN_INPROGRESS.toString();
+					finalCPStatus = StatusType.CP_PLAN_INPROGRESS.toString();
+					finalSOStatus = "PENDING_ALLOCATION";
 				} else if (allocatedReadyToDeliver) {
-					finalStatus = StatusType.CP_PLAN_INPROGRESS.toString();
+					finalCPStatus = StatusType.CP_PLAN_INPROGRESS.toString();
+					finalSOStatus = "ALLOCATED_FULLY";
 				} else if (allocatedDispatched) {
-					finalStatus = StatusType.CP_PAN_COMPLETED.toString();
+					finalCPStatus = StatusType.CP_PLAN_COMPLETED.toString();
+					finalSOStatus = "SO_APPROVED";
 				} else {
-					finalStatus = StatusType.CP_PLAN_DRAFT.toString();
+					finalCPStatus = StatusType.CP_PLAN_DRAFT.toString();
+					finalSOStatus = "SO_APPROVED";
 				}
-				finalSOStatusMap.put(entry.getKey(), finalStatus);
+				finalCPStatusMap.put(entry.getKey(), finalCPStatus+","+finalSOStatus);
 			}
 
-			for (Map.Entry<Integer, String> entry : finalSOStatusMap.entrySet()) {
-				String finalSOStatus = entry.getValue();
-				/*String finalSOStatus = entry.getValue();
-				
-				if ("Allocated".equals(status)) {
-					finalSOStatus = StatusType.CP_PLAN_ISSUED.toString();
-				} else if ("Allocated - DISPATCHED".equals(status)) {
-					finalSOStatus = StatusType.CP_PAN_COMPLETED.toString();
-				} else {
-					System.out.println("status == " + status);
-					// "Allocated - RECEIVED".equals(status)
-					// "Allocated - IN PROGRESS".equals(status)
-					// "Allocated - RECEIVED".equals(status)
-					// "Allocated - READY TO DELIVER".equals(status)
-					finalSOStatus = StatusType.CP_PLAN_INPROGRESS.toString();
-				}*/
+			for (Map.Entry<Integer, String> entry : finalCPStatusMap.entrySet()) {
+				String status = entry.getValue();
 				int soId11 = entry.getKey();
-				System.out.println("hi soId == "+soId11+", status== "+finalSOStatus);
-				salesOrderRepository.updateCPStataus(finalSOStatus, soId11);
-			}
 
+				String[] arr = status.split(",");
+				String finalCPStatus = arr[0];
+				String finalSOStatus = arr[1];
+
+				System.out.println("SoId == " + soId11 + ", finalCPStatus== " + finalCPStatus+", finalSOStatus== " + finalSOStatus);
+				salesOrderRepository.updateCPAndSOStataus(finalCPStatus, finalSOStatus, soId11);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

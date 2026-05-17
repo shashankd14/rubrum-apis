@@ -310,7 +310,12 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 	@Modifying
 	@Transactional
 	@Query(value = "update jsw_sales_order set cp_status= :cpStatus where so_id =:soId", nativeQuery = true)
-	public int updateCPStataus(@Param("cpStatus") String cpStatus, @Param("soId") int soId);
+	public int updateCPStataus(@Param("cpStatus") String cpStatus,  @Param("soId") int soId);
+
+	@Modifying
+	@Transactional
+	@Query(value = "update jsw_sales_order set so_status = :soStatus, cp_status= :cpStatus where so_id =:soId", nativeQuery = true)
+	public int updateCPAndSOStataus(@Param("cpStatus") String cpStatus, @Param("soStatus") String soStatus, @Param("soId") int soId);
 
 	@Query(value = "SELECT alloca.so_id, CAST(alloca.so_child_id AS SIGNED) AS so_child_id, so_allocation_id, so.cp_status, "
 			+ " inward_stts.statusname AS inward_stts, packet_stts.statusname AS packet_stts, "

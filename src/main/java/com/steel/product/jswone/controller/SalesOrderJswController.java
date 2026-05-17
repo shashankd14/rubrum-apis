@@ -144,6 +144,9 @@ public class SalesOrderJswController {
 	public ResponseEntity<Object> listAllSOs(@RequestBody ListPageSearchRequest listPageSearchRequest) {
 		Map<String, Object> response = new HashMap<>();
 
+		if ( !("ALL".equals(listPageSearchRequest.getFilterStatus())) && listPageSearchRequest.getFilterStatus() != null && listPageSearchRequest.getFilterStatus().length() > 0) {
+			listPageSearchRequest.getStatus().add(listPageSearchRequest.getFilterStatus());
+		}
 		Page<Object[]> packetsList1 = salesOrderService.listAllSOIDs(listPageSearchRequest);
 
 		List<Integer> soIDsList = new ArrayList<>();
