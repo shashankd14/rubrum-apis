@@ -6,7 +6,9 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -249,13 +251,15 @@ public class ReportsServiceImpl implements ReportsService {
 			// Create a blank sheet
 			XSSFSheet fgSpreadsheet = workbook.createSheet("FG_Classification");
 			XSSFSheet othersSpreadsheet = workbook.createSheet("Others_Classification");
+			XSSFSheet qualityDefectsSpreadsheet = workbook.createSheet("Quality_Defects");
 
 			// Create row object
 			XSSFRow row;
-			
-			List<FGReportViewEntity> fgReportDetailsList =getFGReportDetails(partyId);
+
+			List<FGReportViewEntity> fgReportDetailsList = getFGReportDetails(partyId);
 			Map<String, Object[]> fgAcctStatementMap = getFGCassificationDetails(fgReportDetailsList);
-			Map<String, Object[]> othersActStatementMap = getOthersCassificationDetails( fgReportDetailsList);
+			Map<String, Object[]> othersActStatementMap = getOthersCassificationDetails(fgReportDetailsList);
+			Map<String, Object[]> qualityDefectsActStatementMap = getQualityDefectsClassificationDetails(fgReportDetailsList);
 
 			// Iterate over data and write to sheet
 			Set<String> keyid = fgAcctStatementMap.keySet();
@@ -283,6 +287,25 @@ public class ReportsServiceImpl implements ReportsService {
 			for (String key : keyid1) {
 				row = othersSpreadsheet.createRow(rowid++);
 				Object[] objectArr = othersActStatementMap.get(key);
+				int cellid = 0;
+				for (Object obj : objectArr) {
+					Cell cell = row.createCell(cellid++);
+				    cell.setCellStyle(borderStyle);
+				    if (obj != null) {
+						cell.setCellValue("" + obj);
+					} else {
+						cell.setCellValue("");
+					}
+				}
+			}
+
+			// Iterate over data and write to sheet
+			Set<String> keyid2 = qualityDefectsActStatementMap.keySet();
+			rowid = 0;
+
+			for (String key : keyid2) {
+				row = qualityDefectsSpreadsheet.createRow(rowid++);
+				Object[] objectArr = qualityDefectsActStatementMap.get(key);
 				int cellid = 0;
 				for (Object obj : objectArr) {
 					Cell cell = row.createCell(cellid++);
@@ -338,6 +361,10 @@ public class ReportsServiceImpl implements ReportsService {
 			new Object[] { "CoilNumber", "CustomerBatchId", "Finishing Date","Current Date","Coil Age(No'of Days)",
 					"No'of Pieces","MaterialDesc", "MaterialGrade", "TDC No","Remarks", "Packet Id", "Thickness", "Actual Width",
 					"Actual Length", "Actual Weight", "Classification Tag", "End User Tag" });
+			acctStatementMap.put("1",
+			new Object[] { "CoilNumber", "CustomerBatchId", "Finishing Date","Current Date","Coil Age(No'of Days)",
+					"No'of Pieces","MaterialDesc", "MaterialGrade", "TDC No","Remarks","Packet Id", "Thickness", "Actual Width",
+					 "Actual Length", "Actual Weight", "Classification Tag", "End User Tag" });
 
 			int cnt = 1;
 			for (FGReportViewEntity kk : partyList) {
@@ -363,6 +390,9 @@ public class ReportsServiceImpl implements ReportsService {
 
 		try {
 
+			Set<String> classificationSet = new HashSet<>(Arrays.asList("EDGE TRIM", "CUT ENDS", "WIP(NCO)", "WIP(FG)",
+					"WIP(END CUT)", "WIP(EDGE TRIM)", "WIP(CUT ENDS)", "WIP (SFCP)", "NCO"));
+
 			acctStatementMap.put("1",
 					new Object[] { "CoilNumber", "CustomerBatchId", "Finishing Date","Current Date","Coil Age(No'of Days)",
 							"No'of Pieces","MaterialDesc", "MaterialGrade", "TDC No","Remarks","Packet Id", "Thickness",
@@ -370,10 +400,43 @@ public class ReportsServiceImpl implements ReportsService {
 
 			int cnt = 1;
 			for (FGReportViewEntity kk : partyList) {
-				if (!("FG".equals(kk.getClassificationTag()))) {
+				String tag = kk.getClassificationTag();
+				if (tag != null && classificationSet.contains(tag.trim().toUpperCase())) {
 					cnt++;
 					acctStatementMap.put("" + cnt, new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(),
-					kk.getFinishingDate(), kk.getCurrentdate(), kk.getCoilage(),kk.getNoofpieces(), 
+					kk.getFinishingDate(), kk.getCurrentdate(), kk.getCoilage(),kk.getNoofpieces(), kk.getMaterialDesc(),  
+					kk.getMaterialGrade(), kk.getTdcNo(), kk.getRemarks(), kk.getPacketId(), kk.getThickness(),
+					kk.getActualwidth(), kk.getActuallength(), kk.getActualweight(), kk.getClassificationTag(),
+					((kk.getEnduserTagName() != null && kk.getEnduserTagName().length() > 0) ? kk.getEnduserTagName() : "") });
+				}
+			}
+		} catch (Exception e) {
+			LOGGER.error("Error at getOthersCassificationDetails " + e.getMessage());
+		}
+		return acctStatementMap;
+	}
+
+	public Map<String, Object[]> getQualityDefectsClassificationDetails(List<FGReportViewEntity> partyList ) {
+
+		Map<String, Object[]> acctStatementMap = new LinkedHashMap<>();
+
+		try {
+
+			Set<String> classificationSet = new HashSet<>(Arrays.asList("EDGE TRIM", "FG", "CUT ENDS", "WIP(NCO)", "WIP(FG)",
+					"WIP(END CUT)", "WIP(EDGE TRIM)", "WIP(CUT ENDS)", "WIP (SFCP)", "NCO"));
+
+			acctStatementMap.put("1",
+					new Object[] { "CoilNumber", "CustomerBatchId", "Finishing Date","Current Date","Coil Age(No'of Days)",
+							"No'of Pieces","MaterialDesc", "MaterialGrade", "TDC No","Remarks","Packet Id", "Thickness",
+							"Actual Width", "Actual Length", "Actual Weight", "Classification Tag", "End User Tag" });
+
+			int cnt = 1;
+			for (FGReportViewEntity kk : partyList) {
+				String tag = kk.getClassificationTag();
+				if (tag != null && !classificationSet.contains(tag.trim().toUpperCase())) {
+					cnt++;
+					acctStatementMap.put("" + cnt, new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(),
+					kk.getFinishingDate(), kk.getCurrentdate(), kk.getCoilage(),kk.getNoofpieces(), kk.getMaterialDesc(),  
 					kk.getMaterialGrade(), kk.getTdcNo(), kk.getRemarks(), kk.getPacketId(), kk.getThickness(),
 					kk.getActualwidth(), kk.getActuallength(), kk.getActualweight(), kk.getClassificationTag(),
 					((kk.getEnduserTagName() != null && kk.getEnduserTagName().length() > 0) ? kk.getEnduserTagName() : "") });

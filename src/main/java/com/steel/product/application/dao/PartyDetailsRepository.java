@@ -13,7 +13,7 @@ import java.util.List;
 @Repository
 public interface PartyDetailsRepository extends JpaRepository<Party, Integer> {
 
-	@Query("select party from Party party order by nPartyId desc")
+	@Query("select party from Party party where 1=1 order by nPartyId desc")
 	List<Party> findAllParties();
 	
 	@Query("select party from Party party where party.nPartyId in :partyIds order by nPartyId desc")
