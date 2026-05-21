@@ -22,6 +22,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 	@Query(value = "SELECT distinct so.so_id, so.so_number "
 			+ " FROM jsw_sales_order so, jsw_sales_order_child so_child "
 			+ " where so.is_deleted = 0 and so_child.is_deleted = 0 and so_child.so_id = so.so_id "
+			+ " and (case when :warehouseFlag=true then so_child.wearhouse_id in :warehouseList else 1=1 end ) "
 			+ " and case when :soId is not null and LENGTH(:soId) >0 then so.so_id = :soId else so.so_id end " 
 		  	+ " and case when :status is not null and LENGTH(:status) > 0 then so.so_status = :status else so.so_status  = so.so_status end "  
 			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (so_child.mm_id like %:searchText% or so.so_number like %:searchText% or so.refno like %:searchText%) else 1=1 end " 
@@ -29,13 +30,15 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 		countQuery = "SELECT count(distinct so.so_id ) " + 
 			"  FROM jsw_sales_order so, jsw_sales_order_child so_child" + 
 		  	"  where so.is_deleted = 0 and so_child.is_deleted = 0 and so_child.so_id = so.so_id" + 
+			"  and (case when :warehouseFlag=true then so_child.wearhouse_id in :warehouseList else 1=1 end ) "+ 
 		  	"  and case when :soId is not null and LENGTH(:soId) >0 then so.so_id = :soId else so.so_id end " +
 		  	"  and case when :status is not null and LENGTH(:status) > 0 then so.so_status in :status else 1=1 end " + 
 		  	"  and case when :searchText is not null and LENGTH(:searchText) >0 then (so_child.mm_id like %:searchText% or so.so_number like %:searchText%) else 1=1 end " +
 		  	"  order by so.so_id desc", 
 		nativeQuery = true)
 	Page<Object[]> listAllSOIDs(@Param("searchText") String searchText, @Param("soId") Integer soId,
-			@Param("status") List<String> status, Pageable pageable);
+			@Param("status") List<String> status, @Param("warehouseFlag") boolean warehouseFlag,
+			@Param("warehouseList") List<String> warehouseList, Pageable pageable);
 	
 	@Query(value = "SELECT so.so_id, so.so_number, so.socreatedate, so.deliverymethod, "
 			+ " so.destinationcode, so.refno, so.joplsorefno, so.bizsegment, so.ecommerce, so.supplysource, so.typeofsupply, "
@@ -58,7 +61,6 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " and (case when :warehouseFlag=true then so_child.wearhouse_id in :warehouseList else 1=1 end ) "
 			+ " and so.is_deleted = 0 "
 			+ " and case when :soId is not null and LENGTH(:soId) >0 then so.so_id = :soId else so.so_id end " 
-		  	+ " and case when :status is not null and LENGTH(:status) > 0 then so.so_status = :status else so.so_status  = so.so_status end "  
 			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (so_child.mm_id like %:searchText% or so_child.wearhouse_id like %:searchText% or so.branch_id like %:searchText% or so.refno like %:searchText% or so.so_number like %:searchText%) else 1=1 end " 
 			+ " order by so.so_id desc",
 		countQuery = "SELECT count(distinct so.so_id ) " + 
@@ -67,14 +69,12 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			" and (case when :warehouseFlag=true then so_child.wearhouse_id in :warehouseList else 1=1 end ) "+ 
 			" and so.is_deleted = 0 "+ 
 		  	" and case when :soId is not null and LENGTH(:soId) >0 then so.so_id = :soId else so.so_id end " +
-		  	" and case when :status is not null and LENGTH(:status) > 0 then so.so_status in :status else 1=1 end " + 
 		  	" and case when :searchText is not null and LENGTH(:searchText) >0 then (so_child.mm_id like %:searchText% or so_child.wearhouse_id like %:searchText% or so.branch_id like %:searchText% or so.so_number like %:searchText%) else 1=1 end " +
 		  	" order by so.so_id desc", 
 			nativeQuery = true)
 	Page<Object[]> listAllSOIDsCP(
 			@Param("searchText") String searchText, 
 			@Param("soId") Integer soId,
-			@Param("status") List<String> status, 
 			@Param("warehouseFlag") boolean warehouseFlag, 
 			@Param("warehouseList") List<String> warehouseList,
 			Pageable pageable);
@@ -105,14 +105,14 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			@Param("warehouseFlag") boolean warehouseFlag,
 			@Param("warehouseList") List<String> warehouseList);
 	
-	@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, mm_id, materialdesc, materialgrade, fthickness, flength, fpresent, partyname,0 noofpieces,fWidth "
+	@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, mm_id, materialdesc, materialgrade, fthickness, flength, fpresent, partyname,0 noofpieces,fWidth,coilage "
 			+ " from ( "
 			+ " SELECT parent.inwardentryid inwardid,  coilnumber, customerbatchid, parent.mm_id, " 
 			+ " (SELECT product_name FROM jsw_product_master a, jsw_material_master mat where a.product_id=mat.producttype_id and mat.mm_id=parent.mm_id limit 1) as  materialdesc, " 
-			+ " (SELECT grade_name FROM jsw_grade_master grade, jsw_material_master mat where grade.grade_id=mat.grade_id and mat.mm_id=parent.mm_id limit 1) as  materialgrade, "  
+			+ " (SELECT subgrade_name FROM jsw_subgrade_master grade, jsw_material_master mat where grade.subgrade_id=mat.subgrade_id and mat.mm_id=parent.mm_id limit 1) as  materialgrade, "  
 			+ " fthickness, NULL as packet_id, fWidth, " 
 			+ " coalesce( parent.flength,0) flength, fpresent, " 
-			+ " fquantity, partyname,0  as siltcutcnt "  
+			+ " fquantity, partyname,0  as siltcutcnt, DATEDIFF(curdate() , date_format(parent.createdon, '%Y-%m-%d')) coilage "  
 			+ " FROM product_tblinwardentry parent, product_tblpartydetails party, "
 			+ " jsw_material_master mat "
 			+ " where fpresent>0 and parent.isdeleted=0 and  party.npartyid = parent.npartyid "
@@ -154,15 +154,15 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			Pageable pageable);
 
 	@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, mm_id, materialdesc, materialgrade,fthickness, flength, fweight, partyname,"
-			+ "  noofpieces, fWidth "
+			+ "  noofpieces, fWidth,coilage "
 			+ " from ( SELECT parent.inwardentryid inwardid,  coilnumber, customerbatchid, parent.mm_id,"
 			+ " (SELECT product_name FROM jsw_product_master a, jsw_material_master mat where a.product_id=mat.producttype_id and mat.mm_id=parent.mm_id limit 1) as  materialdesc,"
-			+ " (SELECT grade_name FROM jsw_grade_master grade, jsw_material_master mat where grade.grade_id=mat.grade_id and mat.mm_id=parent.mm_id limit 1) as  materialgrade,"
+			+ " (SELECT subgrade_name FROM jsw_subgrade_master grade, jsw_material_master mat where grade.subgrade_id=mat.subgrade_id and mat.mm_id=parent.mm_id limit 1) as  materialgrade, "  
 			+ "	fthickness, instructionid as packet_id,  coalesce(actualwidth, plannedwidth) fWidth, coalesce( parent.flength,0) flength, "
 			+ " coalesce(child.actualweight, child.plannedweight) fweight, fquantity, partyname,  "
 			+ " coalesce(child.actualnoofpieces, child.plannednoofpieces) noofpieces, "
 			+ " (SELECT count(distinct a.instructionid) cnt FROM product_instruction a where a.inwardid=parent.inwardentryid and status!=4 and a.parentgroupid=child.groupid) as siltcutcnt, "
-			+ " parent.npartyid "
+			+ " parent.npartyid, DATEDIFF(curdate(), date_format(parent.createdon, '%Y-%m-%d')) coilage"
 			+ " FROM product_tblinwardentry parent, " 
 			+ "	product_instruction child, "  
 			+ "	product_tblpartydetails party, " 
@@ -213,14 +213,14 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			Pageable pageable);
 
 	@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, mm_id, materialdesc, materialgrade,fthickness, flength, "
-			+ " fweight, partyname, 0 as actualNoOfPieces,fWidth "
+			+ " fweight, partyname, 0 as actualNoOfPieces,fWidth,coilage "
 			+ " from ( 	"
-			+ " SELECT parent.inwardentryid inwardid,  coilnumber, customerbatchid, parent.mm_id,  "
+			+ " SELECT parent.inwardentryid inwardid, coilnumber, customerbatchid, parent.mm_id,  "
 			+ " (SELECT product_name FROM jsw_product_master a, jsw_material_master mat where a.product_id=mat.producttype_id and mat.mm_id=parent.mm_id limit 1) as  materialdesc,  "
-			+ " (SELECT grade_name FROM jsw_grade_master grade, jsw_material_master mat where grade.grade_id=mat.grade_id and mat.mm_id=parent.mm_id limit 1) as  materialgrade,	"
+			+ " (SELECT subgrade_name FROM jsw_subgrade_master grade, jsw_material_master mat where grade.subgrade_id=mat.subgrade_id and mat.mm_id=parent.mm_id limit 1) as  materialgrade, "  
 			+ " fthickness, 0 as packet_id,  fWidth,  "
-			+ " coalesce( parent.flength,0) flength,  fpresent fweight, fquantity, partyname,  "
-			+ " parent.npartyid"
+			+ " coalesce( parent.flength,0) flength,  fpresent fweight, fquantity, partyname,"
+			+ " parent.npartyid, DATEDIFF(curdate(), date_format(parent.createdon, '%Y-%m-%d')) coilage"
 			+ " FROM product_tblinwardentry parent, product_tblpartydetails party  "
 			+ " where parent.vstatus in (1,2,3) and parent.isdeleted=0 and party.npartyid = parent.npartyid  "
 			+ " and parent.mm_id = :mmid) a where 1=1",
@@ -228,9 +228,9 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " SELECT parent.inwardentryid inwardid,  coilnumber, customerbatchid, parent.mm_id,  "
 			+ " (SELECT product_name FROM jsw_product_master a, jsw_material_master mat where a.product_id=mat.producttype_id and mat.mm_id=parent.mm_id limit 1) as  materialdesc,  "
 			+ " (SELECT grade_name FROM jsw_grade_master grade, jsw_material_master mat where grade.grade_id=mat.grade_id and mat.mm_id=parent.mm_id limit 1) as  materialgrade,	"
-			+ " fthickness, '' as packet_id,  fWidth,  "
+			+ " fthickness, '' as packet_id,  fWidth, "
 			+ " coalesce( parent.flength,0) flength,  fpresent fweight, fquantity,in_stock_weight inStockWeight, "
-			+ " 0 actualNoOfPieces, '' as process_status , '' instruction_status,partyname, '' as classification_tag, "
+			+ " 0 actualNoOfPieces,'' as process_status, '' instruction_status,partyname, '' as classification_tag, "
 			+ " '' as enduser_tag_name, parent.npartyid"
 			+ " FROM product_tblinwardentry parent, product_tblpartydetails party  "
 			+ " where parent.vstatus in (1,2,3) and parent.isdeleted=0 and party.npartyid = parent.npartyid  "
@@ -332,7 +332,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 	List<Object[]> getAllSODetailsWithAllocationStatus();
 
 	@Query(value = "SELECT so_child.so_id, CAST(so_child.so_child_id AS SIGNED) AS so_child_id,"
-			+ "  so.cp_status, so_child.item_so_status"
+			+ " so.cp_status, so_child.item_so_status, so.so_status"
 			+ " FROM jsw_sales_order so"
 			+ " JOIN jsw_sales_order_child so_child ON so_child.so_id = so.so_id  AND so_child.is_deleted = 0 "
 			+ " WHERE so.cp_status not in ('CP_PAN_COMPLETED') order by so_child.so_id desc", nativeQuery = true)

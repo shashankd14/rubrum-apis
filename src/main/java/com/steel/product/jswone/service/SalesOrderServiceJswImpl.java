@@ -177,16 +177,14 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 	@Override
 	public Page<Object[]> listAllSOIDsCP(ListPageSearchRequest listPageSearchRequest) {
 
-		Pageable pageable = PageRequest.of((listPageSearchRequest.getPageNo() - 1),
-				listPageSearchRequest.getPageSize());
+		Pageable pageable = PageRequest.of((listPageSearchRequest.getPageNo() - 1), listPageSearchRequest.getPageSize());
 		boolean warehouseFlag = false;
-
 		if (listPageSearchRequest.getWarehouseList() != null && listPageSearchRequest.getWarehouseList().size() > 0) {
 			warehouseFlag = true;
 		}
 
 		Page<Object[]> packetsList = salesOrderRepository.listAllSOIDsCP(listPageSearchRequest.getSearchText(),
-				listPageSearchRequest.getSoId(), listPageSearchRequest.getStatus(), warehouseFlag,
+				listPageSearchRequest.getSoId(), warehouseFlag,
 				listPageSearchRequest.getWarehouseList(), pageable);
 		return packetsList;
 	}
@@ -221,8 +219,15 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				partyIds = new ArrayList<>();
 			}
 		}
+		
+		boolean warehouseFlag = false;
+
+		if (listPageSearchRequest.getWarehouseList() != null && listPageSearchRequest.getWarehouseList().size() > 0) {
+			warehouseFlag = true;
+		}
 		Page<Object[]> packetsList = salesOrderRepository.listAllSOIDs(listPageSearchRequest.getSearchText(),
-				listPageSearchRequest.getSoId(), listPageSearchRequest.getStatus(), pageable);
+				listPageSearchRequest.getSoId(), listPageSearchRequest.getStatus(), warehouseFlag,
+				listPageSearchRequest.getWarehouseList(), pageable);
 		return packetsList;
 	}
 
@@ -508,10 +513,9 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			}
 
 			// ----------------------- Expected Delivery Date -----------------------
-			if (c.getCf_expected_delivery_date()!= null) {
+			if (c.getCf_expected_delivery_date()!= null && c.getCf_expected_delivery_date().length()>0) {
 				Date original = convertToDate(c.getCf_expected_delivery_date());
 				so.setExpectedDeliveryDate(original);
-
 				Calendar cal = Calendar.getInstance();
 				cal.setTime(original);
 				cal.add(Calendar.DAY_OF_MONTH, -2);
@@ -1140,7 +1144,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 					finalSOStatus = "SO_APPROVED";
 				} else if (allocatedReceived) {
 					finalCPStatus = StatusType.CP_PLAN_INPROGRESS.toString();
-					finalSOStatus = "PENDING_APPROVAL";
+					finalSOStatus = "PENDING_ALLOCATION";
 				} else if (allocatedInProgress) {
 					finalCPStatus = StatusType.CP_PLAN_INPROGRESS.toString();
 					finalSOStatus = "PENDING_ALLOCATION";

@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,28 +81,32 @@ public class SalesOrderPDFServiceJswImpl implements SalesOrderPDFJswService {
 			} else {
 				for (Map.Entry<String, SalesOrderListResponse> entry : mapp.entrySet()) {
 					SalesOrderListResponse entity = entry.getValue();
-					String pdfGenerationPart = entity.getPdfGenerationPart();
-					String[] parts = pdfGenerationPart.split(",");
+					int partsLength = 0;
+					if (entity.getPdfGenerationPart() != null && entity.getPdfGenerationPart().length() > 0) {
+						String[] parts = Arrays.stream(entity.getPdfGenerationPart().split(",")).map(String::trim)
+								.filter(part -> !part.isEmpty()).toArray(String[]::new);
+						partsLength = parts.length;
+					}
 
-					if (parts.length == 1) {
+					if (partsLength == 0) {
 						nextPartValue = "A";
 					}
-					if (parts.length == 2) {
+					if (partsLength == 1) {
 						nextPartValue = "B";
 					}
-					if (parts.length == 3) {
+					if (partsLength == 2) {
 						nextPartValue = "C";
 					}
-					if (parts.length == 4) {
+					if (partsLength == 3) {
 						nextPartValue = "D";
 					}
-					if (parts.length == 5) {
+					if (partsLength == 4) {
 						nextPartValue = "E";
 					}
-					if (parts.length == 6) {
+					if (partsLength == 5) {
 						nextPartValue = "F";
 					}
-					if (parts.length == 7) {
+					if (partsLength == 6) {
 						nextPartValue = "G";
 					}
 					break;

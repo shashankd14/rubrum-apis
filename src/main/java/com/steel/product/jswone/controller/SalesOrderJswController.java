@@ -236,13 +236,14 @@ public class SalesOrderJswController {
 			resp.setCustomerBatchId(result[3] != null ? (String) result[3] : null);
 			resp.setMmId(result[4] != null ? (String) result[4] : null);
 			resp.setMaterial(result[5] != null ? (String) result[5] : null);
-			resp.setMaterialGrade(result[6] != null ? (String) result[6] : null);
+			resp.setMaterialSubGrade(result[6] != null ? (String) result[6] : null);
 			resp.setFThickness(result[7] != null ? (float) result[7] : null);
 			resp.setFLength(result[8] != null ? (float) result[8] : null);
 			resp.setAvailQty(result[9] != null ? BigDecimal.valueOf(((Number) result[9]).doubleValue()) : null);
 			resp.setLocationName(result[10] != null ? (String) result[10] : null);
 			resp.setNoofPieces(result[11] != null ? ((Number) result[11]).intValue() : 0);
 			resp.setFWidth(result[12] != null ? (float) result[12] : null);
+			resp.setCoilage(result[13] != null ? Integer.parseInt(result[13].toString()) : null);
 			list.add(resp);
 		}
 
@@ -257,13 +258,14 @@ public class SalesOrderJswController {
 				resp.setCustomerBatchId(result[3] != null ? (String) result[3] : null);
 				resp.setMmId(result[4] != null ? (String) result[4] : null);
 				resp.setMaterial(result[5] != null ? (String) result[5] : null);
-				resp.setMaterialGrade(result[6] != null ? (String) result[6] : null);
+				resp.setMaterialSubGrade(result[6] != null ? (String) result[6] : null);
 				resp.setFThickness(result[7] != null ? (float) result[7] : null);
 				resp.setFLength(result[8] != null ? (float) result[8] : null);
 				resp.setAvailQty(result[9] != null ? BigDecimal.valueOf(((Number) result[9]).doubleValue()) : null);
 				resp.setLocationName(result[10] != null ? (String) result[10] : null);
 				resp.setNoofPieces(result[11] != null ? ((Number) result[11]).intValue() : 0);
 				resp.setFWidth(result[12] != null ? (float) result[12] : null);
+				resp.setCoilage(result[13] != null ? Integer.parseInt(result[13].toString()) : null);
 				list.add(resp);
 			}
 		}
@@ -281,7 +283,6 @@ public class SalesOrderJswController {
 
 		Map<String, Object> response = new HashMap<>();
 
-		listPageSearchRequest.getStatus().add("SO_APPROVED");
 		Page<Object[]> packetsList1 = salesOrderService.listAllSOIDsCP(listPageSearchRequest);
 
 		List<Integer> soIDsList = new ArrayList<>();

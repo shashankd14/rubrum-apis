@@ -17,7 +17,7 @@ public class InwardEntryResponseDetails {
 
 	private String material;
 
-	private String materialGrade;
+	private String materialSubGrade;
 
 	private String mmId;
 
@@ -32,4 +32,6 @@ public class InwardEntryResponseDetails {
 	private Integer noofPieces;
 	
 	private BigDecimal availQty;
+
+	private int coilage;
 }

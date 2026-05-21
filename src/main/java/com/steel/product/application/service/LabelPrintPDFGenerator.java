@@ -678,14 +678,6 @@ public class LabelPrintPDFGenerator {
 					imgCell.setPaddingBottom(0f);
 					imgCell.setBorder(Rectangle.NO_BORDER);
 					qrTable.addCell(imgCell);
-					PdfPCell textCell = new PdfPCell(new Phrase("Scan to download TC", valueFont));
-					textCell.setHorizontalAlignment(Element.ALIGN_CENTER);
-					// CONTROL GAP HERE
-					textCell.setPaddingTop(0f);
-					textCell.setPaddingBottom(2f);
-					textCell.setBorder(Rectangle.NO_BORDER);
-					qrTable.addCell(textCell);
-
 					document.add(qrTable);
 
 					/*
@@ -702,7 +694,7 @@ public class LabelPrintPDFGenerator {
 					 */
 
 					PdfPTable table1 = new PdfPTable(2);
-					table1.setWidthPercentage(100);
+					table1.setWidthPercentage(67);
 					table1.setWidths(new float[] { 40f, 60f });
 					addCompactRow(table1, "Commodity", response.getSubcategoryName() +" - "+ response.getLeafcategoryName()+" - "+"Sheet");
 					addCompactRow(table1, "Grade/Specification", response.getSubgradeName());
@@ -717,7 +709,7 @@ public class LabelPrintPDFGenerator {
 					 */
 
 					PdfPTable table2 = new PdfPTable(2);
-					table2.setWidthPercentage(100);
+					table2.setWidthPercentage(67);
 					table2.setWidths(new float[] { 40f, 60f });
 					addCompactRow(table2, "Size", response.getFthickness() + " * " + response.getActualwidth() + " * " + response.getActuallength() +" (mm)");
 					addCompactRow(table2, "No. of Sheets", String.valueOf(response.getPlannedNoOfPieces()));
@@ -728,13 +720,12 @@ public class LabelPrintPDFGenerator {
 					 */
 
 					PdfPTable table3 = new PdfPTable(2);
-					table3.setWidthPercentage(100);
+					table3.setWidthPercentage(67);
 					table3.setWidths(new float[] { 40f, 60f });
 					addCompactRow(table3, "Inspected By", "");
 					addCompactRow(table3, "Bundle/Packet Id", ""+response.getInstructionId());
 					document.add(table3);
 				}
-
 				document.close();
 			}
 		} catch (Exception ex) {
