@@ -1,9 +1,5 @@
 package com.steel.product.jswone.service;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -18,7 +14,6 @@ import javax.transaction.Transactional;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -27,13 +22,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.thymeleaf.context.Context;
-import org.thymeleaf.spring5.SpringTemplateEngine;
-import org.xhtmlrenderer.pdf.ITextRenderer;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lowagie.text.DocumentException;
 import com.steel.product.application.dao.InstructionRepository;
 import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.dto.inward.SearchListPageRequest;
@@ -93,9 +84,6 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 
 	@Autowired
 	private JswoneAuditTrailRepository jswoneAuditTrailRepository;
-
-	@Autowired
-	private SpringTemplateEngine templateEngine;
 
 	@Autowired
 	private MaterialMasterJswRepository materialMasterJswRepository;
@@ -245,14 +233,11 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 		String message = "Consolidate planner created successfully..!";
 		try {
 
-			Integer soId = 0;
 			for (SalesOrderChildRequest request : salesOrderPacketsListNew) {
 				BigDecimal balanceQtyRequired = new BigDecimal("0.00");
 				BigDecimal totalAllocatedQty = new BigDecimal("0.00");
-				soId = request.getSoId();
+			 
 				SalesOrderPacketsJswEntity childEntity = childRepository.findBySoChildId(request.getSoChildId());
-				// BigDecimal allocatedQty = (childEntity.getAllocatedSoqty() == null?
-				// BigDecimal.ZERO : childEntity.getAllocatedSoqty());
 
 				BigDecimal allocatedQty = Optional
 						.ofNullable(soAllocationRepository.getTotalAllocatedQtyBySoChildId(request.getSoChildId()))
@@ -925,26 +910,6 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 		return responseEntity;
 	}
 
-	private String loadAndFillSOTemplate(Context context) {
-		return templateEngine.process("sonew_view", context);
-	}
-
-	private File renderPdfInstruction(String html, String filename, String id, String processType)
-			throws IOException, DocumentException {
-		File file = File.createTempFile("aspen-steel-" + filename, ".pdf");
-		File labelFile = File.createTempFile("so_details_" + id, ".pdf");
-		OutputStream outputStream = new FileOutputStream(file);
-		ITextRenderer renderer = new ITextRenderer(20f * 4f / 3f, 20);
-		renderer.setDocumentFromString(html, new ClassPathResource("/").getURL().toExternalForm());
-		renderer.layout();
-		renderer.createPDF(outputStream);
-
-		outputStream.close();
-		file.deleteOnExit();
-		labelFile.deleteOnExit();
-		return file;
-	}
-
 	@Override
 	public List<CoilAllocationDTO> coilAllocationDetails(SalesOrderChildRequest request) {
 		List<Object[]> packetsList = salesOrderRepository.coilAllocationDetails(request.getInwardEntryId());
@@ -964,7 +929,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			// dto.setBranchId(result[1] != null ? (String) result[1] : null);
 			// dto.setBranchName(result[23] != null ? (String) result[23] : null);
 
-			Integer soChildId = result[6] != null ? (Integer) result[6] : null;
+			//Integer soChildId = result[6] != null ? (Integer) result[6] : null;
 			// dto.setSoChildId(soChildId);
 			dto.setMmId((String) result[8]);
 			dto.setItemQty((BigDecimal) result[10]);
@@ -994,13 +959,15 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 		}
 		return dtoList;
 	}
-
+	
+	
 	@Override
-	public void updateCPStatus(int soId) {
+	@Transactional
+	public void updateCPStatus(int soIdValue) {
 		try {
-
+			 
 			Map<Integer, List<String>> soChildStatusMap = new HashMap<>();
-			List<Object[]> list = salesOrderRepository.getAllSODetailsWithAllocationStatus();
+			List<Object[]> list = salesOrderRepository.getAllSODetailsWithAllocationStatusforCPStatus();
 			for (Object[] result : list) {				
 				Object value = result[1];
 				Integer soChildId = null;
@@ -1070,14 +1037,14 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				childRepository.updateItemCPStataus("Allocated - " + status, soChildId);
 			}
 
-			List<SalesOrderPacketsJswEntity> allocations = childRepository.findBySoId_SoId(soId);
+			List<SalesOrderPacketsJswEntity> allocations = childRepository.findBySoId_SoId(soIdValue);
 
 			boolean allAllocated = allocations.stream().allMatch(a -> a.getSoqty() != null && a.getAllocatedSoqty() != null && a.getAllocatedSoqty().compareTo(a.getSoqty()) >= 0);
 			if (allAllocated) {
 				if (allAllocated) {
-					salesOrderRepository.updateCPStataus(StatusType.CP_PLAN_ISSUED.toString(), soId);
+					salesOrderRepository.updateCPStataus(StatusType.CP_PLAN_ISSUED.toString(), soIdValue);
 				} else {
-					salesOrderRepository.updateCPStataus(StatusType.CP_PLAN_DRAFT.toString(), soId);
+					salesOrderRepository.updateCPStataus(StatusType.CP_PLAN_DRAFT.toString(), soIdValue);
 				}
 			}
 
@@ -1104,7 +1071,8 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				}
 			}
 			
-			Map<Integer, String> finalCPStatusMap = new HashMap<>();
+			Map<Integer, String> finalSOStatusMap = new HashMap<>();
+
 			for (Map.Entry<Integer, List<String>> entry : soStatusMap.entrySet()) {
 
 				List<String> statuses = entry.getValue();
@@ -1137,46 +1105,175 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 					}
 				}
 
-				String finalCPStatus = StatusType.CP_PLAN_DRAFT.toString();
-				String finalSOStatus = "SO_APPROVED";
+				String finalStatus = StatusType.CP_PLAN_DRAFT.toString();
 				if (allocated || allocatedPartially) {
-					finalCPStatus = StatusType.CP_PLAN_ISSUED.toString();
-					finalSOStatus = "SO_APPROVED";
+					finalStatus = StatusType.CP_PLAN_ISSUED.toString();
 				} else if (allocatedReceived) {
-					finalCPStatus = StatusType.CP_PLAN_INPROGRESS.toString();
-					finalSOStatus = "PENDING_ALLOCATION";
+					finalStatus = StatusType.CP_PLAN_INPROGRESS.toString();
 				} else if (allocatedInProgress) {
-					finalCPStatus = StatusType.CP_PLAN_INPROGRESS.toString();
-					finalSOStatus = "PENDING_ALLOCATION";
+					finalStatus = StatusType.CP_PLAN_INPROGRESS.toString();
 				} else if (allocatedReadyToDeliver) {
-					finalCPStatus = StatusType.CP_PLAN_INPROGRESS.toString();
-					finalSOStatus = "ALLOCATED_FULLY";
+					finalStatus = StatusType.CP_PLAN_INPROGRESS.toString();
 				} else if (allocatedDispatched) {
-					finalCPStatus = StatusType.CP_PLAN_COMPLETED.toString();
-					finalSOStatus = "SO_APPROVED";
+					finalStatus = StatusType.CP_PLAN_COMPLETED.toString();
 				} else {
-					finalCPStatus = StatusType.CP_PLAN_DRAFT.toString();
-					finalSOStatus = "SO_APPROVED";
+					finalStatus = StatusType.CP_PLAN_DRAFT.toString();
 				}
-				finalCPStatusMap.put(entry.getKey(), finalCPStatus+","+finalSOStatus);
+				finalSOStatusMap.put(entry.getKey(), finalStatus);
 			}
 
-			for (Map.Entry<Integer, String> entry : finalCPStatusMap.entrySet()) {
-				String status = entry.getValue();
+			for (Map.Entry<Integer, String> entry : finalSOStatusMap.entrySet()) {
+				String finalCPStatus = entry.getValue(); 
 				int soId11 = entry.getKey();
-
-				String[] arr = status.split(",");
-				String finalCPStatus = arr[0];
-				String finalSOStatus = arr[1];
-
-				System.out.println("SoId == " + soId11 + ", finalCPStatus== " + finalCPStatus+", finalSOStatus== " + finalSOStatus);
-				salesOrderRepository.updateCPAndSOStataus(finalCPStatus, finalSOStatus, soId11);
+				System.out.println("SoId == "+soId11+", finalCPStatus== "+finalCPStatus);
+				salesOrderRepository.updateCPStataus(finalCPStatus, soId11);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
+	
+	@Override
+	@Transactional
+	public void updateSOStatus(int soIdValue) {
+		try {
 
+			List<Object[]> rows = salesOrderRepository.getAllSODetailsWithAllocationStatusforSOStatus();
+
+			Map<Integer, List<String>> soStatusMap = buildSoStatusMap(rows);
+
+			Map<Integer, String> finalSOStatusMap = resolveFinalSoStatus(soStatusMap);
+
+			for (Map.Entry<Integer, String> entry : finalSOStatusMap.entrySet()) {
+				Integer soId = entry.getKey();
+				String status = entry.getValue();
+				System.out.println("SOStataus == " + status + ", soId == " + soId);
+				salesOrderRepository.updateSOStataus(status, soId);
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	private Map<Integer, List<String>> buildSoStatusMap(List<Object[]> rows) {
+
+	    Map<Integer, List<String>> map = new HashMap<>();
+
+	    for (Object[] result : rows) {
+
+	        Integer soId = parseInt(result[0]);
+	        Integer soChildId = parseInt(result[1]);
+
+	        if (soId == null || soChildId == null) {
+	            continue;
+	        }
+
+	        String inwardStatus = safeString(result[4]);
+	        String packetStatus = safeString(result[5]);
+
+	        int instructionsId = parseIntValue(result[7]);
+	        int formId = parseIntValue(result[8]);
+
+	        String status;
+
+	        if (instructionsId > 0) {
+	            status = packetStatus;
+	        } else {
+	            status = (formId != 21) ? "RM" : inwardStatus;
+	        }
+			System.out.println("status == " + status + ", soId == " + soId+", soChildId == "+soChildId);
+
+	        map.computeIfAbsent(soId, k -> new ArrayList<>())
+	                .add(status);
+	    }
+
+	    return map;
+	}
+	
+	private Integer parseInt(Object obj) {
+	    if (obj == null) return null;
+
+	    if (obj instanceof Number) {
+	        return ((Number) obj).intValue();
+	    }
+
+	    return Integer.parseInt(obj.toString());
+	}
+
+	private int parseIntValue(Object obj) {
+	    Integer val = parseInt(obj);
+	    return val != null ? val : 0;
+	}
+
+	private String safeString(Object obj) {
+	    return obj != null ? obj.toString() : null;
+	}
+	private Map<Integer, String> resolveFinalSoStatus(Map<Integer, List<String>> soStatusMap) {
+
+	    Map<Integer, String> result = new HashMap<>();
+
+	    for (Map.Entry<Integer, List<String>> entry : soStatusMap.entrySet()) {
+
+	        Integer soId = entry.getKey();
+	        List<String> statuses = entry.getValue();
+
+	        int minRank = statuses.stream()
+	                .mapToInt(this::getStatusRank)
+	                .min()
+	                .orElse(0);
+
+	        String finalStatus = getStatusFromRank(minRank);
+
+	        result.put(soId, finalStatus);
+
+	        System.out.println("SO ID = " + soId + " FINAL STATUS = " + finalStatus);
+	    }
+
+	    return result;
+	}
+	private int getStatusRank(String status) {
+
+	    if (status == null) return 0;
+
+	    switch (status.toUpperCase()) {
+
+	        case "DISPATCHED":
+	            return 5;
+
+	        case "READY TO DELIVER":
+	            return 4;
+
+	        case "IN PROGRESS":
+	            return 3;
+
+	        case "RECEIVED":
+	            return 2;
+
+	        case "RM":
+	        case "PENDING_PLAN":
+	            return 1;
+
+	        default:
+	            return 0; // SO_CREATED
+	    }
+	}
+
+	private String getStatusFromRank(int rank) {
+		switch (rank) {
+		case 5:
+			return "FULFILLED";
+		case 4:
+			return "PENDING_DELIVERY";
+		case 3:
+			return "PENDING_ALLOCATION";
+		case 2:
+			return "PENDING_ALLOCATION";
+		case 1:
+			return "PENDING_PLAN";
+		default:
+			return "SO_CREATED";
+		}
+	}
 	@Override
 	public List<Object[]> dashboard(SearchListPageRequest req) {
 		List<Object[]> packetsList = salesOrderRepository.dashboard();

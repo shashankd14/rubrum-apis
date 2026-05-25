@@ -314,8 +314,8 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 
 	@Modifying
 	@Transactional
-	@Query(value = "update jsw_sales_order set so_status = :soStatus, cp_status= :cpStatus where so_id =:soId", nativeQuery = true)
-	public int updateCPAndSOStataus(@Param("cpStatus") String cpStatus, @Param("soStatus") String soStatus, @Param("soId") int soId);
+	@Query(value = "update jsw_sales_order set so_status = :soStatus where so_id =:soId", nativeQuery = true)
+	public int updateSOStataus( @Param("soStatus") String soStatus, @Param("soId") int soId);
 
 	@Query(value = "SELECT alloca.so_id, CAST(alloca.so_child_id AS SIGNED) AS so_child_id, so_allocation_id, so.cp_status, "
 			+ " inward_stts.statusname AS inward_stts, packet_stts.statusname AS packet_stts, "
@@ -327,15 +327,31 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " LEFT JOIN product_instruction ins ON ins.instructionid = alloca.instruction_id"
 			+ " LEFT JOIN product_status inward_stts ON inward_stts.statusid = inward.vstatus"
 			+ " LEFT JOIN product_status packet_stts ON packet_stts.statusid = ins.status"
-			+ " WHERE so_child.allocated_stts='COMPLETED' and so.cp_status not in ('CP_PAN_COMPLETED') "
+			+ " WHERE so_child.allocated_stts='COMPLETED' and so.cp_status not in ('CP_PLAN_COMPLETED')  and refno='dhruvitest007'"
 			+ " order by alloca.so_id desc ", nativeQuery = true)
-	List<Object[]> getAllSODetailsWithAllocationStatus();
+	List<Object[]> getAllSODetailsWithAllocationStatusforCPStatus();
+	
+	@Query(value = "SELECT alloca.so_id, CAST(alloca.so_child_id AS SIGNED) AS so_child_id, so_allocation_id, so.cp_status, "
+			+ " inward_stts.statusname AS inward_stts, packet_stts.statusname AS packet_stts, "
+			+ " alloca.inward_entry_id, alloca.instruction_id, "
+			+ " (select form_id from jsw_material_master wm where wm.mm_id=inward.mm_id) as form_id "
+			+ " FROM jsw_sales_order so"
+			+ " JOIN jsw_sales_order_child so_child ON so_child.so_id = so.so_id  AND so_child.is_deleted = 0 "
+			+ " JOIN jsw_sales_order_allocation alloca ON so_child.so_child_id = alloca.so_child_id AND so.so_id = alloca.so_id"
+			+ " JOIN product_tblinwardentry inward ON inward.inwardentryid = alloca.inward_entry_id"
+			+ " LEFT JOIN product_instruction ins ON ins.instructionid = alloca.instruction_id"
+			+ " LEFT JOIN product_status inward_stts ON inward_stts.statusid = inward.vstatus"
+			+ " LEFT JOIN product_status packet_stts ON packet_stts.statusid = ins.status"
+			+ " WHERE so.so_status not in ('FULFILLED') "
+			+ " order by alloca.so_id desc ", 
+		nativeQuery = true)
+	List<Object[]> getAllSODetailsWithAllocationStatusforSOStatus();
 
 	@Query(value = "SELECT so_child.so_id, CAST(so_child.so_child_id AS SIGNED) AS so_child_id,"
 			+ " so.cp_status, so_child.item_so_status, so.so_status"
 			+ " FROM jsw_sales_order so"
 			+ " JOIN jsw_sales_order_child so_child ON so_child.so_id = so.so_id  AND so_child.is_deleted = 0 "
-			+ " WHERE so.cp_status not in ('CP_PAN_COMPLETED') order by so_child.so_id desc", nativeQuery = true)
+			+ " WHERE so.cp_status not in ('CP_PLAN_COMPLETED') order by so_child.so_id desc", nativeQuery = true)
 	List<Object[]> getAllSODetailsWithPacketStatus();
 
 	@Query(value = "SELECT \r\n" + 

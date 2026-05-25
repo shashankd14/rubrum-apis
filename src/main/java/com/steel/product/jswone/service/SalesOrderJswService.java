@@ -49,4 +49,6 @@ public interface SalesOrderJswService {
 	List<Object[]> dashboard(SearchListPageRequest req);
 
 	SalesOrderSheetResponse fetchMappedSheetSONo(int inwardId);
+
+	void updateSOStatus(int soIdValue);
 }

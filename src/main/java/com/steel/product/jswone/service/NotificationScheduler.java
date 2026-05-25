@@ -25,8 +25,10 @@ public class NotificationScheduler {
 	@Scheduled(cron = "${email.soUpdateStatusTime}")
 	public void soUpdateStatusTime() throws InterruptedException {
 
+		log.info("in UpdateStatusTime ");
 		if (soUpdateStatusFlag) {
 			salesOrderJswService.updateCPStatus(1);
+			salesOrderJswService.updateSOStatus(1);
 		}
 	}
 
