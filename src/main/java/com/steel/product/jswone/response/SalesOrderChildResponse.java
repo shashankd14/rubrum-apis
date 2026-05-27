@@ -37,6 +37,8 @@ public class SalesOrderChildResponse {
 
 	private String ware_house_name;
 
+	private String numberOfSheets;
+
 	private List<SalesOrderChildAllocationResponse> allocationDetails = new ArrayList<>();
 
 }

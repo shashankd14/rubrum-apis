@@ -480,6 +480,8 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			so.setSocreatedate(convertToDate(d.getDate()));
 			so.setRefno(d.getReference_number());
 			so.setCustomerid(d.getCustomer_id());
+			so.setCustomer_name(d.getCustomer_name());
+			so.setCustomer_number(d.getCustomer_number());
 			so.setDeliverymethod(d.getDelivery_method());
 			so.setTerms(req.getPayment_terms_label());
 			so.setPaymentmode(String.valueOf(req.getPayment_terms()));
@@ -507,6 +509,13 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				so.setStandardMaterialDate(cal.getTime());
 			}
 
+			so.setSpecial_delivery_instructions(c.getCf_special_delivery_instructions());
+			if (c.getCf_order_confirmation_time() != null
+					&& c.getCf_order_confirmation_time().length() > 0) {
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+				so.setOrder_confirmation_time(sdf.parse(c.getCf_order_confirmation_time()));
+			}
+
 			// ----------------------- LINE ITEMS (CHILD UPSERT) -----------------------
 			for (SalesOrderLineItem li : req.getLine_items()) {
 
@@ -525,7 +534,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				item.setUpdatedBy(commonUtil.getUserId());
 				item.setCreatedOn(new Date());
 				item.setUpdatedOn(new Date());
-
+				item.setNumber_of_sheets(li.getNumber_of_sheets());
 				if (li.getWarehouse_id() != null) {
 					item.setWearhouseId(li.getWarehouse_id());
 				}

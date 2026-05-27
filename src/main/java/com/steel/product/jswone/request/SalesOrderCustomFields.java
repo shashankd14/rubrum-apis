@@ -22,5 +22,9 @@ public class SalesOrderCustomFields {
     private String cf_freight_value;
 
     private String cf_expected_delivery_date;
+
+    private String cf_special_delivery_instructions;
+
+    private String cf_order_confirmation_time;
 }
 

@@ -83,4 +83,6 @@ public class SalesOrderPacketsJswEntity {
 	@Column(name = "hsn_or_sac")
 	private String hsn_or_sac;
 
+	@Column(name = "number_of_sheets")
+	private String number_of_sheets;
 }
