@@ -21,6 +21,8 @@ public class SalesOrderDetails {
 
     private String customer_name;
 
+    private String customer_number;
+
     private String gst_no;
 
     private String place_of_supply;

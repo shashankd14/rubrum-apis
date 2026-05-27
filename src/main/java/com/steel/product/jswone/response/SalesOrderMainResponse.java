@@ -45,6 +45,10 @@ public class SalesOrderMainResponse {
 
 	private String customerCode;
 
+	private String customer_name;
+
+	private String customer_number;
+
 	private BigDecimal totalSoqty;
 
 	private BigDecimal totalAllocatedSoqty;
@@ -70,6 +74,10 @@ public class SalesOrderMainResponse {
 	private String remarks;
 
 	private String cam_code;
+
+	private String order_confirmation_time;
+
+	private String special_delivery_instructions;
 
 	private List<SalesOrderChildResponse> itemslist = new ArrayList<>();
 

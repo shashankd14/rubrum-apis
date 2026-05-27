@@ -42,4 +42,6 @@ public class SalesOrderLineItem {
     private String cf_form;
 
     private String cf_child_sku;
+
+    private String number_of_sheets;
 }

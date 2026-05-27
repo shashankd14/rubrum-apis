@@ -202,6 +202,17 @@ public class SalesOrderJswController {
 			resp.setBranch(result[36] != null ? (String) result[36] : null);
 			resp.setCam_code(result[37] != null ? (String) result[37] : null);
 			resp.setRemarks(result[38] != null ? (String) result[38] : null);
+			resp.setCustomer_name(result[39] != null ? (String) result[39] : null);
+			resp.setCustomer_number(result[40] != null ? (String) result[40] : null);
+			child.setNumberOfSheets(result[41] != null ? (String) result[41] : null);
+			resp.setSpecial_delivery_instructions(result[42] != null ? (String) result[42] : null);
+			if (result[43] != null) {
+				SimpleDateFormat sdfDateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+				resp.setOrder_confirmation_time(sdfDateTime.format((Timestamp) result[43]));
+			} else {
+				resp.setOrder_confirmation_time(null);
+			}
+
 			resp.getItemslist().add(child);
 
 			if (soMap != null && soMap.get(resp.getSoId()) != null) {

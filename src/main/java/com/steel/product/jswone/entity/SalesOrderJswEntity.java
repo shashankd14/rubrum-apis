@@ -60,6 +60,12 @@ public class SalesOrderJswEntity {
 	@Column(name = "customerid")
 	private String customerid;
 
+	@Column(name = "customer_number")
+	private String customer_number;
+
+	@Column(name = "customer_name")
+	private String customer_name;
+
 	@Column(name = "total_soqty")
 	private BigDecimal totalSoqty;
 
@@ -125,6 +131,12 @@ public class SalesOrderJswEntity {
 
 	@Column(name = "is_deleted", columnDefinition = "BIT")
 	private Boolean isDeleted;
+
+	@Column (name = "special_delivery_instructions")
+	private String special_delivery_instructions;
+
+	@Column (name = "order_confirmation_time")
+	private Date order_confirmation_time;
 
 	@OneToMany(mappedBy = "soId", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<SalesOrderPacketsJswEntity> itemslist;
