@@ -550,9 +550,8 @@ public class LabelPrintPDFGenerator {
 
 		try {
 			StringBuilder text = new StringBuilder();
-			text.append("Commodity : " + resp.getSubcategoryName() +" - "+ resp.getLeafcategoryName()+" - "+"Sheet");
+			text.append("Product : " +"One Helix "+ resp.getMmdesc());
 			text.append("\nGrade/Specification : " + resp.getSubgradeName());
-			text.append("\nBrand : " + "One Helix");
 			text.append("\nCoil/Pack No : " + resp.getCustomerBatchNo());
 			text.append("\nBatch No : " + resp.getCoilNo());
 			text.append("\nSize : " + resp.getFthickness() + " * " + resp.getActualwidth() + " * " + resp.getActuallength() +" (mm)");
@@ -617,7 +616,7 @@ public class LabelPrintPDFGenerator {
 			resp.setCompanyName(result[21] != null ? (String) result[21] : "");
 			resp.setCompanyEmail(result[22] != null ? (String) result[22] : "");
 			resp.setSubcategoryName( result[23] != null ? (String) result[23] : "");
-			resp.setLeafcategoryName(result[24] != null ? (String) result[24] : "");
+			resp.setMmdesc( result[24] != null ? (String) result[24] : "");
 			resp.setSubgradeName( result[25] != null ? (String) result[25] : "");
 			qirList.add(resp);
 		}
@@ -654,8 +653,6 @@ public class LabelPrintPDFGenerator {
 				 */
 				Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
 
-				Font valueFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
-
 				for (QRCodeResponse response : respList) {
 
 					document.newPage();
@@ -669,7 +666,11 @@ public class LabelPrintPDFGenerator {
 
 					Image qrImage = Image.getInstance(getQRCodePlanFG(response));
 
-					qrImage.scaleAbsolute(65, 65);
+					// 28mm × 29mm
+					float qrWidth = 28f * 2.83465f;
+					float qrHeight = 29f * 2.83465f;
+
+					qrImage.scaleAbsolute(qrWidth, qrHeight);
 
 					PdfPCell imgCell = new PdfPCell(qrImage);
 					imgCell.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -692,13 +693,11 @@ public class LabelPrintPDFGenerator {
 					/*
 					 * ===================== TABLE 1 =====================================
 					 */
-
 					PdfPTable table1 = new PdfPTable(2);
-					table1.setWidthPercentage(67);
+					table1.setWidthPercentage(80);
 					table1.setWidths(new float[] { 40f, 60f });
-					addCompactRow(table1, "Commodity", response.getSubcategoryName() +" - "+ response.getLeafcategoryName()+" - "+"Sheet");
+					addCompactRow(table1, "Product", "One Helix " + response.getMmdesc());
 					addCompactRow(table1, "Grade/Specification", response.getSubgradeName());
-					addCompactRow(table1, "Brand", "One Helix");
 					addCompactRow(table1, "Coil/Pack No", ""+response.getCustomerBatchNo() );
 					addCompactRow(table1, "Batch No", response.getCoilNo());
 					table1.setSpacingAfter(6f);
@@ -709,7 +708,7 @@ public class LabelPrintPDFGenerator {
 					 */
 
 					PdfPTable table2 = new PdfPTable(2);
-					table2.setWidthPercentage(67);
+					table2.setWidthPercentage(80);
 					table2.setWidths(new float[] { 40f, 60f });
 					addCompactRow(table2, "Size", response.getFthickness() + " * " + response.getActualwidth() + " * " + response.getActuallength() +" (mm)");
 					addCompactRow(table2, "No. of Sheets", String.valueOf(response.getPlannedNoOfPieces()));
@@ -720,7 +719,7 @@ public class LabelPrintPDFGenerator {
 					 */
 
 					PdfPTable table3 = new PdfPTable(2);
-					table3.setWidthPercentage(67);
+					table3.setWidthPercentage(80);
 					table3.setWidths(new float[] { 40f, 60f });
 					addCompactRow(table3, "Inspected By", "");
 					addCompactRow(table3, "Bundle/Packet Id", ""+response.getInstructionId());
@@ -742,23 +741,24 @@ public class LabelPrintPDFGenerator {
 
 	private static void addCompactRow(PdfPTable table, String label, String value) {
 
-		Font labelFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
+	    Font labelFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
+	    Font valueFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
 
-		Font valueFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+	    PdfPCell left = new PdfPCell(new Phrase(label, labelFont));
+	    left.setPadding(3f);
+	    left.setVerticalAlignment(Element.ALIGN_MIDDLE);
+	    left.setNoWrap(false);
 
-		PdfPCell left = new PdfPCell(new Phrase(label, labelFont));
+	    PdfPCell right = new PdfPCell(new Phrase(value == null ? "" : value, valueFont));
+	    right.setPadding(3f);
+	    right.setVerticalAlignment(Element.ALIGN_MIDDLE);
+	    right.setNoWrap(false);
 
-		left.setFixedHeight(16f);
-		left.setPadding(3f);
-		left.setVerticalAlignment(Element.ALIGN_MIDDLE);
+	    // IMPORTANT for wrapping
+	    right.setUseAscender(true);
+	    right.setUseDescender(true);
 
-		PdfPCell right = new PdfPCell(new Phrase(value == null ? "" : value, valueFont));
-
-		right.setFixedHeight(16f);
-		right.setPadding(3f);
-		right.setVerticalAlignment(Element.ALIGN_MIDDLE);
-
-		table.addCell(left);
-		table.addCell(right);
+	    table.addCell(left);
+	    table.addCell(right);
 	}
 }

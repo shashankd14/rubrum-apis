@@ -25,7 +25,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " and (case when :warehouseFlag=true then so_child.wearhouse_id in :warehouseList else 1=1 end ) "
 			+ " and case when :soId is not null and LENGTH(:soId) >0 then so.so_id = :soId else so.so_id end " 
 		  	+ " and case when :status is not null and LENGTH(:status) > 0 then so.so_status = :status else so.so_status  = so.so_status end "  
-			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (so_child.mm_id like %:searchText% or so.so_number like %:searchText% or so.refno like %:searchText%) else 1=1 end " 
+			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (so_child.material_name like %:searchText% or so_child.mm_id like %:searchText% or so.so_number like %:searchText% or so.refno like %:searchText%) else 1=1 end " 
 			+ " order by so.so_id desc",
 		countQuery = "SELECT count(distinct so.so_id ) " + 
 			"  FROM jsw_sales_order so, jsw_sales_order_child so_child" + 
@@ -33,7 +33,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			"  and (case when :warehouseFlag=true then so_child.wearhouse_id in :warehouseList else 1=1 end ) "+ 
 		  	"  and case when :soId is not null and LENGTH(:soId) >0 then so.so_id = :soId else so.so_id end " +
 		  	"  and case when :status is not null and LENGTH(:status) > 0 then so.so_status in :status else 1=1 end " + 
-		  	"  and case when :searchText is not null and LENGTH(:searchText) >0 then (so_child.mm_id like %:searchText% or so.so_number like %:searchText%) else 1=1 end " +
+			"  and case when :searchText is not null and LENGTH(:searchText) >0 then (so_child.material_name like %:searchText% or so_child.mm_id like %:searchText% or so.so_number like %:searchText% or so.refno like %:searchText%) else 1=1 end " +
 		  	"  order by so.so_id desc", 
 		nativeQuery = true)
 	Page<Object[]> listAllSOIDs(@Param("searchText") String searchText, @Param("soId") Integer soId,
@@ -59,6 +59,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 	@Query(value = "SELECT distinct so.so_id, so.so_number "
 			+ " FROM jsw_sales_order so, jsw_sales_order_child so_child "
 			+ " where so_child.is_deleted = 0 and so_child.so_id = so.so_id"
+			+ " and so_status in ('SO_APPROVED','PENDING_PLAN','PENDING_ALLOCATION','PENDING_DELIVERY','FULFILLED') "
 			+ " and (case when :warehouseFlag=true then so_child.wearhouse_id in :warehouseList else 1=1 end ) "
 			+ " and so.is_deleted = 0 "
 			+ " and case when :soId is not null and LENGTH(:soId) >0 then so.so_id = :soId else so.so_id end " 
@@ -66,13 +67,15 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " order by so.so_id desc",
 		countQuery = "SELECT count(distinct so.so_id ) " + 
 			" FROM jsw_sales_order so, jsw_sales_order_child so_child "+ 
-			" where so_child.is_deleted = 0 and so_child.so_id = so.so_id"+ 
+			" where so_child.is_deleted = 0 and so_child.so_id = so.so_id "+
+			" and so_status in ('SO_APPROVED','PENDING_PLAN','PENDING_ALLOCATION','PENDING_DELIVERY','FULFILLED') "+ 
 			" and (case when :warehouseFlag=true then so_child.wearhouse_id in :warehouseList else 1=1 end ) "+ 
 			" and so.is_deleted = 0 "+ 
 		  	" and case when :soId is not null and LENGTH(:soId) >0 then so.so_id = :soId else so.so_id end " +
 		  	" and case when :searchText is not null and LENGTH(:searchText) >0 then (so_child.mm_id like %:searchText% or so_child.wearhouse_id like %:searchText% or so.branch_id like %:searchText% or so.so_number like %:searchText%) else 1=1 end " +
 		  	" order by so.so_id desc", 
 			nativeQuery = true)
+	
 	Page<Object[]> listAllSOIDsCP(
 			@Param("searchText") String searchText, 
 			@Param("soId") Integer soId,
@@ -100,7 +103,8 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " left outer JOIN jsw_sales_order_allocation alloca ON so_child.so_child_id = alloca.so_child_id"
 			+ " LEFT OUTER JOIN jsw_material_master mm ON mm.mm_id = so_child.mm_id"
 			+ " left OUTER join jsw_warehouse_master wm on wm.ware_house_id = so_child.wearhouse_id "
-			+ " where (case when :warehouseFlag=true then so_child.wearhouse_id in :warehouseList else 1=1 end ) and so.is_deleted = 0 and so.so_id in :soIDsList order by so.so_id desc", 
+			+ " where so_status in ('SO_APPROVED','PENDING_PLAN','PENDING_ALLOCATION','PENDING_DELIVERY','FULFILLED') and "
+			+ "  (case when :warehouseFlag=true then so_child.wearhouse_id in :warehouseList else 1=1 end ) and so.is_deleted = 0 and so.so_id in :soIDsList order by so.so_id desc", 
 			nativeQuery = true)
 	List<Object[]> listIdWisedetailsCP(@Param("soIDsList") List<Integer> soIDsList,
 			@Param("warehouseFlag") boolean warehouseFlag,

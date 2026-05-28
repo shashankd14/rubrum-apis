@@ -29,7 +29,8 @@ public interface PartDetailsRepository extends JpaRepository<PartDetails, Long> 
 			+ "	actuallength, actualweight, enduser_tag_name, plannednoofpieces, parentcoilnumber, is_slit_and_cut, "
 			+ "	processid, batchnumber, finishdate, "
 			+ "	(select company_name from product_company_details where id=1) compname , "
-			+ "	(select email from product_company_details where id=1) email "
+			+ "	(select email from product_company_details where id=1) email, "
+			+ "	subcategory_name, mm_description, subgrade_name "
 			+ " FROM label_print_vw where stts=:stts and part_details_id=:planId ", nativeQuery = true)
 	List<Object[]> wipLabelData(@Param("stts") Integer stts, @Param("planId") String planId);
 
@@ -39,7 +40,7 @@ public interface PartDetailsRepository extends JpaRepository<PartDetails, Long> 
 			+ "	processid, batchnumber,finishdate, "
 			+ "	(select company_name from product_company_details where id=1) compname, "
 			+ "	(select email from product_company_details where id=1) email,  "
-			+ "	subcategory_name, leafcategory_name, subgrade_name "
+			+ "	subcategory_name, mm_description, subgrade_name "
 			+ " FROM label_print_vw where CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END and stts=:stts and part_details_id=:planId ", nativeQuery = true)
 	List<Object[]> fgLabelData(@Param("stts") Integer stts, @Param("planId") String planId);
 
