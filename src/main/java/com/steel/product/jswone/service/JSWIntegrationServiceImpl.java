@@ -1128,12 +1128,17 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			req.setWarehouseId(result[5] != null ? result[5].toString() : null);
 			req.setBranchID(result[6] != null ? result[6].toString() : null);
 			BigDecimal totalPTWeight = (result[7] == null ? BigDecimal.ZERO : new BigDecimal(String.valueOf(result[7])));
+			String fileName = (result[9] != null ? result[9].toString() : null);
 
 			req.setReason("Stock conversion");
 			req.setAdjustmentType("quantity");
 			req.setAccount("Cost of goods sold");
 			req.setShipmentReferenceNo("NA");
 			req.setMotorVehicleNumber("NA");
+
+			req.setFileName(fileName);
+			req.setPdf(awsS3Service.downloadPdfAsBase64(fileName));
+			req.setDcNumber(""+dcId);
 
 			ToSku toSku = new ToSku();
 			toSku.setSkuId(mmid);

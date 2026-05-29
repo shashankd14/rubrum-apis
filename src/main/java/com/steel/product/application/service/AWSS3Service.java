@@ -26,4 +26,7 @@ public interface AWSS3Service {
 	String generatePresignedUrlForTrading(String fileName);
 
 	String downloadS3toLocalFile(String s3Key, String localPath);
+	
+    String downloadPdfAsBase64(String fileName) ;
+
 }

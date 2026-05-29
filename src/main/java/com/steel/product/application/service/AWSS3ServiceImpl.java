@@ -1,11 +1,13 @@
 package com.steel.product.application.service;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.Base64;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
@@ -126,6 +128,7 @@ public class AWSS3ServiceImpl implements AWSS3Service {
                 .build();
         return presigner.presignGetObject(presignRequest).url().toString();
     }
+    
     public String persistFiles(String applicationJarPath, String stageName, String templateName, MultipartFile file) throws IOException {
         String path = applicationJarPath + File.separator + stageName + File.separator + templateName;
         String modifiedFileName = templateName + "_" + stageName + "_" + file.getOriginalFilename().replaceAll("[^a-zA-Z0-9\\.\\-]", "_");
@@ -246,6 +249,31 @@ public class AWSS3ServiceImpl implements AWSS3Service {
             return localPath;
 		}
         return localPath;
+    }
+    public String downloadPdfAsBase64(String fileName) {
+        try {
+            GetObjectRequest getRequest = GetObjectRequest.builder()
+                    .bucket(bucketPDFs)
+                    .key(fileName)
+                    .build();
+
+            try (InputStream inputStream = s3Client().getObject(getRequest);
+                 ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
+
+                byte[] data = new byte[8192];
+                int bytesRead;
+
+                while ((bytesRead = inputStream.read(data)) != -1) {
+                    buffer.write(data, 0, bytesRead);
+                }
+
+                return Base64.getEncoder().encodeToString(buffer.toByteArray());
+            }
+
+        } catch (Exception e) {
+            log.info("Error downloading PDF from S3 and converting to Base64. File: {}", fileName, e.getMessage());
+            return null;
+        }
     }
     
 	public static void mainaa(String[] args) {

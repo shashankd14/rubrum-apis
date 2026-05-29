@@ -61,7 +61,7 @@ public class QRCodeResponse {
 
 	private String subcategoryName;
 
-	private String mmdesc;
+	private String leafcategoryName;
 
 	private String subgradeName; 
 }

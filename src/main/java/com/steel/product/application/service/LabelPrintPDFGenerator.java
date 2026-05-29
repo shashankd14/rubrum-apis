@@ -550,7 +550,7 @@ public class LabelPrintPDFGenerator {
 
 		try {
 			StringBuilder text = new StringBuilder();
-			text.append("Product : " +"One Helix "+ resp.getMmdesc());
+			text.append("Product : " + resp.getSubcategoryName() +" - "+ resp.getLeafcategoryName()+" - "+"Sheet");
 			text.append("\nGrade/Specification : " + resp.getSubgradeName());
 			text.append("\nCoil/Pack No : " + resp.getCustomerBatchNo());
 			text.append("\nBatch No : " + resp.getCoilNo());
@@ -616,7 +616,7 @@ public class LabelPrintPDFGenerator {
 			resp.setCompanyName(result[21] != null ? (String) result[21] : "");
 			resp.setCompanyEmail(result[22] != null ? (String) result[22] : "");
 			resp.setSubcategoryName( result[23] != null ? (String) result[23] : "");
-			resp.setMmdesc( result[24] != null ? (String) result[24] : "");
+			resp.setLeafcategoryName(result[24] != null ? (String) result[24] : "");
 			resp.setSubgradeName( result[25] != null ? (String) result[25] : "");
 			qirList.add(resp);
 		}
@@ -694,9 +694,9 @@ public class LabelPrintPDFGenerator {
 					 * ===================== TABLE 1 =====================================
 					 */
 					PdfPTable table1 = new PdfPTable(2);
-					table1.setWidthPercentage(80);
+					table1.setWidthPercentage(70);
 					table1.setWidths(new float[] { 40f, 60f });
-					addCompactRow(table1, "Product", "One Helix " + response.getMmdesc());
+					addCompactRow(table1, "Product", response.getSubcategoryName() +" - "+ response.getLeafcategoryName()+" - "+"Sheet");
 					addCompactRow(table1, "Grade/Specification", response.getSubgradeName());
 					addCompactRow(table1, "Coil/Pack No", ""+response.getCustomerBatchNo() );
 					addCompactRow(table1, "Batch No", response.getCoilNo());
@@ -708,7 +708,7 @@ public class LabelPrintPDFGenerator {
 					 */
 
 					PdfPTable table2 = new PdfPTable(2);
-					table2.setWidthPercentage(80);
+					table2.setWidthPercentage(70);
 					table2.setWidths(new float[] { 40f, 60f });
 					addCompactRow(table2, "Size", response.getFthickness() + " * " + response.getActualwidth() + " * " + response.getActuallength() +" (mm)");
 					addCompactRow(table2, "No. of Sheets", String.valueOf(response.getPlannedNoOfPieces()));
@@ -719,7 +719,7 @@ public class LabelPrintPDFGenerator {
 					 */
 
 					PdfPTable table3 = new PdfPTable(2);
-					table3.setWidthPercentage(80);
+					table3.setWidthPercentage(70);
 					table3.setWidths(new float[] { 40f, 60f });
 					addCompactRow(table3, "Inspected By", "");
 					addCompactRow(table3, "Bundle/Packet Id", ""+response.getInstructionId());
