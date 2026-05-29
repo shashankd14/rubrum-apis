@@ -534,7 +534,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				item.setUpdatedBy(commonUtil.getUserId());
 				item.setCreatedOn(new Date());
 				item.setUpdatedOn(new Date());
-				item.setNumber_of_sheets(li.getNumber_of_sheets());
+				item.setNumber_of_sheets(li.getNumberOfSheets());
 				if (li.getWarehouse_id() != null) {
 					item.setWearhouseId(li.getWarehouse_id());
 				}

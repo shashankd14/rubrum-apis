@@ -43,5 +43,5 @@ public class SalesOrderLineItem {
 
     private String cf_child_sku;
 
-    private String number_of_sheets;
+    private String numberOfSheets;
 }
