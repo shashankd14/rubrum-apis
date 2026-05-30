@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -32,6 +33,7 @@ import org.springframework.stereotype.Service;
 
 import com.steel.product.application.dao.FGReportViewRepository;
 import com.steel.product.application.dao.InwardReportViewRepository;
+import com.steel.product.application.dao.MonthlySummaryReportRepository;
 import com.steel.product.application.dao.MonthwisePlanTrackerEndUserwiseViewRepository;
 import com.steel.product.application.dao.MonthwisePlanTrackerViewRepository;
 import com.steel.product.application.dao.OutwardReportViewRepository;
@@ -45,6 +47,7 @@ import com.steel.product.application.dto.report.StockReportRequest;
 import com.steel.product.application.entity.FGReportViewEntity;
 import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.entity.InwardReportViewEntity;
+import com.steel.product.application.entity.MonthlySummaryReportEntity;
 import com.steel.product.application.entity.MonthwisePlanTrackerEnduserViewEntity;
 import com.steel.product.application.entity.MonthwisePlanTrackerViewEntity;
 import com.steel.product.application.entity.OutwardReportViewEntity;
@@ -69,6 +72,9 @@ public class ReportsServiceImpl implements ReportsService {
 
 	@Autowired
 	InwardReportViewRepository inwardReportViewRepository;
+
+	@Autowired
+	MonthlySummaryReportRepository monthlySummaryReportRepository;
 
 	@Autowired
 	StockReportViewRepository stockReportViewRepository;
@@ -1817,4 +1823,117 @@ public class ReportsServiceImpl implements ReportsService {
 		}
 		return acctStatementMap;
 	}
+
+	@Override
+	public MonthlySummaryReportEntity getMonthlySummaryReport(List<Integer> partyIdList, int currentMonth,
+			int currentYear) {
+
+		MonthlySummaryReportEntity entity = new MonthlySummaryReportEntity();
+
+		try {
+			List<Object[]> resultList = monthlySummaryReportRepository.getOpeningStock(partyIdList);
+
+			if (resultList != null && !resultList.isEmpty()) {
+				Object[] result = resultList.get(0);
+
+				entity.setCurrentYear(currentYear);
+				entity.setCurrentMonth(currentMonth);
+
+				entity.setCurrentStock(result[0] != null ? new BigDecimal(result[0].toString()) : BigDecimal.ZERO);
+
+				entity.setRmCrcoil(result[1] != null ? new BigDecimal(result[1].toString()) : BigDecimal.ZERO);
+				entity.setRmCrsheet(result[2] != null ? new BigDecimal(result[2].toString()) : BigDecimal.ZERO);
+				entity.setRmHrpocoil(result[3] != null ? new BigDecimal(result[3].toString()) : BigDecimal.ZERO);
+				entity.setRmHr(result[4] != null ? new BigDecimal(result[4].toString()) : BigDecimal.ZERO);
+				entity.setRmGpcoil(result[5] != null ? new BigDecimal(result[5].toString()) : BigDecimal.ZERO);
+
+				entity.setWipCrcoil(result[6] != null ? new BigDecimal(result[6].toString()) : BigDecimal.ZERO);
+				entity.setWipCrsheet(result[7] != null ? new BigDecimal(result[7].toString()) : BigDecimal.ZERO);
+				entity.setWipHrpocoil(result[8] != null ? new BigDecimal(result[8].toString()) : BigDecimal.ZERO);
+				entity.setWipHr(result[9] != null ? new BigDecimal(result[9].toString()) : BigDecimal.ZERO);
+				entity.setWipGpcoil(result[10] != null ? new BigDecimal(result[10].toString()) : BigDecimal.ZERO);
+
+				entity.setFgCrcoil(result[11] != null ? new BigDecimal(result[11].toString()) : BigDecimal.ZERO);
+				entity.setFgCrsheet(result[12] != null ? new BigDecimal(result[12].toString()) : BigDecimal.ZERO);
+				entity.setFgHrpocoil(result[13] != null ? new BigDecimal(result[13].toString()) : BigDecimal.ZERO);
+				entity.setFgHr(result[14] != null ? new BigDecimal(result[14].toString()) : BigDecimal.ZERO);
+				entity.setFgGpcoil(result[15] != null ? new BigDecimal(result[15].toString()) : BigDecimal.ZERO);
+
+				entity.setEdgetrimsCrcoil(result[16] != null ? new BigDecimal(result[16].toString()) : BigDecimal.ZERO);
+				entity.setEdgetrimsCrsheet(result[17] != null ? new BigDecimal(result[17].toString()) : BigDecimal.ZERO);
+				entity.setEdgetrimsHrpocoil(result[18] != null ? new BigDecimal(result[18].toString()) : BigDecimal.ZERO);
+				entity.setEdgetrimsHr(result[19] != null ? new BigDecimal(result[19].toString()) : BigDecimal.ZERO);
+				entity.setEdgetrimsGpcoil(result[20] != null ? new BigDecimal(result[20].toString()) : BigDecimal.ZERO);
+
+				entity.setCutendsCrcoil(result[21] != null ? new BigDecimal(result[21].toString()) : BigDecimal.ZERO);
+				entity.setCutendsCrsheet(result[22] != null ? new BigDecimal(result[22].toString()) : BigDecimal.ZERO);
+				entity.setCutendsHrpocoil(result[23] != null ? new BigDecimal(result[23].toString()) : BigDecimal.ZERO);
+				entity.setCutendsHr(result[24] != null ? new BigDecimal(result[24].toString()) : BigDecimal.ZERO);
+				entity.setCutendsGpcoil(result[25] != null ? new BigDecimal(result[25].toString()) : BigDecimal.ZERO);
+
+				entity.setDefectiveHandlingCrcoil(result[26] != null ? new BigDecimal(result[26].toString()) : BigDecimal.ZERO);
+				entity.setDefectiveHandlingCrsheet(result[27] != null ? new BigDecimal(result[27].toString()) : BigDecimal.ZERO);
+				entity.setDefectiveHandlingHrpocoil(result[28] != null ? new BigDecimal(result[28].toString()) : BigDecimal.ZERO);
+				entity.setDefectiveHandlingHr(result[29] != null ? new BigDecimal(result[29].toString()) : BigDecimal.ZERO);
+				entity.setDefectiveHandlingGpcoil(result[30] != null ? new BigDecimal(result[30].toString()) : BigDecimal.ZERO);
+
+				entity.setDefectiveRmCrcoil(result[31] != null ? new BigDecimal(result[31].toString()) : BigDecimal.ZERO);
+				entity.setDefectiveRmCrsheet(result[32] != null ? new BigDecimal(result[32].toString()) : BigDecimal.ZERO);
+				entity.setDefectiveRmHrpocoil(result[33] != null ? new BigDecimal(result[33].toString()) : BigDecimal.ZERO);
+				entity.setDefectiveRmHr(result[34] != null ? new BigDecimal(result[34].toString()) : BigDecimal.ZERO);
+				entity.setDefectiveRmGpcoil(result[35] != null ? new BigDecimal(result[35].toString()) : BigDecimal.ZERO);
+				entity.setCreatedAt(LocalDateTime.now());
+				
+				
+				List<Object[]> resultCamList = monthlySummaryReportRepository.getOpeningCamStock(partyIdList);
+
+				if (resultCamList != null && !resultCamList.isEmpty()) {
+					Object[] resultCam = resultCamList.get(0);
+
+					entity.setRmCamPurushotham(resultCam[0] != null ? new BigDecimal(resultCam[0].toString()) : BigDecimal.ZERO);
+					entity.setRmCamUmesh(resultCam[1] != null ? new BigDecimal(resultCam[1].toString()) : BigDecimal.ZERO);
+					entity.setRmCamDivakar(resultCam[2] != null ? new BigDecimal(resultCam[2].toString()) : BigDecimal.ZERO);
+					entity.setRmCamNiraj(resultCam[3] != null ? new BigDecimal(resultCam[3].toString()) : BigDecimal.ZERO);
+
+					entity.setWipCamPurushotham(resultCam[4] != null ? new BigDecimal(resultCam[4].toString()) : BigDecimal.ZERO);
+					entity.setWipCamUmesh(resultCam[5] != null ? new BigDecimal(resultCam[5].toString()) : BigDecimal.ZERO);
+					entity.setWipCamDivakar(resultCam[6] != null ? new BigDecimal(resultCam[6].toString()) : BigDecimal.ZERO);
+					entity.setWipCamNiraj(resultCam[7] != null ? new BigDecimal(resultCam[7].toString()) : BigDecimal.ZERO);
+
+					entity.setFgCamPurushotham(resultCam[8] != null ? new BigDecimal(resultCam[8].toString()) : BigDecimal.ZERO);
+					entity.setFgCamUmesh(resultCam[9] != null ? new BigDecimal(resultCam[9].toString()) : BigDecimal.ZERO);
+					entity.setFgCamDivakar(resultCam[10] != null ? new BigDecimal(resultCam[10].toString()) : BigDecimal.ZERO);
+					entity.setFgCamNiraj(resultCam[11] != null ? new BigDecimal(resultCam[11].toString()) : BigDecimal.ZERO);
+
+					entity.setEdgetrimsCamPurushotham(resultCam[12] != null ? new BigDecimal(resultCam[12].toString()) : BigDecimal.ZERO);
+					entity.setEdgetrimsCamUmesh(resultCam[13] != null ? new BigDecimal(resultCam[13].toString()) : BigDecimal.ZERO);
+					entity.setEdgetrimsCamDivakar(resultCam[14] != null ? new BigDecimal(resultCam[14].toString()) : BigDecimal.ZERO);
+					entity.setEdgetrimsCamNiraj(resultCam[15] != null ? new BigDecimal(resultCam[15].toString()) : BigDecimal.ZERO);
+
+					entity.setCutendsCamPurushotham(resultCam[16] != null ? new BigDecimal(resultCam[16].toString()) : BigDecimal.ZERO);
+					entity.setCutendsCamUmesh(resultCam[17] != null ? new BigDecimal(resultCam[17].toString()) : BigDecimal.ZERO);
+					entity.setCutendsCamDivakar(resultCam[18] != null ? new BigDecimal(resultCam[18].toString()) : BigDecimal.ZERO);
+					entity.setCutendsCamNiraj(resultCam[19] != null ? new BigDecimal(resultCam[19].toString()) : BigDecimal.ZERO);
+
+					entity.setDefhandlingCamPurushotham(resultCam[20] != null ? new BigDecimal(resultCam[20].toString()) : BigDecimal.ZERO);
+					entity.setDefhandlingCamUmesh(resultCam[21] != null ? new BigDecimal(resultCam[21].toString()) : BigDecimal.ZERO);
+					entity.setDefhandlingCamDivakar(resultCam[22] != null ? new BigDecimal(resultCam[22].toString()) : BigDecimal.ZERO);
+					entity.setDefhandlingCamNiraj(resultCam[23] != null ? new BigDecimal(resultCam[23].toString()) : BigDecimal.ZERO);
+
+					entity.setDefrmCamPurushotham(resultCam[24] != null ? new BigDecimal(resultCam[24].toString()) : BigDecimal.ZERO);
+					entity.setDefrmCamUmesh(resultCam[25] != null ? new BigDecimal(resultCam[25].toString()) : BigDecimal.ZERO);
+					entity.setDefrmCamDivakar(resultCam[26] != null ? new BigDecimal(resultCam[26].toString()) : BigDecimal.ZERO);
+					entity.setDefrmCamNiraj(resultCam[27] != null ? new BigDecimal(resultCam[27].toString()) : BigDecimal.ZERO);
+				}
+				monthlySummaryReportRepository.save(entity);
+			}
+		} catch (Exception e) {
+			LOGGER.error("Error at getMonthlySummaryReport: ", e);
+		}
+
+		return entity;
+	}
+	
+	
+	
 }

@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.mail.javamail.MimeMessageHelper;
 
 import com.steel.product.application.dto.report.StockReportRequest;
+import com.steel.product.application.entity.MonthlySummaryReportEntity;
 import com.steel.product.application.entity.StockSummaryReportViewEntity;
 
 public interface ReportsService {
@@ -46,5 +47,7 @@ public interface ReportsService {
 	boolean createMonthwisePlanTrackerReport(int partyId, String strDate, MimeMessageHelper helper);
 
 	boolean createWIPReportEndusertagwise(Integer getnPartyId, String strDate, MimeMessageHelper helper);
+
+	MonthlySummaryReportEntity getMonthlySummaryReport(List<Integer> partyIdList, int currentMonth, int currentYear);
 
 }

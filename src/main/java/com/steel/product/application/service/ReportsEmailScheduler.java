@@ -4,6 +4,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -31,12 +32,15 @@ public class ReportsEmailScheduler {
 	@Value("${email.sendReportEmailRequired}")
 	private boolean apiAlertRequired;
 
+	@Value("${email.monthwise_summary_report_scheduler}")
+	private boolean monthwiseSummaryReportScheduler;
+
 	@Autowired
 	PartyDetailsRepository partyRepo;
-
+	
 	@Autowired
-	ReportsServiceImpl service;
-
+	ReportsService reportsService;
+	
 	@Scheduled(cron = "${email.reportScheduleTime}")
 	public void sendNotificationAlert() throws InterruptedException {
 
@@ -77,6 +81,31 @@ public class ReportsEmailScheduler {
 					Thread.sleep(200);
 				}
 			}
+		}
+	}
+
+	@Scheduled(cron = "${email.monthwise_summary_report_ScheduleTime}")
+	public void monthwiseSummaryReportScheduleTime() throws InterruptedException {
+		if (monthwiseSummaryReportScheduler) {
+			logger.info("monthwiseSummaryReportScheduleTime apiAlertRequired == " + apiAlertRequired);
+			LocalDate currentDate = LocalDate.now();
+			LocalDate previousMonth = currentDate.minusMonths(1);
+			Integer currentYear = currentDate.getYear();
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM");
+			Integer month = Integer.parseInt(previousMonth.format(formatter));
+			if(month==12) {
+				currentYear = currentYear - 1;
+			}
+			
+			logger.info("currentYear  == " + currentYear + ", month  == " + month);
+			List<Integer> partyIdList = new ArrayList<Integer>();
+			partyIdList.add(36);
+			partyIdList.add(37);
+			partyIdList.add(38);
+			partyIdList.add(39);
+			
+			reportsService.getMonthlySummaryReport(partyIdList, month, currentYear);
+			
 		}
 	}
 
