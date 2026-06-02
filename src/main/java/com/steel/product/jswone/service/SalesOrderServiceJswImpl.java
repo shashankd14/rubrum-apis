@@ -22,6 +22,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -393,9 +394,9 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 		if ("COIL".equals(request.getAllocationType())) {
 
 			MaterialMasterJswEntity entity = materialMasterJswRepository.findFirstByMmId(request.getSoChildMmid());
-
-			log.info("getGradeId: {}, getSubgradeId: {}, getThickness: {}, getWidth: {}", entity.getGradeId(),
-					entity.getSubgradeId(), entity.getThickness(), entity.getWidth());
+			if (entity == null) {
+			    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Material Master not found for MMID: " + request.getSoChildMmid());
+			}
 			return salesOrderRepository.findCoilInventory(request.getSearchText(), partyIds, partyIdsFlag,
 					entity.getGradeId(), entity.getSubgradeId(), entity.getThickness(), entity.getWidth(), pageable);
 
@@ -407,10 +408,9 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				packetStatus = 2;
 			}
 			MaterialMasterJswEntity entity = materialMasterJswRepository.findFirstByMmId(request.getSoChildMmid());
-
-			log.info("getGradeId: {}, getSubgradeId: {}, getThickness: {}, getWidth: {}, getLength: {}",
-					entity.getGradeId(), entity.getSubgradeId(), entity.getThickness(), entity.getWidth(),
-					entity.getLength());
+			if (entity == null) {
+			    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Material Master not found for MMID: " + request.getSoChildMmid());
+			}
 			return salesOrderRepository.findPacketInventory(request.getSearchText(), partyIds, partyIdsFlag,
 					packetStatus, entity.getGradeId(), entity.getSubgradeId(), entity.getThickness(), entity.getWidth(),
 					entity.getLength(), pageable);

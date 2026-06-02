@@ -18,9 +18,9 @@ public class DC_InventoryAdjustmentMainRequest {
 	private String shipmentReferenceNo;
 	private String ewaybillVehicleNumber;
 	private String motorVehicleNumber;
-	private String fileName;
-	private String pdf;
-	private String dcNumber;
+	//private String fileName;
+	//private String pdf;
+	//private String dcNumber;
 
 	private List<DC_InventoryAdjustmentLineItem> line_items = new ArrayList<>();
 }

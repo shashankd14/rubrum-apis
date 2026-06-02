@@ -550,14 +550,7 @@ public class LabelPrintPDFGenerator {
 
 		try {
 			StringBuilder text = new StringBuilder();
-			text.append("Product : " + resp.getSubcategoryName() +" - "+ resp.getLeafcategoryName()+" - "+"Sheet");
-			text.append("\nGrade/Specification : " + resp.getSubgradeName());
-			text.append("\nCoil/Pack No : " + resp.getCustomerBatchNo());
-			text.append("\nBatch No : " + resp.getCoilNo());
-			text.append("\nSize : " + resp.getFthickness() + " * " + resp.getActualwidth() + " * " + resp.getActuallength() +" (mm)");
-			text.append("\nNo. of Sheets : " + String.valueOf(resp.getPlannedNoOfPieces()));
-			text.append("\nInspected By : " + " ");
-			text.append("\nBundle/Packet Id : " + resp.getInstructionId());
+			text.append("https://www.jswonemsme.com/lp/one-helix-hr-sheets");
 
 			QRCodeWriter qrCodeWriter = new QRCodeWriter();
 			BitMatrix bitMatrix = qrCodeWriter.encode(text.toString(), BarcodeFormat.QR_CODE, 60, 67);
@@ -696,7 +689,7 @@ public class LabelPrintPDFGenerator {
 					PdfPTable table1 = new PdfPTable(2);
 					table1.setWidthPercentage(70);
 					table1.setWidths(new float[] { 40f, 60f });
-					addCompactRow(table1, "Product", response.getSubcategoryName() +" - "+ response.getLeafcategoryName()+" - "+"Sheet");
+					addCompactRow(table1, "Product", "One Helix "+response.getSubcategoryName() +" - "+ response.getLeafcategoryName()+" - "+"Sheet");
 					addCompactRow(table1, "Grade/Specification", response.getSubgradeName());
 					addCompactRow(table1, "Coil/Pack No", ""+response.getCustomerBatchNo() );
 					addCompactRow(table1, "Batch No", response.getCoilNo());
