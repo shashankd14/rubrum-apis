@@ -73,6 +73,9 @@ public class OutwardReportViewEntity {
 	@Column(name = "vehicleno")
 	private String vehicleno;
 
+	@Column(name = "zoho_sync_stts")
+	private String zohoSyncStatus;
+
 	@Column(name = "sales_invoice_no")
 	private String salesInvoiceNo;
 

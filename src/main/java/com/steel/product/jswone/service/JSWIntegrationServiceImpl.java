@@ -1136,9 +1136,9 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			req.setShipmentReferenceNo("NA");
 			req.setMotorVehicleNumber("NA");
 
-			//req.setFileName(fileName);
-			//req.setPdf(awsS3Service.downloadPdfAsBase64(fileName));
-			//req.setDcNumber(""+dcId);
+			req.setFileName(fileName);
+			req.setPdf(awsS3Service.downloadPdfAsBase64(fileName));
+			req.setDcNumber(""+dcId);
 
 			ToSku toSku = new ToSku();
 			toSku.setSkuId(mmid);

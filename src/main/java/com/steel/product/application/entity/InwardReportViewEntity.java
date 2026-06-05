@@ -82,6 +82,12 @@ public class InwardReportViewEntity {
 	@Column(name = "remarks")
 	private String remarks;
 
+	@Column(name = "batch_id")
+	private String batchId;
+
+	@Column(name = "zoho_sync_stts")
+	private String zohoSyncStatus;
+
 	@Column(name = "party_id")
 	private int partyId;
 

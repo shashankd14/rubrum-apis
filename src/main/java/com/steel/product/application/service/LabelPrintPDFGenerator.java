@@ -647,42 +647,42 @@ public class LabelPrintPDFGenerator {
 				Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
 
 				for (QRCodeResponse response : respList) {
-
 					document.newPage();
 
 					/*
-					 * ========== QR CODE ===============================
+					 * ========== QR CODE + COMPANY NAME in ONE table (zero gap) ===========
 					 */
-
 					PdfPTable qrTable = new PdfPTable(1);
 					qrTable.setWidthPercentage(100);
+					qrTable.setSpacingBefore(0f);
+					qrTable.setSpacingAfter(0f);
 
+					// — QR image cell —
 					Image qrImage = Image.getInstance(getQRCodePlanFG(response));
-
-					// 28mm × 29mm
-					float qrWidth = 28f * 2.83465f;
-					float qrHeight = 29f * 2.83465f;
-
+					float qrWidth = 52f * 2.83465f;
+					float qrHeight = 52f * 2.83465f;
 					qrImage.scaleAbsolute(qrWidth, qrHeight);
 
 					PdfPCell imgCell = new PdfPCell(qrImage);
 					imgCell.setHorizontalAlignment(Element.ALIGN_CENTER);
-
-					// VERY IMPORTANT
-					imgCell.setPaddingBottom(0f);
+					imgCell.setPadding(0f); // ← zero ALL sides
+					imgCell.setPaddingTop(-15f); // ← explicitly zero bottom
+					imgCell.setPaddingBottom(-25f); // ← explicitly zero bottom
 					imgCell.setBorder(Rectangle.NO_BORDER);
 					qrTable.addCell(imgCell);
-					document.add(qrTable);
 
-					/*
-					 * = ================== COMPANY NAME ======================
-					 */
+					// — Company name cell — directly below QR in SAME table —
+					PdfPCell titleCell = new PdfPCell(new Phrase("JSW ONE DISTRIBUTION LIMITED", titleFont));
+					titleCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+					titleCell.setVerticalAlignment(Element.ALIGN_TOP);
+					titleCell.setBorder(Rectangle.NO_BORDER);
+					titleCell.setPadding(0f); // ← zero ALL sides
+					titleCell.setPaddingTop(0f); // ← flush against QR above
+					titleCell.setPaddingBottom(3f);// ← small gap before table1 below
+					qrTable.addCell(titleCell);
 
-					Paragraph company = new Paragraph("JSW ONE DISTRIBUTION LIMITED", titleFont);
-					company.setAlignment(Element.ALIGN_CENTER);
-					company.setSpacingAfter(8f);
-					document.add(company);
-					
+					document.add(qrTable); // ← single add call, no implicit gap
+
 					/*
 					 * ===================== TABLE 1 =====================================
 					 */
@@ -691,15 +691,14 @@ public class LabelPrintPDFGenerator {
 					table1.setWidths(new float[] { 40f, 60f });
 					addCompactRow(table1, "Product", "One Helix "+response.getSubcategoryName() +" - "+ response.getLeafcategoryName()+" - "+"Sheet");
 					addCompactRow(table1, "Grade/Specification", response.getSubgradeName());
-					addCompactRow(table1, "Coil/Pack No", ""+response.getCustomerBatchNo() );
+					addCompactRow(table1, "Coil/Pack No", "" + response.getCustomerBatchNo());
 					addCompactRow(table1, "Batch No", response.getCoilNo());
 					table1.setSpacingAfter(6f);
 					document.add(table1);
-					
+
 					/*
 					 * ===================== TABLE 2 =====================================
 					 */
-
 					PdfPTable table2 = new PdfPTable(2);
 					table2.setWidthPercentage(70);
 					table2.setWidths(new float[] { 40f, 60f });
@@ -707,15 +706,15 @@ public class LabelPrintPDFGenerator {
 					addCompactRow(table2, "No. of Sheets", String.valueOf(response.getPlannedNoOfPieces()));
 					table2.setSpacingAfter(6f);
 					document.add(table2);
+
 					/*
 					 * ===================== TABLE 3 =====================================
 					 */
-
 					PdfPTable table3 = new PdfPTable(2);
 					table3.setWidthPercentage(70);
 					table3.setWidths(new float[] { 40f, 60f });
 					addCompactRow(table3, "Inspected By", "");
-					addCompactRow(table3, "Bundle/Packet Id", ""+response.getInstructionId());
+					addCompactRow(table3, "Bundle/Packet Id", "" + response.getInstructionId());
 					document.add(table3);
 				}
 				document.close();

@@ -347,7 +347,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " LEFT JOIN product_instruction ins ON ins.instructionid = alloca.instruction_id"
 			+ " LEFT JOIN product_status inward_stts ON inward_stts.statusid = inward.vstatus"
 			+ " LEFT JOIN product_status packet_stts ON packet_stts.statusid = ins.status"
-			+ " WHERE so.so_status not in ('FULFILLED') "
+			+ " WHERE so.so_status not in ('FULFILLED') and refno='dhruvitest021'"
 			+ " order by alloca.so_id desc ", 
 		nativeQuery = true)
 	List<Object[]> getAllSODetailsWithAllocationStatusforSOStatus();
@@ -377,7 +377,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			"    CAST((\r\n" + 
 			"        SELECT COUNT(so_id)\r\n" + 
 			"        FROM jsw_sales_order\r\n" + 
-			"        WHERE so_status = 'SO_APPROVED'\r\n" + 
+			"        WHERE so_status in ('SO_APPROVED','PENDING_PLAN','PENDING_ALLOCATION','PENDING_DELIVERY','FULFILLED') \r\n" + 
 			"          AND MONTH(approved_date) = MONTH(CURDATE())\r\n" + 
 			"          AND YEAR(approved_date) = YEAR(CURDATE())\r\n" + 
 			"    ) AS SIGNED) AS totalOrders1,\r\n" + 
@@ -385,7 +385,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			"    (\r\n" + 
 			"        SELECT SUM(total_soqty)\r\n" + 
 			"        FROM jsw_sales_order\r\n" + 
-			"        WHERE so_status = 'SO_APPROVED'\r\n" + 
+			"        WHERE so_status in ('SO_APPROVED','PENDING_PLAN','PENDING_ALLOCATION','PENDING_DELIVERY','FULFILLED') \r\n" + 
 			"          AND MONTH(approved_date) = MONTH(CURDATE())\r\n" + 
 			"          AND YEAR(approved_date) = YEAR(CURDATE())\r\n" + 
 			"    ) AS totalOrders_totalWeight1 ", nativeQuery = true)

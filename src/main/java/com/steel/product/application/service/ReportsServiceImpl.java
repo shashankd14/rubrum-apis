@@ -431,16 +431,18 @@ public class ReportsServiceImpl implements ReportsService {
 			acctStatementMap.put("1",
 					new Object[] { "CoilNumber", "SC Inward ID", "PO Number","Created On","Location Name", "MaterialDesc", "MaterialGrade", "Subgrade","MMID", "Thickness", "Width",
 					"NetWeight", "Value of Goods", "Invoice No", "Invoice Date", "ReceivedDate", "Vehicle No",
-					"Inward Remarks", "TC No" });
+					"Inward Remarks", "TC No","Batch Id","Zoho Sync Status" });
 
 			int cnt = 1;
 			for (InwardReportViewEntity kk : partyList) {
 				cnt++;
-				acctStatementMap.put("" + cnt, new Object[] { kk.getCoilnumber(), kk.getCustomerbatchid(),
-						kk.getPonumber(), kk.getCreatedon(), kk.getLocationname(), kk.getMaterialdesc(),
-						kk.getMaterialGrade(), kk.getSubgrade(), kk.getMmId(), kk.getFthickness(), kk.getFwidth(),
-						kk.getNetWeight(), kk.getValueofgoods(), kk.getCustomerinvoiceno(), kk.getCustomerinvoicedate(),
-						kk.getReceivedDate(), kk.getVehicleno(), kk.getRemarks(), kk.getTestcertificatenumber() });
+				acctStatementMap.put("" + cnt,
+				new Object[] { kk.getCoilnumber(), kk.getCustomerbatchid(), kk.getPonumber(), kk.getCreatedon(),
+				kk.getLocationname(), kk.getMaterialdesc(), kk.getMaterialGrade(), kk.getSubgrade(),
+				kk.getMmId(), kk.getFthickness(), kk.getFwidth(), kk.getNetWeight(),
+				kk.getValueofgoods(), kk.getCustomerinvoiceno(), kk.getCustomerinvoicedate(),
+				kk.getReceivedDate(), kk.getVehicleno(), kk.getRemarks(), kk.getTestcertificatenumber(),
+				kk.getBatchId(), kk.getZohoSyncStatus() });
 			}
 		} catch (Exception e) {
 			LOGGER.error("Error at getInwardReportDetails " + e.getMessage());
@@ -637,16 +639,15 @@ public class ReportsServiceImpl implements ReportsService {
 			acctStatementMap.put("1",
 			new Object[] { "Order ID", "DC No", "Dispatch Date", "CoilNumber", "SC Inward ID", "Location Name","MaterialDesc",
 					"MaterialGrade", "Subgrade","Thickness", "Width", "Length", "Qty_Sheets", "Delivery Weight","Additional  Weight",
-					"Vehicle No", "Remarks/SO Ref#","Sales Invoice No", "Processing Rate", "Quality Remarks" });
+					"Vehicle No", "Remarks/SO Ref#","Zoho Sync Status","Sales Invoice No", "Processing Rate", "Quality Remarks" });
 			int cnt = 1;
 			for (OutwardReportViewEntity kk : partyList) {
 				cnt++;
-				acctStatementMap.put("" + cnt,
-				new Object[] { "", kk.getDeliveryid(), kk.getCreatedon(), kk.getCoilnumber(),
-				kk.getCustomerbatchid(), kk.getLocationname(), kk.getMaterialdesc(), kk.getMaterialgrade(),kk.getSubgrade(),
-				kk.getFthickness(), kk.getFwidth(), kk.getFlength(), kk.getNoofpieces(),
-				kk.getDeliveryWeight(), kk.getAdditionalWeight(), kk.getVehicleno(), kk.getRemarks(), kk.getSalesInvoiceNo(), 
-				"", "" });
+				acctStatementMap.put("" + cnt, new Object[] { "", kk.getDeliveryid(), kk.getCreatedon(),
+				kk.getCoilnumber(), kk.getCustomerbatchid(), kk.getLocationname(), kk.getMaterialdesc(),
+				kk.getMaterialgrade(), kk.getSubgrade(), kk.getFthickness(), kk.getFwidth(), kk.getFlength(),
+				kk.getNoofpieces(), kk.getDeliveryWeight(), kk.getAdditionalWeight(), kk.getVehicleno(),
+				kk.getRemarks(), kk.getZohoSyncStatus(), kk.getSalesInvoiceNo(), "", "" });
 			}
 		} catch (Exception e) {
 			LOGGER.error("Error at getOutwardSummaryReportDetails " + e.getMessage());
