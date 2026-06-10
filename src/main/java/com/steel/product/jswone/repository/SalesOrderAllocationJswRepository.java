@@ -30,8 +30,9 @@ public interface SalesOrderAllocationJswRepository extends JpaRepository<SalesOr
 	@Query("update SalesOrderAllocationEntity inw set inw.pdfGenerationPart = :pdfGenerationPart where inw.soAllocationId in :soAllocationList")
 	void updatePDFGenerationPart(@Param("pdfGenerationPart") String pdfGenerationPart, @Param("soAllocationList") List<Integer> soAllocationList);
 	
-	@Query(value = "select customerid, salesorder_id, item_id, allo.allocated_soqty, branch_id, wearhouse_id, "
-			+ " (SELECT ware_house_name FROM jsw_warehouse_master wh where wh.ware_house_id=chld.wearhouse_id) whname "
+	@Query(value = "select customerid, salesorder_id, item_id, allo.allocated_soqty, wearhouse_id, "
+			+ " (SELECT ware_house_name FROM jsw_warehouse_master wh where wh.ware_house_id=chld.wearhouse_id) whname, branch_id,  "
+			+ " (SELECT branch_name FROM jsw_branch_master bm where bm.branch_id = so.branch_id) branch_name "
 			+ " from jsw_sales_order so, jsw_sales_order_child chld, jsw_sales_order_allocation allo " 
 			+ " where so.so_id=allo.so_id and so.so_id=chld.so_id and allo.so_child_id=chld.so_child_id " 
 			+ " and allo.so_allocation_id= :soAllocationId", 

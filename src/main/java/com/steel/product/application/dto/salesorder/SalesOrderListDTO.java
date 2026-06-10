@@ -51,6 +51,8 @@ public class SalesOrderListDTO {
 
 	private String mmid;
 
+	private String option;
+
 	private Date instructionDate;
 
 	private String diagonal;

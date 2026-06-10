@@ -41,5 +41,5 @@ public interface JSWIntegrationService {
 
 	InventoryAdjustmentResponse inventoryAdjustment(DeliveryDto request);
 
-	InventoryAdjustmentResponse warehouseReassignment(SalesOrderListDTO request);
+	InventoryAdjustmentResponse warehouseReassignment(SalesOrderListDTO request); 
 }

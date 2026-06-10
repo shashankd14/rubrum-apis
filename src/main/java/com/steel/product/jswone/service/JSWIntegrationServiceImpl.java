@@ -1208,14 +1208,14 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			HttpHeaders headers = new HttpHeaders();
 			headers.set("Content-Type", "application/json");
 			headers.set("Authorization", propertyMap.get("warehouseReassignment_headerkey") +" "+propertyMap.get("warehouseReassignment_headervalue"));
-			WarehouseReassignmentMainRequest postGRN = wareHouseReassignmentRequest(request.getSoAllocationId());
+			WarehouseReassignmentMainRequest postGRN = wareHouseReassignmentRequest(request.getSoAllocationId(), request.getOption());
 			String inventoryAdjustmentReq = objectMapper.writeValueAsString(postGRN);
 			audit.setRequestObj(inventoryAdjustmentReq);
 			HttpEntity<String> extRequest = new HttpEntity<>(inventoryAdjustmentReq, headers);
-			String url = propertyMap.get("warehouseReassignment_url");
+			String url = propertyMap.get("warehouseReassignment_url")+ "/"+postGRN.getSalesorder_id();
 			audit.setRequestUrl(url);
-			log.info("url  is  == " + url + "/"+postGRN.getSalesorder_id()+", warehouseReassignment - " + extRequest);
-			res = restTemplate.exchange(url + "/"+postGRN.getSalesorder_id(), HttpMethod.PUT, extRequest, String.class);
+			log.info("url  is  == " + url+", warehouseReassignment - " + extRequest);
+			res = restTemplate.exchange(url, HttpMethod.PUT, extRequest, String.class);
 			log.info("response is == " + res);
 			if (res.getBody() != null) {
 				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -1281,7 +1281,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 		return response;
 	}
 
-	private WarehouseReassignmentMainRequest wareHouseReassignmentRequest(Integer soAllocationId) {
+	private WarehouseReassignmentMainRequest wareHouseReassignmentRequest(Integer soAllocationId, String option) {
 		
 		List<Object[]> poDetails = sollocationJswRepository.wareHouseReassignmentDetails(soAllocationId);
 		
@@ -1294,9 +1294,12 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			WarehouseReassignmentLineItemsDto lineitem = new WarehouseReassignmentLineItemsDto();
 			lineitem.setItem_id(result[2] != null ? result[2].toString() : null);
 			lineitem.setQuantity((result[3] == null ? null : new BigDecimal(String.valueOf(result[3]))));
-			String branchId = (result[4] != null ? result[4].toString() : null);
-			lineitem.setWarehouse_id(result[5] != null ? result[5].toString() : null);
-			lineitem.setWarehouse_name(result[6] != null ? result[6].toString() : null);
+			lineitem.setWarehouse_id(result[4] != null ? result[4].toString() : null);
+			lineitem.setWarehouse_name(result[5] != null ? result[5].toString() : null);
+			if (option!=null && "unallocate".equals(option)) {
+				lineitem.setWarehouse_id(result[6] != null ? result[6].toString() : null);
+				lineitem.setWarehouse_name(result[7] != null ? result[7].toString() : null);
+			}
 			lineItems.add(lineitem);
 		}
 		req.setLine_items(lineItems);

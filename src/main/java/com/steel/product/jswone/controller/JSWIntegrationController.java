@@ -207,6 +207,6 @@ public class JSWIntegrationController {
 	public ResponseEntity<Object> warehouseReassignment(@RequestBody SalesOrderListDTO request) {
 		InventoryAdjustmentResponse response = service.warehouseReassignment(request);
 		return new ResponseEntity<Object>(response, HttpStatus.OK);
-	}
+	} 
 
 }
