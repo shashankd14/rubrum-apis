@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.persistence.Column;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -381,6 +382,8 @@ public class SalesOrderJswController {
 			
 			String materialDesc = (result[30] != null ? (String) result[30] : "");
 			String materialGrade = (result[31] != null ? (String) result[31] : "");
+			allocation.setZohoSyncRemarks(result[32] != null ? (String) result[32] : "");
+			allocation.setZohoSyncStts(result[33] != null ? (String) result[33] : "");
 
 			String coilSKU = materialGrade + materialDesc + " * " + allocation.getSize();
 			allocation.setProductDetails(coilSKU);

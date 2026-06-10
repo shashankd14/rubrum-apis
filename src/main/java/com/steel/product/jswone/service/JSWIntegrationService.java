@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 
 import com.steel.product.application.dto.delivery.DeliveryDto;
 import com.steel.product.application.dto.quality.ListPageSearchRequest;
+import com.steel.product.application.dto.salesorder.SalesOrderListDTO;
 import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.jswone.request.MMIDReceiveMainRequest;
 import com.steel.product.jswone.request.POSOIntegrationRequest;
@@ -39,4 +40,6 @@ public interface JSWIntegrationService {
 	PODetailsMainResponse uploadDocument(POSOIntegrationRequest req);
 
 	InventoryAdjustmentResponse inventoryAdjustment(DeliveryDto request);
+
+	InventoryAdjustmentResponse warehouseReassignment(SalesOrderListDTO request);
 }

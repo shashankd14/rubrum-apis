@@ -60,6 +60,9 @@ public class SalesOrderJswEntity {
 	@Column(name = "customerid")
 	private String customerid;
 
+	@Column(name = "salesorder_id")
+	private String salesorder_id;
+	
 	@Column(name = "customer_number")
 	private String customer_number;
 

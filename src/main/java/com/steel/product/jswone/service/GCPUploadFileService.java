@@ -275,13 +275,14 @@ public class GCPUploadFileService {
 		List<InwardReportViewEntity> fgReportDetails = inwardReportViewRepository.findAll();
 		try (PrintWriter writer = new PrintWriter(new FileWriter(filePath))) {
 			writer.println( "CoilNumber,SC Inward ID,PO Number, MaterialDesc,MaterialGrade,Subgrade,Location Name,MMID,Thickness,Width,NetWeight,"
-					+ "Value of Goods,Invoice No,Invoice Date,ReceivedDate,Vehicle No,Inward Remarks,TC No");
+					+ "Value of Goods,Invoice No,Invoice Date,ReceivedDate,Vehicle No,Inward Remarks,TC No,Batch Id,Zoho Sync Status");
 			for (InwardReportViewEntity kk : fgReportDetails) {
 				writer.println(kk.getCoilnumber() + "," + kk.getCustomerbatchid() + "," + kk.getPonumber()+ "," + kk.getMaterialdesc() + ","
-						+ kk.getMaterialGrade() + "," + kk.getSubgrade() + "," +kk.getLocationname()+ "," + kk.getMmId() + "," + kk.getFthickness()
-						+ "," + kk.getFwidth() + "," + kk.getNetWeight() + "," + kk.getValueofgoods() + ","
-						+ kk.getCustomerinvoiceno() + "," + kk.getCustomerinvoicedate() + "," + kk.getReceivedDate()
-						+ "," + kk.getVehicleno() + "," + kk.getRemarks() + "," + kk.getTestcertificatenumber());
+					+ kk.getMaterialGrade() + "," + kk.getSubgrade() + "," +kk.getLocationname()+ "," + kk.getMmId() + "," + kk.getFthickness()
+					+ "," + kk.getFwidth() + "," + kk.getNetWeight() + "," + kk.getValueofgoods() + ","
+					+ kk.getCustomerinvoiceno() + "," + kk.getCustomerinvoicedate() + "," + kk.getReceivedDate()
+					+ "," + kk.getVehicleno() + "," + kk.getRemarks() + "," + kk.getTestcertificatenumber()+ ","
+					+ kk.getBatchId() + "," + kk.getZohoSyncStatus());
 			}
 		}
 		return filePath;
@@ -299,13 +300,15 @@ public class GCPUploadFileService {
 		List<OutwardReportViewEntity> outwardReportDetails = outwardReportViewRepository.findAll();
 		try (PrintWriter writer = new PrintWriter(new FileWriter(filePath))) {
 			writer.println( "Order ID,DC No,Dispatch Date,CoilNumber,SC Inward ID,MaterialDesc,MaterialGrade,"
-					+ " Subgrade,Location Name,Thickness,Width,Length,Qty_Sheets,Delivery Weight,Additional  Weight,Vehicle No,Sales Invoice No,Processing Rate,Quality Remarks" );
+				+ " Subgrade,Location Name,Thickness,Width,Length,Qty_Sheets,Delivery Weight,Additional  Weight,"
+				+ " Vehicle No,Sales Invoice No,Zoho Sync Status,Processing Rate,Quality Remarks" );
 			for (OutwardReportViewEntity kk : outwardReportDetails) {
 				writer.println("" + "," + kk.getDeliveryid() + "," + kk.getCreatedon() + "," + kk.getCoilnumber() + ","
-						+ kk.getCustomerbatchid() + "," + kk.getMaterialdesc() + "," + kk.getMaterialgrade() + ","
-						+ kk.getSubgrade() + "," + kk.getLocationname()+ "," + kk.getFthickness() + "," + kk.getFwidth() + "," 
-						+ kk.getFlength()+ "," + kk.getNoofpieces() + "," + kk.getDeliveryWeight() + "," + 
-						kk.getAdditionalWeight() + ","+ kk.getVehicleno() +"," + kk.getSalesInvoiceNo()+"," + "" + "," + "");
+				+ kk.getCustomerbatchid() + "," + kk.getMaterialdesc() + "," + kk.getMaterialgrade() + ","
+				+ kk.getSubgrade() + "," + kk.getLocationname()+ "," + kk.getFthickness() + "," + kk.getFwidth() + "," 
+				+ kk.getFlength()+ "," + kk.getNoofpieces() + "," + kk.getDeliveryWeight() + "," 
+				+ kk.getAdditionalWeight() + ","+ kk.getVehicleno() +"," + kk.getSalesInvoiceNo()+","
+				+ kk.getZohoSyncStatus()+"," + "" + "," + "");
 			}
 		}
 		return filePath;

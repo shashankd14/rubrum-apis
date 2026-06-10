@@ -219,5 +219,5 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
 
 	List<Instruction> findBySonoAndMmidAndInwardIdAndPlannedWeight(String sono, String mmid, InwardEntry inwardId,
 			Float plannedWeight);
-	
+
 }

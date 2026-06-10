@@ -52,4 +52,10 @@ public class SalesOrderAllocationEntity {
 	
 	@Column(name = "pdf_generation_part")
 	private String pdfGenerationPart;
+
+    @Column(name = "zoho_sync_remarks")
+    private String zohoSyncRemarks;
+
+    @Column(name = "zoho_sync_stts")
+    private String zohoSyncStts;
 }

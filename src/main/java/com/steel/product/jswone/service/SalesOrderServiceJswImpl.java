@@ -30,6 +30,7 @@ import com.steel.product.application.dao.InstructionRepository;
 import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.dto.inward.SearchListPageRequest;
 import com.steel.product.application.dto.quality.ListPageSearchRequest;
+import com.steel.product.application.dto.salesorder.SalesOrderListDTO;
 import com.steel.product.application.entity.AdminUserEntity;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
@@ -67,6 +68,9 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 
 	@Autowired
 	private SalesOrderJswRepository salesOrderRepository;
+	
+	@Autowired
+	private JSWIntegrationService jswIntegrationService;
 
 	@Autowired
 	private SalesOrderChildJswRepository childRepository;
@@ -322,7 +326,14 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 						inwardEntryRepository.consolidatePlanner(request.getInwardEntryId(), totalAllocatedItemQty, childEntity.getMmId(), soEntity.getRefno());
 					}
 				}
+
+				if(allocation !=null && allocation.getSoAllocationId()>0) {
+					SalesOrderListDTO obj = new SalesOrderListDTO();
+					obj.setSoAllocationId(allocation.getSoAllocationId());
+					jswIntegrationService.warehouseReassignment(obj);
+				}
 			}
+			
 			//updateCPStatus(soId);
 			/*
 			 * List<SalesOrderPacketsJswEntity> allocations =
@@ -480,6 +491,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			so.setSocreatedate(convertToDate(d.getDate()));
 			so.setRefno(d.getReference_number());
 			so.setCustomerid(d.getCustomer_id());
+			so.setSalesorder_id(d.getSalesorder_id());
 			so.setCustomer_name(d.getCustomer_name());
 			so.setCustomer_number(d.getCustomer_number());
 			so.setDeliverymethod(d.getDelivery_method());
@@ -525,6 +537,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				item.setMmId(li.getSku());
 				item.setSoqty( li.getQuantity() .multiply(new BigDecimal("1000")));
 				item.setTax_percentage(String.valueOf(li.getTax_percentage()));
+				item.setItem_id(li.getItem_id());
 				item.setHsn_or_sac(li.getHsn_or_sac());
 				item.setMaterialName(li.getName());
 				item.setItemSoStatus("Unallocated");

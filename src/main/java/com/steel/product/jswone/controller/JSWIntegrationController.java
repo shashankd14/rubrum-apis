@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.steel.product.application.dto.delivery.DeliveryDto;
 import com.steel.product.application.dto.quality.ListPageSearchRequest;
+import com.steel.product.application.dto.salesorder.SalesOrderListDTO;
 import com.steel.product.jswone.request.MMIDReceiveMainRequest;
 import com.steel.product.jswone.request.POSOIntegrationRequest;
 import com.steel.product.jswone.response.InventoryAdjustmentResponse;
@@ -198,6 +199,13 @@ public class JSWIntegrationController {
 	@PostMapping(value = "/xternal/invadjustment", produces = "application/json")
 	public ResponseEntity<Object> invadjustment(@RequestBody DeliveryDto request) {
 		InventoryAdjustmentResponse response = service.inventoryAdjustment(request);
+		return new ResponseEntity<Object>(response, HttpStatus.OK);
+	}
+
+	//Post Sync SO Warehouse Reassigment Curl
+	@PostMapping(value = "/xternal/warehouse-reassignment", produces = "application/json")
+	public ResponseEntity<Object> warehouseReassignment(@RequestBody SalesOrderListDTO request) {
+		InventoryAdjustmentResponse response = service.warehouseReassignment(request);
 		return new ResponseEntity<Object>(response, HttpStatus.OK);
 	}
 

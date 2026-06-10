@@ -26,7 +26,10 @@ public class SalesOrderPacketsJswEntity {
 
 	@Column(name = "mm_id")
 	private String mmId;
-
+	
+	@Column(name = "item_id")
+	private String item_id;
+	
 	@Column(name = "soqty")
 	private BigDecimal soqty;
 	

@@ -41,6 +41,7 @@ import com.steel.product.application.dao.InstructionRepository;
 import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.dto.delivery.DeliveryDto;
 import com.steel.product.application.dto.quality.ListPageSearchRequest;
+import com.steel.product.application.dto.salesorder.SalesOrderListDTO;
 import com.steel.product.application.service.AWSS3Service;
 import com.steel.product.application.util.CommonUtil;
 import com.steel.product.jswone.entity.JswoneAuditTrailEntity;
@@ -56,6 +57,7 @@ import com.steel.product.jswone.repository.MaterialMasterJswRepository;
 import com.steel.product.jswone.repository.POReceiveDetailsRepository;
 import com.steel.product.jswone.repository.POWiseMmidDetailsRepository;
 import com.steel.product.jswone.repository.SOReceiveDetailsRepository;
+import com.steel.product.jswone.repository.SalesOrderAllocationJswRepository;
 import com.steel.product.jswone.repository.WarehouseMasterRepository;
 import com.steel.product.jswone.request.ApiResponse;
 import com.steel.product.jswone.request.MMIDReceiveMainRequest;
@@ -79,6 +81,8 @@ import com.steel.product.jswone.response.PoGrnMainRequest;
 import com.steel.product.jswone.response.PoGrnMainResponse;
 import com.steel.product.jswone.response.PtQuantity;
 import com.steel.product.jswone.response.ToSku;
+import com.steel.product.jswone.response.WarehouseReassignmentLineItemsDto;
+import com.steel.product.jswone.response.WarehouseReassignmentMainRequest;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -118,10 +122,13 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 
 	@Autowired
 	private DeliveryDetailsRepository deliveryDetailsRepository;
-	
+
 	@Autowired
 	private InstructionRepository instructionRepository;
 
+	@Autowired
+	private SalesOrderAllocationJswRepository sollocationJswRepository;
+	
 	@Autowired
 	CommonUtil commonUtil;
 
@@ -1136,7 +1143,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			req.setShipmentReferenceNo("NA");
 			req.setMotorVehicleNumber("NA");
 
-			req.setFileName(fileName);
+			req.setFileName(fileName+".pdf");
 			req.setPdf(awsS3Service.downloadPdfAsBase64(fileName));
 			req.setDcNumber(""+dcId);
 
@@ -1186,5 +1193,115 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 		req.setLine_items(lineItems);
 		return req;
 	}
+
+	@Override
+	public InventoryAdjustmentResponse warehouseReassignment(SalesOrderListDTO request) {
+		InventoryAdjustmentResponse response = new InventoryAdjustmentResponse();
+		ResponseEntity<String> res = null;
+		JswoneAuditTrailEntity audit =new JswoneAuditTrailEntity();
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			RestTemplate restTemplate = new RestTemplate();
+			Map<String, String> propertyMap = commonUtil.getAllProperties();
+			audit.setPoId(""+request.getSoAllocationId());
+			audit.setProcessType("WAREHOUSE_REASSIGNMENT");
+			HttpHeaders headers = new HttpHeaders();
+			headers.set("Content-Type", "application/json");
+			headers.set("Authorization", propertyMap.get("warehouseReassignment_headerkey") +" "+propertyMap.get("warehouseReassignment_headervalue"));
+			WarehouseReassignmentMainRequest postGRN = wareHouseReassignmentRequest(request.getSoAllocationId());
+			String inventoryAdjustmentReq = objectMapper.writeValueAsString(postGRN);
+			audit.setRequestObj(inventoryAdjustmentReq);
+			HttpEntity<String> extRequest = new HttpEntity<>(inventoryAdjustmentReq, headers);
+			String url = propertyMap.get("warehouseReassignment_url");
+			audit.setRequestUrl(url);
+			log.info("url  is  == " + url + "/"+postGRN.getSalesorder_id()+", warehouseReassignment - " + extRequest);
+			res = restTemplate.exchange(url + "/"+postGRN.getSalesorder_id(), HttpMethod.PUT, extRequest, String.class);
+			log.info("response is == " + res);
+			if (res.getBody() != null) {
+				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+				response = mapper.readValue(res.getBody().toString(), InventoryAdjustmentResponse.class);
+			}
+			
+			audit.setDestinationResponse(res.getBody().toString());
+			jswoneAuditTrailRepository.save(audit);
+			if (response != null && "0".equals( response.getCode()) ) {
+				audit.setStatusCode(""+res.getStatusCode());
+				response.setCode("0");
+				response.setMessage( response.getMessage());
+			} else {
+				audit.setStatusCode(""+res.getStatusCode());
+				response.setCode( response.getCode());
+				response.setMessage( response.getMessage());
+			}
+			audit.setSourceRespone( mapper.writeValueAsString(response));
+			sollocationJswRepository.updateZohoSyncRemarks(request.getSoAllocationId(), response.getMessage(), "SUCCESS" );
+		} catch (HttpClientErrorException | HttpServerErrorException ex) {
+			String error = ex.getResponseBodyAsString();
+			audit.setStatusCode("" + ex.getStatusCode().value());
+			audit.setDestinationResponse( error);
+			try {
+				JsonNode outer = mapper.readTree(error);
+				String code = outer.path("code").asText();
+				String message = outer.path("message").asText();
+				response.setCode(code);
+				response.setMessage(message);
+				sollocationJswRepository.updateZohoSyncRemarks(request.getSoAllocationId(), message, "FAIL");
+			} catch (Exception w) {
+				
+			}
+		} catch (Exception e) {
+            audit.setDestinationResponse( e.getMessage());
+			if (e.getMessage().contains("404")) {
+				audit.setStatusCode("404");
+				response.setCode("1002");
+				response.setMessage("Resource does not exist.");
+			}
+			if (e.getMessage().contains("400")) {
+				audit.setStatusCode("400");
+				response.setCode("4198");
+				response.setMessage("Invalid Params");
+			}
+			if (e.getMessage().contains("401")) {
+				audit.setStatusCode("401");
+				response.setCode("57");
+				response.setMessage("You are not authorized to perform this operation");
+			}
+			if (e.getMessage().contains("500")) {
+				audit.setStatusCode("400");
+				response.setCode("57");
+				response.setMessage("JSW Connector API Not Working, Please Contact JSW Admin Team ");
+			}
+ 		}
+		try {
+			audit.setSourceRespone( mapper.writeValueAsString(response));
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+		}
+		jswoneAuditTrailRepository.save(audit);
+		return response;
+	}
+
+	private WarehouseReassignmentMainRequest wareHouseReassignmentRequest(Integer soAllocationId) {
+		
+		List<Object[]> poDetails = sollocationJswRepository.wareHouseReassignmentDetails(soAllocationId);
+		
+		WarehouseReassignmentMainRequest req = new WarehouseReassignmentMainRequest();
+		List<WarehouseReassignmentLineItemsDto> lineItems = new ArrayList<>();
+
+		for (Object[] result : poDetails) {
+			req.setCustomer_id(result[0] != null ? result[0].toString() : null);
+			req.setSalesorder_id(result[1] != null ? result[1].toString() : null);
+			WarehouseReassignmentLineItemsDto lineitem = new WarehouseReassignmentLineItemsDto();
+			lineitem.setItem_id(result[2] != null ? result[2].toString() : null);
+			lineitem.setQuantity((result[3] == null ? null : new BigDecimal(String.valueOf(result[3]))));
+			String branchId = (result[4] != null ? result[4].toString() : null);
+			lineitem.setWarehouse_id(result[5] != null ? result[5].toString() : null);
+			lineitem.setWarehouse_name(result[6] != null ? result[6].toString() : null);
+			lineItems.add(lineitem);
+		}
+		req.setLine_items(lineItems);
+		return req;
+	}
+
 
 }

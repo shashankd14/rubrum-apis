@@ -35,4 +35,8 @@ public class SalesOrderChildAllocationResponse {
 
 	private String allocationType;
 
+    private String zohoSyncRemarks;
+
+    private String zohoSyncStts;
+
 }
