@@ -49,4 +49,9 @@ public class ListPageSearchRequest {
 	private String pdfGenerationPart;
 
 	private String filterStatus;
+	
+	private int fromCoilAge;
+	
+	private int toCoilAge;
+	    
 }

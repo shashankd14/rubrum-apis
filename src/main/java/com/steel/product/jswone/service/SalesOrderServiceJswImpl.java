@@ -409,7 +409,8 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Material Master not found for MMID: " + request.getSoChildMmid());
 			}
 			return salesOrderRepository.findCoilInventory(request.getSearchText(), partyIds, partyIdsFlag,
-					entity.getGradeId(), entity.getSubgradeId(), entity.getThickness(), entity.getWidth(), pageable);
+					entity.getGradeId(), entity.getThickness(), entity.getWidth(), request.getFromCoilAge(),
+					request.getToCoilAge(), pageable);
 
 		} else if ("INWARDSHEET_PACKETS".equals(request.getAllocationType())) {
 			if ("FG".equals(request.getInventoryType())) {
@@ -423,10 +424,11 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Material Master not found for MMID: " + request.getSoChildMmid());
 			}
 			return salesOrderRepository.findPacketInventory(request.getSearchText(), partyIds, partyIdsFlag,
-					packetStatus, entity.getGradeId(), entity.getSubgradeId(), entity.getThickness(), entity.getWidth(),
-					entity.getLength(), pageable);
+					packetStatus, entity.getGradeId(), entity.getThickness(), entity.getWidth(), entity.getLength(),
+					request.getFromCoilAge(), request.getToCoilAge(), pageable);
 		} else {
-			return salesOrderRepository.findSheetInventory(request.getSoChildMmid(), pageable);
+			return salesOrderRepository.findSheetInventory(request.getSoChildMmid(), request.getFromCoilAge(),
+					request.getToCoilAge(), pageable);
 		}
 	}
 

@@ -9,14 +9,16 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.persistence.Column;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -236,9 +238,9 @@ public class SalesOrderJswController {
 	@PostMapping(value = "/findinventory", produces = "application/json")
 	public ResponseEntity<Object> findInventory(@RequestBody ListPageSearchRequest listPageSearchRequest) {
 		Map<String, Object> response = new HashMap<>();
-		// listPageSearchRequest.setPageSize(100);
 		Page<Object[]> packetsList1 = salesOrderService.findInventory(listPageSearchRequest);
 		List<InwardEntryResponseDetails> list = new ArrayList<>();
+		Set<Integer> coilAgeSet = new LinkedHashSet<>();
 
 		for (Object[] result : packetsList1) {
 			InwardEntryResponseDetails resp = new InwardEntryResponseDetails();
@@ -255,8 +257,12 @@ public class SalesOrderJswController {
 			resp.setLocationName(result[10] != null ? (String) result[10] : null);
 			resp.setNoofPieces(result[11] != null ? ((Number) result[11]).intValue() : 0);
 			resp.setFWidth(result[12] != null ? (float) result[12] : null);
-			resp.setCoilage(result[13] != null ? Integer.parseInt(result[13].toString()) : null);
-			list.add(resp);
+			Integer coilage = result[13] != null ? Integer.parseInt(result[13].toString()) : null;
+	        resp.setCoilage(coilage);
+	        if (coilage != null) {
+	        	coilAgeSet.add(coilage);  
+	        }
+	        list.add(resp);
 		}
 
 		if ("INWARDSHEET_PACKETS".equals(listPageSearchRequest.getAllocationType())) {
@@ -277,15 +283,22 @@ public class SalesOrderJswController {
 				resp.setLocationName(result[10] != null ? (String) result[10] : null);
 				resp.setNoofPieces(result[11] != null ? ((Number) result[11]).intValue() : 0);
 				resp.setFWidth(result[12] != null ? (float) result[12] : null);
-				resp.setCoilage(result[13] != null ? Integer.parseInt(result[13].toString()) : null);
+				Integer coilage = result[13] != null ? Integer.parseInt(result[13].toString()) : null;
+				resp.setCoilage(coilage);
+				if (coilage != null) {
+					coilAgeSet.add(coilage);
+				}
 				list.add(resp);
 			}
 		}
-
+		List<Integer> coilAgeList = new ArrayList<>(coilAgeSet);
+		Collections.sort(coilAgeList);
+		
 		response.put("content", list);
 		response.put("currentPage", packetsList1.getNumber());
 		response.put("totalItems", packetsList1.getTotalElements());
 		response.put("totalPages", packetsList1.getTotalPages());
+		response.put("coilAgeList", coilAgeList);
 		return new ResponseEntity<Object>(response, HttpStatus.OK);
 	}
 

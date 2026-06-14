@@ -126,13 +126,12 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " and vstatus in (1,2,3) " 
 			+ " and mat.mm_id = parent.mm_id " 
 			+ " and mat.grade_id = :gradeId "
-			+ " and mat.subgrade_id= :subgradeId "
 			+ " and mat.form_id not in (21)"
 			+ " and mat.thickness= :thickness "
 			+ " AND parent.fwidth = :width "
 			+ " and case when :partyIdsFlag=true then parent.npartyid in :partyIds else 1=1 end"
 			+ ") a "
-			+ " where 1=1 ",
+			+ " where 1=1 and case when :fromCoilAge >0 then coilage between :fromCoilAge and :toCoilAge else 1=1 end ",
 		countQuery = "SELECT count(inwardid) from "
 			+ " (select parent.inwardentryid inwardid, coilnumber "
 			+ " FROM product_tblinwardentry parent, product_tblpartydetails party, "
@@ -142,21 +141,21 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " and vstatus in (1,2,3) " 
 			+ " and mat.mm_id = parent.mm_id " 
 			+ " and mat.grade_id = :gradeId "
-			+ " and mat.subgrade_id= :subgradeId "
 			+ " and mat.form_id not in (21) "
 			+ " and mat.thickness= :thickness "
 			+ " AND parent.fwidth = :width "
 			+ " and case when :partyIdsFlag=true then parent.npartyid in :partyIds else 1=1 end"
 			+ ") a "
-			+ " where 1=1", nativeQuery = true)
+			+ " where 1=1 and case when :fromCoilAge >0 then coilage between :fromCoilAge and :toCoilAge else 1=1 end ", nativeQuery = true)
 	Page<Object[]> findCoilInventory(
 			@Param("searchText") String searchText,
 			@Param("partyIds") List<Integer> partyIds,
 			@Param("partyIdsFlag") boolean partyIdsFlag,
 			@Param("gradeId") int gradeId,
-			@Param("subgradeId") int subgradeId,
 			@Param("thickness") BigDecimal thickness,
 			@Param("width") BigDecimal width,
+			@Param("fromCoilAge") int fromCoilAge,
+			@Param("toCoilAge") int toCoilAge,
 			Pageable pageable);
 
 	@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, mm_id, materialdesc, materialgrade,fthickness, flength, fweight, partyname,"
@@ -181,11 +180,11 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ "	and case when :partyIdsFlag=true then parent.npartyid in :partyIds else 1=1 end  "
 			+ " and case when :packetStatus in (2, 3) then child.status = :packetStatus else 1=1 end "
 			+ " and mat.grade_id = :gradeId "
-			+ " and mat.subgrade_id= :subgradeId "
 			+ " and mat.thickness= :thickness "
 			+ " AND coalesce(child.actualwidth, child.plannedwidth) = :width "
 			+ " and coalesce(child.actuallength, child.plannedlength) = :length) a "
-			+ " where fweight>0 AND CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END",
+			+ " where fweight>0 AND CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END"
+			+ " and case when :fromCoilAge >0 then coilage between :fromCoilAge and :toCoilAge else 1=1 end ",
 		countQuery = "SELECT count(packet_id) from "
 			+ " (select instructionid as packet_id, coalesce(actualweight, plannedweight) fweight, "
 			+ " (SELECT count(distinct inss.instructionid) cnt FROM product_instruction inss where inss.inwardid=parent.inwardentryid  and status!=4 and inss.parentgroupid=child.groupid) as siltcutcnt"
@@ -201,21 +200,22 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ "	and case when :partyIdsFlag=true then parent.npartyid in :partyIds else 1=1 end  "
 			+ " and case when :packetStatus in (2, 3) then child.status = :packetStatus else 1=1 end "
 			+ " and mat.grade_id = :gradeId "
-			+ " and mat.subgrade_id= :subgradeId "
 			+ " and mat.thickness= :thickness "
 			+ " AND coalesce(child.actualwidth, child.plannedwidth) = :width "
 			+ " and coalesce(child.actuallength, child.plannedlength) = :length) a "
-			+ " where fweight>0 AND CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END", nativeQuery = true)
+			+ " where fweight>0 AND CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END"
+			+ " and case when :fromCoilAge >0 then coilage between :fromCoilAge and :toCoilAge else 1=1 end ", nativeQuery = true)
 	Page<Object[]> findPacketInventory(
 			@Param("searchText") String searchText,
 			@Param("partyIds") List<Integer> partyIds,
 			@Param("partyIdsFlag") boolean partyIdsFlag,
 			@Param("packetStatus") int packetStatus, 
 			@Param("gradeId") int gradeId,
-			@Param("subgradeId") int subgradeId,
 			@Param("thickness") BigDecimal thickness,
 			@Param("width") BigDecimal width,
 			@Param("length") BigDecimal length,
+			@Param("fromCoilAge") int fromCoilAge,
+			@Param("toCoilAge") int toCoilAge,
 			Pageable pageable);
 
 	@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, mm_id, materialdesc, materialgrade,fthickness, flength, "
@@ -229,7 +229,8 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " parent.npartyid, DATEDIFF(curdate(), date_format(parent.createdon, '%Y-%m-%d')) coilage"
 			+ " FROM product_tblinwardentry parent, product_tblpartydetails party  "
 			+ " where parent.vstatus in (1,2,3) and parent.isdeleted=0 and party.npartyid = parent.npartyid  "
-			+ " and parent.mm_id = :mmid) a where 1=1",
+			+ " and parent.mm_id = :mmid) a "
+			+ " where 1=1 and case when :fromCoilAge >0 then coilage between :fromCoilAge and :toCoilAge else 1=1 end ",
 			countQuery = "SELECT count(inwardid) from ("
 			+ " SELECT parent.inwardentryid inwardid,  coilnumber, customerbatchid, parent.mm_id,  "
 			+ " (SELECT product_name FROM jsw_product_master a, jsw_material_master mat where a.product_id=mat.producttype_id and mat.mm_id=parent.mm_id limit 1) as  materialdesc,  "
@@ -240,9 +241,13 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " '' as enduser_tag_name, parent.npartyid"
 			+ " FROM product_tblinwardentry parent, product_tblpartydetails party  "
 			+ " where parent.vstatus in (1,2,3) and parent.isdeleted=0 and party.npartyid = parent.npartyid  "
-			+ " and parent.mm_id = :mmid) a  where 1=1", 
+			+ " and parent.mm_id = :mmid) a "
+			+ " where 1=1 and case when :fromCoilAge >0 then coilage between :fromCoilAge and :toCoilAge else 1=1 end ", 
 		nativeQuery = true)
-	Page<Object[]> findSheetInventory(@Param("mmid") String mmid, Pageable pageable);
+	Page<Object[]> findSheetInventory(@Param("mmid") String mmid, 
+			@Param("fromCoilAge") int fromCoilAge,
+			@Param("toCoilAge") int toCoilAge,
+			Pageable pageable);
 
 	Optional<SalesOrderJswEntity> findBySoNumberIgnoreCase(String soNumber);
 
