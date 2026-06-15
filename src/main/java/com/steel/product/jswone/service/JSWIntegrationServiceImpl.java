@@ -1207,7 +1207,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			audit.setProcessType("WAREHOUSE_REASSIGNMENT");
 			HttpHeaders headers = new HttpHeaders();
 			headers.set("Content-Type", "application/json");
-			headers.set("Authorization", propertyMap.get("warehouseReassignment_headerkey") +" "+propertyMap.get("warehouseReassignment_headervalue"));
+			headers.set(propertyMap.get("warehouseReassignment_headerkey"), propertyMap.get("warehouseReassignment_headervalue"));
 			WarehouseReassignmentMainRequest postGRN = wareHouseReassignmentRequest(request.getSoAllocationId(), request.getOption());
 			String inventoryAdjustmentReq = objectMapper.writeValueAsString(postGRN);
 			audit.setRequestObj(inventoryAdjustmentReq);

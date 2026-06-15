@@ -307,7 +307,7 @@ public class SalesOrderJswController {
 			@RequestBody ListPageSearchRequest listPageSearchRequest) {
 
 		Map<String, Object> response = new HashMap<>();
-
+		
 		Page<Object[]> packetsList1 = salesOrderService.listAllSOIDsCP(listPageSearchRequest);
 
 		List<Integer> soIDsList = new ArrayList<>();
@@ -316,9 +316,16 @@ public class SalesOrderJswController {
 				soIDsList.add((Integer) row[0]);
 			}
 		}
+		
 		boolean warehouseFlag = false;
 		if (listPageSearchRequest.getWarehouseList() != null && listPageSearchRequest.getWarehouseList().size() > 0) {
 			warehouseFlag = true;
+		}
+		
+		if(listPageSearchRequest.getSoId() !=null && listPageSearchRequest.getSoId()>0 ) {
+			warehouseFlag = false;
+			soIDsList = new ArrayList<>();
+			soIDsList.add(listPageSearchRequest.getSoId());
 		}
 		List<Object[]> packetsList = salesOrderService.listAllSOsCP(soIDsList, warehouseFlag,
 				listPageSearchRequest.getWarehouseList());
