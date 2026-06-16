@@ -193,7 +193,7 @@ public class SalesOrderJswController {
 			child.setSoChildId(result[23] != null ? (Integer) result[23] : null);
 			child.setMmId(result[24] != null ? (String) result[24] : null);
 			child.setSoqty(result[27] != null ? (BigDecimal) result[27] : null);
-			child.setAllocatedSoqty(result[28] != null ? (BigDecimal) result[28] : null);
+			child.setTotalAllocatedItemQty(result[28] != null ? (BigDecimal) result[28] : null);
 			child.setAllocatedStts(result[29] != null ? (String) result[29] : null);
 			child.setItemStatus(result[30] != null ? (String) result[30] : null);
 			child.setWearhouse_id(result[31] != null ? (String) result[31] : null);
@@ -215,7 +215,6 @@ public class SalesOrderJswController {
 			} else {
 				resp.setOrder_confirmation_time(null);
 			}
-
 			resp.getItemslist().add(child);
 
 			if (soMap != null && soMap.get(resp.getSoId()) != null) {
@@ -475,18 +474,18 @@ public class SalesOrderJswController {
 		log.info("in allocatedCoils ");
 		Page<Object[]> packetsList1 = inwdEntrySvc.listAllocatedCoils(searchListPageRequest);
 		Map<String, String> matDescMap = new HashMap<>();
+		Map<Integer, String> inwardwiseSoMap = new HashMap<>();
 
 		List<Integer> inwardIdList = new ArrayList<>();
 		for (Object[] result : packetsList1) {
 			Integer inwardId = (result[0] != null ? (Integer) result[0] : null);
 			inwardIdList.add(inwardId);
-			matDescMap.put((result[12] != null ? (String) result[12] : null),
-					(result[13] != null ? (String) result[13] : null));
+			matDescMap.put((result[12] != null ? (String) result[12] : null), (result[13] != null ? (String) result[13] : null));
+			inwardwiseSoMap.put(inwardId, (result[14] != null ? (String) result[14] : null));
 		}
 		log.info("In allocatedCoils === " + matDescMap);
 		List<InwardEntry> pageResult = inwdEntrySvc.locationWiseListByInwardId(inwardIdList);
-		List<InwardEntryResponseDto> inwardList = pageResult.stream()
-				.map(inw -> InwardEntry.valueOfResponseAllocatedPackets(inw, matDescMap)).collect(Collectors.toList());
+		List<InwardEntryResponseDto> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponseAllocatedPackets(inw, matDescMap,inwardwiseSoMap)).collect(Collectors.toList());
 		response.put("content", inwardList);
 		response.put("currentPage", packetsList1.getNumber());
 		response.put("totalItems", packetsList1.getTotalElements());

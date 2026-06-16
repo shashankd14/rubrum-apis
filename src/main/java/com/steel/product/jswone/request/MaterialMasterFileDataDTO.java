@@ -14,10 +14,10 @@ public class MaterialMasterFileDataDTO {
 	private String mmDescription;
 
 	@CsvBindByPosition(position = 2)
-	private String category;
+	private String surfacetype;
 
 	@CsvBindByPosition(position = 3)
-	private String surfacetype;
+	private String category;
 
 	@CsvBindByPosition(position = 4)
 	private String subcategory;

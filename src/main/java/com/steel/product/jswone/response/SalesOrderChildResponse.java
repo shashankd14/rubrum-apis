@@ -17,7 +17,7 @@ public class SalesOrderChildResponse {
 
 	private BigDecimal soqty;
 
-	private BigDecimal allocatedSoqty;
+	private BigDecimal totalAllocatedItemQty;
 
 	private String allocatedStts;
 

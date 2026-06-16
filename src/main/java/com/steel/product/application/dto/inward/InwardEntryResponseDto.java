@@ -500,7 +500,5 @@ public class InwardEntryResponseDto {
 
 	public void setAllocatedMmid(String allocatedMmid) {
 		this.allocatedMmid = allocatedMmid;
-	} 
-	
-	
+	}
 }

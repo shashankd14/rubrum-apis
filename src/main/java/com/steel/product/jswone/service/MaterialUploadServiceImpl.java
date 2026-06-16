@@ -152,7 +152,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 			List<MaterialMasterFileDataEntity> productList = new ArrayList<>();
 			if (request.isFileData()) {
 				String fullPath = inwardFileUploadPath + File.separator + request.getFileName();
-				System.out.println("fullPath == " + fullPath);
+				log.info("fullPath == " + fullPath);
 				File file = new File(fullPath);
 
 				if (!file.exists()) {
@@ -164,7 +164,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 
 				List<MaterialMasterFileDataDTO> products = mmFileDetails(fullPath);
 				totalMMIDCount = products.size();
-				System.out.println("Hi size " + products.size());
+				log.info("Hi size " + products.size());
 				for (MaterialMasterFileDataDTO dto : products) {
 					MaterialMasterFileDataEntity dest = new MaterialMasterFileDataEntity();
 					BeanUtils.copyProperties(dto, dest);
@@ -259,7 +259,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 						materialMasterJswRepository.save(destEntity);
 					} catch (Exception e) {
 						e.printStackTrace();
-						System.out.println("error while save --  " + e.getMessage());
+						log.info("error while save --  " + e.getMessage());
 					}
 				}
 			}

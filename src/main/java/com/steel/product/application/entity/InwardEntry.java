@@ -1053,7 +1053,8 @@ public class InwardEntry {
 	    return copy;
 	}
 
-	public static InwardEntryResponseDto valueOfResponseAllocatedPackets(InwardEntry inwardEntry, Map<String, String> matDescMap) {
+	public static InwardEntryResponseDto valueOfResponseAllocatedPackets(InwardEntry inwardEntry,
+			Map<String, String> matDescMap, Map<Integer, String> inwardwiseSoMap) {
 		InwardEntryResponseDto inwardEntryResponseDto = new InwardEntryResponseDto();
 		inwardEntryResponseDto.setInwardEntryId(inwardEntry.getInwardEntryId());
 		inwardEntryResponseDto.setParty(inwardEntry.getParty() != null ? Party.valueOf(inwardEntry.getParty()) : null);
@@ -1101,7 +1102,7 @@ public class InwardEntry {
 		inwardEntryResponseDto.setScrapWeight( inwardEntry.getScrapWeight() );
 		inwardEntryResponseDto.setMmId( inwardEntry.getMmId()  );
 		inwardEntryResponseDto.setAllocatedMmid(inwardEntry.getAllocatedMmid());
-		inwardEntryResponseDto.setSono( inwardEntry.getSono() );
+		inwardEntryResponseDto.setSono( inwardwiseSoMap.get(inwardEntry.getInwardEntryId()));
 		long daysBetween = 0;
 		try {
 			// Today's date
