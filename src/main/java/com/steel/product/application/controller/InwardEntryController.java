@@ -330,7 +330,7 @@ public class InwardEntryController {
 				inwardIdList.add(inwardId);
 				matDescMap.put((result[12] != null ? (String) result[12] : null), (result[13] != null ? (String) result[13] : null));
 			}
-			log.info("In inwardIdList === " + matDescMap);
+			log.info("In InwardEntryController.partywiselist === " + matDescMap);
 			List<InwardEntry> pageResult = inwdEntrySvc.locationWiseListByInwardId(inwardIdList);
 			List<InwardEntryResponseDto> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponsePartyWise(inw, matDescMap)).collect(Collectors.toList());
 			response.put("content", inwardList);
@@ -352,7 +352,7 @@ public class InwardEntryController {
 			Integer inwardId = (result[0] != null ? (Integer) result[0] : null);
 			inwardIdList.add(inwardId);
 		}
-		log.info("In inwardIdList === " + inwardIdList);
+		log.info("In InwardEntryController.inwardIdList === " + inwardIdList);
 		List<InwardEntry> pageResult = inwdEntrySvc.locationWiseListByInwardId(inwardIdList);
 		List<InwardEntryResponseDto> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponse(inw, materialService)).collect(Collectors.toList());
 		response.put("content", inwardList);

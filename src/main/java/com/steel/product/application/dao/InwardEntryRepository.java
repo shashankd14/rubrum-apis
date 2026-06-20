@@ -427,7 +427,7 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 			+ " (select subgrade.subgrade_name from jsw_subgrade_master subgrade where subgrade.subgrade_id=mat.subgrade_id limit 1) as subgradename, "
 			+ " (select brand.brand_name from jsw_brand_master brand where brand.brand_id=mat.brand_id limit 1) as brandname, "
 			+ " inw.mm_id, mat.mm_description, "
-			+ " (SELECT GROUP_CONCAT(distinct so.refno SEPARATOR ', ') FROM jsw_sales_order so JOIN jsw_sales_order_allocation allo ON allo.so_id = so.so_id  WHERE allo.so_id = alloc.so_id) AS refno_list "
+			+ " (SELECT GROUP_CONCAT(DISTINCT so.refno SEPARATOR ', ') FROM jsw_sales_order_allocation allo JOIN jsw_sales_order so ON so.so_id = allo.so_id WHERE allo.inward_entry_id = inw.inwardentryid ) AS refno_list "
 			+ " from product_tblinwardentry inw, jsw_material_master mat, product_tblpartydetails party, "
 			+ " jsw_sales_order_allocation alloc, jsw_sales_order so "
 			+ " where inw.isdeleted=0 and mat.mm_id=inw.mm_id and inw.npartyid=party.npartyid "

@@ -206,7 +206,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 					partyIds.add(userPartyMap.getPartyId());
 					// partyIdsFlag = true;
 				}
-				log.info("In partyIds === " + partyIds);
+				//log.info("In partyIds === " + partyIds);
 			} else {
 				// partyIdsFlag = false;
 				partyIds = new ArrayList<>();
@@ -385,7 +385,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				// partyIds.add(userPartyMap.getPartyId());
 				// partyIdsFlag = true;
 				// }
-				log.info("In partyIds === " + partyIds);
+				//log.info("In partyIds === " + partyIds);
 			} else {
 				partyIdsFlag = false;
 				partyIds = new ArrayList<>();
