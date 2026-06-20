@@ -22,6 +22,10 @@ public class InwardEntry {
 	@JoinColumn(name = "npartyid")
 	private Party party;
 
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "location_id")
+	private LocationMasterEntity location;
+
 	@Column(name = "coilnumber")
 	private String coilNumber;
 
@@ -323,6 +327,14 @@ public class InwardEntry {
 		this.party = party;
 	}
 
+	public LocationMasterEntity getLocation() {
+		return location;
+	}
+
+	public void setLocation(LocationMasterEntity location) {
+		this.location = location;
+	}
+
 	public Material getMaterial() {
 		return this.material;
 	}
@@ -607,6 +619,7 @@ public class InwardEntry {
 		InwardEntryResponseDto inwardEntryResponseDto = new InwardEntryResponseDto();
 		inwardEntryResponseDto.setInwardEntryId(inwardEntry.getInwardEntryId());
 		inwardEntryResponseDto.setParty(inwardEntry.getParty() != null ? Party.valueOf(inwardEntry.getParty()) : null);
+		inwardEntryResponseDto.setLocation(inwardEntry.getLocation() != null ? LocationMasterEntity.valueOf(inwardEntry.getLocation()) : null);
 		inwardEntryResponseDto.setCoilNumber(inwardEntry.getCoilNumber());
 		inwardEntryResponseDto.setTdcNo( inwardEntry.getTdcNo() );
 		inwardEntryResponseDto.setBatchNumber(inwardEntry.getBatchNumber());

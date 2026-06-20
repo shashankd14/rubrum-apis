@@ -118,44 +118,54 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 	}
 
 	@Override
-	public Page<InwardEntry> inwardList( SearchListPageRequest searchListPageRequest) {
+	public Page<InwardEntry> inwardList(SearchListPageRequest searchListPageRequest) {
 		log.info("In findAllWithPagination page ");
 		Pageable pageable = null;
 		if (searchListPageRequest.getSortColumn() != null && searchListPageRequest.getSortColumn().length() > 0
 				&& searchListPageRequest.getSortOrder() != null && searchListPageRequest.getSortOrder().length() > 0
 				&& "ASC".equalsIgnoreCase(searchListPageRequest.getSortOrder())) {
-			pageable = PageRequest.of((searchListPageRequest.getPageNo()-1), searchListPageRequest.getPageSize(), Sort.by(searchListPageRequest.getSortColumn()).ascending());
-		}else if (searchListPageRequest.getSortColumn() != null && searchListPageRequest.getSortColumn().length() > 0
+			pageable = PageRequest.of((searchListPageRequest.getPageNo() - 1), searchListPageRequest.getPageSize(),
+					Sort.by(searchListPageRequest.getSortColumn()).ascending());
+		} else if (searchListPageRequest.getSortColumn() != null && searchListPageRequest.getSortColumn().length() > 0
 				&& searchListPageRequest.getSortOrder() != null && searchListPageRequest.getSortOrder().length() > 0
 				&& "DESC".equalsIgnoreCase(searchListPageRequest.getSortOrder())) {
-			pageable = PageRequest.of((searchListPageRequest.getPageNo()-1), searchListPageRequest.getPageSize(), Sort.by(searchListPageRequest.getSortColumn()).descending());
+			pageable = PageRequest.of((searchListPageRequest.getPageNo() - 1), searchListPageRequest.getPageSize(),
+					Sort.by(searchListPageRequest.getSortColumn()).descending());
 		} else {
-			pageable = PageRequest.of((searchListPageRequest.getPageNo()-1), searchListPageRequest.getPageSize(), Sort.by("inwardEntryId").descending());
-		}		
-		if(searchListPageRequest.getPartyId()!=null && searchListPageRequest.getPartyId().length() > 0) {
-			if(searchListPageRequest.getSearchText() !=null && searchListPageRequest.getSearchText().length()>0) {
-				Page<InwardEntry> pageResult = inwdEntryRepo.findAllWithSearchTextAndPartyId(searchListPageRequest.getSearchText(), Integer.parseInt(searchListPageRequest.getPartyId()), pageable);
+			pageable = PageRequest.of((searchListPageRequest.getPageNo() - 1), searchListPageRequest.getPageSize(),
+					Sort.by("inwardEntryId").descending());
+		}
+		if (searchListPageRequest.getPartyId() != null && searchListPageRequest.getPartyId().length() > 0) {
+			if (searchListPageRequest.getSearchText() != null && searchListPageRequest.getSearchText().length() > 0) {
+				Page<InwardEntry> pageResult = inwdEntryRepo.findAllWithSearchTextAndPartyId(
+						searchListPageRequest.getSearchText(), Integer.parseInt(searchListPageRequest.getPartyId()),
+						searchListPageRequest.getLocationId(), pageable);
 				return pageResult;
 			} else {
-				Page<InwardEntry> pageResult = inwdEntryRepo.findAllInwardListWithPartyId(Integer.parseInt(searchListPageRequest.getPartyId()), pageable);
+				Page<InwardEntry> pageResult = inwdEntryRepo
+						.findAllInwardListWithPartyId(Integer.parseInt(searchListPageRequest.getPartyId()),
+								searchListPageRequest.getLocationId(), pageable);
 				return pageResult;
 			}
 		} else {
 			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
-			if(adminUserEntity.getUserPartyMap()!=null && adminUserEntity.getUserPartyMap().size()>0) {
-				List<Integer> partyIds=new ArrayList<>();
+			if (adminUserEntity.getUserPartyMap() != null && adminUserEntity.getUserPartyMap().size() > 0) {
+				List<Integer> partyIds = new ArrayList<>();
 				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
 					partyIds.add(userPartyMap.getPartyId());
-					log.info("In partyIds === "+partyIds);
+					log.info("In partyIds === " + partyIds);
 				}
-				Page<InwardEntry> pageResult = inwdEntryRepo.findAll(searchListPageRequest.getSearchText(), partyIds, pageable);
+				Page<InwardEntry> pageResult = inwdEntryRepo.findAll(searchListPageRequest.getSearchText(), partyIds,
+						searchListPageRequest.getLocationId(), pageable);
 				return pageResult;
 			} else {
-				if(searchListPageRequest.getSearchText()!=null && searchListPageRequest.getSearchText().length()>0) {
-					Page<InwardEntry> pageResult = inwdEntryRepo.findAllWithSearch(searchListPageRequest.getSearchText(), pageable);
+				if (searchListPageRequest.getSearchText() != null
+						&& searchListPageRequest.getSearchText().length() > 0) {
+					Page<InwardEntry> pageResult = inwdEntryRepo.findAllWithSearch(
+							searchListPageRequest.getSearchText(), searchListPageRequest.getLocationId(), pageable);
 					return pageResult;
 				} else {
-					Page<InwardEntry> pageResult = inwdEntryRepo.findAllInwardList(pageable);
+					Page<InwardEntry> pageResult = inwdEntryRepo.findAllInwardList(searchListPageRequest.getLocationId(), pageable);
 					return pageResult;
 				}
 			}
@@ -163,52 +173,64 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 	}
 
 	@Override
-	public Page<InwardEntry> partywiselist( SearchListPageRequest searchListPageRequest) {
+	public Page<InwardEntry> partywiselist(SearchListPageRequest searchListPageRequest) {
 		log.info("In findAllPartyWiseWithPagination page ");
 		Pageable pageable = null;
 		if (searchListPageRequest.getSortColumn() != null && searchListPageRequest.getSortColumn().length() > 0
 				&& searchListPageRequest.getSortOrder() != null && searchListPageRequest.getSortOrder().length() > 0
 				&& "ASC".equalsIgnoreCase(searchListPageRequest.getSortOrder())) {
-			pageable = PageRequest.of((searchListPageRequest.getPageNo()-1), searchListPageRequest.getPageSize(), Sort.by(searchListPageRequest.getSortColumn()).ascending());
-		}else if (searchListPageRequest.getSortColumn() != null && searchListPageRequest.getSortColumn().length() > 0
+			pageable = PageRequest.of((searchListPageRequest.getPageNo() - 1), searchListPageRequest.getPageSize(),
+					Sort.by(searchListPageRequest.getSortColumn()).ascending());
+		} else if (searchListPageRequest.getSortColumn() != null && searchListPageRequest.getSortColumn().length() > 0
 				&& searchListPageRequest.getSortOrder() != null && searchListPageRequest.getSortOrder().length() > 0
 				&& "DESC".equalsIgnoreCase(searchListPageRequest.getSortOrder())) {
-			pageable = PageRequest.of((searchListPageRequest.getPageNo()-1), searchListPageRequest.getPageSize(), Sort.by(searchListPageRequest.getSortColumn()).descending());
+			pageable = PageRequest.of((searchListPageRequest.getPageNo() - 1), searchListPageRequest.getPageSize(),
+					Sort.by(searchListPageRequest.getSortColumn()).descending());
 		} else {
-			if(searchListPageRequest.getPageNo() == null ) {
+			if (searchListPageRequest.getPageNo() == null) {
 				searchListPageRequest.setPageNo(1);
 			}
-			pageable = PageRequest.of((searchListPageRequest.getPageNo()-1), searchListPageRequest.getPageSize(), Sort.by("inwardEntryId").descending());
+			pageable = PageRequest.of((searchListPageRequest.getPageNo() - 1), searchListPageRequest.getPageSize(),
+					Sort.by("inwardEntryId").descending());
 		}
-		
-		if(searchListPageRequest.getPartyId()!=null && searchListPageRequest.getPartyId().length() > 0) {			
-			if(searchListPageRequest.getSearchText() !=null && searchListPageRequest.getSearchText().length()>0) {
-				Page<InwardEntry> pageResult = inwdEntryRepo.findAllWithSearchTextAndPartyId(searchListPageRequest.getSearchText(), Integer.parseInt(searchListPageRequest.getPartyId()), pageable);
+
+		if (searchListPageRequest.getPartyId() != null && searchListPageRequest.getPartyId().length() > 0) {
+			if (searchListPageRequest.getSearchText() != null && searchListPageRequest.getSearchText().length() > 0) {
+				Page<InwardEntry> pageResult = inwdEntryRepo.findAllWithSearchTextAndPartyId(
+						searchListPageRequest.getSearchText(), Integer.parseInt(searchListPageRequest.getPartyId()),
+						searchListPageRequest.getLocationId(), pageable);
 				return pageResult;
 			} else {
-				Page<InwardEntry> pageResult = inwdEntryRepo.findAllWithPartyId(Integer.parseInt(searchListPageRequest.getPartyId()), pageable);
+				Page<InwardEntry> pageResult = inwdEntryRepo.findAllWithPartyId(
+						Integer.parseInt(searchListPageRequest.getPartyId()), searchListPageRequest.getLocationId(),
+						pageable);
 				return pageResult;
 			}
 		} else {
 			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
-			if(adminUserEntity.getUserPartyMap()!=null && adminUserEntity.getUserPartyMap().size()>0) {
-				List<Integer> partyIds=new ArrayList<>();
+			if (adminUserEntity.getUserPartyMap() != null && adminUserEntity.getUserPartyMap().size() > 0) {
+				List<Integer> partyIds = new ArrayList<>();
 				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
 					partyIds.add(userPartyMap.getPartyId());
-					log.info("In partyIds === "+partyIds);
+					log.info("In partyIds === " + partyIds);
 				}
-				Page<InwardEntry> pageResult = inwdEntryRepo.findAll(searchListPageRequest.getSearchText(), partyIds, pageable);
+				Page<InwardEntry> pageResult = inwdEntryRepo.findAll(searchListPageRequest.getSearchText(), partyIds,
+						searchListPageRequest.getLocationId(), pageable);
 				return pageResult;
 			} else {
-				if(searchListPageRequest.getSearchText()!=null && searchListPageRequest.getSearchText().length()>0) {
-					Page<InwardEntry> pageResult = inwdEntryRepo.findAllWithSearch(searchListPageRequest.getSearchText(), pageable);
+				if (searchListPageRequest.getSearchText() != null
+						&& searchListPageRequest.getSearchText().length() > 0) {
+					Page<InwardEntry> pageResult = inwdEntryRepo
+							.findAllWithSearch(searchListPageRequest.getSearchText(), searchListPageRequest.getLocationId(), pageable);
 					return pageResult;
 				} else {
-					Page<InwardEntry> pageResult = inwdEntryRepo.findAllPartyWiseRegister(pageable);
+					Page<InwardEntry> pageResult = inwdEntryRepo
+							.findAllPartyWiseRegister(searchListPageRequest.getLocationId(), pageable);
 					return pageResult;
 				}
 			}
 		}
+
 	}
 	
 	@Override

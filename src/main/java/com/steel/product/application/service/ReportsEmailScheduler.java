@@ -1,11 +1,8 @@
 package com.steel.product.application.service;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -16,6 +13,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import com.steel.product.application.dao.PartyDetailsRepository;
 import com.steel.product.application.entity.Party;
@@ -42,23 +40,36 @@ public class ReportsEmailScheduler {
 	ReportsService reportsService;
 	
 	@Scheduled(cron = "${email.reportScheduleTime}")
-	public void sendNotificationAlert() throws InterruptedException {
+	public void sendNotificationAlert() {
+		if (!apiAlertRequired) {
+			return;
+		}
 
-		if (apiAlertRequired) {
-			logger.info("sendDailyNotificationAlert apiAlertRequired == " + apiAlertRequired);
-			Calendar cal = Calendar.getInstance();
-			Date date = cal.getTime();
-			DateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy");
-			String strDate = dateFormat.format(date);
+		String strDate = LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MMM-yyyy")); // ✅ modern API
+		logger.info("sendDailyNotificationAlert started — date={}", strDate);
 
-			List<Party> partyList = partyRepo.findAllParties();
-			for (Party party : partyList) {
-				if (party.getEmail1() != null && party.getEmail1().length() > 0 && party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0) {
+		// ✅ filter eligible parties at DB level
+		List<Party> partyList = partyRepo.findAllDailyReportParties();
+
+		for (Party party : partyList) {
+			if (!StringUtils.hasText(party.getEmail1()) || !StringUtils.hasText(party.getDailyReportsList())) {
+				continue;
+			}
+			try {
+				
+				//party.setEmail1("kanakadri32@gmail.com");
+				//party.setEmail2("aspen bidadi <aspen.bidadi@gmail.com>");
+				//if(party.getnPartyId() == 36){
+					logger.info("sendDailyNotificationAlert started — date={}", strDate);
 					mailSender.sendMail(party, strDate);
-					Thread.sleep(200);
-				}
+					logger.info("Daily report sent — getPartyName={}, email={}", party.getPartyName(), party.getEmail1());
+					Thread.sleep(200); // throttle SMTP — remove if not needed
+				//}
+			} catch (Exception e) {
+				logger.error("Failed to send daily report — partyId={}, email={}, error={}", party.getnPartyId(), party.getEmail1(), e.getMessage());
 			}
 		}
+		logger.info("sendNotificationAlert completed — processed {} parties", partyList.size());
 	}
 
 	@Scheduled(cron = "${email.reportsMonthlyScheduleTime}")
@@ -74,7 +85,7 @@ public class ReportsEmailScheduler {
 				 currentYear = currentYear-1;
 			}
 			//logger.info("currentYear  == " + currentYear+", month  == " + month);
-			List<Party> partyList = partyRepo.findAll();
+			List<Party> partyList = partyRepo.findAllParties();
 			for (Party party : partyList) {
 				if (party.getEmail1() != null && party.getEmail1().length() > 0 && party.getMonthlyReportsList() != null && party.getMonthlyReportsList().length() > 0) {
 					mailSender.sendMonthlyReportsMail(party, month, currentYear);

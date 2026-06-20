@@ -219,7 +219,7 @@ public class ReportsServiceImpl implements ReportsService {
 			List<StockReportViewEntity> partyList = stockReportViewRepository.findByPartyId(partyId);
 
 			acctStatementMap.put("1",
-			new Object[] { "CoilNumber", "CustomerBatchId", "Coil Age", "MaterialDesc", "MaterialGrade",
+			new Object[] { "CoilNumber", "CustomerBatchId", "Mother Coil No", "TDC No", "Coil Age", "MaterialDesc", "MaterialGrade",
 					"Thickness", "Width", "Length", "NetWeight", "UnprocessedWeight", "InStockWeight",
 					"Remarks", "InwardStatus" });
 
@@ -228,7 +228,7 @@ public class ReportsServiceImpl implements ReportsService {
 				cnt++;
 
 				acctStatementMap.put("" + cnt,
-				new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getCoilage(),
+				new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getBatchnumber(), kk.getTdcNo(), kk.getCoilage(),
 						kk.getMaterialDesc(), kk.getMaterialGrade(), kk.getFthickness(), kk.getFwidth(),
 						kk.getFlength(), kk.getNetWeight(), kk.getUnProcessedWeight(), kk.getInStockWeight(),
 						kk.getRemarks(), kk.getInwardStatus() });
@@ -532,7 +532,7 @@ public class ReportsServiceImpl implements ReportsService {
 			acctStatementMap.put("1",
 					new Object[] { "CoilNumber", "CustomerBatchId", 
 							"Processing Plan Date","Current Date","Coil Age(No'of Days)",
-							"MaterialDesc", "MaterialGrade", "Thickness",
+							"MaterialDesc", "MaterialGrade", "TDC No", "Thickness",
 							"Width", "Length", "Net Weight", "In Stock Weight", "WIP Weight", "Remarks", "Packet id","Thickness",
 							"Planned Width", "Planned Length", "Planned Weight", "Inward Status", "Classification Tag",
 							"End User Tag" });
@@ -542,7 +542,7 @@ public class ReportsServiceImpl implements ReportsService {
 				cnt++;
 				acctStatementMap.put("" + cnt, new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(),
 						kk.getProcessingPlanDate(), kk.getCurrentdate(), kk.getCoilage(),
-						kk.getMaterialDesc(), kk.getMaterialGrade(), kk.getFthickness(), kk.getFwidth(),
+						kk.getMaterialDesc(), kk.getMaterialGrade(), kk.getTdcNo(), kk.getFthickness(), kk.getFwidth(),
 						kk.getFlength(), kk.getNetWeight(), kk.getInStockWeight(), kk.getWipWeight(), kk.getRemarks(),
 						kk.getPacketId(), kk.getThickness(), kk.getPlannedWidth(), kk.getPlannedLength(), kk.getPlannedWeight(), 
 						kk.getInwardStatus(), kk.getClassificationTag(), kk.getEnduserTagName() });
@@ -649,7 +649,7 @@ public class ReportsServiceImpl implements ReportsService {
 		try {
 
 			acctStatementMap.put("1", new Object[] { "CoilNumber", "CustomerBatchId", "Processing Plan Date", "Current Date",
-				"Coil Age(No'of Days)", "MaterialDesc", "MaterialGrade", "Thickness", "Width", "Length",
+				"Coil Age(No'of Days)", "MaterialDesc", "MaterialGrade", "TDC No","Thickness", "Width", "Length",
 				"Net Weight", "In Stock Weight", "WIP Weight", "Remarks", "Packet id", "Thickness",
 				"Planned Width", "Planned Length", "Planned Weight", "Inward Status", "Classification Tag", "End User Tag"});
 
@@ -662,7 +662,7 @@ public class ReportsServiceImpl implements ReportsService {
 					cnt++;
 					acctStatementMap.put("" + cnt,
 					new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getProcessingPlanDate(),
-					kk.getCurrentdate(), kk.getCoilage(), kk.getMaterialDesc(), kk.getMaterialGrade(),
+					kk.getCurrentdate(), kk.getCoilage(), kk.getMaterialDesc(), kk.getMaterialGrade(), kk.getTdcNo(),
 					kk.getFthickness(), kk.getFwidth(), kk.getFlength(), kk.getNetWeight(),
 					kk.getInStockWeight(), kk.getWipWeight(), kk.getRemarks(), kk.getPacketId(),
 					kk.getThickness(), kk.getPlannedWidth(), kk.getPlannedLength(),
@@ -753,7 +753,7 @@ public class ReportsServiceImpl implements ReportsService {
 			List<StockSummaryReportViewEntity> partyList = stockSummaryReportViewRepository.findByPartyId(partyId);
 
 			acctStatementMap.put("1",
-					new Object[] { "Coil No", "Batch No", "MaterialDesc", "MaterialGrade", "Thickness", "Width",
+					new Object[] { "Coil No", "Batch No", "MaterialDesc", "MaterialGrade", "TDC No", "Thickness", "Width",
 							"Length", "NetWeight", "InStockWeight", "FG Qty", "FG_Classification",
 							"CUT-ENDS_Classification", "EDGE-TRIM_Classification", "OTHERS_Classification",
 							"WIP_Classification", "BLANK_Classification", "Quality Defects", "UnprocessedWeight", "WIP Qty",
@@ -765,7 +765,7 @@ public class ReportsServiceImpl implements ReportsService {
 
 				acctStatementMap.put("" + cnt,
 						new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getMaterialDesc(),
-								kk.getMaterialGrade(), kk.getFthickness(), kk.getFwidth(), kk.getFlength(),
+								kk.getMaterialGrade(), kk.getTdcNo(), kk.getFthickness(), kk.getFwidth(), kk.getFlength(),
 								kk.getNetweight(), kk.getInstockweight(), kk.getFgqty(), kk.getFgclassification(),
 								kk.getCutendsclassification(), kk.getEdgetrimclassification(),
 								kk.getOthersclassification(), kk.getWipclassification(), kk.getBlankclassification(),
@@ -855,7 +855,7 @@ public class ReportsServiceImpl implements ReportsService {
 
 			acctStatementMap.put("1",
 					new Object[] { "CoilNumber", "CustomerBatchId", "Mother Coil No", "Received Date","Current Date","Coil Age(No'of Days)",
-							"MaterialDesc", "MaterialGrade", "Thickness", "Width", "Length", "Net Weight", 
+							"MaterialDesc", "MaterialGrade", "TDC No","Thickness", "Width", "Length", "Net Weight", 
 							"Customer Invoice Number", "Customer Invoice Date", "Status", "Created On", "Remarks" });
 
 			int cnt = 1;
@@ -863,7 +863,7 @@ public class ReportsServiceImpl implements ReportsService {
 				cnt++;
 				acctStatementMap.put("" + cnt,
 				new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getParentcoilnumber(), kk.getReceivedDate(),
-						kk.getCurrentdate(), kk.getCoilage(), kk.getDescription(), kk.getMaterialGrade(),
+						kk.getCurrentdate(), kk.getCoilage(), kk.getDescription(), kk.getMaterialGrade(),kk.getTdcNo(),
 						kk.getFthickness(), kk.getFwidth(), kk.getFlength(), kk.getNetWeight(),
 						kk.getCustInvNo(), kk.getCustInvDate(), kk.getInwardStatus(), kk.getCreatedOn(),
 						kk.getRemarks() });
@@ -1505,7 +1505,7 @@ public class ReportsServiceImpl implements ReportsService {
 
 			acctStatementMap.put("1",
 			new Object[] { "CoilNumber", "CustomerBatchId", "Finishing Date", "Current Date",
-					"Coil Age(No'of Days)", "No'of Pieces", "MaterialDesc", "MaterialGrade", "Remarks",
+					"Coil Age(No'of Days)", "No'of Pieces", "MaterialDesc", "MaterialGrade", "TDC No", "Remarks",
 					"Packet Id", "Thickness", "Actual Width", "Actual Length", "Actual Weight",
 					"Classification Tag", "End User Tag" });
 
@@ -1517,10 +1517,11 @@ public class ReportsServiceImpl implements ReportsService {
 				if (endUserTagName.equals(kk.getEnduserTagName())) {
 					cnt++;
 					acctStatementMap.put("" + cnt,
-					new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getFinishingDate(),
-						kk.getCurrentdate(), kk.getCoilage(), kk.getNoofpieces(), kk.getMaterialGrade(),
-						kk.getRemarks(), kk.getPacketId(), kk.getThickness(), kk.getActualwidth(), kk.getActuallength(), 
-						kk.getActualweight(), kk.getClassificationTag(), ("NO_ENDUSERTAG".equals(kk.getEnduserTagName()) ? "" : kk.getEnduserTagName()) });
+						new Object[] { kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getFinishingDate(),
+						kk.getCurrentdate(), kk.getCoilage(), kk.getNoofpieces(), kk.getMaterialDesc(),
+						kk.getMaterialGrade(), kk.getTdcNo(), kk.getRemarks(), kk.getPacketId(),
+						kk.getThickness(), kk.getActualwidth(), kk.getActuallength(), kk.getActualweight(),
+						kk.getClassificationTag(), ("NO_ENDUSERTAG".equals(kk.getEnduserTagName()) ? "" : kk.getEnduserTagName()) });
 				}
 			}
 		} catch (Exception e) {
@@ -1683,7 +1684,7 @@ public class ReportsServiceImpl implements ReportsService {
 
 			acctStatementMap.put("1",
 					new Object[] { "Plan pdf No", "Plan Date", "Finishing Date", "Mother Coil No", "Plan pdf qty", "Batch No",
-							"Aspen Coil No", "Material Type", "Material Grade", "Inward Coil Weight", "Packet Id",
+							"Aspen Coil No", "Material Type", "Material Grade", "TDC No","Inward Coil Weight", "Packet Id",
 							"Thickness", "Width", "Length", "Quality Status", "Packet Qty",
 							"Packet Status", "End User" });
 			int cnt = 1;
@@ -1692,7 +1693,7 @@ public class ReportsServiceImpl implements ReportsService {
 				acctStatementMap.put("" + cnt,
 						new Object[] { kk.getPartdetailsid(), kk.getPlandate(), kk.getFinishingdate(), kk.getMothercoilno(),
 								kk.getPlanPdfQty(), kk.getCustomerbatchid(), kk.getAspencoilno(), kk.getMaterialdesc(),
-								kk.getMaterialgrade(), kk.getFquantity(), kk.getPacketid(), kk.getFthickness(),
+								kk.getMaterialgrade(),kk.getTdcNo() ,kk.getFquantity(), kk.getPacketid(), kk.getFthickness(),
 								kk.getPlannedwidth(), kk.getPlannedlength(), kk.getQualitystatus(),
 								kk.getPlannedweight(), kk.getPacketstatus(), kk.getEndusertagname() });
 			}

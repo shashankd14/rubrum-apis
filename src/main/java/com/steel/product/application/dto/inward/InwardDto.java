@@ -10,6 +10,8 @@ public class InwardDto {
 
 	private int partyId;
 
+	private int locationId;
+
 	private String purposeType;
 
 	private String coilNumber;
@@ -295,6 +297,14 @@ public class InwardDto {
 
 	public void setTdcNo(String tdcNo) {
 		this.tdcNo = tdcNo;
+	}
+
+	public int getLocationId() {
+		return locationId;
+	}
+
+	public void setLocationId(int locationId) {
+		this.locationId = locationId;
 	}
 	
 	

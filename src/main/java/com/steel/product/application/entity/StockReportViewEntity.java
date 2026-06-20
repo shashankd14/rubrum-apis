@@ -25,6 +25,12 @@ public class StockReportViewEntity {
 	@Column(name = "customerbatchid")
 	private String customerBatchId;
 
+	@Column(name = "batchnumber")
+	private String batchnumber;
+
+	@Column(name = "tdc_no")
+	private String tdcNo;
+
 	@Column(name = "material_desc")
 	private String materialDesc;
 
@@ -51,13 +57,13 @@ public class StockReportViewEntity {
 
 	@Column(name = "Unprocessed_Weight")
 	private String unProcessedWeight;
-	
+
 	@Column(name = "coilage")
 	private Integer coilage;
-	
+
 	@Column(name = "mnth")
 	private Integer mnth;
-	
+
 	@Column(name = "remarks")
 	private String remarks;
 

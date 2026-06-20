@@ -3,6 +3,7 @@ package com.steel.product.application.dto.inward;
 import com.steel.product.application.dto.instruction.InstructionResponseDto;
 import com.steel.product.application.dto.material.MaterialResponseDto;
 import com.steel.product.application.dto.materialGradeDto.MaterialGradeDto;
+import com.steel.product.application.dto.party.LocationMasterDto;
 import com.steel.product.application.dto.party.PartyDto;
 import com.steel.product.application.entity.*;
 
@@ -14,6 +15,8 @@ public class InwardEntryResponseDto {
     private Integer inwardEntryId;
 
     private PartyDto party;
+
+    private LocationMasterDto location;
 
     private String coilNumber;
 
@@ -109,7 +112,15 @@ public class InwardEntryResponseDto {
         this.party = party;
     }
 
-    public String getCoilNumber() {
+    public LocationMasterDto getLocation() {
+		return location;
+	}
+
+	public void setLocation(LocationMasterDto location) {
+		this.location = location;
+	}
+
+	public String getCoilNumber() {
         return coilNumber;
     }
 

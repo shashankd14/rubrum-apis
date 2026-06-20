@@ -13,6 +13,13 @@ import java.util.List;
 @Repository
 public interface PartyDetailsRepository extends JpaRepository<Party, Integer> {
 
+	@Query("SELECT p FROM Party p " +
+	       "WHERE (p.isDeleted = false OR p.isDeleted IS NULL) " +
+	       "AND p.email1 IS NOT NULL AND TRIM(p.email1) <> '' " +
+	       "AND p.dailyReportsList IS NOT NULL AND TRIM(p.dailyReportsList) <> ''  " +
+	       "ORDER BY p.nPartyId DESC")
+	List<Party> findAllDailyReportParties();
+
 	@Query("select party from Party party where 1=1 order by nPartyId desc")
 	List<Party> findAllParties();
 	

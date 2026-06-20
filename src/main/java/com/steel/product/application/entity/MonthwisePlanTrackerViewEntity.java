@@ -55,6 +55,9 @@ public class MonthwisePlanTrackerViewEntity {
 	@Column(name = "materialgrade")
 	private String materialgrade;
 
+	@Column(name = "tdc_no")
+	private String tdcNo;
+
 	@Column(name = "fquantity")
 	private String fquantity;
 

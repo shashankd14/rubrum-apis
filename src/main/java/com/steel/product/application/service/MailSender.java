@@ -57,41 +57,47 @@ public class MailSender {
 	public void sendMail(Party party, String strDate) {
 
 		logger.info("******MailSender.sendDailyMail**************");
-		boolean mailStts=false;
+		boolean mailStts = false;
 		try {
-			logger.info("Party name is : "+party.getPartyName()+", DailyReportsList == "+party.getDailyReportsList());
+			logger.info("Party name is : " + party.getPartyName() + ", DailyReportsList == " + party.getDailyReportsList());
 
 			MimeMessage message = javaMailSender.createMimeMessage();
 			MimeMessageHelper helper = new MimeMessageHelper(message, true);
-			
-			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0 && party.getDailyReportsList().contains("STOCKREPORT")) {
+
+			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0
+					&& party.getDailyReportsList().contains("STOCKREPORT")) {
 				mailStts = true;
 				reportsService.createStockReport(party.getnPartyId(), strDate, helper);
 				reportsService.createStockDetailsReport(party.getnPartyId(), strDate, helper);
 			}
-			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0	&& party.getDailyReportsList().contains("FGREPORT")) {
+			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0
+					&& party.getDailyReportsList().contains("FGREPORT")) {
 				mailStts = true;
 				reportsService.createFGReport(party.getnPartyId(), strDate, helper);
 				reportsService.createEndUserTagWiseFGReport(party.getnPartyId(), strDate, helper);
 			}
-			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0	&& party.getDailyReportsList().contains("WIPREPORT")) {
+			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0
+					&& party.getDailyReportsList().contains("WIPREPORT")) {
 				mailStts = true;
 				reportsService.createWIPReport(party.getnPartyId(), strDate, helper);
 				reportsService.createWIPReportEndusertagwise(party.getnPartyId(), strDate, helper);
 			}
-			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0 && party.getDailyReportsList().contains("STOCKSUMMARYREPORT")) {
+			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0
+					&& party.getDailyReportsList().contains("STOCKSUMMARYREPORT")) {
 				mailStts = true;
 				reportsService.createStockSummaryReport(party.getnPartyId(), strDate, helper);
 			}
-			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0	&& party.getDailyReportsList().contains("RMREPORT")) {
+			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0
+					&& party.getDailyReportsList().contains("RMREPORT")) {
 				mailStts = true;
 				reportsService.createRMReport(party.getnPartyId(), strDate, helper);
 			}
-			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0	&& party.getDailyReportsList().contains("MONTHWISE_PLAN_TRACKER")) {
+			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0
+					&& party.getDailyReportsList().contains("MONTHWISE_PLAN_TRACKER")) {
 				mailStts = true;
-				reportsService.createMonthwisePlanTrackerReport( party.getnPartyId(), strDate, helper);
+				reportsService.createMonthwisePlanTrackerReport(party.getnPartyId(), strDate, helper);
 			}
-			helper.setFrom(fromMailId);			
+			helper.setFrom(fromMailId);
 			if (party.getEmail1() != null && party.getEmail1().length() > 0) {
 				StringTokenizer st = new StringTokenizer(party.getEmail1(), ",");
 				while (st.hasMoreTokens()) {
@@ -99,7 +105,7 @@ public class MailSender {
 					helper.setTo(ccEmailId);
 					helper.addCc(ccEmailId);
 				}
-			}			
+			}
 			if (party.getEmail2() != null && party.getEmail2().length() > 0) {
 				StringTokenizer st = new StringTokenizer(party.getEmail2(), ",");
 				while (st.hasMoreTokens()) {
@@ -107,15 +113,15 @@ public class MailSender {
 					helper.addCc(ccEmailId);
 				}
 			}
-			helper.setSubject(party.getPartyName() +" - Daily Reports on "+strDate);
+			helper.setSubject(party.getPartyName() + " - Daily Reports on " + strDate);
 			helper.setText(emailBody, true);
-			if(mailStts) {
+			if (mailStts) {
 				javaMailSender.send(message);
 			}
-			logger.info("Email Sent Successfully to "+party.getEmail1());
+			logger.info("Email Sent Successfully To " + party.getEmail1() + ", and CC : " + party.getEmail2());
 		} catch (Exception e) {
 			e.printStackTrace();
-			logger.info("MailSender.Fail1: "+e.getMessage());
+			logger.info("MailSender.Fail1: " + e.getMessage());
 		}
 	}
 	

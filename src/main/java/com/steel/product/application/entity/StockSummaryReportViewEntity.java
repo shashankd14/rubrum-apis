@@ -31,6 +31,9 @@ public class StockSummaryReportViewEntity {
 	@Column(name = "materialgrade")
 	private String materialGrade;
 
+	@Column(name = "tdc_no")
+	private String tdcNo;
+
 	@Column(name = "fthickness")
 	private String fthickness;
 

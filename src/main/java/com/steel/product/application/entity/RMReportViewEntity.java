@@ -28,6 +28,9 @@ public class RMReportViewEntity {
 	@Column(name = "parentcoilnumber")
 	private String parentcoilnumber;
 
+	@Column(name = "tdc_no")
+	private String tdcNo;
+
 	@Column(name = "received_date")
 	private String receivedDate;
 
