@@ -32,6 +32,8 @@ public class InwardEntryResponseDetails {
 	private Integer noofPieces;
 	
 	private BigDecimal availQty;
+	
+	private BigDecimal allocatedQty;
 
 	private int coilage;
 }

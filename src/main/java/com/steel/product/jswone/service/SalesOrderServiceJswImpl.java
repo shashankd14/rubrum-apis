@@ -328,9 +328,9 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				}
 
 				if(allocation !=null && allocation.getSoAllocationId()>0) {
-					SalesOrderListDTO obj = new SalesOrderListDTO();
-					obj.setSoAllocationId(allocation.getSoAllocationId());
-					jswIntegrationService.warehouseReassignment(obj);
+					//SalesOrderListDTO obj = new SalesOrderListDTO();
+					//obj.setSoAllocationId(allocation.getSoAllocationId());
+					//jswIntegrationService.warehouseReassignment(obj);
 				}
 			}
 			

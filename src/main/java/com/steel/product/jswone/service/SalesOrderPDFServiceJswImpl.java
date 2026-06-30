@@ -44,7 +44,7 @@ public class SalesOrderPDFServiceJswImpl implements SalesOrderPDFJswService {
 
 
 	@Value("${imagelogopath}")
-	private String imagelogopath;
+	private String imagelogopath; 
 
 	@Autowired
 	private SalesOrderJswRepository salesOrderRepository;
@@ -67,10 +67,12 @@ public class SalesOrderPDFServiceJswImpl implements SalesOrderPDFJswService {
 	private File generateSOPdf(ListPageSearchRequest request) throws IOException, DocumentException {
 
 		Map<String, SalesOrderListResponse> mapp = soDetailsBySoId(request);
+		log.info("mapp size == " + (mapp != null ? mapp.size() : "NULL"));
 
 		File file = File.createTempFile("soAllocation_" + request.getSoId(), ".pdf");
 		Document document = new Document(PageSize.A4.rotate());
 
+		log.info("path is file == " + file.getAbsolutePath());
 		try {
 			PdfWriter.getInstance(document, new FileOutputStream(file));
 
@@ -232,7 +234,11 @@ public class SalesOrderPDFServiceJswImpl implements SalesOrderPDFJswService {
 				document.close();
 			}
 		} catch (Exception ex) {
-			ex.printStackTrace();
+		    log.error("PDF generation error for soId=" + request.getSoId(), ex);
+		} finally {
+		    if (document.isOpen()) {
+		        document.close(); // always finalize
+		    }
 		}
 		file.deleteOnExit();
 		return file;

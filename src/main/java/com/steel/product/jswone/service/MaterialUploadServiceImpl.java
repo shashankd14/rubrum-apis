@@ -179,13 +179,83 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 						}
 						productList.add(dest);
 						repository.save(dest);
+						
+						if (request.isMasterData()) {
+						 	MaterialMasterFileDataEntity sourceEntity =dest;
+							MaterialMasterJswEntity destEntity = new MaterialMasterJswEntity();
+							BeanUtils.copyProperties(sourceEntity, destEntity);
+							log.info("getMmId is == " + sourceEntity.getMmId());
+
+							MaterialMasterJswEntity oldEntity = materialMasterJswRepository.findFirstByMmId(sourceEntity.getMmId());
+							if (oldEntity != null && oldEntity.getMaterialId() > 0) {
+								destEntity.setMaterialId(oldEntity.getMaterialId());
+								destEntity.setUpdatedOn(new Date());
+								destEntity.setCreatedOn(oldEntity.getCreatedOn());
+							} else {
+								destEntity.setCreatedOn(new Date());
+								destEntity.setUpdatedOn(null);
+							}
+							if (sourceEntity.getLength() != null && sourceEntity.getLength().length() > 0) {
+								destEntity.setLength(new BigDecimal(sourceEntity.getLength()));
+							} else {
+								destEntity.setLength(BigDecimal.ZERO);
+							}
+							if (sourceEntity.getWidth() != null && sourceEntity.getWidth().length() > 0) {
+								destEntity.setWidth(new BigDecimal(sourceEntity.getWidth()));
+							} else {
+								destEntity.setWidth(BigDecimal.ZERO);
+							}
+							if (sourceEntity.getThickness() != null && sourceEntity.getThickness().length() > 0) {
+								destEntity.setThickness(new BigDecimal(sourceEntity.getThickness()));
+							} else {
+								destEntity.setThickness(BigDecimal.ZERO);
+							}
+							if (sourceEntity.getODiameter() != null && sourceEntity.getODiameter().length() > 0) {
+								destEntity.setODiameter(new BigDecimal(sourceEntity.getODiameter()));
+							} else {
+								destEntity.setODiameter(BigDecimal.ZERO);
+							}
+							if (sourceEntity.getNb() != null && sourceEntity.getNb().length() > 0) {
+								destEntity.setNb(new BigDecimal(sourceEntity.getNb()));
+							} else {
+								destEntity.setNb(BigDecimal.ZERO);
+							}
+							if (sourceEntity.getIDiameter() != null && sourceEntity.getIDiameter().length() > 0) {
+								destEntity.setIDiameter(new BigDecimal(sourceEntity.getIDiameter()));
+							} else {
+								destEntity.setIDiameter(BigDecimal.ZERO);
+							}
+
+							if (!(sourceEntity.getBrand() != null && sourceEntity.getBrand().length() > 0)) {
+								sourceEntity.setBrand("UnBrand");
+							}
+							// Brand Master
+							destEntity.setCategoryId(setCategoryMaster(sourceEntity.getCategory()));
+							destEntity.setSubcategoryId(setSubCategoryMaster(sourceEntity.getSubcategory(), destEntity.getCategoryId()));
+							destEntity.setLeafcategoryId(setLeafCategoryMaster(sourceEntity.getLeafcategory(), destEntity.getSubcategoryId()));
+							destEntity.setBrandId(setBrandNameMaster(sourceEntity.getBrand(), destEntity.getLeafcategoryId()));
+							// Product Master
+							destEntity.setProducttypeId(setProductMaster(sourceEntity.getProducttype(), destEntity));
+							destEntity.setGradeId(setGradeMaster(sourceEntity.getGrade(), destEntity.getProducttypeId()));
+							destEntity.setSubgradeId(setSubGradeMaster(sourceEntity.getSubgrade(), destEntity.getGradeId()));
+							destEntity.setCoatingtypeId(setCoatingtypeMaster(sourceEntity.getCoatingtype(), destEntity.getProducttypeId()));
+							destEntity.setSurfacetypeId(setSurfacetypeMaster(sourceEntity.getSurfacetype(), destEntity.getProducttypeId()));
+							destEntity.setUomId(setUomMaster(sourceEntity.getUom(), destEntity.getProducttypeId()));
+							destEntity.setFormId(setFormMaster(sourceEntity.getForm(), destEntity.getProducttypeId()));
+							try {
+								materialMasterJswRepository.save(destEntity);
+							} catch (Exception e) {
+								e.printStackTrace();
+								log.info("error while save --  " + e.getMessage());
+							}
+						}
 					} catch (Exception e) {
 						System.out.println("error while save --  " + e.getMessage());
 					}
 				}
 				log.info("File Uploaded Successfully. Count is == " + products.size());
 			}
-			if (request.isMasterData()) {
+			/*if (request.isMasterData()) {
 				List<MaterialMasterFileDataEntity> listFileData =repository.findAll();
 				log.info("listFileData is == " + listFileData.size());
 				// List<MaterialMasterJswEntity> materialMasterList = new ArrayList<>();
@@ -262,7 +332,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 						log.info("error while save --  " + e.getMessage());
 					}
 				}
-			}
+			}*/
 
 			Map<String, Object> resp = new HashMap<>();
 			resp.put("totalRecordCount", totalMMIDCount);

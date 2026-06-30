@@ -29,6 +29,8 @@ public class SalesOrderCPChildResponse {
 
 	private String wareHouseId;
 
+	private String mmidMeasurements;
+
 	private List<SalesOrderChildAllocationResponse> allocationDetails = new ArrayList<>();
 
 }

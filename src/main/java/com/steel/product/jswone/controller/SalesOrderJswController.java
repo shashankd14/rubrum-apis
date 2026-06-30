@@ -1,10 +1,9 @@
 package com.steel.product.jswone.controller;
 
+import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -257,6 +256,7 @@ public class SalesOrderJswController {
 			resp.setNoofPieces(result[11] != null ? ((Number) result[11]).intValue() : 0);
 			resp.setFWidth(result[12] != null ? (float) result[12] : null);
 			Integer coilage = result[13] != null ? Integer.parseInt(result[13].toString()) : null;
+			resp.setAllocatedQty(result[14] != null ? BigDecimal.valueOf(((Number) result[14]).doubleValue()) : null);
 	        resp.setCoilage(coilage);
 	        if (coilage != null) {
 	        	coilAgeSet.add(coilage);  
@@ -284,6 +284,7 @@ public class SalesOrderJswController {
 				resp.setFWidth(result[12] != null ? (float) result[12] : null);
 				Integer coilage = result[13] != null ? Integer.parseInt(result[13].toString()) : null;
 				resp.setCoilage(coilage);
+				resp.setAllocatedQty(result[14] != null ? BigDecimal.valueOf(((Number) result[14]).doubleValue()) : null);
 				if (coilage != null) {
 					coilAgeSet.add(coilage);
 				}
@@ -371,6 +372,7 @@ public class SalesOrderJswController {
 				// child.setLocation( result[20] != null ? (String) result[20] : null);
 				child.setWareHouseName(result[23] != null ? (String) result[23] : null);
 				child.setWareHouseId(result[22] != null ? (String) result[22] : null);
+				child.setMmidMeasurements(result[34] != null ? (String) result[34] : "");
 				soChildMap.put(soChildId, child);
 				isNewChild = true;
 			}
@@ -443,23 +445,33 @@ public class SalesOrderJswController {
 	public ResponseEntity<Object> soBulkApprove(@RequestBody SalesOrderBulkRequest request) {
 		return salesOrderService.bulkUpdate(request);
 	}
-
 	@PostMapping("/pdf")
-	public ResponseEntity<PdfResponseDto> downloadSOPDF(@RequestBody ListPageSearchRequest request)
-			throws DocumentException {
-		Path file = null;
-		byte[] bytes = null;
-		StringBuilder builder = new StringBuilder();
-		try {
+	public ResponseEntity<PdfResponseDto> downloadSOPDF(@RequestBody ListPageSearchRequest request) throws DocumentException {
 
-			file = Paths.get(sopdfService.generatePdf(request).getAbsolutePath());
-			bytes = Files.readAllBytes(file);
-			builder.append(Base64.getEncoder().encodeToString(bytes));
-		} catch (IOException ex) {
-			ex.printStackTrace();
-		}
-		String encodedFile = builder.toString();
-		return new ResponseEntity<>(new PdfResponseDto(encodedFile), HttpStatus.OK);
+	    File pdfFile = null;
+	    try {
+	        pdfFile = sopdfService.generatePdf(request);
+
+	        if (pdfFile == null || !pdfFile.exists()) {
+	            log.error("PDF generation failed or file not found for soId=" + request.getSoId());
+	            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+	        }
+
+	        byte[] bytes = Files.readAllBytes(pdfFile.toPath()); // read into memory first
+	        String encodedFile = Base64.getEncoder().encodeToString(bytes);
+	        return ResponseEntity.ok(new PdfResponseDto(encodedFile));
+
+	    } catch (IOException ex) {
+	        log.error("Error reading PDF file for soId=" + request.getSoId(), ex);
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+
+	    } finally {
+	        // Always runs — deletes file after bytes are safely in memory
+	        if (pdfFile != null && pdfFile.exists()) {
+	            boolean deleted = pdfFile.delete();
+	            log.info("PDF deleted: " + deleted + " | path: " + pdfFile.getAbsolutePath());
+	        }
+	    }
 	}
 
 	@PostMapping(value = "/coil/allocationdetails", produces = "application/json")
@@ -492,6 +504,7 @@ public class SalesOrderJswController {
 		response.put("totalPages", packetsList1.getTotalPages());
 		return new ResponseEntity<Object>(response, HttpStatus.OK);
 	}
+	
 	@PostMapping("/dashboard")
 	public ResponseEntity<Object> dashboard(@RequestBody SearchListPageRequest request) {
 

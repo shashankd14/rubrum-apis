@@ -94,13 +94,14 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " (SELECT partyname FROM product_tblpartydetails where npartyid= wm.party_id) partyname,"
 			+ " (select statusname from product_tblinwardentry inw, product_status stts where inw.inwardentryid = alloca.inward_entry_id and inw.vstatus = stts.statusid ) stts, "
 			+ " so_child.wearhouse_id, ware_house_name, "
-			+ " (select concat(inw.fthickness,'*',fwidth,'*',flength) from product_tblinwardentry inw where inw.inwardentryid = alloca.inward_entry_id) size, so.refno, "
+			+ " (select concat(inw.fthickness,'*', inw.fwidth,'*', inw.flength) from product_tblinwardentry inw where inw.inwardentryid = alloca.inward_entry_id) size, so.refno, "
 			+ " so.branch_id, (select jbm.branch_name from jsw_branch_master jbm where jbm.branch_id =so.branch_id) as branch_name,"
 			+ " (select GROUP_CONCAT(distinct aa.pdf_generation_part) from jsw_sales_order_allocation aa where aa.so_id = alloca.so_id)  as parts,"
 			+ " (select customerbatchid from product_tblinwardentry inw where inw.inwardentryid = alloca.inward_entry_id) customerbatchid, "
 			+ " (SELECT product_name FROM jsw_product_master a where a.product_id=mm.producttype_id limit 1) as materialdesc, " 
 			+ " (SELECT grade_name FROM jsw_grade_master grade where grade.grade_id=mm.grade_id limit 1) as materialgrade,"  
-			+ " alloca.zoho_sync_remarks, alloca.zoho_sync_stts"  
+			+ " alloca.zoho_sync_remarks, alloca.zoho_sync_stts, "  
+			+ " CONCAT(mm.thickness,'*', mm.width,'*', mm.length) as mm_size"
 			+ " FROM jsw_sales_order so "
 			+ " left OUTER JOIN jsw_sales_order_child so_child ON so_child.so_id = so.so_id and so_child.is_deleted = 0 "
 			+ " left outer JOIN jsw_sales_order_allocation alloca ON so_child.so_child_id = alloca.so_child_id"
@@ -114,7 +115,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			@Param("warehouseList") List<String> warehouseList);
 	 
 	@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, mm_id, materialdesc, materialgrade, fthickness, flength, "
-			+ "(fweight-allocated_soqty), partyname,0 noofpieces,fWidth,coilage "
+			+ "(fweight-allocated_soqty), partyname,0 noofpieces,fWidth,coilage,allocated_soqty "
 			+ " from ( "
 			+ " SELECT parent.inwardentryid inwardid,  coilnumber, customerbatchid, parent.mm_id, " 
 			+ " (SELECT product_name FROM jsw_product_master a, jsw_material_master mat where a.product_id=mat.producttype_id and mat.mm_id=parent.mm_id limit 1) as  materialdesc, " 
@@ -122,7 +123,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " fthickness, NULL as packet_id, fWidth, " 
 			+ " coalesce( parent.flength,0) flength, fpresent fweight, " 
 			+ " fquantity, partyname,0  as siltcutcnt, DATEDIFF(curdate() , date_format(parent.createdon, '%Y-%m-%d')) coilage, "  
-			+ " (SELECT COALESCE(sum(allocated_soqty), 0) FROM jsw_sales_order_allocation alloc where alloc.inward_entry_id=parent.inwardentryid and alloc.instruction_id <=0) as allocated_soqty"  
+			+ " (SELECT COALESCE(sum(allocated_soqty), 0) FROM jsw_sales_order_allocation alloc where alloc.inward_entry_id=parent.inwardentryid and  (alloc.instruction_id <= 0 OR alloc.instruction_id IS NULL) ) as allocated_soqty"  
 			+ " FROM product_tblinwardentry parent, product_tblpartydetails party, "
 			+ " jsw_material_master mat "
 			+ " where parent.isdeleted=0 and  party.npartyid = parent.npartyid "
@@ -163,7 +164,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			Pageable pageable);
 
 	@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, mm_id, materialdesc, materialgrade,fthickness, flength, (fweight-allocated_soqty), partyname,"
-			+ "  noofpieces, fWidth,coilage "
+			+ "  noofpieces, fWidth,coilage,allocated_soqty "
 			+ " from ( SELECT parent.inwardentryid inwardid,  coilnumber, customerbatchid, parent.mm_id,"
 			+ " (SELECT product_name FROM jsw_product_master a, jsw_material_master mat where a.product_id=mat.producttype_id and mat.mm_id=parent.mm_id limit 1) as  materialdesc,"
 			+ " (SELECT subgrade_name FROM jsw_subgrade_master grade, jsw_material_master mat where grade.subgrade_id=mat.subgrade_id and mat.mm_id=parent.mm_id limit 1) as  materialgrade, "  
@@ -224,7 +225,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			Pageable pageable);
 
 	@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, mm_id, materialdesc, materialgrade,fthickness, flength, "
-			+ " (fweight-allocated_soqty) , partyname, 0 as actualNoOfPieces,fWidth,coilage "
+			+ " (fweight-allocated_soqty) , partyname, 0 as actualNoOfPieces,fWidth,coilage,allocated_soqty "
 			+ " from ( 	"
 			+ " SELECT parent.inwardentryid inwardid, coilnumber, customerbatchid, parent.mm_id,  "
 			+ " (SELECT product_name FROM jsw_product_master a, jsw_material_master mat where a.product_id=mat.producttype_id and mat.mm_id=parent.mm_id limit 1) as  materialdesc,  "
@@ -232,7 +233,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " fthickness, 0 as packet_id,  fWidth,  "
 			+ " coalesce( parent.flength,0) flength, fpresent fweight, fquantity, partyname,"
 			+ " parent.npartyid, DATEDIFF(curdate(), date_format(parent.createdon, '%Y-%m-%d')) coilage,"
-			+ " (SELECT COALESCE(sum(allocated_soqty), 0) FROM jsw_sales_order_allocation alloc where alloc.inward_entry_id=parent.inwardentryid and alloc.instruction_id <=0) as allocated_soqty"  
+			+ " (SELECT COALESCE(sum(allocated_soqty), 0) FROM jsw_sales_order_allocation alloc where alloc.inward_entry_id=parent.inwardentryid and  (alloc.instruction_id <= 0 OR alloc.instruction_id IS NULL)) as allocated_soqty"  
 			+ " FROM product_tblinwardentry parent, product_tblpartydetails party  "
 			+ " where parent.vstatus in (1,2,3) and parent.isdeleted=0 and party.npartyid = parent.npartyid  "
 			+ " and parent.mm_id = :mmid) a "
