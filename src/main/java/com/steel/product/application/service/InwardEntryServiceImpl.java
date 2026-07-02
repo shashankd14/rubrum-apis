@@ -82,6 +82,15 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 		this.inwdEntryRepo.delete(entry);
 	}
 
+	public boolean isBatchNoPresent(String batchNo) {
+		boolean isPresent = false;
+		String value = this.inwdEntryRepo.isBatchNoPresent(batchNo);
+		if (value != null && value.length() != 0) {
+			isPresent = true;
+		}
+		return isPresent;
+	}
+
 	public boolean isCoilNumberPresent(String coilNumber) {
 		boolean isPresent = false;
 		String value = this.inwdEntryRepo.isCoilNumberPresent(coilNumber);

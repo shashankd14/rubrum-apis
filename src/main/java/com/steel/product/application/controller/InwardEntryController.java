@@ -29,7 +29,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.steel.product.application.dto.delivery.DeliveryPDFRequestDTO;
 import com.steel.product.application.dto.inward.EndUserTagWisePacketsDTO;
 import com.steel.product.application.dto.inward.InwardDto;
-import com.steel.product.application.dto.inward.InwardEntryResponseDto;
 import com.steel.product.application.dto.inward.SearchListPageRequest;
 import com.steel.product.application.entity.InwardDoc;
 import com.steel.product.application.entity.InwardEntry;
@@ -443,6 +442,16 @@ public class InwardEntryController {
 			}
 
 			return new ResponseEntity<Object>("delete success!", HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@GetMapping({ "/isBatchNoPresent" })
+	public ResponseEntity<Object> isBatchNoPresent(@RequestParam String batchNumber) {
+		try {
+			boolean isPresent = this.inwdEntrySvc.isBatchNoPresent(batchNumber);
+			return new ResponseEntity<Object>(Boolean.valueOf(isPresent), HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}

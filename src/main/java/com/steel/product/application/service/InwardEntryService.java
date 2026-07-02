@@ -29,6 +29,8 @@ public interface InwardEntryService {
 
 	void deleteEntity(InwardEntry paramInwardEntry);
 
+	boolean isBatchNoPresent(String paramString);
+
 	boolean isCoilNumberPresent(String paramString);
 
 	boolean isCustomerBatchIdPresent(String customerBatchId);

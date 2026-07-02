@@ -40,6 +40,9 @@ public class WIPReportViewEntity {
 	@Column(name = "material_grade")
 	private String materialGrade;
 
+	@Column(name = "batchnumber")
+	private String batchnumber;
+
 	@Column(name = "tdc_no")
 	private String tdcNo;
 

@@ -46,6 +46,9 @@ public class FGReportViewEntity {
 	@Column(name = "tdc_no")
 	private String tdcNo;
 
+	@Column(name = "batchnumber")
+	private String batchnumber;
+
 	@Column(name = "packet_id")
 	private String packetId;
 

@@ -5,8 +5,6 @@ import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.Material;
 
-import java.util.Iterator;
-
 public class DeliveryPacketsDto {
 
     private DeliveryResponseDto deliveryDetails;
@@ -16,6 +14,8 @@ public class DeliveryPacketsDto {
     private String customerBatchId;
 
     private String coilNumber;
+
+    private int noofPackets;
 
     private Float fThickness;
 
@@ -29,6 +29,7 @@ public class DeliveryPacketsDto {
         Instruction instruction = deliveryDetails.getInstructions().iterator().next();
         this.partyName = instruction.getInwardId().getParty() != null ? instruction.getInwardId().getParty().getPartyName() : "";
         this.customerBatchId = instruction.getInwardId().getCustomerBatchId();
+        this.noofPackets = deliveryDetails.getInstructions().size();
         this.coilNumber = instruction.getInwardId().getCoilNumber();
         this.fThickness = instruction.getInwardId().getfThickness();
         this.materialResponseDto = Material.valueOf(instruction.getInwardId().getMaterial(),instruction.getInwardId());
@@ -83,4 +84,15 @@ public class DeliveryPacketsDto {
     public void setMaterialResponseDto(MaterialResponseDto materialResponseDto) {
         this.materialResponseDto = materialResponseDto;
     }
+
+	public int getNoofPackets() {
+		return noofPackets;
+	}
+
+	public void setNoofPackets(int noofPackets) {
+		this.noofPackets = noofPackets;
+	}
+    
+    
+    
 }

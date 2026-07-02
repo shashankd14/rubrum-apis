@@ -34,6 +34,9 @@ public class StockSummaryReportViewEntity {
 	@Column(name = "tdc_no")
 	private String tdcNo;
 
+	@Column(name = "batchnumber")
+	private String batchnumber;
+
 	@Column(name = "fthickness")
 	private String fthickness;
 

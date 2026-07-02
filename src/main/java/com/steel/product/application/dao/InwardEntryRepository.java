@@ -70,6 +70,9 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
     @Query(nativeQuery = true, value = "SELECT coilNumber FROM product_tblinwardentry WHERE coilNumber = :coilNumber")
     String isCoilNumberPresent(@Param("coilNumber") String paramString);
 
+    @Query(nativeQuery = true, value = "SELECT batchnumber FROM product_tblinwardentry WHERE batchnumber = :batchnumber")
+    String isBatchNoPresent(@Param("batchnumber") String batchnumber);
+
     @Query(nativeQuery = true, value = "SELECT customerbatchid FROM product_tblinwardentry WHERE customerbatchid = :customerbatchid limit 1")
     String isCustomerBatchIdPresent(@Param("customerbatchid") String customerbatchId);
 
@@ -197,5 +200,6 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 			+ "	 and instr.enduser_tag_id = :endUserTagId order by inwardentryid desc", 
 		nativeQuery = true)
 	Page<Object[]> findAllEndUserTagWiseData(@Param("endUserTagId") Integer endUserTagId, Pageable pageable);
+
 
 }

@@ -65,8 +65,8 @@ public class StockDetailsReportViewEntity {
 	private String fthickness;
 
 	@Column(name = "tdc_no")
-	private String tdcNo;
-
+	private String tdcNo; 
+	
 	@Column(name = "actualwidth")
 	private String actualwidth;
 
