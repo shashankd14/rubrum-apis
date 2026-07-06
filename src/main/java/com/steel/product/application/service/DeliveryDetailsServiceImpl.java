@@ -15,6 +15,7 @@ import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.entity.Status;
+import com.steel.product.application.entity.UserLocationMappingEntity;
 import com.steel.product.application.entity.UserPartyMap;
 import com.steel.product.application.util.CommonUtil;
 
@@ -27,6 +28,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -304,30 +306,30 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
     }
     
     @Override
-    public Page<DeliveryDetails> deliveryListPagination(int pageNo, int pageSize, String searchText, String partyId) {
-    	Pageable pageable = PageRequest.of((pageNo-1), pageSize);
-    	
-		if(partyId!=null && partyId.length()>0) {
-	    	Page<DeliveryDetails> deliveryList = deliveryDetailsRepo.findAllDeliveries(searchText, Integer.parseInt(partyId), pageable);
-	        LOGGER.info("Delivery details list size "+deliveryList.getSize());
-	        return deliveryList;
-		} else {
-			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
-			if(adminUserEntity.getUserPartyMap()!=null && adminUserEntity.getUserPartyMap().size()>0) {
-				List<Integer> partyIds=new ArrayList<>();
-				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
-					partyIds.add(userPartyMap.getPartyId());
-					LOGGER.info("In partyIds === "+partyIds);
-				}
-				Page<DeliveryDetails> deliveryList = deliveryDetailsRepo.findAllDeliveries(searchText, partyIds, pageable);
-				return deliveryList;
-			} else {
-				Page<DeliveryDetails> deliveryList = deliveryDetailsRepo.findAllDeliveries(searchText, pageable);
-		        LOGGER.info("Delivery details list size "+deliveryList.getSize());
-		        return deliveryList;
-			}
+	public Page<DeliveryDetails> deliveryListPagination(int pageNo, int pageSize, String searchText, String partyId) {
+		Pageable pageable = PageRequest.of((pageNo - 1), pageSize);
+
+		AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
+		List<Integer> partyIds = null;
+		if (!CollectionUtils.isEmpty(adminUserEntity.getUserPartyMap())) {
+			partyIds = adminUserEntity.getUserPartyMap().stream().map(UserPartyMap::getPartyId).collect(Collectors.toList());
+			LOGGER.info("Fetching locations for partyIds: {}", partyIds);
 		}
-    }
+		if (partyId != null && partyId.length() > 0) {
+			partyIds = new ArrayList<>();
+			partyIds.add(Integer.parseInt(partyId));
+		}
+
+		List<Integer> locationIds = null;
+		if (!CollectionUtils.isEmpty(adminUserEntity.getLocationMap())) {
+			locationIds = adminUserEntity.getLocationMap().stream().map(UserLocationMappingEntity::getLocationId).collect(Collectors.toList());
+			LOGGER.info("Fetching locations for locationIds: {}", locationIds);
+		}
+		Page<DeliveryDetails> deliveryList = deliveryDetailsRepo.findAllDeliveries(searchText, partyIds, locationIds,
+				pageable);
+		return deliveryList;
+
+	}
 
     @Override
     public List<Instruction> findInstructionsByDeliveryId(Integer deliveryId) {

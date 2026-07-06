@@ -1,5 +1,24 @@
 package com.steel.product.application.service;
 
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
 import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.dao.UserRepository;
 import com.steel.product.application.dto.delivery.DeliveryPDFRequestDTO;
@@ -11,24 +30,12 @@ import com.steel.product.application.dto.qrcode.QRCodeResponse;
 import com.steel.product.application.entity.AdminUserEntity;
 import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.InwardEntry;
+import com.steel.product.application.entity.UserLocationMappingEntity;
 import com.steel.product.application.entity.UserPartyMap;
 import com.steel.product.application.util.CommonUtil;
 
 import lombok.extern.log4j.Log4j2;
-
-import org.springframework.data.domain.Sort;
 import net.minidev.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-
-import java.text.DecimalFormat;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @Log4j2
@@ -144,41 +151,31 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 			pageable = PageRequest.of((searchListPageRequest.getPageNo() - 1), searchListPageRequest.getPageSize(),
 					Sort.by("inwardEntryId").descending());
 		}
-		if (searchListPageRequest.getPartyId() != null && searchListPageRequest.getPartyId().length() > 0) {
-			if (searchListPageRequest.getSearchText() != null && searchListPageRequest.getSearchText().length() > 0) {
-				Page<InwardEntry> pageResult = inwdEntryRepo.findAllWithSearchTextAndPartyId(
-						searchListPageRequest.getSearchText(), Integer.parseInt(searchListPageRequest.getPartyId()),
-						searchListPageRequest.getLocationId(), pageable);
-				return pageResult;
-			} else {
-				Page<InwardEntry> pageResult = inwdEntryRepo
-						.findAllInwardListWithPartyId(Integer.parseInt(searchListPageRequest.getPartyId()),
-								searchListPageRequest.getLocationId(), pageable);
-				return pageResult;
-			}
-		} else {
-			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
-			if (adminUserEntity.getUserPartyMap() != null && adminUserEntity.getUserPartyMap().size() > 0) {
-				List<Integer> partyIds = new ArrayList<>();
-				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
-					partyIds.add(userPartyMap.getPartyId());
-					log.info("In partyIds === " + partyIds);
-				}
-				Page<InwardEntry> pageResult = inwdEntryRepo.findAll(searchListPageRequest.getSearchText(), partyIds,
-						searchListPageRequest.getLocationId(), pageable);
-				return pageResult;
-			} else {
-				if (searchListPageRequest.getSearchText() != null
-						&& searchListPageRequest.getSearchText().length() > 0) {
-					Page<InwardEntry> pageResult = inwdEntryRepo.findAllWithSearch(
-							searchListPageRequest.getSearchText(), searchListPageRequest.getLocationId(), pageable);
-					return pageResult;
-				} else {
-					Page<InwardEntry> pageResult = inwdEntryRepo.findAllInwardList(searchListPageRequest.getLocationId(), pageable);
-					return pageResult;
-				}
-			}
+		
+		AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
+				
+		List<Integer> partyIds = null;
+		if (!CollectionUtils.isEmpty(adminUserEntity.getUserPartyMap())) {
+			partyIds = adminUserEntity.getUserPartyMap().stream().map(UserPartyMap::getPartyId).collect(Collectors.toList());
+			log.info("Fetching locations for partyIds: {}", partyIds);
 		}
+		if (searchListPageRequest.getPartyId() != null && searchListPageRequest.getPartyId().length() > 0) {
+			partyIds = new ArrayList<>();
+			partyIds.add(Integer.parseInt(searchListPageRequest.getPartyId()));			
+		}
+		
+		List<Integer> locationIds =null;
+		if (!CollectionUtils.isEmpty(adminUserEntity.getLocationMap())) {
+			locationIds = adminUserEntity.getLocationMap().stream().map(UserLocationMappingEntity::getLocationId).collect(Collectors.toList());
+			log.info("Fetching locations for locationIds: {}", locationIds);
+		}
+		if(searchListPageRequest.getLocationId() >0 ) {
+			locationIds=new ArrayList<>();
+			locationIds.add(searchListPageRequest.getLocationId());
+		}
+		Page<InwardEntry> pageResult = inwdEntryRepo.findAllInwardList(searchListPageRequest.getSearchText(), partyIds,
+				locationIds, pageable);
+		return pageResult;
 	}
 
 	@Override
@@ -202,44 +199,29 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 			pageable = PageRequest.of((searchListPageRequest.getPageNo() - 1), searchListPageRequest.getPageSize(),
 					Sort.by("inwardEntryId").descending());
 		}
-
-		if (searchListPageRequest.getPartyId() != null && searchListPageRequest.getPartyId().length() > 0) {
-			if (searchListPageRequest.getSearchText() != null && searchListPageRequest.getSearchText().length() > 0) {
-				Page<InwardEntry> pageResult = inwdEntryRepo.findAllWithSearchTextAndPartyId(
-						searchListPageRequest.getSearchText(), Integer.parseInt(searchListPageRequest.getPartyId()),
-						searchListPageRequest.getLocationId(), pageable);
-				return pageResult;
-			} else {
-				Page<InwardEntry> pageResult = inwdEntryRepo.findAllWithPartyId(
-						Integer.parseInt(searchListPageRequest.getPartyId()), searchListPageRequest.getLocationId(),
-						pageable);
-				return pageResult;
-			}
-		} else {
-			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
-			if (adminUserEntity.getUserPartyMap() != null && adminUserEntity.getUserPartyMap().size() > 0) {
-				List<Integer> partyIds = new ArrayList<>();
-				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
-					partyIds.add(userPartyMap.getPartyId());
-					log.info("In partyIds === " + partyIds);
-				}
-				Page<InwardEntry> pageResult = inwdEntryRepo.findAll(searchListPageRequest.getSearchText(), partyIds,
-						searchListPageRequest.getLocationId(), pageable);
-				return pageResult;
-			} else {
-				if (searchListPageRequest.getSearchText() != null
-						&& searchListPageRequest.getSearchText().length() > 0) {
-					Page<InwardEntry> pageResult = inwdEntryRepo
-							.findAllWithSearch(searchListPageRequest.getSearchText(), searchListPageRequest.getLocationId(), pageable);
-					return pageResult;
-				} else {
-					Page<InwardEntry> pageResult = inwdEntryRepo
-							.findAllPartyWiseRegister(searchListPageRequest.getLocationId(), pageable);
-					return pageResult;
-				}
-			}
+		AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
+		
+		List<Integer> partyIds = null;
+		if (!CollectionUtils.isEmpty(adminUserEntity.getUserPartyMap())) {
+			partyIds = adminUserEntity.getUserPartyMap().stream().map(UserPartyMap::getPartyId).collect(Collectors.toList());
+			log.info("Fetching locations for partyIds: {}", partyIds);
 		}
-
+		if (searchListPageRequest.getPartyId() != null && searchListPageRequest.getPartyId().length() > 0) {
+			partyIds = new ArrayList<>();
+			partyIds.add(Integer.parseInt(searchListPageRequest.getPartyId()));			
+		}
+		
+		List<Integer> locationIds =null;
+		if (!CollectionUtils.isEmpty(adminUserEntity.getLocationMap())) {
+			locationIds = adminUserEntity.getLocationMap().stream().map(UserLocationMappingEntity::getLocationId).collect(Collectors.toList());
+			log.info("Fetching locations for locationIds: {}", locationIds);
+		}
+		if(searchListPageRequest.getLocationId() >0 ) {
+			locationIds=new ArrayList<>();
+			locationIds.add(searchListPageRequest.getLocationId());
+		}
+		Page<InwardEntry> pageResult = inwdEntryRepo.findAll(searchListPageRequest.getSearchText(), partyIds, locationIds, pageable);
+		return pageResult;
 	}
 	
 	@Override
@@ -260,26 +242,27 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 	@Override
 	public Page<InwardEntry> findAllWIPlistWithPagination(int pageNo, int pageSize, String searchText, String partyId) {
 		log.info("In findAllWithPagination page ");
-		Pageable pageable = PageRequest.of((pageNo-1), pageSize);
-		
-		if(partyId!=null && partyId.length()>0) {
-			Page<InwardEntry> pageResult = inwdEntryRepo.findAllWIP(searchText, Integer.parseInt(partyId), pageable);
-			return pageResult;
-		} else {
-			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
-			if(adminUserEntity.getUserPartyMap()!=null && adminUserEntity.getUserPartyMap().size()>0) {
-				List<Integer> partyIds=new ArrayList<>();
-				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
-					partyIds.add(userPartyMap.getPartyId());
-					log.info("In partyIds === "+partyIds);
-				}
-				Page<InwardEntry> pageResult = inwdEntryRepo.findAllWIP(searchText, partyIds, pageable);
-				return pageResult;
-			} else {
-				Page<InwardEntry> pageResult = inwdEntryRepo.findAllWIP(searchText, pageable);
-				return pageResult;
-			}
+		Pageable pageable = PageRequest.of((pageNo - 1), pageSize);
+
+		AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
+		List<Integer> partyIds = null;
+		if (!CollectionUtils.isEmpty(adminUserEntity.getUserPartyMap())) {
+			partyIds = adminUserEntity.getUserPartyMap().stream().map(UserPartyMap::getPartyId).collect(Collectors.toList());
+			log.info("Fetching locations for partyIds: {}", partyIds);
 		}
+		if (partyId != null && partyId.length() > 0) {
+			partyIds = new ArrayList<>();
+			partyIds.add(Integer.parseInt(partyId));
+		}
+
+		List<Integer> locationIds = null;
+		if (!CollectionUtils.isEmpty(adminUserEntity.getLocationMap())) {
+			locationIds = adminUserEntity.getLocationMap().stream().map(UserLocationMappingEntity::getLocationId).collect(Collectors.toList());
+			log.info("Fetching locations for locationIds: {}", locationIds);
+		}
+
+		Page<InwardEntry> pageResult = inwdEntryRepo.findAllWIP(searchText, partyIds, locationIds, pageable);
+		return pageResult;
 	}
 	
 	@Override

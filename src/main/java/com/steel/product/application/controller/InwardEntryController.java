@@ -255,20 +255,8 @@ public class InwardEntryController {
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-
-	@PostMapping({ "/inwardlist" })
-	public ResponseEntity<Object> inwardList(@RequestBody SearchListPageRequest searchListPageRequest) {
-		Map<String, Object> response = new HashMap<>();
-		Page<InwardEntry> pageResult = inwdEntrySvc.inwardList(searchListPageRequest);
-		List<Object> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponse(inw))
-				.collect(Collectors.toList());
-		response.put("content", inwardList);
-		response.put("currentPage", pageResult.getNumber());
-		response.put("totalItems", pageResult.getTotalElements());
-		response.put("totalPages", pageResult.getTotalPages());
-		return new ResponseEntity<Object>(response, HttpStatus.OK);
-	}
-
+	
+	//  This is for Partywise Register
 	@PostMapping({ "/partywiselist" })
 	public ResponseEntity<Object> partywiselist(@RequestBody SearchListPageRequest searchListPageRequest) {
 		Map<String, Object> response = new HashMap<>();
@@ -308,6 +296,7 @@ public class InwardEntryController {
 		}
 	}
 
+	//  This is for Inward List
 	@GetMapping({ "/list/{pageNo}/{pageSize}" })
 	public ResponseEntity<Object> findAllWithPagination(@PathVariable int pageNo, @PathVariable int pageSize,
 			@RequestParam(required = false, name = "searchText") String searchText,
@@ -328,28 +317,8 @@ public class InwardEntryController {
 		response.put("totalPages", pageResult.getTotalPages());
 		return new ResponseEntity<Object>(response, HttpStatus.OK);
 	}
-	/*
-	@GetMapping({ "/partywise/{pageNo}/{pageSize}" })
-	public ResponseEntity<Object> findAllPartyWiseWithPagination(@PathVariable int pageNo, @PathVariable int pageSize,
-			@RequestParam(required = false, name = "searchText") String searchText,
-			@RequestParam(required = false, name = "partyId") String partyId) {
-		SearchListPageRequest searchListPageRequest = new SearchListPageRequest();
-		searchListPageRequest.setPageNo(pageNo);
-		searchListPageRequest.setPageSize(pageSize);
-		searchListPageRequest.setSearchText(searchText);
-		searchListPageRequest.setPartyId(partyId);
-
-		Map<String, Object> response = new HashMap<>();
-		Page<InwardEntry> pageResult = inwdEntrySvc.partywiselist(searchListPageRequest);
-		List<Object> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponse(inw))
-				.collect(Collectors.toList());
-		response.put("content", inwardList);
-		response.put("currentPage", pageResult.getNumber());
-		response.put("totalItems", pageResult.getTotalElements());
-		response.put("totalPages", pageResult.getTotalPages());
-		return new ResponseEntity<Object>(response, HttpStatus.OK);
-	}*/
-
+	
+	//  This is for WIP List
 	@GetMapping({ "/wiplist/{pageNo}/{pageSize}" })
 	public ResponseEntity<Object> findAllWIPlistWithPagination(@PathVariable int pageNo, @PathVariable int pageSize,
 			@RequestParam(required = false, name = "searchText") String searchText,
@@ -365,20 +334,7 @@ public class InwardEntryController {
 		response.put("totalPages", pageResult.getTotalPages());
 		return new ResponseEntity<Object>(response, HttpStatus.OK);
 	}
-	/*
-	@GetMapping({ "/listold" })
-	public ResponseEntity<Object> listold() {
-		try {
-
-			List<InwardEntryResponseDto> inwardEntries = inwdEntrySvc.findAllInwards();
-			return new ResponseEntity<Object>(inwardEntries, HttpStatus.OK);
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-	}*/
-
+ 
 	@GetMapping({ "/pwr/list" })
 	public ResponseEntity<Object> findAllEntriesPwr() {
 		try {

@@ -1,7 +1,5 @@
 package com.steel.product.application.entity;
 
-import lombok.Data;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -14,6 +12,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+
+import lombok.Data;
 
 @Entity
 @Data
@@ -67,4 +67,7 @@ public class AdminUserEntity {
 	@OneToMany(mappedBy = "userEntityid", cascade = CascadeType.ALL)
 	private List<UserPartyMap> userPartyMap = new ArrayList<>();
 
+	@OneToMany(mappedBy = "userEntityid", cascade = CascadeType.ALL)
+	private List<UserLocationMappingEntity> locationMap = new ArrayList<>();
+	
 }
