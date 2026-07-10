@@ -219,14 +219,14 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			warehouseFlag = true;
 		}
 		Page<Object[]> packetsList = salesOrderRepository.listAllSOIDs(listPageSearchRequest.getSearchText(),
-				listPageSearchRequest.getSoId(), listPageSearchRequest.getStatus(), warehouseFlag,
+				listPageSearchRequest.getSoId(), listPageSearchRequest.getStatus(), listPageSearchRequest.getZohoStatus(), warehouseFlag,
 				listPageSearchRequest.getWarehouseList(), pageable);
 		return packetsList;
 	}
 
 	@Override
 	public List<Object[]> listAllSOs(List<Integer> soIDsList) {
-		List<Object[]> packetsList = salesOrderRepository.listIdWisedetails(soIDsList);
+		List<Object[]> packetsList = salesOrderRepository.listSOIdWisedetails(soIDsList);
 		return packetsList;
 	}
 

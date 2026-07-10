@@ -40,6 +40,8 @@ public class ListPageSearchRequest {
 
 	private String branchId;
 
+	private String zohoStatus;
+
 	private String batchNo;
 
 	private String inventoryType;

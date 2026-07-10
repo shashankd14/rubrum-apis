@@ -56,6 +56,8 @@ public class SalesOrderMainResponse {
 	private String allocatedStts;
 
 	private String soStatus;
+
+	private String zohoStatus;
 	
 	private Integer partyId;
 	

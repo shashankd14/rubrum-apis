@@ -24,6 +24,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " where so.is_deleted = 0 and so_child.is_deleted = 0 and so_child.so_id = so.so_id "
 			+ " and (case when :warehouseFlag=true then so_child.wearhouse_id in :warehouseList else 1=1 end ) "
 			+ " and case when :soId is not null and LENGTH(:soId) >0 then so.so_id = :soId else so.so_id end " 
+		  	+ " and case when :zohoStatus is not null and LENGTH(:zohoStatus) >0 then so.zoho_status = :zohoStatus else 1=1 end " 
 		  	+ " and case when :status is not null and LENGTH(:status) > 0 then so.so_status = :status else so.so_status  = so.so_status end "  
 			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (so_child.material_name like %:searchText% or so_child.mm_id like %:searchText% or so.so_number like %:searchText% or so.refno like %:searchText%) else 1=1 end " 
 			+ " order by so.so_id desc",
@@ -32,12 +33,13 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 		  	"  where so.is_deleted = 0 and so_child.is_deleted = 0 and so_child.so_id = so.so_id" + 
 			"  and (case when :warehouseFlag=true then so_child.wearhouse_id in :warehouseList else 1=1 end ) "+ 
 		  	"  and case when :soId is not null and LENGTH(:soId) >0 then so.so_id = :soId else so.so_id end " +
+		  	"  and case when :zohoStatus is not null and LENGTH(:zohoStatus) >0 then so.zoho_status = :zohoStatus else 1=1 end " +
 		  	"  and case when :status is not null and LENGTH(:status) > 0 then so.so_status in :status else 1=1 end " + 
 			"  and case when :searchText is not null and LENGTH(:searchText) >0 then (so_child.material_name like %:searchText% or so_child.mm_id like %:searchText% or so.so_number like %:searchText% or so.refno like %:searchText%) else 1=1 end " +
 		  	"  order by so.so_id desc", 
 		nativeQuery = true)
 	Page<Object[]> listAllSOIDs(@Param("searchText") String searchText, @Param("soId") Integer soId,
-			@Param("status") List<String> status, @Param("warehouseFlag") boolean warehouseFlag,
+			@Param("status") List<String> status, @Param("zohoStatus") String zohoStatus, @Param("warehouseFlag") boolean warehouseFlag,
 			@Param("warehouseList") List<String> warehouseList, Pageable pageable);
 	
 	@Query(value = "SELECT so.so_id, so.so_number, so.socreatedate, so.deliverymethod, "
@@ -48,7 +50,8 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " so_child.mm_id, '' instruction_id, '' inward_entry_d, so_child.soqty, "
 			+ " (select sum(allocated_soqty) from jsw_sales_order_allocation alloc where alloc.so_child_id = so_child.so_child_id and alloc.so_id = so.so_id ) allocated_soqty, "
 			+ " so_child.allocated_stts, so_child.item_so_status, so_child.wearhouse_id , so_child.tax_percentage, mm.mm_description, so_child.hsn_or_sac, wm.ware_house_name, "
-			+ " br.branch_name, so.cam_code , so.remarks , so.customer_name, so.customer_number , so_child.number_of_sheets , so.special_delivery_instructions, so.order_confirmation_time "
+			+ " br.branch_name, so.cam_code , so.remarks , so.customer_name, so.customer_number , so_child.number_of_sheets , so.special_delivery_instructions, so.order_confirmation_time, "
+			+ " so.zoho_status "
 			+ " FROM jsw_sales_order so "
 			+ " left outer JOIN jsw_sales_order_child so_child ON so_child.so_id = so.so_id "
 			+ " left outer JOIN jsw_branch_master br ON br.branch_id = so.branch_id"
@@ -56,7 +59,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+"  left outer join jsw_warehouse_master wm on wm.ware_house_id = so_child.wearhouse_id "
 			+ " where so.is_deleted = 0 and so_child.is_deleted = 0 "
 			+ " and so.so_id in :soIDsList order by so.so_id desc", nativeQuery = true)
-	List<Object[]> listIdWisedetails (@Param("soIDsList") List<Integer> soIDsList);
+	List<Object[]> listSOIdWisedetails (@Param("soIDsList") List<Integer> soIDsList);
 	
 	@Query(value = "SELECT distinct so.so_id, so.so_number "
 			+ " FROM jsw_sales_order so, jsw_sales_order_child so_child "
@@ -101,7 +104,8 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " (SELECT product_name FROM jsw_product_master a where a.product_id=mm.producttype_id limit 1) as materialdesc, " 
 			+ " (SELECT grade_name FROM jsw_grade_master grade where grade.grade_id=mm.grade_id limit 1) as materialgrade,"  
 			+ " alloca.zoho_sync_remarks, alloca.zoho_sync_stts, "  
-			+ " CONCAT(mm.thickness,'*', mm.width,'*', mm.length) as mm_size"
+			+ " CONCAT(mm.thickness,'*', mm.width,'*', mm.length) as mm_size, "
+			+ " (select mate.form_id from product_tblinwardentry inw, jsw_material_master mate where inw.inwardentryid =alloca.inward_entry_id and mate.mm_id=inw.mm_id) form_id"
 			+ " FROM jsw_sales_order so "
 			+ " left OUTER JOIN jsw_sales_order_child so_child ON so_child.so_id = so.so_id and so_child.is_deleted = 0 "
 			+ " left outer JOIN jsw_sales_order_allocation alloca ON so_child.so_child_id = alloca.so_child_id"

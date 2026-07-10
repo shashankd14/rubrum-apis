@@ -188,6 +188,7 @@ public class SalesOrderJswController {
 			resp.setExpected_delivery_date(formatDate(result[20]));
 			resp.setLikely_material_date(formatDate(result[21]));
 			resp.setStandard_material_date(formatDate(result[22]));
+			resp.setZohoStatus(result[44] != null ? (String) result[44] : null);
 
 			child.setSoChildId(result[23] != null ? (Integer) result[23] : null);
 			child.setMmId(result[24] != null ? (String) result[24] : null);
@@ -385,11 +386,12 @@ public class SalesOrderJswController {
 			allocation.setSoAllocationId(soAllocationId);
 			allocation.setInstructionId(result[7] != null ? (Integer) result[7] : null);
 			allocation.setInwardId(result[9] != null ? (Integer) result[9] : null);
-			
+			int formId = (result[35] != null ? Integer.parseInt(result[35].toString()) : 0);
+
 			if (allocation.getInwardId() != null && allocation.getInwardId() > 0) {
 				allocation.setAllocationType("RM");
 			}
-			if (allocation.getInstructionId() != null && allocation.getInstructionId() > 0) {
+			if ((allocation.getInstructionId() != null && allocation.getInstructionId() > 0) || (formId == 21)) {
 				allocation.setAllocationType("FG");
 			}
 			allocation.setAllocatedqty((BigDecimal) result[16]);
