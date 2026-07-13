@@ -56,16 +56,16 @@ public class ReportsEmailScheduler {
 				continue;
 			}
 			try {
-				
 				//party.setEmail1("kanakadri32@gmail.com");
 				//party.setEmail2("kanakadri32@gmail.com");
 				//if(party.getnPartyId() == 36){
 					logger.info("sendDailyNotificationAlert started — date={}", strDate);
 					mailSender.sendMail(party, strDate);
-					logger.info("Daily report sent — getPartyName={}, email={}", party.getPartyName(), party.getEmail1());
-					Thread.sleep(200); // throttle SMTP — remove if not needed
+					logger.info("Daily report sent to PartyName={}, email={}", party.getPartyName(), party.getEmail1());
+					//Thread.sleep(200); // throttle SMTP — remove if not needed
 				//}
 			} catch (Exception e) {
+				e.printStackTrace();
 				logger.error("Failed to send daily report — partyId={}, email={}, error={}", party.getnPartyId(), party.getEmail1(), e.getMessage());
 			}
 		}

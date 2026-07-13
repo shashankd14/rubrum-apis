@@ -504,6 +504,7 @@ public class ReportsServiceImpl implements ReportsService {
                 styles);
             return writeAndAttach(wb, "StockSummaryReport_" + strDate + ".xlsx", !list.isEmpty(), helper);
         } catch (Exception e) {
+        	e.printStackTrace();
             log.error("createStockSummaryReport failed partyId={}", partyId, e);
         }
         return true;
@@ -531,6 +532,7 @@ public class ReportsServiceImpl implements ReportsService {
                 styles);
             return writeAndAttach(wb, "RMReport_" + strDate + ".xlsx", !list.isEmpty(), helper);
         } catch (Exception e) {
+        	e.printStackTrace();
             log.error("createRMReport failed partyId={}", partyId, e);
         }
         return true;
@@ -565,6 +567,7 @@ public class ReportsServiceImpl implements ReportsService {
                 styles);
             return writeAndAttach(wb, "InwardReport_" + months.get(month) + ".xlsx", !list.isEmpty(), helper);
         } catch (Exception e) {
+        	e.printStackTrace();
             log.error("createInwardMonthlyReport failed partyId={}", partyId, e);
         }
         return true;
@@ -634,6 +637,7 @@ public class ReportsServiceImpl implements ReportsService {
 
             return writeAndAttach(wb, "OutwardReport_" + months.get(month) + ".xlsx", !list.isEmpty(), helper);
         } catch (Exception e) {
+        	e.printStackTrace();
             log.error("createOutwardMonthlyReport failed partyId={}", partyId, e);
         }
         return true;
@@ -659,6 +663,7 @@ public class ReportsServiceImpl implements ReportsService {
                 styles);
             return writeAndAttach(wb, "StockReport_" + months.get(month) + ".xlsx", !list.isEmpty(), helper);
         } catch (Exception e) {
+        	e.printStackTrace();
             log.error("createStockMonthlyReport failed partyId={}", partyId, e);
         }
         return true;
@@ -677,6 +682,7 @@ public class ReportsServiceImpl implements ReportsService {
                 ReportsServiceImpl::processingRow, styles);
             return writeAndAttach(wb, "ProcessingReport_" + months.get(month) + ".xlsx", !list.isEmpty(), helper);
         } catch (Exception e) {
+        	e.printStackTrace();
             log.error("createProcessingMonthlyReport failed partyId={}", partyId, e);
         }
         return true;
@@ -695,6 +701,7 @@ public class ReportsServiceImpl implements ReportsService {
                 ReportsServiceImpl::processingRow, styles);
             return writeAndAttach(wb, "FinishingReport_" + months.get(month) + ".xlsx", !list.isEmpty(), helper);
         } catch (Exception e) {
+        	e.printStackTrace();
             log.error("createFinishingMonthlyReport failed partyId={}", partyId, e);
         }
         return true;
@@ -737,6 +744,7 @@ public class ReportsServiceImpl implements ReportsService {
 
             return writeAndAttach(wb, "FG_EndUserTagWise_" + strDate + ".xlsx", !all.isEmpty(), helper);
         } catch (Exception e) {
+        	e.printStackTrace();
             log.error("createEndUserTagWiseFGReport failed partyId={}", partyId, e);
         }
         return false;
@@ -802,6 +810,7 @@ public class ReportsServiceImpl implements ReportsService {
             boolean hasData = !curList.isEmpty() || !prevList.isEmpty();
             return writeAndAttach(wb, "Monthly_PlanTracker_" + strDate + ".xlsx", hasData, helper);
         } catch (Exception e) {
+        	e.printStackTrace();
             log.error("createMonthwisePlanTrackerReport failed partyId={}", partyId, e);
         }
         return false;
@@ -830,6 +839,7 @@ public class ReportsServiceImpl implements ReportsService {
                 styles);
             return writeAndAttach(wb, "StockDetailsReport_" + strDate + ".xlsx", !list.isEmpty(), helper);
         } catch (Exception e) {
+        	e.printStackTrace();
             log.error("createStockDetailsReport failed partyId={}", partyId, e);
         }
         return true;
@@ -892,6 +902,7 @@ public class ReportsServiceImpl implements ReportsService {
                 monthlySummaryReportRepository.save(entity);
             }
         } catch (Exception e) {
+        	e.printStackTrace();
             log.error("Error at getMonthlySummaryReport: ", e);
         }
         return entity;

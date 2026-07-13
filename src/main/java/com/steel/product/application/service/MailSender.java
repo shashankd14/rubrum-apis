@@ -92,11 +92,11 @@ public class MailSender {
 				mailStts = true;
 				reportsService.createRMReport(party.getnPartyId(), strDate, helper);
 			}
-			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0
-					&& party.getDailyReportsList().contains("MONTHWISE_PLAN_TRACKER")) {
-				mailStts = true;
-				reportsService.createMonthwisePlanTrackerReport(party.getnPartyId(), strDate, helper);
-			}
+			//if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0 
+			//      && party.getDailyReportsList().contains("MONTHWISE_PLAN_TRACKER")) {
+				//mailStts = true;
+				//reportsService.createMonthwisePlanTrackerReport(party.getnPartyId(), strDate, helper);
+			//}
 			helper.setFrom(fromMailId);
 			if (party.getEmail1() != null && party.getEmail1().length() > 0) {
 				StringTokenizer st = new StringTokenizer(party.getEmail1(), ",");
