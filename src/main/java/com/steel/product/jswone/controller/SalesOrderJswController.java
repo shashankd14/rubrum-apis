@@ -189,6 +189,7 @@ public class SalesOrderJswController {
 			resp.setLikely_material_date(formatDate(result[21]));
 			resp.setStandard_material_date(formatDate(result[22]));
 			resp.setZohoStatus(result[44] != null ? (String) result[44] : null);
+			resp.setBranchId(result[45] != null ? (String) result[45] : null);
 
 			child.setSoChildId(result[23] != null ? (Integer) result[23] : null);
 			child.setMmId(result[24] != null ? (String) result[24] : null);

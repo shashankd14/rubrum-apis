@@ -72,6 +72,8 @@ public class SalesOrderMainResponse {
 	private String standard_material_date;
 
 	private String branch;
+	
+	private String branchId;
 
 	private String remarks;
 

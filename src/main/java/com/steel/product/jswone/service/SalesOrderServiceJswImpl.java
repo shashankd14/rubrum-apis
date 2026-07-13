@@ -30,7 +30,6 @@ import com.steel.product.application.dao.InstructionRepository;
 import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.dto.inward.SearchListPageRequest;
 import com.steel.product.application.dto.quality.ListPageSearchRequest;
-import com.steel.product.application.dto.salesorder.SalesOrderListDTO;
 import com.steel.product.application.entity.AdminUserEntity;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
@@ -493,6 +492,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			so.setSocreatedate(convertToDate(d.getDate()));
 			so.setRefno(d.getReference_number());
 			so.setCustomerid(d.getCustomer_id());
+			so.setZohoStatus(d.getStatus());
 			so.setSalesorder_id(d.getSalesorder_id());
 			so.setCustomer_name(d.getCustomer_name());
 			so.setCustomer_number(d.getCustomer_number());

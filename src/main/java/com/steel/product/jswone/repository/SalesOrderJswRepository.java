@@ -51,7 +51,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " (select sum(allocated_soqty) from jsw_sales_order_allocation alloc where alloc.so_child_id = so_child.so_child_id and alloc.so_id = so.so_id ) allocated_soqty, "
 			+ " so_child.allocated_stts, so_child.item_so_status, so_child.wearhouse_id , so_child.tax_percentage, mm.mm_description, so_child.hsn_or_sac, wm.ware_house_name, "
 			+ " br.branch_name, so.cam_code , so.remarks , so.customer_name, so.customer_number , so_child.number_of_sheets , so.special_delivery_instructions, so.order_confirmation_time, "
-			+ " so.zoho_status "
+			+ " so.zoho_status,so.branch_id "
 			+ " FROM jsw_sales_order so "
 			+ " left outer JOIN jsw_sales_order_child so_child ON so_child.so_id = so.so_id "
 			+ " left outer JOIN jsw_branch_master br ON br.branch_id = so.branch_id"
@@ -141,21 +141,26 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " and case when :partyIdsFlag=true then parent.npartyid in :partyIds else 1=1 end"
 			+ ") a "
 			+ " where (fweight-allocated_soqty)>0 and case when :fromCoilAge >=0 and :toCoilAge > 0 then coilage between :fromCoilAge and :toCoilAge else 1=1 end ",
-		countQuery = "SELECT count(inwardid) from "
-			+ " (select parent.inwardentryid inwardid, coilnumber, fpresent fweight, "
-			+ " FROM product_tblinwardentry parent, product_tblpartydetails party, "
-			+ " jsw_material_master mat "
-			+ " where parent.isdeleted=0 and  party.npartyid = parent.npartyid "
+		countQuery = "SELECT count(*) from ( "
+			+ " SELECT parent.inwardentryid inwardid, "
+			+ " fthickness, NULL as packet_id, fWidth, "
+			+ " coalesce(parent.flength,0) flength, fpresent fweight, "
+			+ " fquantity, partyname, 0 as siltcutcnt, DATEDIFF(curdate(), date_format(parent.createdon, '%Y-%m-%d')) coilage, "
+			+ " (SELECT COALESCE(sum(allocated_soqty), 0) FROM jsw_sales_order_allocation alloc where alloc.inward_entry_id=parent.inwardentryid and (alloc.instruction_id <= 0 OR alloc.instruction_id IS NULL)) as allocated_soqty "
+			+ " FROM product_tblinwardentry parent, product_tblpartydetails party, jsw_material_master mat "
+			+ " where parent.isdeleted=0 and party.npartyid = parent.npartyid "
 			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (parent.coilNumber like %:searchText% or parent.customerBatchId like %:searchText% or parent.customerInvoiceNo like %:searchText%) else 1=1 end " 
-			+ " and vstatus in (1,2,3) " 
-			+ " and mat.mm_id = parent.mm_id " 
+			+ " and vstatus in (1,2,3) "
+			+ " and mat.mm_id = parent.mm_id "
 			+ " and mat.grade_id = :gradeId "
 			+ " and mat.form_id not in (21) "
-			+ " and mat.thickness= :thickness "
+			+ " and mat.thickness = :thickness "
 			+ " AND parent.fwidth = :width "
-			+ " and case when :partyIdsFlag=true then parent.npartyid in :partyIds else 1=1 end"
-			+ ") a "
-			+ " where (fweight-allocated_soqty)>0 and case when :fromCoilAge >=0 and :toCoilAge > 0 then coilage between :fromCoilAge and :toCoilAge else 1=1 end ", nativeQuery = true)
+			+ " and case when :partyIdsFlag = true then parent.npartyid in :partyIds else 1=1 end "
+			+ " ) a "
+			+ " where (fweight-allocated_soqty) > 0 "
+			+ " and case when :fromCoilAge >= 0 and :toCoilAge > 0 then coilage between :fromCoilAge and :toCoilAge else 1=1 end ",
+		nativeQuery = true)
 	Page<Object[]> findCoilInventory(
 			@Param("searchText") String searchText,
 			@Param("partyIds") List<Integer> partyIds,
