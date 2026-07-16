@@ -405,11 +405,11 @@ public class ReportsServiceImpl implements ReportsService {
             WorkbookStyles           styles = new WorkbookStyles(wb);
             List<FGReportViewEntity> all    = fgReportViewRepository.findByPartyId(partyId);
 
-            Set<String> otherTags = new HashSet<>(Arrays.asList(
-                "EDGE TRIM","CUT ENDS","WIP(NCO)","WIP(FG)","WIP(END CUT)",
-                "WIP(EDGE TRIM)","WIP(CUT ENDS)","WIP (SFCP)","NCO"));
-            Set<String> excludeDefects = new HashSet<>(otherTags);
+			Set<String> otherTags = new HashSet<>(Arrays.asList("100 - FG (RM DEFECT)", "200 - FG (PROCESS DEFECT)",
+					"002 - FG (ASSORTED COILS)", "300 - FG (PLANNING DEFECT)"));
+			Set<String> excludeDefects = new HashSet<>(otherTags);
             excludeDefects.add("FG");
+            excludeDefects.add("210 - FG (OFF CUT COIL)");
 
             List<FGReportViewEntity> fgList      = new ArrayList<>();
             List<FGReportViewEntity> othersList  = new ArrayList<>();
@@ -417,7 +417,7 @@ public class ReportsServiceImpl implements ReportsService {
 
             for (FGReportViewEntity kk : all) {
                 String tag = kk.getClassificationTag();
-                if ("FG".equals(tag))
+                if ("FG".equals(tag) || "210 - FG (OFF CUT COIL)".equals(tag))
                     fgList.add(kk);
                 if (tag != null && otherTags.contains(tag.trim().toUpperCase()))
                     othersList.add(kk);
@@ -425,12 +425,12 @@ public class ReportsServiceImpl implements ReportsService {
                     defectsList.add(kk);
             }
 
-            addSheet(wb, "FG_Classification",    FG_HEADERS, fgList,      ReportsServiceImpl::fgRow, styles);
-            addSheet(wb, "Others_Classification", FG_HEADERS, othersList,  ReportsServiceImpl::fgRow, styles);
-            addSheet(wb, "Quality_Defects",       FG_HEADERS, defectsList, ReportsServiceImpl::fgRow, styles);
+			addSheet(wb, "FG_Classification", FG_HEADERS, fgList, ReportsServiceImpl::fgRow, styles);
+			addSheet(wb, "Others_Classification", FG_HEADERS, defectsList, ReportsServiceImpl::fgRow, styles);
+			addSheet(wb, "Quality_Defects", FG_HEADERS, othersList, ReportsServiceImpl::fgRow, styles);
 
             return writeAndAttach(wb, "FGReport_" + strDate + ".xlsx",
-                !fgList.isEmpty() || !othersList.isEmpty(), helper);
+                !fgList.isEmpty() || !othersList.isEmpty()|| !defectsList.isEmpty(), helper);
         } catch (Exception e) {
             log.error("createFGReport failed partyId={}", partyId, e);
         }
