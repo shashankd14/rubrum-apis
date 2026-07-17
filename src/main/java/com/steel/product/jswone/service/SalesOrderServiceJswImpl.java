@@ -211,15 +211,22 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				partyIds = new ArrayList<>();
 			}
 		}
-		
+
 		boolean warehouseFlag = false;
 
 		if (listPageSearchRequest.getWarehouseList() != null && listPageSearchRequest.getWarehouseList().size() > 0) {
 			warehouseFlag = true;
 		}
+		
+		boolean zohoStatusFlag = false;
+		
+		if (listPageSearchRequest.getZohoStatus() != null && listPageSearchRequest.getZohoStatus().size() > 0) {
+			zohoStatusFlag = true;
+		}
 		Page<Object[]> packetsList = salesOrderRepository.listAllSOIDs(listPageSearchRequest.getSearchText(),
-				listPageSearchRequest.getSoId(), listPageSearchRequest.getStatus(), listPageSearchRequest.getZohoStatus(), warehouseFlag,
-				listPageSearchRequest.getWarehouseList(), pageable);
+				listPageSearchRequest.getSoId(), listPageSearchRequest.getStatus(), zohoStatusFlag,
+				listPageSearchRequest.getZohoStatus(), warehouseFlag, listPageSearchRequest.getWarehouseList(),
+				pageable);
 		return packetsList;
 	}
 

@@ -23,8 +23,8 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " FROM jsw_sales_order so, jsw_sales_order_child so_child "
 			+ " where so.is_deleted = 0 and so_child.is_deleted = 0 and so_child.so_id = so.so_id "
 			+ " and (case when :warehouseFlag=true then so_child.wearhouse_id in :warehouseList else 1=1 end ) "
+			+ " and (case when :zohoStatusFlag=true then so.zoho_status in :zohoStatus else 1=1 end ) "
 			+ " and case when :soId is not null and LENGTH(:soId) >0 then so.so_id = :soId else so.so_id end " 
-		  	+ " and case when :zohoStatus is not null and LENGTH(:zohoStatus) >0 then so.zoho_status = :zohoStatus else 1=1 end " 
 		  	+ " and case when :status is not null and LENGTH(:status) > 0 then so.so_status = :status else so.so_status  = so.so_status end "  
 			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (so_child.material_name like %:searchText% or so_child.mm_id like %:searchText% or so.so_number like %:searchText% or so.refno like %:searchText%) else 1=1 end " 
 			+ " order by so.so_id desc",
@@ -32,15 +32,20 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			"  FROM jsw_sales_order so, jsw_sales_order_child so_child" + 
 		  	"  where so.is_deleted = 0 and so_child.is_deleted = 0 and so_child.so_id = so.so_id" + 
 			"  and (case when :warehouseFlag=true then so_child.wearhouse_id in :warehouseList else 1=1 end ) "+ 
+			"  and (case when :zohoStatusFlag=true then so.zoho_status in :zohoStatus else 1=1 end ) "+ 
 		  	"  and case when :soId is not null and LENGTH(:soId) >0 then so.so_id = :soId else so.so_id end " +
-		  	"  and case when :zohoStatus is not null and LENGTH(:zohoStatus) >0 then so.zoho_status = :zohoStatus else 1=1 end " +
 		  	"  and case when :status is not null and LENGTH(:status) > 0 then so.so_status in :status else 1=1 end " + 
 			"  and case when :searchText is not null and LENGTH(:searchText) >0 then (so_child.material_name like %:searchText% or so_child.mm_id like %:searchText% or so.so_number like %:searchText% or so.refno like %:searchText%) else 1=1 end " +
 		  	"  order by so.so_id desc", 
 		nativeQuery = true)
-	Page<Object[]> listAllSOIDs(@Param("searchText") String searchText, @Param("soId") Integer soId,
-			@Param("status") List<String> status, @Param("zohoStatus") String zohoStatus, @Param("warehouseFlag") boolean warehouseFlag,
-			@Param("warehouseList") List<String> warehouseList, Pageable pageable);
+	Page<Object[]> listAllSOIDs(@Param("searchText") String searchText,
+			@Param("soId") Integer soId,
+			@Param("status") List<String> status, 
+			@Param("zohoStatusFlag") boolean zohoStatusFlag, 
+			@Param("zohoStatus") List<String> zohoStatus,
+			@Param("warehouseFlag") boolean warehouseFlag, 
+			@Param("warehouseList") List<String> warehouseList,
+			Pageable pageable);
 	
 	@Query(value = "SELECT so.so_id, so.so_number, so.socreatedate, so.deliverymethod, "
 			+ " so.destinationcode, so.refno, so.joplsorefno, so.bizsegment, so.ecommerce, so.supplysource, so.typeofsupply, "

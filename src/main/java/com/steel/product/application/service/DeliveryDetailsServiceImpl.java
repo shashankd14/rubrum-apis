@@ -659,7 +659,12 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 				priceCalculateDTO.setLength( inwardEntry.getfLength() );
 				priceCalculateDTO.setActualWeight(inwardEntry.getFpresent());
 				priceCalculateDTO.setMatGradeName(materialResponseDto.getMaterialGrade().getGradeName());
-				priceCalculateDTO.setSubGradeName(materialGradeDto.getSubGradeName());
+				
+				if(materialGradeDto !=null && materialGradeDto.getSubGradeName() !=null ) {
+					priceCalculateDTO.setSubGradeName(materialGradeDto.getSubGradeName());
+				} else {
+					priceCalculateDTO.setSubGradeName("");
+				}
 				if (soDetails != null && soDetails.getRefNo() != null && soDetails.getRefNo().length() > 0) {
 					priceCalculateDTO.setSono(soDetails.getRefNo());
 					priceCalculateDTO.setMmid(soDetails.getMmid());

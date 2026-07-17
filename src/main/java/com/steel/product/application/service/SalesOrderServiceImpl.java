@@ -284,8 +284,10 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 		List<Object[]> packetsList = salesOrderRepository.validateSoNoAndCustCode(dcIds);
 		Map<Integer, SalesOrderListDTO> kk = new LinkedHashMap<>();
 		for (Object[] result : packetsList) {
-			cnt++;
 			String sono = result[0] != null ? (String) result[0] : null;
+			if(sono!=null && sono.length()>0) {
+				cnt++;
+			}
 		}
 		return cnt;
 	}

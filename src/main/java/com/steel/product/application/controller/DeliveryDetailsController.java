@@ -217,7 +217,9 @@ public class DeliveryDetailsController {
 				if (sonovalidationCNt > 1) {
 					HttpHeaders headers = new HttpHeaders();                    
 					headers.set( "Content-Type", "application/json" );
-					return new ResponseEntity<>("{\"status\": \"failure\", \"message\": \"The selected packets dont have the same SONO and CUSTCODE\"}", headers, HttpStatus.OK);
+					return new ResponseEntity<>(
+							"{\"status\": \"failure\", \"message\": \"The selected packets don't have the same SONO and CUSTCODE\"}",
+							headers, HttpStatus.INTERNAL_SERVER_ERROR);
 				}
 			}
 			

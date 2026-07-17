@@ -30,6 +30,8 @@ public class ListPageSearchRequest {
 
 	private List<String> status = new ArrayList<>();
 	
+	private List<String> zohoStatus = new ArrayList<>();
+	
 	private List<String> warehouseList = new ArrayList<>();
 
 	private int planId;
@@ -39,8 +41,6 @@ public class ListPageSearchRequest {
 	private int location;
 
 	private String branchId;
-
-	private String zohoStatus;
 
 	private String batchNo;
 
