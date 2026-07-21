@@ -133,7 +133,7 @@ public class PartyDetailsServiceImpl implements PartyDetailsService {
 	}
 
 	public List<Party> getAllParties() {
-		return this.partyRepo.findAll();
+		return this.partyRepo.getAllParties();
 	}
 
 	public Party getPartyById(int partyId) {

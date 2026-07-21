@@ -27,4 +27,7 @@ public interface MaterialGradeRepository extends JpaRepository<MaterialGrade, In
 	List<MaterialGrade> getGradesByMaterialIdName(@Param("materialId") Integer materialId,
 			@Param("matGradeName") String matGradeName);
 
+    @Query("select mat from MaterialGrade mat where 1=1 order by mat.gradeId desc")
+    public List<MaterialGrade> findAllMaterialGrades();
+
 }

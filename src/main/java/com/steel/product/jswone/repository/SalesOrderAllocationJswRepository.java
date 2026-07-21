@@ -30,12 +30,15 @@ public interface SalesOrderAllocationJswRepository extends JpaRepository<SalesOr
 	@Query("update SalesOrderAllocationEntity inw set inw.pdfGenerationPart = :pdfGenerationPart where inw.soAllocationId in :soAllocationList")
 	void updatePDFGenerationPart(@Param("pdfGenerationPart") String pdfGenerationPart, @Param("soAllocationList") List<Integer> soAllocationList);
 	
-	@Query(value = "select customerid, salesorder_id, item_id, allo.allocated_soqty, wearhouse_id, "
-			+ " (SELECT ware_house_name FROM jsw_warehouse_master wh where wh.ware_house_id=chld.wearhouse_id) whname, branch_id,  "
-			+ " (SELECT branch_name FROM jsw_branch_master bm where bm.branch_id = so.branch_id) branch_name "
-			+ " from jsw_sales_order so, jsw_sales_order_child chld, jsw_sales_order_allocation allo " 
+	@Query(value = "select customerid, salesorder_id, item_id, allo.allocated_soqty, "
+			+ " (SELECT ware_house_id FROM jsw_warehouse_master wh where wh.party_id=inw.npartyid limit 1) werehouse_id,  "
+			+ " (SELECT ware_house_name FROM jsw_warehouse_master wh where wh.party_id=inw.npartyid limit 1) whname,  "
+			+ " (SELECT branch_id FROM jsw_warehouse_master wh where wh.party_id=inw.npartyid limit 1) branch_id,  "
+			+ " (SELECT branch_name FROM jsw_warehouse_master wh, jsw_branch_master bm where bm.branch_id = wh.branch_id and  wh.party_id=inw.npartyid limit 1) branch_name "
+			+ " from jsw_sales_order so, jsw_sales_order_child chld, "
+			+ " jsw_sales_order_allocation allo, product_tblinwardentry inw " 
 			+ " where so.so_id=allo.so_id and so.so_id=chld.so_id and allo.so_child_id=chld.so_child_id " 
-			+ " and allo.so_allocation_id= :soAllocationId", 
+			+ " and allo.inward_entry_id=inw.inwardentryid and allo.so_allocation_id= :soAllocationId", 
 		nativeQuery = true)
 	public List<Object[]> wareHouseReassignmentDetails(Integer soAllocationId);
 

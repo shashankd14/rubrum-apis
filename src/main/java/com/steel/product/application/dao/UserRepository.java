@@ -1,7 +1,5 @@
 package com.steel.product.application.dao;
 
-import com.steel.product.application.entity.AdminUserEntity;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -13,38 +11,42 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.steel.product.application.entity.AdminUserEntity;
+
 @Repository
 @Transactional
-public interface UserRepository extends CrudRepository< AdminUserEntity, Integer >
-{
-    public AdminUserEntity findByUserNameAndEnabled( String userName, short enabled );
+public interface UserRepository extends CrudRepository<AdminUserEntity, Integer> {
+	public AdminUserEntity findByUserNameAndEnabled(String userName, short enabled);
 
-    public AdminUserEntity findByEmailId( String email );
+	public AdminUserEntity findByEmailId(String email);
 
-    public List< AdminUserEntity > findAllByEnabled( short enabled );
+	public List<AdminUserEntity> findAllByEnabled(short enabled);
 
-    public void deleteById( Integer id );
+	public void deleteById(Integer id);
 
-    public Optional<AdminUserEntity> findByUserName( String name );
+	public Optional<AdminUserEntity> findByUserName(String name);
 
-    public AdminUserEntity findByUserId( Integer userId );
-    
-    @Modifying
+	public AdminUserEntity findByUserId(Integer userId);
+
+	@Modifying
 	@Transactional
 	@Query("delete from UserPartyMap where userId = :userId")
-	public void deletePartyMapByUserId(@Param("userId") Integer userId );
+	public void deletePartyMapByUserId(@Param("userId") Integer userId);
 
-    @Modifying
+	@Modifying
 	@Transactional
 	@Query("delete from UserRoleMap where userId = :userId")
-	public void deleteRoleMapByUserId(@Param("userId") Integer userId );
+	public void deleteRoleMapByUserId(@Param("userId") Integer userId);
 
-    @Modifying
+	@Modifying
 	@Transactional
 	@Query("delete from UserLocationMappingEntity where userId = :userId")
-	public void deleteLocationMapByUserId(@Param("userId") Integer userId );
-    
-    @Query(value = "SELECT enduser_tag_id, user_id FROM admin_user_enduser_mapping where user_id= :userId ", nativeQuery = true)
-	public List<Object[]> getEndUserDetails(@Param("userId") Integer userId );
-    
+	public void deleteLocationMapByUserId(@Param("userId") Integer userId);
+
+	@Query(value = "SELECT enduser_tag_id, user_id FROM admin_user_enduser_mapping where user_id= :userId ", nativeQuery = true)
+	public List<Object[]> getEndUserDetails(@Param("userId") Integer userId);
+
+	@Query("select party from AdminUserEntity party where 1=1 order by userId desc")
+	public List<AdminUserEntity> getAllUsers();
+
 }

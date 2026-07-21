@@ -26,4 +26,7 @@ public interface PartyDetailsRepository extends JpaRepository<Party, Integer> {
 	Page<Party> findAllParties(Pageable pageable, @Param("partyIds") List<Integer> partyIds);
 
 	List<Party> findByPartyName(String partyName);
+
+	@Query("select party from Party party where 1=1 order by nPartyId desc")
+	List<Party> getAllParties();
 }

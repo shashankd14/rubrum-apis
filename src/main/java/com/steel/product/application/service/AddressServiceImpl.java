@@ -22,7 +22,7 @@ public class AddressServiceImpl implements AddressService {
   }
   
   public List<Address> getAllAddress() {
-    return this.addressRepo.findAll();
+    return this.addressRepo.getAllAddress();
   }
   
   public Address getAddressById(int addressId) {

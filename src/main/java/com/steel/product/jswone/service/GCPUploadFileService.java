@@ -320,7 +320,6 @@ public class GCPUploadFileService {
 		request.setPageNo(1);
 		request.setPageSize(1000);
 		log.info("upload inwardList ");
-		Map<String, Object> response = new HashMap<>(); 
 		
 		List<Object[]> packetsList = inwardEntryRepository.inwardListDataforGCP();
 		Map<Integer, GCPUploadDTO> inwardMap = new LinkedHashMap<>();

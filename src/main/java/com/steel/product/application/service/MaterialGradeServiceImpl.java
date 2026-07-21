@@ -25,7 +25,7 @@ public class MaterialGradeServiceImpl implements MaterialGradeService {
 	}
 
 	public List<MaterialGrade> getAll() {
-		return this.materialGradeRepo.findAll();
+		return this.materialGradeRepo.findAllMaterialGrades();
 	}
 
 	@Override

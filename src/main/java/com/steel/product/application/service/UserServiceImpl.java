@@ -23,7 +23,7 @@ public class UserServiceImpl implements UserService {
     }
 
     public List<AdminUserEntity> getAllUsers() {
-        return (List<AdminUserEntity>) this.userRepo.findAll();
+        return (List<AdminUserEntity>) this.userRepo.getAllUsers();
     }
 
     public AdminUserEntity getUserById(int id) {

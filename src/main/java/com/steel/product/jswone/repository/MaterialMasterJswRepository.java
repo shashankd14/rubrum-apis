@@ -83,5 +83,5 @@ public interface MaterialMasterJswRepository
 		nativeQuery = true)
 	List<Object[]> listAllLocationWiseInwards(@Param("status") int status);
 
-	void deleteByMaterialId(Integer materaiId); 
+	void deleteByMaterialId(Integer materaiId);
 }
