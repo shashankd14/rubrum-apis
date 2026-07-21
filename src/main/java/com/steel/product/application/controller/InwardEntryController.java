@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -33,11 +34,13 @@ import com.steel.product.application.dto.inward.SearchListPageRequest;
 import com.steel.product.application.entity.InwardDoc;
 import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.service.AWSS3Service;
+import com.steel.product.application.service.EndUserTagsService;
 import com.steel.product.application.service.InwardDocService;
 import com.steel.product.application.service.InwardEntryService;
 import com.steel.product.application.service.LocationMasterService;
 import com.steel.product.application.service.MaterialDescriptionService;
 import com.steel.product.application.service.MaterialGradeService;
+import com.steel.product.application.service.PacketClassificationService;
 import com.steel.product.application.service.PartyDetailsService;
 import com.steel.product.application.service.StatusService;
 import com.steel.product.application.service.UserService;
@@ -60,6 +63,10 @@ public class InwardEntryController {
 
 	private LocationMasterService locationMasterService;
 
+	private PacketClassificationService packetClassificationService;
+
+	private EndUserTagsService endUserTagsService;
+
 	private StatusService statusService;
 
 	private MaterialDescriptionService matDescService;
@@ -78,7 +85,8 @@ public class InwardEntryController {
 	public InwardEntryController(InwardEntryService inwdEntrySvc, PartyDetailsService partyDetailsService,
 			StatusService statusService, MaterialDescriptionService matDescService,
 			MaterialGradeService matGradeService, UserService userSerive, AWSS3Service awsS3Service,
-			InwardDocService inwardDocService, CommonUtil commonUtil, LocationMasterService locationMasterService) {
+			InwardDocService inwardDocService, CommonUtil commonUtil, LocationMasterService locationMasterService,
+			PacketClassificationService packetClassificationService, EndUserTagsService endUserTagsService) {
 		this.inwdEntrySvc = inwdEntrySvc;
 		this.partyDetailsService = partyDetailsService;
 		this.statusService = statusService;
@@ -88,65 +96,87 @@ public class InwardEntryController {
 		this.inwardDocService = inwardDocService;
 		this.commonUtil = commonUtil;
 		this.locationMasterService = locationMasterService;
+		this.packetClassificationService = packetClassificationService;
+		this.endUserTagsService = endUserTagsService;
 	}
 
 	@PostMapping("/addNew")
-	public ResponseEntity<Object> saveInwardEntry(@ModelAttribute InwardDto inward, HttpServletRequest request) {
+	public ResponseEntity<Object> saveInwardEntry(@ModelAttribute InwardDto inwarddto, HttpServletRequest request) {
 		InwardEntry inwardEntry = new InwardEntry();
-		System.out.println("DTO details " + inward);
+		System.out.println("DTO details " + inwarddto);
 		log.info("Inside saveInwardEntry ");
 		try {
 			int userId = commonUtil.getUserId();
 			inwardEntry.setInwardEntryId(0);
-			inwardEntry.setPurposeType(inward.getPurposeType());
-			inwardEntry.setParty(this.partyDetailsService.getPartyById(inward.getPartyId()));
-			if (inward != null && inward.getLocationId() > 0) {
-				log.info("inward.getLocationId() == " + inward.getLocationId());
-				inwardEntry.setLocation(this.locationMasterService.getByLocationId(inward.getLocationId()));
+			inwardEntry.setPurposeType(inwarddto.getPurposeType());
+			boolean isPresent = this.inwdEntrySvc.isCoilNumberPresent(inwarddto.getCoilNumber());
+			if(isPresent) {
+				log.error("duplicate coil number ");
+				return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Coil Number already exists\"}", new HttpHeaders(), HttpStatus.BAD_REQUEST);
 			}
-			inwardEntry.setCoilNumber(inward.getCoilNumber());
-			inwardEntry.setBatchNumber(inward.getBatchNumber());
-			inwardEntry.setdReceivedDate(Timestamp.valueOf(inward.getInwardDate()));
-			if (inward.getPresentWeight() <= 0) {
+			inwardEntry.setParty(this.partyDetailsService.getPartyById(inwarddto.getPartyId()));
+			if (inwarddto != null && inwarddto.getLocationId() > 0) {
+				log.info("inwarddto.getLocationId() == " + inwarddto.getLocationId());
+				inwardEntry.setLocation(this.locationMasterService.getByLocationId(inwarddto.getLocationId()));
+			}
+			if (inwarddto != null && inwarddto.getPacketClassificationId() > 0) {
+				log.info("inwarddto.getPacketClassificationId() == " + inwarddto.getPacketClassificationId());
+				inwardEntry.setPacketClassification(this.packetClassificationService.getPacketClassificationById(inwarddto.getPacketClassificationId()));
+			}
+
+			if (inwarddto != null && inwarddto.getEndUserTagId() > 0) {
+				log.info("inwarddto.getEndUserTagId() == " + inwarddto.getEndUserTagId());
+				inwardEntry.setEndUserTagsEntity(this.endUserTagsService.getEndUserTagsById(inwarddto.getEndUserTagId()));
+			}
+			inwardEntry.setNoofpieces( inwarddto.getNoofpieces());
+			
+			if (inwarddto.getPresentWeight() <= 0) {
+				log.error("inwarddto.getPresentWeight() is invalid");
+				return new ResponseEntity<Object>("Invalid present weight entered.", HttpStatus.BAD_REQUEST);
+			}
+			inwardEntry.setCoilNumber(inwarddto.getCoilNumber());
+			inwardEntry.setBatchNumber(inwarddto.getBatchNumber());
+			inwardEntry.setdReceivedDate(Timestamp.valueOf(inwarddto.getInwardDate()));
+			if (inwarddto.getPresentWeight() <= 0) {
 				log.info("Invalid present weight entered.");
 				return new ResponseEntity<Object>("Invalid present weight entered.", HttpStatus.BAD_REQUEST);
 			}
-			inwardEntry.setInStockWeight(inward.getPresentWeight());
+			inwardEntry.setInStockWeight(inwarddto.getPresentWeight());
 
-			if (inward.getBillDate() != null)
-				inwardEntry.setdBillDate(Timestamp.valueOf(inward.getBillDate()));
+			if (inwarddto.getBillDate() != null)
+				inwardEntry.setdBillDate(Timestamp.valueOf(inwarddto.getBillDate()));
 
-			inwardEntry.setvLorryNo(inward.getVehicleNumber());
-			inwardEntry.setvInvoiceNo(inward.getInvoiceNumber());
-			inwardEntry.setdInvoiceDate(Timestamp.valueOf(inward.getInvoiceDate()));
+			inwardEntry.setvLorryNo(inwarddto.getVehicleNumber());
+			inwardEntry.setvInvoiceNo(inwarddto.getInvoiceNumber());
+			inwardEntry.setdInvoiceDate(Timestamp.valueOf(inwarddto.getInvoiceDate()));
 
-			inwardEntry.setCustomerCoilId(inward.getCustomerCoilId());
-			inwardEntry.setCustomerInvoiceNo(inward.getCustomerInvoiceNo());
-			inwardEntry.setCustomerBatchId(inward.getCustomerBatchId());
+			inwardEntry.setCustomerCoilId(inwarddto.getCustomerCoilId());
+			inwardEntry.setCustomerInvoiceNo(inwarddto.getCustomerInvoiceNo());
+			inwardEntry.setCustomerBatchId(inwarddto.getCustomerBatchId());
 
-			inwardEntry.setMaterial(this.matDescService.getMatById(inward.getMaterialId()));
-			inwardEntry.setMaterialGrade(matGradeService.getById(inward.getMaterialGradeId()));
+			inwardEntry.setMaterial(this.matDescService.getMatById(inwarddto.getMaterialId()));
+			inwardEntry.setMaterialGrade(matGradeService.getById(inwarddto.getMaterialGradeId()));
+			
+			inwardEntry.setfWidth(inwarddto.getWidth());
+			inwardEntry.setfThickness(inwarddto.getThickness());
+			inwardEntry.setfLength(inwarddto.getLength());
+			inwardEntry.setAvailableLength(inwarddto.getLength());
+			inwardEntry.setfQuantity(inwarddto.getPresentWeight());
+			inwardEntry.setGrossWeight(inwarddto.getGrossWeight());
 
-			inwardEntry.setfWidth(inward.getWidth());
-			inwardEntry.setfThickness(inward.getThickness());
-			inwardEntry.setfLength(inward.getLength());
-			inwardEntry.setAvailableLength(inward.getLength());
-			inwardEntry.setfQuantity(inward.getPresentWeight());
-			inwardEntry.setGrossWeight(inward.getGrossWeight());
-
-			// inwardEntry.setStatus(this.statusService.getStatusById(inward.getStatusId()));
+			// inwardEntry.setStatus(this.statusService.getStatusById(inwarddto.getStatusId()));
 			inwardEntry.setStatus(this.statusService.getStatusById(1));
 
-			inwardEntry.setvProcess(inward.getProcess());
-			inwardEntry.setTdcNo(inward.getTdcNo());
-			inwardEntry.setFpresent(inward.getPresentWeight());
-			inwardEntry.setValueOfGoods(inward.getValueOfGoods());
+			inwardEntry.setvProcess(inwarddto.getProcess());
+			inwardEntry.setTdcNo(inwarddto.getTdcNo());
+			inwardEntry.setFpresent(inwarddto.getPresentWeight());
+			inwardEntry.setValueOfGoods(inwarddto.getValueOfGoods());
 
 			inwardEntry.setBilledweight(0);
 			inwardEntry.setParentCoilNumber(null);
 			inwardEntry.setvParentBundleNumber(0);
 
-			inwardEntry.setRemarks(inward.getRemarks());
+			inwardEntry.setRemarks(inwarddto.getRemarks());
 
 			inwardEntry.setIsDeleted(Boolean.valueOf(false));
 			inwardEntry.setCreatedOn(this.timestamp);
@@ -154,16 +184,16 @@ public class InwardEntryController {
 			inwardEntry.setCreatedBy(userId);
 			inwardEntry.setUpdatedBy(userId);
 
-			if (inward.getTestCertificateFile() != null) {
+			if (inwarddto.getTestCertificateFile() != null) {
 
-				String fileUrl = awsS3Service.uploadFile(inward.getTestCertificateFile());
+				String fileUrl = awsS3Service.uploadFile(inwarddto.getTestCertificateFile());
 				inwardEntry.setTestCertificateFileUrl(fileUrl);
 			}
-			inwardEntry.setTestCertificateNumber(inward.getTestCertificateNumber());
+			inwardEntry.setTestCertificateNumber(inwarddto.getTestCertificateNumber());
 			InwardEntry savedInwardEntry = inwdEntrySvc.saveEntry(inwardEntry);
 
-			if (inward.getInwardFiles() != null) {
-				for (MultipartFile file : inward.getInwardFiles()) {
+			if (inwarddto.getInwardFiles() != null) {
+				for (MultipartFile file : inwarddto.getInwardFiles()) {
 					InwardDoc inwardDoc = new InwardDoc();
 					inwardDoc.setInwardEntry(inwardEntry);
 					String str = awsS3Service.uploadFile(file);
@@ -180,62 +210,72 @@ public class InwardEntryController {
 	}
 
 	@PutMapping({ "/update" })
-	public ResponseEntity<Object> updateEntry(@RequestBody InwardDto inward, HttpServletRequest request) {
+	public ResponseEntity<Object> updateEntry(@RequestBody InwardDto inwarddto, HttpServletRequest request) {
 		InwardEntry inwardEntry = new InwardEntry();
-		System.out.println("DTO details " + inward);
+		System.out.println("DTO details " + inwarddto);
 		try {
 			int userId = commonUtil.getUserId();
-			inwardEntry = inwdEntrySvc.getByEntryId(inward.getInwardId());
-			inwardEntry.setPurposeType(inward.getPurposeType());
-			inwardEntry.setParty(this.partyDetailsService.getPartyById(inward.getPartyId()));
-			if (inward != null && inward.getLocationId() > 0) {
-				inwardEntry.setLocation(this.locationMasterService.getByLocationId(inward.getLocationId()));
+			inwardEntry = inwdEntrySvc.getByEntryId(inwarddto.getInwardId());
+			inwardEntry.setPurposeType(inwarddto.getPurposeType());
+			inwardEntry.setParty(this.partyDetailsService.getPartyById(inwarddto.getPartyId()));
+			if (inwarddto != null && inwarddto.getLocationId() > 0) {
+				inwardEntry.setLocation(this.locationMasterService.getByLocationId(inwarddto.getLocationId()));
 			}
-			inwardEntry.setCoilNumber(inward.getCoilNumber());
-			inwardEntry.setBatchNumber(inward.getBatchNumber());
-			inwardEntry.setdReceivedDate(Timestamp.valueOf(inward.getInwardDate()));
-			if (inward.getBillDate() != null)
-				inwardEntry.setdBillDate(Timestamp.valueOf(inward.getBillDate()));
-
-			inwardEntry.setvLorryNo(inward.getVehicleNumber());
-			inwardEntry.setvInvoiceNo(inward.getInvoiceNumber());
-			inwardEntry.setdInvoiceDate(Timestamp.valueOf(inward.getInvoiceDate()));
-
-			inwardEntry.setCustomerCoilId(inward.getCustomerCoilId());
-			inwardEntry.setCustomerBatchId(inward.getCustomerBatchId());
-
-			inwardEntry.setMaterial(this.matDescService.getMatById(inward.getMaterialId()));
-			inwardEntry.setMaterialGrade(matGradeService.getById(inward.getMaterialGradeId()));
-
-			inwardEntry.setfWidth(inward.getWidth());
-			inwardEntry.setfThickness(inward.getThickness());
-			inwardEntry.setfLength(inward.getLength());
-			inwardEntry.setfQuantity(inward.getPresentWeight());
-			inwardEntry.setGrossWeight(inward.getGrossWeight());
-
-			inwardEntry.setStatus(this.statusService.getStatusById(inward.getStatusId()));
-			inwardEntry.setvProcess(inward.getProcess());
-			if (inward.getTdcNo() != null && inward.getTdcNo().length() > 0) {
-				inwardEntry.setTdcNo(inward.getTdcNo());
+			if (inwarddto != null && inwarddto.getPacketClassificationId() > 0) {
+				log.info("inwarddto.getPacketClassificationId() == " + inwarddto.getPacketClassificationId());
+				inwardEntry.setPacketClassification(this.packetClassificationService.getPacketClassificationById(inwarddto.getPacketClassificationId()));
 			}
-			inwardEntry.setFpresent(inward.getPresentWeight());
+
+			if (inwarddto != null && inwarddto.getEndUserTagId() > 0) {
+				log.info("inwarddto.getEndUserTagId() == " + inwarddto.getEndUserTagId());
+				inwardEntry.setEndUserTagsEntity(this.endUserTagsService.getEndUserTagsById(inwarddto.getEndUserTagId()));
+			}
+			inwardEntry.setNoofpieces( inwarddto.getNoofpieces());
+			inwardEntry.setCoilNumber(inwarddto.getCoilNumber());
+			inwardEntry.setBatchNumber(inwarddto.getBatchNumber());
+			inwardEntry.setdReceivedDate(Timestamp.valueOf(inwarddto.getInwardDate()));
+			if (inwarddto.getBillDate() != null)
+				inwardEntry.setdBillDate(Timestamp.valueOf(inwarddto.getBillDate()));
+
+			inwardEntry.setvLorryNo(inwarddto.getVehicleNumber());
+			inwardEntry.setvInvoiceNo(inwarddto.getInvoiceNumber());
+			inwardEntry.setdInvoiceDate(Timestamp.valueOf(inwarddto.getInvoiceDate()));
+
+			inwardEntry.setCustomerCoilId(inwarddto.getCustomerCoilId());
+			inwardEntry.setCustomerBatchId(inwarddto.getCustomerBatchId());
+
+			inwardEntry.setMaterial(this.matDescService.getMatById(inwarddto.getMaterialId()));
+			inwardEntry.setMaterialGrade(matGradeService.getById(inwarddto.getMaterialGradeId()));
+
+			inwardEntry.setfWidth(inwarddto.getWidth());
+			inwardEntry.setfThickness(inwarddto.getThickness());
+			inwardEntry.setfLength(inwarddto.getLength());
+			inwardEntry.setfQuantity(inwarddto.getPresentWeight());
+			inwardEntry.setGrossWeight(inwarddto.getGrossWeight());
+
+			inwardEntry.setStatus(this.statusService.getStatusById(inwarddto.getStatusId()));
+			inwardEntry.setvProcess(inwarddto.getProcess());
+			if (inwarddto.getTdcNo() != null && inwarddto.getTdcNo().length() > 0) {
+				inwardEntry.setTdcNo(inwarddto.getTdcNo());
+			}
+			inwardEntry.setFpresent(inwarddto.getPresentWeight());
 			inwardEntry.setBilledweight(0);
 			inwardEntry.setParentCoilNumber(null);
 			inwardEntry.setvParentBundleNumber(0);
 			inwardEntry.setIsDeleted(Boolean.valueOf(false));
 			inwardEntry.setUpdatedBy(userId);
 
-			if (inward.getTestCertificateFile() != null) {
+			if (inwarddto.getTestCertificateFile() != null) {
 
-				String fileUrl = awsS3Service.uploadFile(inward.getTestCertificateFile());
+				String fileUrl = awsS3Service.uploadFile(inwarddto.getTestCertificateFile());
 				inwardEntry.setTestCertificateFileUrl(fileUrl);
 			}
-			inwardEntry.setTestCertificateNumber(inward.getTestCertificateNumber());
+			inwardEntry.setTestCertificateNumber(inwarddto.getTestCertificateNumber());
 			inwdEntrySvc.saveEntry(inwardEntry);
 
-			if (inward.getInwardFiles() != null) {
+			if (inwarddto.getInwardFiles() != null) {
 
-				for (MultipartFile file : inward.getInwardFiles()) {
+				for (MultipartFile file : inwarddto.getInwardFiles()) {
 
 					InwardDoc inwardDoc = new InwardDoc();
 					inwardDoc.setInwardEntry(inwardEntry);

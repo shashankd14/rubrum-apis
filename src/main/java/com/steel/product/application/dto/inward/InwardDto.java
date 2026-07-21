@@ -1,8 +1,8 @@
 package com.steel.product.application.dto.inward;
 
-import org.springframework.web.multipart.MultipartFile;
-
 import java.util.ArrayList;
+
+import org.springframework.web.multipart.MultipartFile;
 
 public class InwardDto {
 	
@@ -65,6 +65,12 @@ public class InwardDto {
 	private String remarks;
 
 	private String parentCoilNumber;
+
+    private int packetClassificationId;
+
+    private int endUserTagId;
+	
+	private Integer noofpieces;
 
 	public int getInwardId() {
 		return this.inwardId;
@@ -305,6 +311,30 @@ public class InwardDto {
 
 	public void setLocationId(int locationId) {
 		this.locationId = locationId;
+	}
+
+	public Integer getPacketClassificationId() {
+		return packetClassificationId;
+	}
+
+	public void setPacketClassificationId(Integer packetClassificationId) {
+		this.packetClassificationId = packetClassificationId;
+	}
+
+	public Integer getEndUserTagId() {
+		return endUserTagId;
+	}
+
+	public void setEndUserTagId(Integer endUserTagId) {
+		this.endUserTagId = endUserTagId;
+	}
+
+	public Integer getNoofpieces() {
+		return noofpieces;
+	}
+
+	public void setNoofpieces(Integer noofpieces) {
+		this.noofpieces = noofpieces;
 	}
 	
 	

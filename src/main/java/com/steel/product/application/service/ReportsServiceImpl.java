@@ -286,12 +286,19 @@ public class ReportsServiceImpl implements ReportsService {
     }
 
     // ── Shared header arrays (declared once, reused across methods) ───────────
-
     private static final Object[] FG_HEADERS = {
         "CoilNumber","CustomerBatchId","Finishing Date","Current Date","Coil Age(No'of Days)",
         "No'of Pieces","MaterialDesc","MaterialGrade","Mother Coil No","TDC No","Remarks",
         "Packet Id","Thickness","Actual Width","Actual Length","Actual Weight",
         "Classification Tag","End User Tag"
+    };
+
+    // ── Shared header arrays (declared once, reused across methods) ───────────
+    private static final Object[] FG_DEFECTED_HEADERS = {
+        "CoilNumber","CustomerBatchId","Finishing Date","Current Date","Coil Age(No'of Days)",
+        "No'of Pieces","MaterialDesc","MaterialGrade","Mother Coil No","TDC No","Remarks",
+        "Packet Id","Thickness","Actual Width","Actual Length","Actual Weight",
+        "Classification Tag","Defect Remarks","End User Tag"
     };
 
     private static final Object[] WIP_HEADERS = {
@@ -306,22 +313,56 @@ public class ReportsServiceImpl implements ReportsService {
         "CoilNumber","CustomerBatchId","CustomerName","ProcessName","MaterialDesc",
         "MaterialGrade","ProcessDate","PacketId","Packet Thickness","Packet Width",
         "Packet Length","Finishing Weight","Finishing Date","End User Tag"
-    };
+    }; 
 
     // ── Shared row mappers (static — no heap allocation per call) ─────────────
+    private static Object[] defectFGRow(FGReportViewEntity kk) {
+        String tag = kk.getClassificationTag();
 
-    private static Object[] fgRow(FGReportViewEntity kk) {
+        // If the classification tag is a defected tag, surface it in remarks
+        String defectRemarks = "";
+		if (tag != null && tag.startsWith("1")) {
+			defectRemarks = tag.substring(6).trim();
+			tag = "FG (RM DEFECT)";
+		}
+		if (tag != null && tag.startsWith("2")) {
+			defectRemarks = tag.substring(6).trim();
+			tag = "FG (PROCESS DEFECT)";
+		}
+		if (tag != null && "300 - FG (PLANNING DEFECT)".equals(tag)) {
+			defectRemarks = "PLANNING DEFECT";
+			tag = "FG (PLANNING DEFECT)";
+		} 
+
         return new Object[]{
             kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getFinishingDate(),
             kk.getCurrentdate(), kk.getCoilage(), kk.getNoofpieces(), kk.getMaterialDesc(),
             kk.getMaterialGrade(), kk.getBatchnumber(), kk.getTdcNo(), kk.getRemarks(),
             kk.getPacketId(), kk.getThickness(), kk.getActualwidth(), kk.getActuallength(),
-            kk.getActualweight(), kk.getClassificationTag(),
+            kk.getActualweight(), tag, defectRemarks,
             (kk.getEnduserTagName() != null && !kk.getEnduserTagName().isEmpty()
                 ? kk.getEnduserTagName() : "")
         };
     }
-
+    
+    private static Object[] fgRow(FGReportViewEntity kk) {
+    	
+		String tag = kk.getClassificationTag();
+		if (tag != null && !tag.startsWith("TAG TO BE CHANGED")) {
+			tag = tag.substring(6).trim();
+		}
+    	
+        return new Object[]{
+            kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getFinishingDate(),
+            kk.getCurrentdate(), kk.getCoilage(), kk.getNoofpieces(), kk.getMaterialDesc(),
+            kk.getMaterialGrade(), kk.getBatchnumber(), kk.getTdcNo(), kk.getRemarks(),
+            kk.getPacketId(), kk.getThickness(), kk.getActualwidth(), kk.getActuallength(),
+            kk.getActualweight(), tag,
+            (kk.getEnduserTagName() != null && !kk.getEnduserTagName().isEmpty()
+                ? kk.getEnduserTagName() : "")
+        };
+    }
+    
     private static Object[] wipRow(WIPReportViewEntity kk) {
         return new Object[]{
             kk.getCoilNumber(), kk.getCustomerBatchId(), kk.getProcessingPlanDate(),
@@ -405,29 +446,36 @@ public class ReportsServiceImpl implements ReportsService {
             WorkbookStyles           styles = new WorkbookStyles(wb);
             List<FGReportViewEntity> all    = fgReportViewRepository.findByPartyId(partyId);
 
-			Set<String> otherTags = new HashSet<>(Arrays.asList("100 - FG (RM DEFECT)", "200 - FG (PROCESS DEFECT)",
-					"002 - FG (ASSORTED COILS)", "300 - FG (PLANNING DEFECT)"));
-			Set<String> excludeDefects = new HashSet<>(otherTags);
-            excludeDefects.add("FG");
+            Set<String> DEFECTED_TAGS = new HashSet<>();
+            for (FGReportViewEntity kk : all) {
+                String tag = kk.getClassificationTag();
+                if (tag != null && (tag.startsWith("1") || tag.startsWith("2") )    ) {
+                    DEFECTED_TAGS.add(tag.toUpperCase());
+                }
+            }
+            DEFECTED_TAGS.add("300 - FG (PLANNING DEFECT)");
+            
+			Set<String> excludeDefects = new HashSet<>(DEFECTED_TAGS);
+            excludeDefects.add("001 - FG PRIME");
             excludeDefects.add("210 - FG (OFF CUT COIL)");
 
             List<FGReportViewEntity> fgList      = new ArrayList<>();
-            List<FGReportViewEntity> othersList  = new ArrayList<>();
-            List<FGReportViewEntity> defectsList = new ArrayList<>();
+            List<FGReportViewEntity> defectsList  = new ArrayList<>();
+            List<FGReportViewEntity> othersList = new ArrayList<>();
 
             for (FGReportViewEntity kk : all) {
                 String tag = kk.getClassificationTag();
-                if ("FG".equals(tag) || "210 - FG (OFF CUT COIL)".equals(tag))
+                if ("001 - FG PRIME".equals(tag) || "210 - FG (OFF CUT COIL)".equals(tag))
                     fgList.add(kk);
-                if (tag != null && otherTags.contains(tag.trim().toUpperCase()))
-                    othersList.add(kk);
+                if (tag != null && DEFECTED_TAGS.contains(tag.trim().toUpperCase()))
+                	defectsList.add(kk);
                 if (tag != null && !excludeDefects.contains(tag.trim().toUpperCase()))
-                    defectsList.add(kk);
+                	othersList.add(kk);
             }
 
 			addSheet(wb, "FG_Classification", FG_HEADERS, fgList, ReportsServiceImpl::fgRow, styles);
-			addSheet(wb, "Others_Classification", FG_HEADERS, defectsList, ReportsServiceImpl::fgRow, styles);
-			addSheet(wb, "Quality_Defects", FG_HEADERS, othersList, ReportsServiceImpl::fgRow, styles);
+			addSheet(wb, "Quality_Defects", FG_DEFECTED_HEADERS, defectsList, ReportsServiceImpl::defectFGRow, styles);
+			addSheet(wb, "Other_Classification", FG_HEADERS, othersList, ReportsServiceImpl::fgRow, styles);
 
             return writeAndAttach(wb, "FGReport_" + strDate + ".xlsx",
                 !fgList.isEmpty() || !othersList.isEmpty()|| !defectsList.isEmpty(), helper);
@@ -819,31 +867,29 @@ public class ReportsServiceImpl implements ReportsService {
     // ── Stock Details Report ──────────────────────────────────────────────────
 
     @Override
-    public boolean createStockDetailsReport(int partyId, String strDate, MimeMessageHelper helper) {
-        try (XSSFWorkbook wb = new XSSFWorkbook()) {
-            WorkbookStyles                    styles = new WorkbookStyles(wb);
-            List<StockDetailsReportViewEntity> list  = stockDetailsReportViewRepository.findByPartyId(partyId);
-            addSheet(wb, "StockDetails_Report",
-                new Object[]{"Current Date","Finishing Date","EPA Name","EPA location","Mtrl. Age(Days)",
-                    "No'of Pieces","Classification Tag","Customer Name","Material Desc","Mother Coil No",
-                    "EPA Input Batch","Child Packet Id","MaterialGrade","TDC No","Thickness",
-                    "Actual Width","Actual Length","Quality Remarks (For Deviation)","Net Wt (Mt)"},
-                list,
-                kk -> new Object[]{
-                    kk.getCurrentdate(), kk.getFinishingdate(), kk.getEpaname(), kk.getEpalocation(),
-                    kk.getCoilage(), kk.getNoofpieces(), kk.getClassificationTag(),
-                    kk.getEndusertagname(), kk.getMaterialdesc(), kk.getParentbatch(),
-                    kk.getEpainputbatch(), kk.getPacketId(), kk.getMaterialgrade(), kk.getTdcNo(),
-                    kk.getFthickness(), kk.getActualwidth(), kk.getActuallength(),
-                    kk.getQuality(), kk.getNetweight()},
-                styles);
-            return writeAndAttach(wb, "StockDetailsReport_" + strDate + ".xlsx", !list.isEmpty(), helper);
-        } catch (Exception e) {
-        	e.printStackTrace();
-            log.error("createStockDetailsReport failed partyId={}", partyId, e);
-        }
-        return true;
-    }
+	public boolean createStockDetailsReport(int partyId, String strDate, MimeMessageHelper helper) {
+		try (XSSFWorkbook wb = new XSSFWorkbook()) {
+			WorkbookStyles styles = new WorkbookStyles(wb);
+			List<StockDetailsReportViewEntity> list = stockDetailsReportViewRepository.findByPartyId(partyId);
+			addSheet(wb, "StockDetails_Report",
+					new Object[] { "Current Date", "Finishing Date", "EPA Name", "EPA location", "Mtrl. Age(Days)",
+							"No'of Pieces", "Classification Tag", "Customer Name", "Material Desc", "Mother Coil No",
+							"EPA Input Batch", "Child Packet Id", "MaterialGrade", "TDC No", "Thickness",
+							"Actual Width", "Actual Length", "Quality Remarks (For Deviation)", "Net Wt (Mt)" },
+					list, kk -> {
+						return new Object[] { kk.getCurrentdate(), kk.getFinishingdate(), kk.getEpaname(),
+								kk.getEpalocation(), kk.getCoilage(), kk.getNoofpieces(), kk.getClassificationTag(), kk.getEndusertagname(),
+								kk.getMaterialdesc(), kk.getParentbatch(), kk.getEpainputbatch(), kk.getPacketId(),
+								kk.getMaterialgrade(), kk.getTdcNo(), kk.getFthickness(), kk.getActualwidth(),
+								kk.getActuallength(), kk.getQuality(), kk.getNetweight() };
+					}, styles);
+			return writeAndAttach(wb, "StockDetailsReport_" + strDate + ".xlsx", !list.isEmpty(), helper);
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.error("createStockDetailsReport failed partyId={}", partyId, e);
+		}
+		return true;
+	}
 
     // ── Monthly Summary Report ────────────────────────────────────────────────
 

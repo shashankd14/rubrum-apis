@@ -18,7 +18,13 @@ public class InwardEntryResponseDto {
 
     private LocationMasterDto location;
 
+	private PacketClassification packetClassification;
+
+	private EndUserTagsEntity endUserTagsentity;
+
     private String coilNumber;
+
+    private Integer noofpieces;
 
     private String batchNumber;
 
@@ -431,6 +437,31 @@ public class InwardEntryResponseDto {
 	public void setTdcNo(String tdcNo) {
 		this.tdcNo = tdcNo;
 	}
+
+	public PacketClassification getPacketClassification() {
+		return packetClassification;
+	}
+
+	public void setPacketClassification(PacketClassification packetClassification) {
+		this.packetClassification = packetClassification;
+	}
+
+	public EndUserTagsEntity getEndUserTagsentity() {
+		return endUserTagsentity;
+	}
+
+	public void setEndUserTagsentity(EndUserTagsEntity endUserTagsentity) {
+		this.endUserTagsentity = endUserTagsentity;
+	}
+
+	public Integer getNoofpieces() {
+		return noofpieces;
+	}
+
+	public void setNoofpieces(Integer noofpieces) {
+		this.noofpieces = noofpieces;
+	}
+ 
     
     
 }

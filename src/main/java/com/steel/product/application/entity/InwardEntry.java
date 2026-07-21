@@ -1,5 +1,6 @@
 package com.steel.product.application.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.steel.product.application.dto.inward.InwardEntryResponseDto;
 import com.steel.product.application.dto.pdf.InstructionResponsePdfDto;
 import com.steel.product.application.dto.pdf.InwardEntryPdfDto;
@@ -72,6 +73,19 @@ public class InwardEntry {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "materialgradeid")
 	private MaterialGrade materialGrade;
+
+	@JsonManagedReference
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "packet_classification_id")
+	private PacketClassification packetClassification;
+
+	@JsonManagedReference
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "enduser_tag_id")
+	private EndUserTagsEntity endUserTagsEntity;
+	
+	@Column(name = "noofpieces")
+	private Integer noofpieces;
 
 	@Column(name = "fwidth")
 	private float fWidth;
@@ -537,6 +551,30 @@ public class InwardEntry {
 		this.tdcNo = tdcNo;
 	}
 
+	public PacketClassification getPacketClassification() {
+		return packetClassification;
+	}
+
+	public void setPacketClassification(PacketClassification packetClassification) {
+		this.packetClassification = packetClassification;
+	}
+
+	public EndUserTagsEntity getEndUserTagsEntity() {
+		return endUserTagsEntity;
+	}
+
+	public void setEndUserTagsEntity(EndUserTagsEntity endUserTagsEntity) {
+		this.endUserTagsEntity = endUserTagsEntity;
+	}
+
+	public Integer getNoofpieces() {
+		return noofpieces;
+	}
+
+	public void setNoofpieces(Integer noofpieces) {
+		this.noofpieces = noofpieces;
+	}
+
 	public static InwardEntryPdfDto valueOf(InwardEntry inwardEntry, List<InstructionResponsePdfDto> instructionResponsePdfDtos){
         InwardEntryPdfDto inwardEntryPdfDto = new InwardEntryPdfDto();
         inwardEntryPdfDto.setInwardEntryId(inwardEntry.getInwardEntryId());
@@ -620,6 +658,9 @@ public class InwardEntry {
 		inwardEntryResponseDto.setInwardEntryId(inwardEntry.getInwardEntryId());
 		inwardEntryResponseDto.setParty(inwardEntry.getParty() != null ? Party.valueOf(inwardEntry.getParty()) : null);
 		inwardEntryResponseDto.setLocation(inwardEntry.getLocation() != null ? LocationMasterEntity.valueOf(inwardEntry.getLocation()) : null);
+		inwardEntryResponseDto.setPacketClassification(inwardEntry.getPacketClassification() != null ? inwardEntry.getPacketClassification(): null);
+		inwardEntryResponseDto.setEndUserTagsentity( inwardEntry.getEndUserTagsEntity() != null ? inwardEntry.getEndUserTagsEntity(): null);		
+		inwardEntryResponseDto.setNoofpieces(inwardEntry.getNoofpieces());
 		inwardEntryResponseDto.setCoilNumber(inwardEntry.getCoilNumber());
 		inwardEntryResponseDto.setTdcNo( inwardEntry.getTdcNo() );
 		inwardEntryResponseDto.setBatchNumber(inwardEntry.getBatchNumber());
