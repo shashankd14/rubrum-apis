@@ -552,8 +552,16 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 				priceCalculateDTO.setCustomerBatchNo(inwardEntry.getCustomerBatchId());
 				priceCalculateDTO.setInstructionId(instruction.getInstructionId());
 				priceCalculateDTO.setThickness( inwardEntry.getfThickness());
-				priceCalculateDTO.setMatGradeName(materialResponseDto.getMaterialGrade().getGradeName());
-				priceCalculateDTO.setSubGradeName(materialGradeDto.getSubGradeName());
+				if (materialResponseDto != null && materialResponseDto.getMaterialGrade() != null && materialResponseDto.getMaterialGrade().getGradeName() != null) {
+					priceCalculateDTO.setMatGradeName(materialResponseDto.getMaterialGrade().getGradeName());
+				} else {
+					priceCalculateDTO.setMatGradeName("");
+				}
+				if (materialGradeDto != null && materialGradeDto.getSubGradeName() != null) {
+					priceCalculateDTO.setSubGradeName(materialGradeDto.getSubGradeName());
+				} else {
+					priceCalculateDTO.setSubGradeName("");
+				}
 				priceCalculateDTO.setActualWeight((instruction.getActualWeight()==null ? instruction.getPlannedWeight() : instruction.getActualWeight()));
 				priceCalculateDTO.setWidth( (instruction.getActualWidth() == null ? instruction.getPlannedWidth() : instruction.getActualWidth()));
 				priceCalculateDTO.setLength( (instruction.getActualLength() == null ? instruction.getPlannedLength() : instruction.getActualLength()));
@@ -658,8 +666,11 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 				priceCalculateDTO.setWidth( inwardEntry.getfWidth());
 				priceCalculateDTO.setLength( inwardEntry.getfLength() );
 				priceCalculateDTO.setActualWeight(inwardEntry.getFpresent());
-				priceCalculateDTO.setMatGradeName(materialResponseDto.getMaterialGrade().getGradeName());
-				
+				if (materialResponseDto != null && materialResponseDto.getMaterialGrade() != null && materialResponseDto.getMaterialGrade().getGradeName() != null) {
+					priceCalculateDTO.setMatGradeName(materialResponseDto.getMaterialGrade().getGradeName());
+				} else {
+					priceCalculateDTO.setMatGradeName("");
+				}
 				if(materialGradeDto !=null && materialGradeDto.getSubGradeName() !=null ) {
 					priceCalculateDTO.setSubGradeName(materialGradeDto.getSubGradeName());
 				} else {

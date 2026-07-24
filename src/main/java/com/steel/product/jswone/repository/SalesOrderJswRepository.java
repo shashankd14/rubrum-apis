@@ -359,9 +359,9 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " LEFT JOIN product_instruction ins ON ins.instructionid = alloca.instruction_id"
 			+ " LEFT JOIN product_status inward_stts ON inward_stts.statusid = inward.vstatus"
 			+ " LEFT JOIN product_status packet_stts ON packet_stts.statusid = ins.status"
-			+ " WHERE so_child.allocated_stts='COMPLETED' and so.cp_status not in ('CP_PLAN_COMPLETED')  and refno='dhruvitest007'"
+			+ " WHERE so_child.allocated_stts='COMPLETED' and so.cp_status not in ('CP_PLAN_COMPLETED')"
 			+ " order by alloca.so_id desc ", nativeQuery = true)
-	List<Object[]> getAllSODetailsWithAllocationStatusforCPStatus();
+	List<Object[]> getAllSODetailsWithAllocationStatusforCPStatus(int soId);
 	
 	@Query(value = "SELECT alloca.so_id, CAST(alloca.so_child_id AS SIGNED) AS so_child_id, so_allocation_id, so.cp_status, "
 			+ " inward_stts.statusname AS inward_stts, packet_stts.statusname AS packet_stts, "
@@ -374,7 +374,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " LEFT JOIN product_instruction ins ON ins.instructionid = alloca.instruction_id"
 			+ " LEFT JOIN product_status inward_stts ON inward_stts.statusid = inward.vstatus"
 			+ " LEFT JOIN product_status packet_stts ON packet_stts.statusid = ins.status"
-			+ " WHERE so.so_status not in ('FULFILLED') and refno='dhruvitest021'"
+			+ " WHERE so.so_status not in ('FULFILLED')"
 			+ " order by alloca.so_id desc ", 
 		nativeQuery = true)
 	List<Object[]> getAllSODetailsWithAllocationStatusforSOStatus();

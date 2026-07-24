@@ -188,14 +188,14 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 	}
 
 	@Override
-	public Page<Object[]> listAllSOIDs(ListPageSearchRequest listPageSearchRequest) {
+	public Page<Object[]> listAllSOIDs(ListPageSearchRequest searchRequest) {
 
-		Pageable pageable = PageRequest.of((listPageSearchRequest.getPageNo() - 1),
-				listPageSearchRequest.getPageSize());
+		Pageable pageable = PageRequest.of((searchRequest.getPageNo() - 1),
+				searchRequest.getPageSize());
 		List<Integer> partyIds = new ArrayList<>();
 		// boolean partyIdsFlag = false;
-		if (listPageSearchRequest.getPartyId() != null && listPageSearchRequest.getPartyId() > 0) {
-			partyIds.add(listPageSearchRequest.getPartyId());
+		if (searchRequest.getPartyId() != null && searchRequest.getPartyId() > 0) {
+			partyIds.add(searchRequest.getPartyId());
 			// partyIdsFlag = true;
 		} else {
 			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
@@ -214,18 +214,34 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 
 		boolean warehouseFlag = false;
 
-		if (listPageSearchRequest.getWarehouseList() != null && listPageSearchRequest.getWarehouseList().size() > 0) {
+		if (searchRequest.getWarehouseList() != null && searchRequest.getWarehouseList().size() > 0) {
 			warehouseFlag = true;
 		}
 		
 		boolean zohoStatusFlag = false;
 		
-		if (listPageSearchRequest.getZohoStatus() != null && listPageSearchRequest.getZohoStatus().size() > 0) {
+		List<String> zohoStatusList = new ArrayList<>();
+		if (searchRequest.getZohoStatus() != null && searchRequest.getZohoStatus().size() > 0) {
 			zohoStatusFlag = true;
+			
+			if( searchRequest.getZohoStatus().contains("Open") || searchRequest.getZohoStatus().contains("open")) {
+				zohoStatusList.add("confirmed");
+			} 
+			if( searchRequest.getZohoStatus().contains("partially_invoiced")) {
+				zohoStatusList.add("partially_invoiced");
+			} 
+			if( searchRequest.getZohoStatus().contains("Closed") || searchRequest.getZohoStatus().contains("closed")) {
+				zohoStatusList.add("fulfilled");
+				zohoStatusList.add("invoiced");
+				zohoStatusList.add("closed");
+			} 
+			if( searchRequest.getZohoStatus().contains("Void") || searchRequest.getZohoStatus().contains("void")) {
+				zohoStatusList.add("void");
+			} 
 		}
-		Page<Object[]> packetsList = salesOrderRepository.listAllSOIDs(listPageSearchRequest.getSearchText(),
-				listPageSearchRequest.getSoId(), listPageSearchRequest.getStatus(), zohoStatusFlag,
-				listPageSearchRequest.getZohoStatus(), warehouseFlag, listPageSearchRequest.getWarehouseList(),
+		Page<Object[]> packetsList = salesOrderRepository.listAllSOIDs(searchRequest.getSearchText(),
+				searchRequest.getSoId(), searchRequest.getStatus(), zohoStatusFlag,
+				zohoStatusList, warehouseFlag, searchRequest.getWarehouseList(),
 				pageable);
 		return packetsList;
 	}
@@ -243,8 +259,10 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 		ResponseEntity<Object> responseEntity = null;
 		String message = "Consolidate planner created successfully..!";
 		try {
+			int soId=0;
 
 			for (SalesOrderChildRequest request : salesOrderPacketsListNew) {
+				soId = request.getSoId(); 
 				BigDecimal balanceQtyRequired = new BigDecimal("0.00");
 				BigDecimal totalAllocatedQty = new BigDecimal("0.00");
 			 
@@ -340,7 +358,8 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				}
 			}
 			
-			//updateCPStatus(soId);
+			updateCPStatus(soId);
+			updateSOStatus(soId);
 			/*
 			 * List<SalesOrderPacketsJswEntity> allocations =
 			 * childRepository.findBySoId_SoId(soId);
@@ -949,10 +968,9 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 
 		for (Object[] result : packetsList) {
 			CoilAllocationDTO dto = new CoilAllocationDTO();
-			// Integer soId = result[0] != null ? Integer.parseInt(result[0].toString()) :
-			// null;
-			// dto.setSoId(soId);
-			// dto.setSoNumber(result[1] != null ? (String) result[1] : null);
+			//Integer soId = result[0] != null ? Integer.parseInt(result[0].toString()) : null;
+			//dto.setSoId(soId);
+			//dto.setSoNumber(result[1] != null ? (String) result[1] : null);
 			dto.setExpectedDeliveryDate(result[2] != null ? sdf.format(result[2]) : null);
 			dto.setCustomerCode(result[3] != null ? (String) result[3] : null);
 			// dto.setTotalQty(result[4] != null ? (BigDecimal) result[4] : null);
@@ -998,7 +1016,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 		try {
 			 
 			Map<Integer, List<String>> soChildStatusMap = new HashMap<>();
-			List<Object[]> list = salesOrderRepository.getAllSODetailsWithAllocationStatusforCPStatus();
+			List<Object[]> list = salesOrderRepository.getAllSODetailsWithAllocationStatusforCPStatus(soIdValue);
 			for (Object[] result : list) {				
 				Object value = result[1];
 				Integer soChildId = null;
