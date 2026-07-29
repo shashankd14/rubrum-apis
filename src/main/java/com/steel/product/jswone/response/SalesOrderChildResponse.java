@@ -19,6 +19,10 @@ public class SalesOrderChildResponse {
 
 	private BigDecimal totalAllocatedItemQty;
 
+	private BigDecimal invoicedItemQty;
+
+	private BigDecimal balInvoicedItemQty;
+
 	private String allocatedStts;
 
 	private Integer instructionId;

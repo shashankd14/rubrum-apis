@@ -53,6 +53,10 @@ public class SalesOrderMainResponse {
 
 	private BigDecimal totalAllocatedSoqty;
 
+	private BigDecimal invoicedSoQty;
+
+	private BigDecimal balInvoicedSoQty;
+
 	private String allocatedStts;
 
 	private String soStatus;

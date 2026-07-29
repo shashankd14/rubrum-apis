@@ -64,6 +64,9 @@ public class OutwardReportViewEntity {
 	@Column(name = "createdon")
 	private String createdon;
 
+	@Column(name = "inwardcreatedon")
+	private String inwardcreatedon;
+	
 	@Column(name = "noofpieces")
 	private String noofpieces;
 

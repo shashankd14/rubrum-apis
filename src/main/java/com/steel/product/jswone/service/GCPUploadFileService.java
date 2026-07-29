@@ -249,11 +249,11 @@ public class GCPUploadFileService {
 		String filePath = folderPath + File.separator + "stockreport_" + date + ".csv";
 		List<StockSummaryReportViewEntity> stockReportDetailsyList = stockSummaryReportViewRepository.findAll();
 		try (PrintWriter writer = new PrintWriter(new FileWriter(filePath))) {
-			writer.println( "Coil No,SC Inward ID,MMId,MaterialDesc,MaterialGrade,Subgrade,Location Name,"
+			writer.println( "Coil No,SC Inward ID,Created On,MMId,MaterialDesc,MaterialGrade,Subgrade,Location Name,"
 					+ "Ageing,Thickness,Width,Value Of Goods, Material Length,NetWeight,InStockWeight,WIP Qty,FG Qty,"
 					+ "Quality Defects,UnprocessedWeight,Dispatched Qty" );
 			for (StockSummaryReportViewEntity kk : stockReportDetailsyList) {
-				writer.println( kk.getCoilNumber()+","+kk.getCustomerBatchId()+","+kk.getMmId()+","+kk.getMaterialdesc()+","+
+				writer.println( kk.getCoilNumber()+","+kk.getCustomerBatchId()+","+kk.getInwarddate()+","+kk.getMmId()+","+kk.getMaterialdesc()+","+
 						kk.getMaterialGrade()+","+kk.getSubgrade()+","+kk.getLocationname()+","+kk.getCoilage()+","+kk.getFthickness()+","+
 						kk.getFwidth()+","+kk.getValueofgoods()+", "+kk.getFlength()+", "+kk.getNetweight()+","+kk.getInstockweight()+","+
 						kk.getWipqty()+","+ kk.getFgqty()+","+kk.getQualitydefects()+","+kk.getUnprocessedweight()+","+
@@ -274,10 +274,10 @@ public class GCPUploadFileService {
 		String filePath = folderPath + File.separator + "inwardreport_" + date + ".csv";
 		List<InwardReportViewEntity> fgReportDetails = inwardReportViewRepository.findAll();
 		try (PrintWriter writer = new PrintWriter(new FileWriter(filePath))) {
-			writer.println( "CoilNumber,SC Inward ID,PO Number, MaterialDesc,MaterialGrade,Subgrade,Location Name,MMID,Thickness,Width,NetWeight,"
+			writer.println( "CoilNumber,SC Inward ID,PO Number, Created On,MaterialDesc,MaterialGrade,Subgrade,Location Name,MMID,Thickness,Width,NetWeight,"
 					+ "Value of Goods,Invoice No,Invoice Date,ReceivedDate,Vehicle No,Inward Remarks,TC No,Batch Id,Zoho Sync Status");
 			for (InwardReportViewEntity kk : fgReportDetails) {
-				writer.println(kk.getCoilnumber() + "," + kk.getCustomerbatchid() + "," + kk.getPonumber()+ "," + kk.getMaterialdesc() + ","
+				writer.println(kk.getCoilnumber() + "," + kk.getCustomerbatchid() + "," + kk.getPonumber()+ "," + kk.getCreatedon() +"," + kk.getMaterialdesc() + ","
 					+ kk.getMaterialGrade() + "," + kk.getSubgrade() + "," +kk.getLocationname()+ "," + kk.getMmId() + "," + kk.getFthickness()
 					+ "," + kk.getFwidth() + "," + kk.getNetWeight() + "," + kk.getValueofgoods() + ","
 					+ kk.getCustomerinvoiceno() + "," + kk.getCustomerinvoicedate() + "," + kk.getReceivedDate()
@@ -299,12 +299,12 @@ public class GCPUploadFileService {
 		String filePath = folderPath + File.separator + "outwardreport_" + date + ".csv";
 		List<OutwardReportViewEntity> outwardReportDetails = outwardReportViewRepository.findAll();
 		try (PrintWriter writer = new PrintWriter(new FileWriter(filePath))) {
-			writer.println( "Order ID,DC No,Dispatch Date,CoilNumber,SC Inward ID,MaterialDesc,MaterialGrade,"
+			writer.println( "Order ID,DC No,Dispatch Date,CoilNumber,SC Inward ID,Created On,MaterialDesc,MaterialGrade,"
 				+ " Subgrade,Location Name,Thickness,Width,Length,Qty_Sheets,Delivery Weight,Additional  Weight,"
 				+ " Vehicle No,Sales Invoice No,Zoho Sync Status,Processing Rate,Quality Remarks" );
 			for (OutwardReportViewEntity kk : outwardReportDetails) {
 				writer.println("" + "," + kk.getDeliveryid() + "," + kk.getCreatedon() + "," + kk.getCoilnumber() + ","
-				+ kk.getCustomerbatchid() + "," + kk.getMaterialdesc() + "," + kk.getMaterialgrade() + ","
+				+ kk.getCustomerbatchid() + "," +kk.getInwardcreatedon() + "," + kk.getMaterialdesc() + "," + kk.getMaterialgrade() + ","
 				+ kk.getSubgrade() + "," + kk.getLocationname()+ "," + kk.getFthickness() + "," + kk.getFwidth() + "," 
 				+ kk.getFlength()+ "," + kk.getNoofpieces() + "," + kk.getDeliveryWeight() + "," 
 				+ kk.getAdditionalWeight() + ","+ kk.getVehicleno() +"," + kk.getSalesInvoiceNo()+","

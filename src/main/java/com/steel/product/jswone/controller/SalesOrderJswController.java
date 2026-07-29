@@ -3,6 +3,7 @@ package com.steel.product.jswone.controller;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.file.Files;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -22,7 +23,9 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -58,6 +61,7 @@ import com.steel.product.jswone.response.SalesOrderDashboardResponse;
 import com.steel.product.jswone.response.SalesOrderMainResponse;
 import com.steel.product.jswone.service.SalesOrderJswService;
 import com.steel.product.jswone.service.SalesOrderPDFJswService;
+import com.steel.product.jswone.service.SoPageExportService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.log4j.Log4j2;
@@ -71,6 +75,9 @@ public class SalesOrderJswController {
 
 	@Autowired
 	private SalesOrderJswService salesOrderService;
+	
+	@Autowired
+	private SoPageExportService soPageExportService;
 
 	@Autowired
 	private SalesOrderPDFJswService sopdfService;
@@ -190,7 +197,12 @@ public class SalesOrderJswController {
 			resp.setStandard_material_date(formatDate(result[22]));
 			resp.setZohoStatus(result[44] != null ? (String) result[44] : null);
 			resp.setBranchId(result[45] != null ? (String) result[45] : null);
-
+			
+			resp.setInvoicedSoQty(toBigDecimal(result[47]));
+			BigDecimal soQty1 = resp.getTotalSoqty() != null ? resp.getTotalSoqty() : BigDecimal.ZERO;
+			BigDecimal invQty1 = resp.getInvoicedSoQty() != null ? resp.getInvoicedSoQty() : BigDecimal.ZERO;
+			resp.setBalInvoicedSoQty(soQty1.subtract(invQty1).setScale(2, RoundingMode.HALF_UP));
+			
 			child.setSoChildId(result[23] != null ? (Integer) result[23] : null);
 			child.setMmId(result[24] != null ? (String) result[24] : null);
 			child.setSoqty(result[27] != null ? (BigDecimal) result[27] : null);
@@ -199,7 +211,10 @@ public class SalesOrderJswController {
 			child.setItemStatus(result[30] != null ? (String) result[30] : null);
 			child.setWearhouse_id(result[31] != null ? (String) result[31] : null);
 			child.setTax(result[32] != null ? (String) result[32] : null);
-
+			child.setInvoicedItemQty(toBigDecimal(result[46]));
+			BigDecimal soQty = child.getSoqty() != null ? child.getSoqty() : BigDecimal.ZERO;
+			BigDecimal invQty = child.getInvoicedItemQty() != null ? child.getInvoicedItemQty() : BigDecimal.ZERO;
+			child.setBalInvoicedItemQty(soQty.subtract(invQty).setScale(2, RoundingMode.HALF_UP));
 			child.setMm_description(result[33] != null ? (String) result[33] : null);
 			child.setHsn(result[34] != null ? String.valueOf(result[34]) : null);
 			child.setWare_house_name(result[35] != null ? (String) result[35] : null);
@@ -234,7 +249,7 @@ public class SalesOrderJswController {
 		response.put("totalPages", packetsList1.getTotalPages());
 		return new ResponseEntity<Object>(response, HttpStatus.OK);
 	}
-
+ 
 	@PostMapping(value = "/findinventory", produces = "application/json")
 	public ResponseEntity<Object> findInventory(@RequestBody ListPageSearchRequest listPageSearchRequest) {
 		Map<String, Object> response = new HashMap<>();
@@ -534,11 +549,55 @@ public class SalesOrderJswController {
 	    return ResponseEntity.ok(response);
 	}
 
+	/**
+	 * POST /api/jswone/reports/so-page-export/download
+	 *
+	 * Binary attachment. Preferable for a plain browser download since it avoids
+	 * the ~33% base64 overhead entirely.
+	 */
+	@PostMapping("/download")
+	public ResponseEntity<byte[]> exportDownload(@RequestBody(required = false) ListPageSearchRequest request) {
+
+		byte[] bytes = soPageExportService.exportAsBytes(request != null ? request : new ListPageSearchRequest());
+		String fileName = SoPageExportService.buildFileName();
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.parseMediaType(SoPageExportService.XLSX_CONTENT_TYPE));
+		headers.setContentDispositionFormData("attachment", fileName);
+		headers.setContentLength(bytes.length);
+		// Exposed so a browser fetch() can read the filename back.
+		headers.add(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, HttpHeaders.CONTENT_DISPOSITION);
+		headers.setCacheControl("no-store");
+
+		return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
+	}
+	
+	
 	private SalesOrderDashboardResponse build(int value, BigDecimal totalWeight) {
 		SalesOrderDashboardResponse res = new SalesOrderDashboardResponse();
 		res.setTotalSOCount(value);
 		res.setTotalWeight(totalWeight);
 		return res;
+	}
+	private static final int SCALE = 2;
+
+	private static BigDecimal toBigDecimal(Object value) {
+	    if (value == null) {
+	        return null;
+	    }
+	    BigDecimal bd;
+	    if (value instanceof BigDecimal) {
+	        bd = (BigDecimal) value;
+	    } else if (value instanceof Number) {
+	        bd = new BigDecimal(value.toString());
+	    } else {
+	        String s = value.toString().trim();
+	        if (s.isEmpty()) {
+	            return null;
+	        }
+	        bd = new BigDecimal(s);
+	    }
+	    return bd.setScale(SCALE, RoundingMode.HALF_UP);
 	}
 	
 	private String formatDate(Object value) {
@@ -559,4 +618,6 @@ public class SalesOrderJswController {
 
 		return value.toString(); // fallback
 	}
+	
+	
 }

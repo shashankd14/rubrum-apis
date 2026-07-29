@@ -55,8 +55,15 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " so_child.mm_id, '' instruction_id, '' inward_entry_d, so_child.soqty, "
 			+ " (select sum(allocated_soqty) from jsw_sales_order_allocation alloc where alloc.so_child_id = so_child.so_child_id and alloc.so_id = so.so_id ) allocated_soqty, "
 			+ " so_child.allocated_stts, so_child.item_so_status, so_child.wearhouse_id , so_child.tax_percentage, mm.mm_description, so_child.hsn_or_sac, wm.ware_house_name, "
-			+ " br.branch_name, so.cam_code , so.remarks , so.customer_name, so.customer_number , so_child.number_of_sheets , so.special_delivery_instructions, so.order_confirmation_time, "
-			+ " so.zoho_status,so.branch_id "
+			+ " br.branch_name, so.cam_code, so.remarks, so.customer_name, so.customer_number, so_child.number_of_sheets , so.special_delivery_instructions, so.order_confirmation_time, "
+			+ " so.zoho_status,so.branch_id, "
+			+ " (select ROUND(SUM(COALESCE(ins.allocated_soqty, alloc.allocated_soqty, 0)), 3) from jsw_sales_order_allocation alloc, product_instruction ins where deliveryid>0 and alloc.instruction_id = ins.instructionid and alloc.so_child_id = so_child.so_child_id) dispatchedqty, "
+			+ " (select ROUND(SUM(COALESCE(ins.allocated_soqty, alloc.allocated_soqty, 0)), 3) from jsw_sales_order_allocation alloc, product_instruction ins where deliveryid>0 and alloc.instruction_id = ins.instructionid and alloc.so_id = so.so_id) totaldispatchedqty "
+			//+ " (select sum(ins.allocated_soqty) from jsw_sales_order_allocation alloc, product_instruction ins where deliveryid>0 and alloc.instruction_id = ins.instructionid and alloc.so_child_id = so_child.so_child_id) dispatchedqty "
+			//+ " (SELECT  ROUND(SUM(COALESCE(ins.allocated_soqty, soalloc.allocated_soqty, 0)), 3) AS item_invoiced_qty  FROM jsw_sales_order_allocation soalloc "
+			//+ " LEFT JOIN product_tblinwardentry inward ON inward.inwardentryid = soalloc.inward_entry_id AND COALESCE(soalloc.instruction_id, 0) = 0 AND inward.vstatus=4 "
+			//+ " LEFT OUTER JOIN product_instruction ins ON ins.instructionid = soalloc.instruction_id  AND COALESCE(soalloc.instruction_id, 0) > 0 AND ins.deliveryid > 0 "
+			//+ " where soalloc.so_child_id = so_child.so_child_id) dispatchedqty "
 			+ " FROM jsw_sales_order so "
 			+ " left outer JOIN jsw_sales_order_child so_child ON so_child.so_id = so.so_id "
 			+ " left outer JOIN jsw_branch_master br ON br.branch_id = so.branch_id"
@@ -361,7 +368,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " LEFT JOIN product_status packet_stts ON packet_stts.statusid = ins.status"
 			+ " WHERE so_child.allocated_stts='COMPLETED' and so.cp_status not in ('CP_PLAN_COMPLETED')"
 			+ " order by alloca.so_id desc ", nativeQuery = true)
-	List<Object[]> getAllSODetailsWithAllocationStatusforCPStatus(int soId);
+	List<Object[]> getAllSODetailsWithAllocationStatusforCPStatus();
 	
 	@Query(value = "SELECT alloca.so_id, CAST(alloca.so_child_id AS SIGNED) AS so_child_id, so_allocation_id, so.cp_status, "
 			+ " inward_stts.statusname AS inward_stts, packet_stts.statusname AS packet_stts, "

@@ -1,7 +1,10 @@
 package com.steel.product.application.dto.quality;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -29,9 +32,9 @@ public class ListPageSearchRequest {
 	private String sortOrder;
 
 	private List<String> status = new ArrayList<>();
-	
+
 	private List<String> zohoStatus = new ArrayList<>();
-	
+
 	private List<String> warehouseList = new ArrayList<>();
 
 	private int planId;
@@ -51,9 +54,15 @@ public class ListPageSearchRequest {
 	private String pdfGenerationPart;
 
 	private String filterStatus;
-	
+
 	private int fromCoilAge;
-	
+
 	private int toCoilAge;
-	    
+
+	@JsonFormat(pattern = "yyyy-MM-dd")
+	private Date fromDate;
+
+	@JsonFormat(pattern = "yyyy-MM-dd")
+	private Date toDate;
+
 }

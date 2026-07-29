@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -75,6 +76,7 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	SubGradeJswRepository subGradeJswRepository;
 
 	@Override
+	@Cacheable(value = "categoryList")
 	public List<CategoryMasterJswEntity> getCategoryList(SearchRequest searchPageRequest) {
 		log.info("In getCategoryList page ");
 		List<CategoryMasterJswEntity> pageResult = new ArrayList<>();
@@ -89,6 +91,7 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	}
 
 	@Override
+	@Cacheable(value = "findSubCategoryByCategoryId")
 	public List<SubCategoryJswEntity> findSubCategoryByCategoryId(SearchRequest searchListPageRequest) {
 		log.info("In findSubCategoryByCategoryId page ");
 		List<SubCategoryJswEntity> kk = subCategoryRepository.findByCategoryId(searchListPageRequest.getCategoryId());
@@ -96,6 +99,7 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	}
 
 	@Override
+	@Cacheable(value = "findLeafCategoryBySubcategoryId")
 	public List<LeafCategoryJswEntity> findLeafCategoryBySubcategoryId(SearchRequest searchPageRequest) {
 		log.info("In findLeafCategoryBySubcategoryId page ");
 		List<LeafCategoryJswEntity> kk = leafCategoryRepository.findBySubcategoryId(searchPageRequest.getSubcategoryId());
@@ -103,6 +107,7 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	}
 
 	@Override
+	@Cacheable(value = "findBrandByLeafcategoryId")
 	public List<BrandMasterJswEntity> findBrandByLeafcategoryId(SearchRequest searchPageRequest) {
 		log.info("In findBrandByLeafcategoryId page ");
 		List<BrandMasterJswEntity> kk = brandRepository.findByLeafcategoryId(searchPageRequest.getLeafcategoryId());
@@ -110,6 +115,7 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	}
 
 	@Override
+	@Cacheable(value = "surfaceListByProduct")
 	public List<SurfacetypeMasterJswEntity> getSurfaceListByProduct(SearchRequest searchPageRequest) {
 		log.info("In getSurfaceListByProduct page ");
 		List<SurfacetypeMasterJswEntity> pageResult = surfaceRepository.findByProductId(searchPageRequest.getProductId());
@@ -117,6 +123,7 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	}
 	
 	@Override
+	@Cacheable(value = "coatingListByProduct")
 	public List<CoatingtypeMasterJswEntity> getCoatingListByProduct(SearchRequest searchPageRequest) {
 		log.info("In getCoatingListByProduct page ");
 		List<CoatingtypeMasterJswEntity> pageResult = coatingRepository.findByProductId(searchPageRequest.getProductId());
@@ -124,6 +131,7 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	}
 
 	@Override
+	@Cacheable(value = "uomListByProduct")
 	public List<UomMasterJswEntity> getUomListByProduct(SearchRequest searchPageRequest) {
 		log.info("In getUomListByProduct page ");
 		List<UomMasterJswEntity> pageResult = uomRepository.findByProductId(searchPageRequest.getProductId());
@@ -131,6 +139,7 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	}
 
 	@Override
+	@Cacheable(value = "formListByProduct")
 	public List<FormMasterJswEntity> getFormListByProduct(SearchRequest searchPageRequest) {
 		log.info("In getFormListByProduct page ");
 		List<FormMasterJswEntity> pageResult = formRepository.findByProductId(searchPageRequest.getProductId());
@@ -138,6 +147,7 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	}
 
 	@Override
+	@Cacheable(value = "gradeListByProduct")
 	public List<GradeMasterJswEntity> getGradeListByProduct(SearchRequest searchPageRequest) {
 		log.info("In getGradeListByProduct page ");
 		List<GradeMasterJswEntity> pageResult = gradeRepository.findByProductId(searchPageRequest.getProductId());
@@ -145,6 +155,7 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	}
 
 	@Override
+	@Cacheable(value = "subGradeListByGrade")
 	public List<SubgradeMasterJswEntity> getSubGradeListByGrade(SearchRequest searchPageRequest) {
 		log.info("In getSubGradeListByGrade page ");
 		List<SubgradeMasterJswEntity> kk = subGradeJswRepository.findSubgradesByGradeId(searchPageRequest.getGradeId() );
@@ -152,6 +163,7 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	}
 
 	@Override
+	@Cacheable(value = "productListByBrand")
 	public List<ProductMasterJswEntity> getProductListByBrand(SearchRequest searchPageRequest) {
 		log.info("In getProductListByBrand page ");
 		List<ProductMasterJswEntity> pageResult = productRepository.findByBrandId(searchPageRequest.getBrandId() );
@@ -159,6 +171,7 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	}
 
 	@Override
+	@Cacheable(value = "productList")
 	public List<ProductMasterJswEntity> getProductList() {
 		log.info("In getAllProductList page ");
 		List<ProductMasterJswEntity> pageResult = new ArrayList<>();
@@ -173,6 +186,7 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	}
 
 	@Override
+	@Cacheable(value = "gradesList")
 	public List<GradeMasterJswEntity> getGradesList() {
 		log.info("In getGradesList page ");
 		List<GradeMasterJswEntity> pageResult = new ArrayList<>();
@@ -187,6 +201,7 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	}
 
 	@Override
+	@Cacheable(value = "productsMap")
 	public Map<Integer, String> getProductsMap() {
 		log.info("In getProductsMap page ");
 		List<Object[]> list = productRepository.distinctValues();
@@ -198,6 +213,7 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	}
 
 	@Override
+	@Cacheable(value = "categoryMap")
 	public Map<Integer, String> getCategoryMap() {
 		log.info("In getCategoryMap page ");
 		List<Object[]> list = categoryRepository.distinctValues();
@@ -209,6 +225,7 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	}
 
 	@Override
+	@Cacheable(value = "subCategoryMap")
 	public Map<Integer, String> getSubCategoryMap() {
 		log.info("In getSubCategoryMap page ");
 		List<Object[]> list = subCategoryRepository.distinctValues();
@@ -220,6 +237,7 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	}
 
 	@Override
+	@Cacheable(value = "leafCategoryMap")
 	public Map<Integer, String> getLeafCategoryMap() {
 		log.info("In getLeafCategoryMap page ");
 		List<Object[]> list = leafCategoryRepository.distinctValues();
@@ -231,6 +249,7 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	}
 
 	@Override
+	@Cacheable(value = "coatingMap")
 	public Map<Integer, String> getCoatingMap() {
 		log.info("In getCoatingMap page ");
 		List<Object[]> list = coatingRepository.distinctValues();
@@ -242,6 +261,7 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	}
 
 	@Override
+	@Cacheable(value = "surfaceMap")
 	public Map<Integer, String> getSurfaceMap() {
 		log.info("In getSurfaceMap page ");
 		List<Object[]> list = surfaceRepository.distinctValues();
@@ -253,6 +273,7 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	}
 
 	@Override
+	@Cacheable(value = "uomMap")
 	public Map<Integer, String> getUomMap() {
 		log.info("In getUomMap page ");
 		List<Object[]> list = uomRepository.distinctValues();
@@ -264,6 +285,7 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	}
 
 	@Override
+	@Cacheable(value = "gradeMap")
 	public Map<Integer, String> getGradeMap() {
 		log.info("In getGradeMap page ");
 		List<Object[]> list = gradeRepository.distinctValues();
@@ -275,6 +297,7 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	}
 
 	@Override
+	@Cacheable(value = "subGradeMap")
 	public Map<Integer, String> getSubGradeMap() {
 		log.info("In getSubGradeMap page ");
 		List<Object[]> list = subGradeJswRepository.distinctValues();
@@ -286,6 +309,7 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	}
 
 	@Override
+	@Cacheable(value = "brandMap")
 	public Map<Integer, String> getBrandMap() {
 		log.info("In getBrandMap page ");
 		List<Object[]> list = brandRepository.distinctValues();
@@ -297,6 +321,7 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	}
 
 	@Override
+	@Cacheable(value = "formMap")
 	public Map<Integer, String> getFormMap() {
 		log.info("In getFormMap page ");
 		List<Object[]> list = formRepository.distinctValues();
@@ -308,6 +333,7 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	}
 
 	@Override
+	@Cacheable(value = "productName")
 	public MaterialResponseDto getProductName(String mmId) {
 		log.info("In getProductName page ");
 		MaterialResponseDto productName = null;
@@ -322,6 +348,7 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	}
 	
 	@Override
+	@Cacheable(value = "subGradeName")
 	public MaterialGradeDto getSubGradeName(String mmId) {
 		log.info("In getSubGradeName page ");
 		MaterialGradeDto productName = null;
@@ -335,6 +362,7 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	}
 	
 	@Override
+	@Cacheable(value = "gradeName")
 	public MaterialGradeDto getGradeName(String mmId) {
 		log.info("In getGradeName page ");
 		MaterialGradeDto productName = null;
@@ -348,6 +376,7 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	}
 
 	@Override
+	@Cacheable(value = "gradeProductName")
 	public MaterialResponseDto getGradeProductName(String mmId) {
 		log.info("In getGradeProductName page ");
 		MaterialResponseDto materialResponseDto = null;
@@ -365,6 +394,7 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	}
 
 	@Override
+	@Cacheable(value = "getGradeById")
 	public GradeMasterJswEntity getGradeById(Integer gradeId) {
 		log.info("In getGradeById page ");
 		Optional<GradeMasterJswEntity> list = gradeRepository.findById(gradeId);
@@ -376,6 +406,7 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	}
 
 	@Override
+	@Cacheable(value = "getProductById")
 	public ProductMasterJswEntity getProductById(Integer gradeId) {
 		log.info("In getProductById page ");
 		Optional<ProductMasterJswEntity> list = productRepository.findById(gradeId);

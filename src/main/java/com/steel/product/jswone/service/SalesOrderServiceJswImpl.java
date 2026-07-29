@@ -226,6 +226,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			
 			if( searchRequest.getZohoStatus().contains("Open") || searchRequest.getZohoStatus().contains("open")) {
 				zohoStatusList.add("confirmed");
+				zohoStatusList.add("open");
 			} 
 			if( searchRequest.getZohoStatus().contains("partially_invoiced")) {
 				zohoStatusList.add("partially_invoiced");
@@ -358,8 +359,8 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				}
 			}
 			
-			updateCPStatus(soId);
-			updateSOStatus(soId);
+			//updateCPStatus(soId);
+			//updateSOStatus(soId);
 			/*
 			 * List<SalesOrderPacketsJswEntity> allocations =
 			 * childRepository.findBySoId_SoId(soId);
@@ -1009,14 +1010,12 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 		return dtoList;
 	}
 	
-	
 	@Override
 	@Transactional
 	public void updateCPStatus(int soIdValue) {
 		try {
-			 
 			Map<Integer, List<String>> soChildStatusMap = new HashMap<>();
-			List<Object[]> list = salesOrderRepository.getAllSODetailsWithAllocationStatusforCPStatus(soIdValue);
+			List<Object[]> list = salesOrderRepository.getAllSODetailsWithAllocationStatusforCPStatus();
 			for (Object[] result : list) {				
 				Object value = result[1];
 				Integer soChildId = null;
@@ -1042,9 +1041,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			Map<Integer, String> finalStatusMap = new HashMap<>();
 
 			for (Map.Entry<Integer, List<String>> entry : soChildStatusMap.entrySet()) {
-
 				List<String> statuses = entry.getValue();
-
 				boolean allReceived = true;
 				boolean allWip = true;
 				boolean allReady = true;
