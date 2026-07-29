@@ -192,23 +192,32 @@ public class AWSS3ServiceImpl implements AWSS3Service {
 	@Override
 	public String persistTradingFiles(String applicationJarPath, String itemCode, 
 			MultipartFile file) throws IOException {
-		String path = applicationJarPath + File.separator + itemCode ;
-		String modifiedFileName = itemCode+"_"+ file.getOriginalFilename().replaceAll("[^a-zA-Z0-9\\.\\-]", "_");
-		String jsonFile = path + File.separator + modifiedFileName;
-		File dir = new File(path);
-		if (!dir.exists())
-			dir.mkdirs();
-		InputStream inputStream = file.getInputStream();
-		FileOutputStream outStream = new FileOutputStream(new File(jsonFile));
-		byte[] contents = new byte[inputStream.available()];
-		int length;
-		while ((length = inputStream.read(contents)) > 0) {
-			outStream.write(contents, 0, length);
+		if (file == null || file.isEmpty()) {
+			throw new IOException("Trading material image is empty");
 		}
-		inputStream.close();
-		outStream.close();
-		
-		uploadPDFFileToS3Bucket(tradingBucket, new File(jsonFile), modifiedFileName);
+		if (itemCode == null || itemCode.trim().isEmpty()) {
+			throw new IOException("Item code is required for trading material image upload");
+		}
+
+		String originalFileName = file.getOriginalFilename() != null ? file.getOriginalFilename() : "image";
+		String sanitizedFileName = originalFileName.replaceAll("[^a-zA-Z0-9\\.\\-]", "_");
+		String modifiedFileName = itemCode + "_" + sanitizedFileName;
+		String suffix = sanitizedFileName.lastIndexOf('.') >= 0
+				? sanitizedFileName.substring(sanitizedFileName.lastIndexOf('.'))
+				: ".tmp";
+		File temporaryFile = File.createTempFile("trading-material-", suffix);
+
+		try {
+			file.transferTo(temporaryFile);
+			String uploadedFileUrl = uploadPDFFileToS3Bucket(tradingBucket, temporaryFile, modifiedFileName);
+			if (uploadedFileUrl == null || uploadedFileUrl.trim().isEmpty()) {
+				throw new IOException("Unable to upload trading material image to S3");
+			}
+		} finally {
+			if (temporaryFile.exists() && !temporaryFile.delete()) {
+				temporaryFile.deleteOnExit();
+			}
+		}
 
 		return modifiedFileName;
 	}

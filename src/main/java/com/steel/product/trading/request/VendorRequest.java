@@ -53,6 +53,10 @@ public class VendorRequest extends BaseRequest {
 
 	private Integer alternatePincode;
 
+	private String includeRatesinDc;
+
+	private String purchaseReport;
+
 	private Boolean isDeleted;
 
 }

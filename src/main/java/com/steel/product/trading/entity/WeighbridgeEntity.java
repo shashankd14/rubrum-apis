@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Data;
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.util.Date;
 
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
@@ -22,6 +23,9 @@ public class WeighbridgeEntity {
 
 	@Column(name = "weighbridge_name")
 	private String weighbridgeName;
+
+	@Column(name = "capacity_in_tons")
+	private BigDecimal capacityInTons;
 
 	// Address
 	@Column(name = "address1")

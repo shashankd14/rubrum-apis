@@ -23,6 +23,9 @@ public class LocationEntity {
 	@Column(name = "location_name")
 	private String locationName;
 
+	@Column(name = "branch_type")
+	private String branchType;
+
 	// Address
 	@Column(name = "address1")
 	private String address1;

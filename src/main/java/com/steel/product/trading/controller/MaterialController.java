@@ -1,6 +1,7 @@
 package com.steel.product.trading.controller;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.steel.product.trading.dto.SubCategoryResponse;
 import com.steel.product.trading.entity.BrandEntity;
@@ -48,18 +49,24 @@ public class MaterialController {
 			@RequestParam(value = "additionalParams", required = true) String additionalParams,
 			@RequestParam(value = "itemImage", required = false) MultipartFile itemImage,
 			@RequestParam(value = "crossSectionalImage", required = false) MultipartFile crossSectionalImage) {
-		ResponseEntity<Object>  resp= null;
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+		MaterialMasterRequest materialMasterRequest;
 		try {
-			
-			ObjectMapper mapper = new ObjectMapper();
-			mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-			MaterialMasterRequest materialMasterRequest = mapper.readValue(materialRequest, MaterialMasterRequest.class);
-			materialMasterRequest.setAdditionalParams(additionalParams);
-			resp = materialMasterService.save(materialMasterRequest, itemImage, crossSectionalImage);
-		} catch ( Exception e) {
-			e.printStackTrace();
+			materialMasterRequest = mapper.treeToValue(
+					readMultipartJsonObject(mapper, materialRequest, "materialMasterRequest"),
+					MaterialMasterRequest.class);
+		} catch (Exception e) {
+			return invalidJsonResponse("materialMasterRequest", e);
 		}
-		return resp;
+
+		try {
+			materialMasterRequest.setAdditionalParams(normalizeAdditionalParams(mapper, additionalParams));
+		} catch (Exception e) {
+			return invalidJsonResponse("additionalParams", e);
+		}
+
+		return materialMasterService.save(materialMasterRequest, itemImage, crossSectionalImage);
 	}
 
 	@PutMapping(value = "/material/update", produces = "application/json")
@@ -68,18 +75,88 @@ public class MaterialController {
 			@RequestParam(value = "additionalParams", required = true) String additionalParams,
 			@RequestParam(value = "itemImage", required = false) MultipartFile itemImage,
 			@RequestParam(value = "crossSectionalImage", required = false) MultipartFile crossSectionalImage) {
-		ResponseEntity<Object>  resp= null;
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+		MaterialMasterRequest materialMasterRequest;
 		try {
-			
-			ObjectMapper mapper = new ObjectMapper();
-			mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-			MaterialMasterRequest materialMasterRequest = mapper.readValue(materialRequest, MaterialMasterRequest.class);
-			materialMasterRequest.setAdditionalParams(additionalParams);
-			resp = materialMasterService.save(materialMasterRequest, itemImage, crossSectionalImage);
-		} catch ( Exception e) {
-			e.printStackTrace();
+			materialMasterRequest = mapper.treeToValue(
+					readMultipartJsonObject(mapper, materialRequest, "materialMasterRequest"),
+					MaterialMasterRequest.class);
+		} catch (Exception e) {
+			return invalidJsonResponse("materialMasterRequest", e);
 		}
-		return resp;
+
+		try {
+			materialMasterRequest.setAdditionalParams(normalizeAdditionalParams(mapper, additionalParams));
+		} catch (Exception e) {
+			return invalidJsonResponse("additionalParams", e);
+		}
+
+		return materialMasterService.save(materialMasterRequest, itemImage, crossSectionalImage);
+	}
+
+	private String normalizeAdditionalParams(ObjectMapper mapper, String additionalParams) throws Exception {
+		JsonNode additionalParamsJson = readMultipartJsonObject(mapper, additionalParams, "additionalParams");
+
+		JsonNode technicalSpecs = additionalParamsJson.get("technicalSpecs");
+		if (technicalSpecs != null && !technicalSpecs.isObject()) {
+			throw new IllegalArgumentException("technicalSpecs must be a JSON object");
+		}
+
+		if (technicalSpecs != null) {
+			JsonNode customParameters = technicalSpecs.get("customParameters");
+			if (customParameters != null && !customParameters.isArray()) {
+				throw new IllegalArgumentException("customParameters must be a JSON array");
+			}
+		}
+
+		JsonNode unitWeights = additionalParamsJson.get("unitWeights");
+		if (unitWeights != null && !unitWeights.isArray()) {
+			throw new IllegalArgumentException("unitWeights must be a JSON array");
+		}
+
+		return mapper.writeValueAsString(additionalParamsJson);
+	}
+
+	private JsonNode readMultipartJsonObject(ObjectMapper mapper, String value, String fieldName) throws Exception {
+		if (value == null || value.trim().isEmpty()) {
+			throw new IllegalArgumentException(fieldName + " is required");
+		}
+
+		String json = value.trim();
+		if (json.length() >= 2 && json.startsWith("'") && json.endsWith("'")) {
+			json = json.substring(1, json.length() - 1).trim();
+		}
+
+		JsonNode jsonNode = mapper.readTree(json);
+		if (jsonNode != null && jsonNode.isTextual()) {
+			jsonNode = mapper.readTree(jsonNode.asText());
+		}
+		if (jsonNode == null || !jsonNode.isObject()) {
+			throw new IllegalArgumentException(fieldName + " must be a JSON object");
+		}
+		return jsonNode;
+	}
+
+	private ResponseEntity<Object> invalidJsonResponse(String fieldName, Exception exception) {
+		Map<String, Object> response = new HashMap<>();
+		response.put("status", "fail");
+		response.put("message", "Invalid " + fieldName + " JSON");
+		response.put("details", getValidationErrorDetails(exception));
+		return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+	}
+
+	private String getValidationErrorDetails(Exception exception) {
+		String details = exception.getMessage();
+		if (details == null || details.trim().isEmpty()) {
+			return "The value must be a valid JSON object";
+		}
+
+		int sourceReferenceIndex = details.indexOf("\n at [Source:");
+		if (sourceReferenceIndex > 0) {
+			details = details.substring(0, sourceReferenceIndex);
+		}
+		return details;
 	}
 
 	@PostMapping({ "/material/list" })
