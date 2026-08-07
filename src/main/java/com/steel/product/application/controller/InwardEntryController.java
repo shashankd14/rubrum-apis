@@ -8,14 +8,19 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -101,10 +106,12 @@ public class InwardEntryController {
 	}
 
 	@PostMapping("/addNew")
-	public ResponseEntity<Object> saveInwardEntry(@ModelAttribute InwardDto inwarddto, HttpServletRequest request) {
+	public ResponseEntity<Object> saveInwardEntry(@Valid @ModelAttribute InwardDto inwarddto, HttpServletRequest request) {
 		InwardEntry inwardEntry = new InwardEntry();
 		System.out.println("DTO details " + inwarddto);
 		log.info("Inside saveInwardEntry ");
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
 		try {
 			int userId = commonUtil.getUserId();
 			inwardEntry.setInwardEntryId(0);
@@ -112,7 +119,7 @@ public class InwardEntryController {
 			boolean isPresent = this.inwdEntrySvc.isCoilNumberPresent(inwarddto.getCoilNumber());
 			if(isPresent) {
 				log.error("duplicate coil number ");
-				return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Coil Number already exists\"}", new HttpHeaders(), HttpStatus.BAD_REQUEST);
+				return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Coil Number already exists\"}", headers, HttpStatus.BAD_REQUEST);
 			}
 			inwardEntry.setParty(this.partyDetailsService.getPartyById(inwarddto.getPartyId()));
 			if (inwarddto != null && inwarddto.getLocationId() > 0) {
@@ -132,14 +139,15 @@ public class InwardEntryController {
 			
 			if (inwarddto.getPresentWeight() <= 0) {
 				log.error("inwarddto.getPresentWeight() is invalid");
-				return new ResponseEntity<Object>("Invalid present weight entered.", HttpStatus.BAD_REQUEST);
+				return new ResponseEntity<Object>("Invalid present weight entered.", headers, HttpStatus.BAD_REQUEST);
 			}
 			inwardEntry.setCoilNumber(inwarddto.getCoilNumber());
 			inwardEntry.setBatchNumber(inwarddto.getBatchNumber());
+			inwardEntry.setInwardType(inwarddto.getInwardType());
 			inwardEntry.setdReceivedDate(Timestamp.valueOf(inwarddto.getInwardDate()));
 			if (inwarddto.getPresentWeight() <= 0) {
 				log.info("Invalid present weight entered.");
-				return new ResponseEntity<Object>("Invalid present weight entered.", HttpStatus.BAD_REQUEST);
+				return new ResponseEntity<Object>("Invalid present weight entered.", headers, HttpStatus.BAD_REQUEST);
 			}
 			inwardEntry.setInStockWeight(inwarddto.getPresentWeight());
 
@@ -164,8 +172,11 @@ public class InwardEntryController {
 			inwardEntry.setfQuantity(inwarddto.getPresentWeight());
 			inwardEntry.setGrossWeight(inwarddto.getGrossWeight());
 
-			// inwardEntry.setStatus(this.statusService.getStatusById(inwarddto.getStatusId()));
-			inwardEntry.setStatus(this.statusService.getStatusById(1));
+			if("Coil".equals(inwarddto.getInwardType())) {
+				inwardEntry.setStatus(this.statusService.getStatusById(1));
+			} else {
+				inwardEntry.setStatus(this.statusService.getStatusById(inwarddto.getStatusId()));
+			}
 
 			inwardEntry.setvProcess(inwarddto.getProcess());
 			inwardEntry.setTdcNo(inwarddto.getTdcNo());
@@ -201,11 +212,11 @@ public class InwardEntryController {
 					inwardDocService.save(inwardDoc);
 				}
 			}
-			return new ResponseEntity<Object>(InwardEntry.valueOfResponse(inwardEntry), HttpStatus.OK);
+			return new ResponseEntity<Object>(InwardEntry.valueOfResponse(inwardEntry), headers, HttpStatus.OK);
 		} catch (Exception e) {
 			log.info("e.getMessage() == " + e.getMessage());
 			e.printStackTrace();
-			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<Object>(e.getMessage(), headers, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
@@ -213,6 +224,8 @@ public class InwardEntryController {
 	public ResponseEntity<Object> updateEntry(@RequestBody InwardDto inwarddto, HttpServletRequest request) {
 		InwardEntry inwardEntry = new InwardEntry();
 		System.out.println("DTO details " + inwarddto);
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
 		try {
 			int userId = commonUtil.getUserId();
 			inwardEntry = inwdEntrySvc.getByEntryId(inwarddto.getInwardId());
@@ -240,7 +253,7 @@ public class InwardEntryController {
 			inwardEntry.setvLorryNo(inwarddto.getVehicleNumber());
 			inwardEntry.setvInvoiceNo(inwarddto.getInvoiceNumber());
 			inwardEntry.setdInvoiceDate(Timestamp.valueOf(inwarddto.getInvoiceDate()));
-
+			inwardEntry.setInwardType( inwarddto.getInwardType() );
 			inwardEntry.setCustomerCoilId(inwarddto.getCustomerCoilId());
 			inwardEntry.setCustomerBatchId(inwarddto.getCustomerBatchId());
 
@@ -252,8 +265,8 @@ public class InwardEntryController {
 			inwardEntry.setfLength(inwarddto.getLength());
 			inwardEntry.setfQuantity(inwarddto.getPresentWeight());
 			inwardEntry.setGrossWeight(inwarddto.getGrossWeight());
-
 			inwardEntry.setStatus(this.statusService.getStatusById(inwarddto.getStatusId()));
+			
 			inwardEntry.setvProcess(inwarddto.getProcess());
 			if (inwarddto.getTdcNo() != null && inwarddto.getTdcNo().length() > 0) {
 				inwardEntry.setTdcNo(inwarddto.getTdcNo());
@@ -286,13 +299,10 @@ public class InwardEntryController {
 					inwardDocService.save(inwardDoc);
 				}
 			}
-
-			return new ResponseEntity<Object>("success", HttpStatus.OK);
+			return new ResponseEntity<Object>("success", headers,HttpStatus.OK);
 		} catch (Exception e) {
-
-			System.out.println(e.toString());
 			e.printStackTrace();
-			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<Object>(e.getMessage(), headers, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 	
@@ -509,4 +519,22 @@ public class InwardEntryController {
 		}
 	}
 
+	@ExceptionHandler(BindException.class)
+	public ResponseEntity<String> handleBindException(BindException ex) {
+		String message = ex.getBindingResult().getFieldErrors().stream().findFirst().map(this::resolveFieldErrorMessage)
+				.orElse("Invalid input");
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"" + message + "\"}", headers,
+				HttpStatus.BAD_REQUEST);
+	}
+
+	private String resolveFieldErrorMessage(FieldError error) {
+		// typeMismatch errors don't carry your custom @NotNull/@Pattern message,
+		// so build a friendly one manually based on the field name
+		if ("typeMismatch".equals(error.getCode())) {
+			return error.getField() + " must be a valid number";
+		}
+		return error.getDefaultMessage();
+	}
 }

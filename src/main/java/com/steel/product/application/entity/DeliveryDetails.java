@@ -56,6 +56,9 @@ public class DeliveryDetails {
     @Column(name = "pdf_s3_url")
     private String pdfS3Url;
 
+    @Column(name = "delivery_type")
+    private String deliveryType;
+
     @Column(name = "tally_status")
     private String tallyStatus;
 
@@ -228,6 +231,14 @@ public class DeliveryDetails {
 
 	public void setLaminationId(Integer laminationId) {
 		this.laminationId = laminationId;
+	}
+
+	public String getDeliveryType() {
+		return deliveryType;
+	}
+
+	public void setDeliveryType(String deliveryType) {
+		this.deliveryType = deliveryType;
 	}
     
     

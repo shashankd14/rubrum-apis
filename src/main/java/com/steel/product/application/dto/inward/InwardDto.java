@@ -2,10 +2,16 @@ package com.steel.product.application.dto.inward;
 
 import java.util.ArrayList;
 
+import javax.validation.constraints.DecimalMin;
+import javax.validation.constraints.Digits;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+
 import org.springframework.web.multipart.MultipartFile;
 
 public class InwardDto {
-	
+
 	private int inwardId;
 
 	private int partyId;
@@ -14,28 +20,29 @@ public class InwardDto {
 
 	private String purposeType;
 
+	//@NotBlank(message = "Coil Number is mandatory")
 	private String coilNumber;
-	
+
 	private String batchNumber;
 
 	private String inwardDate;
-	
+
 	private String billDate;
 
 	private String vehicleNumber;
 
 	private String invoiceDate;
-	
+
 	private String customerCoilId;
-	
+
 	private String customerInvoiceNo;
-	
+
 	private String customerBatchId;
 
 	private String invoiceNumber;
 
 	private int materialId;
-	
+
 	private int materialGradeId;
 
 	private float width;
@@ -43,7 +50,7 @@ public class InwardDto {
 	private float thickness;
 
 	private float length;
-	
+
 	private float grossWeight;
 
 	private int statusId;
@@ -54,22 +61,29 @@ public class InwardDto {
 
 	private float presentWeight;
 
-	private float valueOfGoods;
+	//@NotNull(message = "ValueOfGoods is mandatory")
+	//@DecimalMin(value = "0.0", inclusive = false, message = "Value Of Goods must be greater than 0")
+	///@Digits(integer = 10, fraction = 2, message = "Value Of Goods must be a valid number with up to 2 decimal places")
+	private Float valueOfGoods;
 
 	private ArrayList<MultipartFile> inwardFiles;
-	
+
 	private String testCertificateNumber;
-	
+
 	private MultipartFile testCertificateFile;
-	
+
 	private String remarks;
 
 	private String parentCoilNumber;
 
-    private int packetClassificationId;
+	//@NotBlank(message = "Inward Type is mandatory")
+	//@Pattern(regexp = "^(Coil|Sheet)$", message = "Inward Type must be either Coil or Sheet")
+	private String inwardType;
 
-    private int endUserTagId;
-	
+	private int packetClassificationId;
+
+	private int endUserTagId;
+
 	private Integer noofpieces;
 
 	public int getInwardId() {
@@ -192,7 +206,6 @@ public class InwardDto {
 		this.presentWeight = presentWeight;
 	}
 
-	
 	public int getMaterialGradeId() {
 		return this.materialGradeId;
 	}
@@ -216,7 +229,7 @@ public class InwardDto {
 	public void setTestCertificateFile(MultipartFile testCertificateFile) {
 		this.testCertificateFile = testCertificateFile;
 	}
-	
+
 	public String getBatchNumber() {
 		return batchNumber;
 	}
@@ -264,7 +277,7 @@ public class InwardDto {
 	public void setTestCertificateNumber(String testCertificateNumber) {
 		this.testCertificateNumber = testCertificateNumber;
 	}
-	
+
 	public String getCustomerInvoiceNo() {
 		return customerInvoiceNo;
 	}
@@ -336,6 +349,21 @@ public class InwardDto {
 	public void setNoofpieces(Integer noofpieces) {
 		this.noofpieces = noofpieces;
 	}
-	
-	
+
+	public String getInwardType() {
+		return inwardType;
+	}
+
+	public void setInwardType(String inwardType) {
+		this.inwardType = inwardType;
+	}
+
+	public void setPacketClassificationId(int packetClassificationId) {
+		this.packetClassificationId = packetClassificationId;
+	}
+
+	public void setEndUserTagId(int endUserTagId) {
+		this.endUserTagId = endUserTagId;
+	}
+
 }

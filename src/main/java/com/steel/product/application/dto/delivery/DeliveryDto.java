@@ -15,12 +15,16 @@ public class DeliveryDto {
 
     private String customerInvoiceNo;
 
+    private String deliveryType;
+
     private Date customerInvoiceDate;
     
     private Integer packingRateId;
     
     private Integer laminationId;
-
+    
+    private int locationId;
+    
     public List<DeliveryItemDetails> getDeliveryItemDetails() {
         return deliveryItemDetails;
     }
@@ -83,6 +87,22 @@ public class DeliveryDto {
 
 	public void setLaminationId(Integer laminationId) {
 		this.laminationId = laminationId;
+	}
+
+	public String getDeliveryType() {
+		return deliveryType;
+	}
+
+	public void setDeliveryType(String deliveryType) {
+		this.deliveryType = deliveryType;
+	}
+
+	public int getLocationId() {
+		return locationId;
+	}
+
+	public void setLocationId(int locationId) {
+		this.locationId = locationId;
 	}
 
 

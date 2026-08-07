@@ -118,6 +118,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
         delivery.setUpdatedBy(userId);
         delivery.setVehicleNo(deliveryDto.getVehicleNo());
         delivery.setTallyStatus("PENDING");
+		delivery.setDeliveryType(deliveryDto.getDeliveryType());
         delivery.setPackingRateId( deliveryDto.getPackingRateId());
         delivery.setLaminationId( deliveryDto.getLaminationId() );
         deliveryItemDetails = deliveryDto.getDeliveryItemDetails();
@@ -506,7 +507,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 				priceCalculateDTO.setCoilNo(inwardEntry.getCoilNumber());
 				priceCalculateDTO.setCustomerBatchNo(inwardEntry.getCustomerBatchId());
 				priceCalculateDTO.setInstructionId(instruction.getInstructionId());
-				priceCalculateDTO.setThickness(BigDecimal.valueOf(inwardEntry.getfThickness()));
+				priceCalculateDTO.setThickness(new BigDecimal(Float.toString(inwardEntry.getfThickness())).setScale(2, RoundingMode.HALF_UP));
 				priceCalculateDTO.setMatGradeName(inwardEntry.getMaterialGrade().getGradeName());
 				priceCalculateDTO.setActualWeight(instruction.getActualWeight());
 
@@ -590,7 +591,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 				priceCalculateDTO.setCoilNo(inwardEntry.getCoilNumber());
 				priceCalculateDTO.setCustomerBatchNo(inwardEntry.getCustomerBatchId());
 				priceCalculateDTO.setInstructionId(inwardEntry.getInwardEntryId());
-				priceCalculateDTO.setThickness(BigDecimal.valueOf(inwardEntry.getfThickness()));
+				priceCalculateDTO.setThickness(new BigDecimal(Float.toString(inwardEntry.getfThickness())).setScale(2, RoundingMode.HALF_UP));
 				priceCalculateDTO.setMatGradeName(inwardEntry.getMaterialGrade().getGradeName());
 				priceCalculateDTO.setActualWeight(inwardEntry.getFpresent());
 

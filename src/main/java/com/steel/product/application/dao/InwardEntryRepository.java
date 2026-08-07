@@ -47,10 +47,10 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
     @Query("select inw from InwardEntry inw order by inwardEntryId desc")
     List<InwardEntry> findAll();
 
-    @Query(nativeQuery = true, value = "SELECT coilNumber FROM product_tblinwardentry WHERE coilNumber = :coilNumber")
+    @Query(nativeQuery = true, value = "SELECT coilNumber FROM product_tblinwardentry WHERE coilNumber = :coilNumber limit 1")
     String isCoilNumberPresent(@Param("coilNumber") String paramString);
 
-    @Query(nativeQuery = true, value = "SELECT batchnumber FROM product_tblinwardentry WHERE batchnumber = :batchnumber")
+    @Query(nativeQuery = true, value = "SELECT batchnumber FROM product_tblinwardentry WHERE batchnumber = :batchnumber limit 1")
     String isBatchNoPresent(@Param("batchnumber") String batchnumber);
 
     @Query(nativeQuery = true, value = "SELECT customerbatchid FROM product_tblinwardentry WHERE customerbatchid = :customerbatchid limit 1")

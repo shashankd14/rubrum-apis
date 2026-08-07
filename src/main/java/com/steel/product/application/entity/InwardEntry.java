@@ -33,6 +33,9 @@ public class InwardEntry {
 	@Column(name = "batchnumber")
 	private String batchNumber;
 
+	@Column(name = "inward_type")
+	private String inwardType;
+
 	@Column(name = "dreceiveddate")
 	private Date dReceivedDate;
 
@@ -83,9 +86,12 @@ public class InwardEntry {
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "enduser_tag_id")
 	private EndUserTagsEntity endUserTagsEntity;
-	
+
 	@Column(name = "noofpieces")
 	private Integer noofpieces;
+	
+	@Column(name = "coil_seq")
+	private int coilSeq;
 
 	@Column(name = "fwidth")
 	private float fWidth;
@@ -575,6 +581,22 @@ public class InwardEntry {
 		this.noofpieces = noofpieces;
 	}
 
+	public String getInwardType() {
+		return inwardType;
+	}
+
+	public void setInwardType(String inwardType) {
+		this.inwardType = inwardType;
+	}
+
+	public int getCoilSeq() {
+		return coilSeq;
+	}
+
+	public void setCoilSeq(int coilSeq) {
+		this.coilSeq = coilSeq;
+	}
+
 	public static InwardEntryPdfDto valueOf(InwardEntry inwardEntry, List<InstructionResponsePdfDto> instructionResponsePdfDtos){
         InwardEntryPdfDto inwardEntryPdfDto = new InwardEntryPdfDto();
         inwardEntryPdfDto.setInwardEntryId(inwardEntry.getInwardEntryId());
@@ -611,6 +633,7 @@ public class InwardEntry {
 		inwardEntryPdfDto.setBilledWeight(inwardEntry.getBilledweight());
 		inwardEntryPdfDto.setFLength(inwardEntry.getfLength());
 		inwardEntryPdfDto.setTdcNo(inwardEntry.getTdcNo());
+		inwardEntryPdfDto.setInwardType( inwardEntry.getInwardType());
         return inwardEntryPdfDto;
     }
 
@@ -701,6 +724,7 @@ public class InwardEntry {
 		inwardEntryResponseDto.setCustomerInvoiceNo(inwardEntry.getCustomerInvoiceNo());
 		inwardEntryResponseDto.setParentCoilNumber(inwardEntry.getParentCoilNumber());
 		inwardEntryResponseDto.setScrapWeight( inwardEntry.getScrapWeight() );
+		inwardEntryResponseDto.setInwardType( inwardEntry.getInwardType() );
 		return inwardEntryResponseDto;
 	}
 

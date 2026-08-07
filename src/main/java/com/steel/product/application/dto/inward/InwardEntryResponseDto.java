@@ -70,6 +70,8 @@ public class InwardEntryResponseDto {
 
     private String tdcNo;
 
+    private String inwardType;
+
     private Float fpresent;
 
     private Float valueOfGoods;
@@ -444,6 +446,14 @@ public class InwardEntryResponseDto {
 
 	public void setPacketClassification(PacketClassification packetClassification) {
 		this.packetClassification = packetClassification;
+	}
+
+	public String getInwardType() {
+		return inwardType;
+	}
+
+	public void setInwardType(String inwardType) {
+		this.inwardType = inwardType;
 	}
 
 	public EndUserTagsEntity getEndUserTagsentity() {

@@ -1,14 +1,16 @@
 package com.steel.product.application.dto.pdf;
 
-import com.steel.product.application.entity.*;
-import lombok.Getter;
-import lombok.Setter;
-
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.steel.product.application.entity.AdminUserEntity;
+import com.steel.product.application.entity.InwardDoc;
+import com.steel.product.application.entity.Status;
+
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -75,6 +77,8 @@ public class InwardEntryPdfDto {
 	private int vParentBundleNumber;
 
 	private String remarks;
+
+	private String inwardType;
 
 	private AdminUserEntity createdBy;
 
