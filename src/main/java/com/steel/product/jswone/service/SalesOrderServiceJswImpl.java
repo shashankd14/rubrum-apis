@@ -30,6 +30,7 @@ import com.steel.product.application.dao.InstructionRepository;
 import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.dto.inward.SearchListPageRequest;
 import com.steel.product.application.dto.quality.ListPageSearchRequest;
+import com.steel.product.application.dto.salesorder.SalesOrderListDTO;
 import com.steel.product.application.entity.AdminUserEntity;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
@@ -88,9 +89,6 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 
 	@Autowired
 	private JswoneAuditTrailRepository jswoneAuditTrailRepository;
-
-	@Autowired
-	private MaterialMasterJswRepository materialMasterJswRepository;
 
 	@Autowired
 	private WarehouseMasterRepository warehouseMasterRepository;
@@ -352,10 +350,14 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 					}
 				}
 
-				if(allocation !=null && allocation.getSoAllocationId()>0) {
-					//SalesOrderListDTO obj = new SalesOrderListDTO();
-					//obj.setSoAllocationId(allocation.getSoAllocationId());
-					//jswIntegrationService.warehouseReassignment(obj);
+				if (allocation != null && allocation.getSoAllocationId() > 0) {
+				    try {
+				        SalesOrderListDTO obj = new SalesOrderListDTO();
+				        obj.setSoAllocationId(allocation.getSoAllocationId());
+				        jswIntegrationService.warehouseReassignment(obj);
+				    } catch (Exception ex) {
+				        log.error("warehouseReassignment failed for soAllocationId={}, ignoring failure",  allocation.getSoAllocationId(), ex);
+				    }
 				}
 			}
 			
@@ -382,20 +384,14 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 	}
 
 	@Override
-	public Page<Object[]> findInventory(ListPageSearchRequest request) {
+	public Page<Object[]> findInventory(ListPageSearchRequest request, MaterialMasterJswEntity entity ) {
 		Pageable pageable = null;
-		if (request.getSortColumn() != null && request.getSortColumn().length() > 0 && request.getSortOrder() != null
-				&& request.getSortOrder().length() > 0 && "ASC".equalsIgnoreCase(request.getSortOrder())) {
-			pageable = PageRequest.of((request.getPageNo() - 1), request.getPageSize(),
-					Sort.by(request.getSortColumn()).ascending());
-		} else if (request.getSortColumn() != null && request.getSortColumn().length() > 0
-				&& request.getSortOrder() != null && request.getSortOrder().length() > 0
-				&& "DESC".equalsIgnoreCase(request.getSortOrder())) {
-			pageable = PageRequest.of((request.getPageNo() - 1), request.getPageSize(),
-					Sort.by(request.getSortColumn()).descending());
+		if (request.getSortColumn() != null && request.getSortColumn().length() > 0 && request.getSortOrder() != null && request.getSortOrder().length() > 0 && "ASC".equalsIgnoreCase(request.getSortOrder())) {
+			pageable = PageRequest.of((request.getPageNo() - 1), request.getPageSize(), Sort.by(request.getSortColumn()).ascending());
+		} else if (request.getSortColumn() != null && request.getSortColumn().length() > 0 && request.getSortOrder() != null && request.getSortOrder().length() > 0 && "DESC".equalsIgnoreCase(request.getSortOrder())) {
+			pageable = PageRequest.of((request.getPageNo() - 1), request.getPageSize(), Sort.by(request.getSortColumn()).descending());
 		} else {
-			pageable = PageRequest.of((request.getPageNo() - 1), request.getPageSize(),
-					Sort.by("inwardid").descending());
+			pageable = PageRequest.of((request.getPageNo() - 1), request.getPageSize(), Sort.by("inwardid").descending());
 		}
 
 		List<Integer> partyIds = new ArrayList<>();
@@ -408,8 +404,8 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			if (adminUserEntity.getUserPartyMap() != null && adminUserEntity.getUserPartyMap().size() > 0) {
 				partyIds = new ArrayList<>();
 				// for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
-				// partyIds.add(userPartyMap.getPartyId());
-				// partyIdsFlag = true;
+				// 		partyIds.add(userPartyMap.getPartyId());
+				// 		partyIdsFlag = true;
 				// }
 				//log.info("In partyIds === " + partyIds);
 			} else {
@@ -425,18 +421,21 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				}
 			}
 		}
+		boolean subGradeListFlag = false;
+
+		if (request.getSubGradeList() != null && request.getSubGradeList().size() > 0) {
+			subGradeListFlag=true;
+		}
 		
 		int packetStatus = 0;
-
 		if ("COIL".equals(request.getAllocationType())) {
-
-			MaterialMasterJswEntity entity = materialMasterJswRepository.findFirstByMmId(request.getSoChildMmid());
+			//MaterialMasterJswEntity entity = materialMasterJswRepository.findFirstByMmId(request.getSoChildMmid());
 			if (entity == null) {
 			    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Material Master not found for MMID: " + request.getSoChildMmid());
 			}
 			return salesOrderRepository.findCoilInventory(request.getSearchText(), partyIds, partyIdsFlag,
-					entity.getGradeId(), entity.getThickness(), entity.getWidth(), request.getFromCoilAge(),
-					request.getToCoilAge(), pageable);
+					entity.getBrandId(), entity.getThickness(), entity.getWidth(), request.getFromCoilAge(),
+					request.getToCoilAge(), subGradeListFlag, request.getSubGradeList(), pageable);
 
 		} else if ("INWARDSHEET_PACKETS".equals(request.getAllocationType())) {
 			if ("FG".equals(request.getInventoryType())) {
@@ -445,13 +444,12 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			if ("INPROGRESS".equals(request.getInventoryType())) {
 				packetStatus = 2;
 			}
-			MaterialMasterJswEntity entity = materialMasterJswRepository.findFirstByMmId(request.getSoChildMmid());
 			if (entity == null) {
 			    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Material Master not found for MMID: " + request.getSoChildMmid());
 			}
 			return salesOrderRepository.findPacketInventory(request.getSearchText(), partyIds, partyIdsFlag,
-					packetStatus, entity.getGradeId(), entity.getThickness(), entity.getWidth(), entity.getLength(),
-					request.getFromCoilAge(), request.getToCoilAge(), pageable);
+					packetStatus, entity.getBrandId(), entity.getThickness(), entity.getWidth(), entity.getLength(),
+					request.getFromCoilAge(), request.getToCoilAge(), subGradeListFlag, request.getSubGradeList(), pageable);
 		} else {
 			return salesOrderRepository.findSheetInventory(request.getSoChildMmid(), request.getFromCoilAge(),
 					request.getToCoilAge(), pageable);

@@ -25,6 +25,7 @@ import com.steel.product.jswone.repository.SubGradeJswRepository;
 import com.steel.product.jswone.repository.SurfacetypeMasterJswRepository;
 import com.steel.product.jswone.repository.UomMasterJswRepository;
 import com.steel.product.jswone.request.SearchRequest;
+import com.steel.product.jswone.response.SubGradeDTO;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -414,6 +415,14 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 		if (list.isPresent()) {
 			kk = list.get();
 		}
+		return kk;
+	}
+	
+	@Override
+	@Cacheable(value = "subGradeListByProduct")
+	public List<SubGradeDTO> subGradeListByProduct(int productId) {
+		log.info("In subGradeListByProduct page ");
+		List<SubGradeDTO> kk = subGradeJswRepository.subGradeListByProduct(productId);
 		return kk;
 	}
 }

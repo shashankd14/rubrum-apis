@@ -31,6 +31,8 @@ public class ListPageSearchRequest {
 
 	private String sortOrder;
 
+	private List<Integer> subGradeList = new ArrayList<>();
+
 	private List<String> status = new ArrayList<>();
 
 	private List<String> zohoStatus = new ArrayList<>();

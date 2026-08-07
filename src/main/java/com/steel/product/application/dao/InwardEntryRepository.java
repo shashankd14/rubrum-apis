@@ -294,8 +294,11 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 			+ " (select process.processname from product_process process where process.processid=child.processid  ) as processname, "
 			+ " ' ' as sono,"
 			+ " (SELECT count(distinct a.instructionid) cnt FROM product_instruction a where a.inwardid=parent.inwardentryid and status!=4 and a.parentgroupid=child.groupid) as siltcutcnt "
-			+ " FROM product_tblinwardentry parent, jsw_material_master mat, product_instruction child, product_tblpartydetails party  "
-			+ " where child.isdeleted=0 and parent.isdeleted=0 and parent.inwardentryid = child.inwardid and parent.mm_id= mat.mm_id and party.npartyid = parent.npartyid "
+			+ " FROM product_tblinwardentry parent "
+			+ " JOIN jsw_material_master mat ON parent.mm_id = mat.mm_id "
+			+ " JOIN product_tblpartydetails party ON party.npartyid = parent.npartyid "
+			+ " LEFT OUTER JOIN product_instruction child ON parent.inwardentryid = child.inwardid AND child.isdeleted = 0 "
+			+ " where parent.isdeleted=0 "
 			+ " and parent.inwardentryid in :inwardIdList ORDER BY FIELD(inwardentryid, :inwardIdList)" + " ) a "
 			+ " where 1=1 AND CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END", nativeQuery = true)
 	List<Object[]> wipListNewQuery(@Param("inwardIdList") List<Integer> inwardIdList);

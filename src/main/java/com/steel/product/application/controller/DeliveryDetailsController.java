@@ -59,7 +59,7 @@ public class DeliveryDetailsController {
 	private JSWIntegrationService service;
 
 	@Autowired
-	MaterialMasterJswService materialService;
+	private MaterialMasterJswService materialService;
 	
 	/*@GetMapping("/list/{pageNo}/{pageSize}")
 	public ResponseEntity<Object> findAllWithPaginationOld(@PathVariable int pageNo, @PathVariable int pageSize,

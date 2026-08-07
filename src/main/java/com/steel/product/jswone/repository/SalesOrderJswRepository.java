@@ -146,7 +146,8 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (parent.coilNumber like %:searchText% or parent.customerBatchId like %:searchText% or parent.customerInvoiceNo like %:searchText%) else 1=1 end " 
 			+ " and vstatus in (1,2,3) " 
 			+ " and mat.mm_id = parent.mm_id " 
-			+ " and mat.grade_id = :gradeId "
+			+ "	and case when :subGradeListFlag=true then mat.subgrade_id in :subGradeList else mat.brand_id = :brandId end  "
+			//+ " and mat.brand_id = :brandId "
 			+ " and mat.form_id not in (21)"
 			+ " and mat.thickness= :thickness "
 			+ " AND parent.fwidth = :width "
@@ -164,7 +165,8 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (parent.coilNumber like %:searchText% or parent.customerBatchId like %:searchText% or parent.customerInvoiceNo like %:searchText%) else 1=1 end " 
 			+ " and vstatus in (1,2,3) "
 			+ " and mat.mm_id = parent.mm_id "
-			+ " and mat.grade_id = :gradeId "
+			+ "	and case when :subGradeListFlag=true then mat.subgrade_id in :subGradeList else mat.brand_id = :brandId end  "
+			//+ " and mat.brand_id = :brandId "
 			+ " and mat.form_id not in (21) "
 			+ " and mat.thickness = :thickness "
 			+ " AND parent.fwidth = :width "
@@ -177,11 +179,13 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			@Param("searchText") String searchText,
 			@Param("partyIds") List<Integer> partyIds,
 			@Param("partyIdsFlag") boolean partyIdsFlag,
-			@Param("gradeId") int gradeId,
+			@Param("brandId") int brandId,
 			@Param("thickness") BigDecimal thickness,
 			@Param("width") BigDecimal width,
 			@Param("fromCoilAge") int fromCoilAge,
 			@Param("toCoilAge") int toCoilAge,
+			@Param("subGradeListFlag") boolean subGradeListFlag,
+			@Param("subGradeList") List<Integer> subGradeList,
 			Pageable pageable);
 
 	@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, mm_id, materialdesc, materialgrade,fthickness, flength, (fweight-allocated_soqty), partyname,"
@@ -206,7 +210,8 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ "	and case when :searchText is not null and LENGTH(:searchText) >0 then (parent.coilNumber like %:searchText% or parent.customerBatchId like %:searchText% or parent.customerInvoiceNo like %:searchText%) else 1=1 end " 
 			+ "	and case when :partyIdsFlag=true then parent.npartyid in :partyIds else 1=1 end  "
 			+ " and case when :packetStatus in (2, 3) then child.status = :packetStatus else 1=1 end "
-			+ " and mat.grade_id = :gradeId "
+			+ "	and case when :subGradeListFlag=true then mat.subgrade_id in :subGradeList else mat.brand_id = :brandId end  "
+			//+ " and mat.brand_id = :brandId "
 			+ " and mat.thickness= :thickness "
 			+ " AND coalesce(child.actualwidth, child.plannedwidth) = :width "
 			+ " and coalesce(child.actuallength, child.plannedlength) = :length) a "
@@ -226,7 +231,8 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ "	and case when :searchText is not null and LENGTH(:searchText) >0 then (parent.coilNumber like %:searchText% or parent.customerBatchId like %:searchText% or parent.customerInvoiceNo like %:searchText%) else 1=1 end " 
 			+ "	and case when :partyIdsFlag=true then parent.npartyid in :partyIds else 1=1 end  "
 			+ " and case when :packetStatus in (2, 3) then child.status = :packetStatus else 1=1 end "
-			+ " and mat.grade_id = :gradeId "
+			+ "	and case when :subGradeListFlag=true then mat.subgrade_id in :subGradeList else mat.brand_id = :brandId end  "
+			//+ " and mat.brand_id = :brandId "
 			+ " and mat.thickness= :thickness "
 			+ " AND coalesce(child.actualwidth, child.plannedwidth) = :width "
 			+ " and coalesce(child.actuallength, child.plannedlength) = :length) a "
@@ -237,12 +243,14 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			@Param("partyIds") List<Integer> partyIds,
 			@Param("partyIdsFlag") boolean partyIdsFlag,
 			@Param("packetStatus") int packetStatus, 
-			@Param("gradeId") int gradeId,
+			@Param("brandId") int brandId,
 			@Param("thickness") BigDecimal thickness,
 			@Param("width") BigDecimal width,
 			@Param("length") BigDecimal length,
 			@Param("fromCoilAge") int fromCoilAge,
 			@Param("toCoilAge") int toCoilAge,
+			@Param("subGradeListFlag") boolean subGradeListFlag,
+			@Param("subGradeList") List<Integer> subGradeList,
 			Pageable pageable);
 
 	@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, mm_id, materialdesc, materialgrade,fthickness, flength, "

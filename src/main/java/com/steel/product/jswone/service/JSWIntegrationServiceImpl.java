@@ -1198,47 +1198,63 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 	public InventoryAdjustmentResponse warehouseReassignment(SalesOrderListDTO request) {
 		InventoryAdjustmentResponse response = new InventoryAdjustmentResponse();
 		ResponseEntity<String> res = null;
-		JswoneAuditTrailEntity audit =new JswoneAuditTrailEntity();
+		JswoneAuditTrailEntity audit = new JswoneAuditTrailEntity();
 		ObjectMapper mapper = new ObjectMapper();
+
+		audit.setPoId("" + request.getSoAllocationId());
+		audit.setProcessType("WAREHOUSE_REASSIGNMENT");
+
 		try {
 			RestTemplate restTemplate = new RestTemplate();
 			Map<String, String> propertyMap = commonUtil.getAllProperties();
-			audit.setPoId(""+request.getSoAllocationId());
-			audit.setProcessType("WAREHOUSE_REASSIGNMENT");
+
 			HttpHeaders headers = new HttpHeaders();
 			headers.set("Content-Type", "application/json");
-			headers.set(propertyMap.get("warehouseReassignment_headerkey"), propertyMap.get("warehouseReassignment_headervalue"));
+			headers.set(propertyMap.get("warehouseReassignment_headerkey"),
+					propertyMap.get("warehouseReassignment_headervalue"));
+
 			WarehouseReassignmentMainRequest postGRN = wareHouseReassignmentRequest(request.getSoAllocationId(), request.getOption());
+
 			String inventoryAdjustmentReq = objectMapper.writeValueAsString(postGRN);
 			audit.setRequestObj(inventoryAdjustmentReq);
+
 			HttpEntity<String> extRequest = new HttpEntity<>(inventoryAdjustmentReq, headers);
-			String url = propertyMap.get("warehouseReassignment_url")+ "/"+postGRN.getSalesorder_id();
+			String url = propertyMap.get("warehouseReassignment_url") + "/" + postGRN.getSalesorder_id();
 			audit.setRequestUrl(url);
-			log.info("url  is  == " + url+", warehouseReassignment - " + extRequest);
+
+			log.info("url is == {}, warehouseReassignment - {}", url, extRequest);
 			res = restTemplate.exchange(url, HttpMethod.PUT, extRequest, String.class);
-			log.info("response is == " + res);
-			if (res.getBody() != null) {
+			log.info("response is == {}", res);
+
+			String responseBody = (res != null && res.getBody() != null) ? res.getBody() : null;
+			audit.setDestinationResponse(responseBody != null ? responseBody : "null");
+
+			if (responseBody != null) {
 				mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-				response = mapper.readValue(res.getBody().toString(), InventoryAdjustmentResponse.class);
+				response = mapper.readValue(responseBody, InventoryAdjustmentResponse.class);
 			}
-			
-			audit.setDestinationResponse(res.getBody().toString());
-			jswoneAuditTrailRepository.save(audit);
-			if (response != null && "0".equals( response.getCode()) ) {
-				audit.setStatusCode(""+res.getStatusCode());
+
+			if (res != null) {
+				audit.setStatusCode("" + res.getStatusCode());
+			}
+
+			if (response != null && "0".equals(response.getCode())) {
 				response.setCode("0");
-				response.setMessage( response.getMessage());
-			} else {
-				audit.setStatusCode(""+res.getStatusCode());
-				response.setCode( response.getCode());
-				response.setMessage( response.getMessage());
+				response.setMessage(response.getMessage());
+			} else if (response != null) {
+				response.setCode(response.getCode());
+				response.setMessage(response.getMessage());
 			}
-			audit.setSourceRespone( mapper.writeValueAsString(response));
-			sollocationJswRepository.updateZohoSyncRemarks(request.getSoAllocationId(), response.getMessage(), "SUCCESS" );
+
+			if (response != null) {
+				sollocationJswRepository.updateZohoSyncRemarks(request.getSoAllocationId(), response.getMessage(), "SUCCESS");
+			}
+
 		} catch (HttpClientErrorException | HttpServerErrorException ex) {
 			String error = ex.getResponseBodyAsString();
 			audit.setStatusCode("" + ex.getStatusCode().value());
-			audit.setDestinationResponse( error);
+			audit.setDestinationResponse(error != null ? error : "");
+
 			try {
 				JsonNode outer = mapper.readTree(error);
 				String code = outer.path("code").asText();
@@ -1247,35 +1263,41 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 				response.setMessage(message);
 				sollocationJswRepository.updateZohoSyncRemarks(request.getSoAllocationId(), message, "FAIL");
 			} catch (Exception w) {
-				
+				log.warn("Failed to parse error response body for soAllocationId={}", request.getSoAllocationId(), w);
 			}
+
 		} catch (Exception e) {
-            audit.setDestinationResponse( e.getMessage());
-			if (e.getMessage().contains("404")) {
+			String msg = e.getMessage() != null ? e.getMessage() : "";
+			audit.setDestinationResponse(msg);
+
+			if (msg.contains("404")) {
 				audit.setStatusCode("404");
 				response.setCode("1002");
 				response.setMessage("Resource does not exist.");
-			}
-			if (e.getMessage().contains("400")) {
+			} else if (msg.contains("400")) {
 				audit.setStatusCode("400");
 				response.setCode("4198");
 				response.setMessage("Invalid Params");
-			}
-			if (e.getMessage().contains("401")) {
+			} else if (msg.contains("401")) {
 				audit.setStatusCode("401");
 				response.setCode("57");
 				response.setMessage("You are not authorized to perform this operation");
-			}
-			if (e.getMessage().contains("500")) {
+			} else if (msg.contains("500")) {
 				audit.setStatusCode("400");
 				response.setCode("57");
 				response.setMessage("JSW Connector API Not Working, Please Contact JSW Admin Team ");
+			} else {
+				audit.setStatusCode("500");
+				response.setCode("9999");
+				response.setMessage("Unexpected error during warehouse reassignment");
 			}
- 		}
+			log.error("warehouseReassignment error for soAllocationId={}", request.getSoAllocationId(), e);
+		}
+
 		try {
-			audit.setSourceRespone( mapper.writeValueAsString(response));
+			audit.setSourceRespone(mapper.writeValueAsString(response));
 		} catch (JsonProcessingException e) {
-			e.printStackTrace();
+			log.warn("Failed to serialize response for audit, soAllocationId={}", request.getSoAllocationId(), e);
 		}
 		jswoneAuditTrailRepository.save(audit);
 		return response;

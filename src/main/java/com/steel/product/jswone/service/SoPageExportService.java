@@ -76,8 +76,6 @@ public class SoPageExportService {
 	 * Keep it wrapped in the CAST/COALESCE below so the driver always hands back
 	 * a BigDecimal and never a Double.
 	 */
-	private static final String INVOICED_QTY_EXPR = "0";
-
 	private static final String SHEET_NAME = "Sheet1";
 	private static final int HEADER_ROW = 0;
 	private static final int FIRST_DATA_ROW = 1;
@@ -85,8 +83,7 @@ public class SoPageExportService {
 	private static final int QTY_SCALE = 2;
 	private static final int MAX_EXCEL_TEXT = 32767;
 
-	public static final String XLSX_CONTENT_TYPE =
-			"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+	public static final String XLSX_CONTENT_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
 	private final NamedParameterJdbcTemplate jdbcTemplate;
 
@@ -119,9 +116,7 @@ public class SoPageExportService {
 	}
 
 	public static String buildFileName() {
-		return "SO_Page_Export_"
-				+ new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date())
-				+ ".xlsx";
+		return "SO_Page_Export_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + ".xlsx";
 	}
 
 	// ------------------------------------------------------------------
@@ -272,25 +267,20 @@ public class SoPageExportService {
 	 */
 	private String baseSelect() {
 		return "SELECT "
-			+ "   so.branch_id                              AS region, "
-			+ "   COALESCE(so.salesorder_id, so.so_number)  AS order_id, "
+			+ "   (select branch_name from jsw_branch_master br where br.branch_id =so.branch_id ) AS region, "
+			+ "   so.refno									AS order_id, "
 			+ "   so.bizsegment                             AS sales_channel, "
 			+ "   so.deliverymethod                         AS delivery_type, "
 			+ "   so.socreatedate                           AS order_date, "
 			+ "   DATEDIFF(so.expected_delivery_date, so.socreatedate) AS delivery_timeline, "
 			+ "   so.expected_delivery_date                 AS estimated_delivery_date, "
 			+ "   soc.material_name                         AS sku_description, "
-			// number_of_sheets is a varchar column; NULLIF stops '' becoming 0
-			+ "   CAST(NULLIF(TRIM(soc.number_of_sheets), '') AS DECIMAL(18,2)) AS order_qty_sheets, "
-			+ "   CAST(COALESCE(soc.soqty, 0) AS DECIMAL(18,3))                 AS order_qty_mt, "
-			+ "   CAST(COALESCE(" + INVOICED_QTY_EXPR + ", 0) AS DECIMAL(18,3)) AS invoiced_qty_mt, "
+			+ "   CAST(NULLIF(TRIM(soc.number_of_sheets), '') AS DECIMAL(18,0)) AS order_qty_sheets, "
+			+ "   CAST(ROUND(COALESCE(soc.soqty, 0) / 1000, 3) AS DECIMAL(18,3)) AS order_qty_mt, "
+			+ "   (select ROUND(SUM(COALESCE(ins.allocated_soqty, alloc.allocated_soqty, 0)) / 1000, 3) from jsw_sales_order_allocation alloc, product_instruction ins where deliveryid>0 and alloc.instruction_id = ins.instructionid and alloc.so_child_id = soc.so_child_id) invoiced_qty_mt, "
 			+ "   so.zoho_status                            AS zoho_status, "
-			+ "   so.destinationcode                        AS processing_centre, "
-			+ "   (SELECT GROUP_CONCAT(DISTINCT soa.inward_entry_id "
-			+ "             ORDER BY soa.inward_entry_id SEPARATOR ', ') "
-			+ "      FROM jsw_sales_order_allocation soa "
-			+ "     WHERE soa.so_child_id = soc.so_child_id "
-			+ "       AND soa.inward_entry_id IS NOT NULL)  AS allocated_coil, "
+			+ "   (SELECT GROUP_CONCAT(DISTINCT ie.coilnumber ORDER BY ie.coilnumber SEPARATOR ', ') FROM jsw_sales_order_allocation soa ,  product_tblinwardentry ie where ie.inwardentryid = soa.inward_entry_id and soa.so_child_id = soc.so_child_id AND soa.inward_entry_id IS NOT NULL) AS allocated_coil, "
+			+ "   (SELECT GROUP_CONCAT(DISTINCT p.partyname ORDER BY p.partyname SEPARATOR ', ') FROM jsw_sales_order_allocation soa JOIN product_tblinwardentry ie ON ie.inwardentryid = soa.inward_entry_id JOIN product_tblpartydetails p ON p.npartyid = ie.npartyid WHERE soa.so_child_id = soc.so_child_id AND soa.inward_entry_id IS NOT NULL)  AS processing_centre, "
 			+ "   so.typeofsupply                           AS packing_mode, "
 			+ "   so.special_delivery_instructions          AS sdi, "
 			+ "   so.likely_material_date                   AS likely_mrd, "
@@ -301,8 +291,7 @@ public class SoPageExportService {
 			+ "   so.remarks                                AS delay_comments "
 			+ " FROM jsw_sales_order_child soc "
 			+ " JOIN jsw_sales_order so ON so.so_id = soc.so_id "
-			+ " WHERE COALESCE(so.is_deleted, 0) = 0 "
-			+ "   AND COALESCE(soc.is_deleted, 0) = 0 ";
+			+ " WHERE COALESCE(so.is_deleted, 0) = 0 AND COALESCE(soc.is_deleted, 0) = 0 ";
 	}
 
 	private static SoPageExportDto mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -341,37 +330,18 @@ public class SoPageExportService {
 		}
 
 		dto.setDelayStatus(resolveDelayStatus(dto.getDelayDays()));
-		dto.setDelayBucket(resolveDelayBucket(dto.getDelayDays()));
+		dto.setDelayBucket("");
 		return dto;
 	}
 
 	/** Likely readiness later than standard readiness = delayed. */
 	private static String resolveDelayStatus(Integer delayDays) {
 		if (delayDays == null) {
-			return "TBD";
+			return "";
 		}
 		return delayDays > 0 ? "Delayed" : "On Time";
 	}
-
-	private static String resolveDelayBucket(Integer delayDays) {
-		if (delayDays == null) {
-			return "TBD";
-		}
-		if (delayDays <= 0) {
-			return "On Time";
-		}
-		if (delayDays <= 3) {
-			return "1-3 Days";
-		}
-		if (delayDays <= 7) {
-			return "4-7 Days";
-		}
-		if (delayDays <= 15) {
-			return "8-15 Days";
-		}
-		return "> 15 Days";
-	}
-
+ 
 	// ------------------------------------------------------------------
 	// Workbook build
 	// ------------------------------------------------------------------
@@ -423,10 +393,9 @@ public class SoPageExportService {
 	}
 
 	private void writeDataRow(XSSFSheet sheet, Styles styles, SoPageExportDto dto,
-							  int rowIndex, int serialNumber) {
+			int rowIndex, int serialNumber) {
 
 		Row row = sheet.createRow(rowIndex);
-
 		setNumber(row, Col.SR_NO.ordinal(), serialNumber, styles.centered);
 		setString(row, Col.REGION.ordinal(), dto.getRegion(), styles.text);
 		setString(row, Col.ORDER_ID.ordinal(), dto.getOrderId(), styles.text);
@@ -446,8 +415,7 @@ public class SoPageExportService {
 		setString(row, Col.PACKING_MODE.ordinal(), dto.getPackingMode(), styles.text);
 		setString(row, Col.SDI.ordinal(), dto.getSdi(), styles.wrapText);
 		setDate(row, Col.LIKELY_MRD.ordinal(), dto.getLikelyMaterialReadinessDate(), styles.date);
-		setDate(row, Col.STANDARD_MRD.ordinal(), dto.getStandardMaterialReadinessDate(),
-				styles.date);
+		setDate(row, Col.STANDARD_MRD.ordinal(), dto.getStandardMaterialReadinessDate(), styles.date);
 		setString(row, Col.WMS_STATUS.ordinal(), dto.getWmsStatusOfSku(), styles.text);
 		setString(row, Col.DELAY_STATUS.ordinal(), dto.getDelayStatus(), styles.text);
 		setString(row, Col.DELAY_BUCKET.ordinal(), dto.getDelayBucket(), styles.text);
@@ -538,21 +506,6 @@ public class SoPageExportService {
 	private static Integer getIntegerOrNull(ResultSet rs, String column) throws SQLException {
 		int value = rs.getInt(column);
 		return rs.wasNull() ? null : value;
-	}
-
-	private int resolveLimit(Integer requested) {
-		if (requested == null || requested <= 0) {
-			return MAX_EXPORT_ROWS;
-		}
-		return Math.min(requested, MAX_EXPORT_ROWS);
-	}
-
-	private boolean isNotEmpty(List<?> values) {
-		return values != null && !values.isEmpty();
-	}
-
-	private boolean isNotBlank(String value) {
-		return value != null && !value.trim().isEmpty();
 	}
 
 	// ------------------------------------------------------------------
@@ -654,8 +607,8 @@ public class SoPageExportService {
 			this.integer = body(workbook, bodyFont, HorizontalAlignment.RIGHT, false, INT_FORMAT, format);
 		}
 
-		private CellStyle body(Workbook workbook, Font font, HorizontalAlignment alignment,
-							   boolean wrap, String numberFormat, DataFormat format) {
+		private CellStyle body(Workbook workbook, Font font, HorizontalAlignment alignment, boolean wrap,
+				String numberFormat, DataFormat format) {
 			CellStyle style = workbook.createCellStyle();
 			style.setFont(font);
 			style.setAlignment(alignment);
