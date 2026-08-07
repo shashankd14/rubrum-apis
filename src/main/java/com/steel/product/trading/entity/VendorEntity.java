@@ -84,6 +84,12 @@ public class VendorEntity {
 	@Column(name = "alternate_pincode")
 	private Integer alternatePincode;
 
+	@Column(name = "include_ratesin_dc")
+	private String includeRatesinDc;
+
+	@Column(name = "purchase_report")
+	private String purchaseReport;
+
 	@Column(name = "is_deleted", columnDefinition = "BIT")
 	private Boolean isDeleted;
 	

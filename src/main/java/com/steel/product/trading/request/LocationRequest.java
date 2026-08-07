@@ -11,6 +11,8 @@ public class LocationRequest extends BaseRequest {
 
 	private String locationName;
 
+	private String branchType;
+
 	private String address1;
 
 	private String address2;

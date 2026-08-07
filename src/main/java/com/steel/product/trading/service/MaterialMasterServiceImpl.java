@@ -24,6 +24,7 @@ import com.steel.product.trading.request.SubCategoryRequest;
 
 import lombok.extern.log4j.Log4j2;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -163,9 +164,11 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 
 		if (searchListPageRequest.getSearchText() != null && searchListPageRequest.getSearchText().length() > 0) {
 			Page<MaterialMasterEntity> pageResult = materialMasterRepository.findAllWithSearchText(searchListPageRequest.getSearchText(), pageable);
+			pageResult.forEach(this::populateResponseFields);
 			return pageResult;
 		} else {
 			Page<MaterialMasterEntity> pageResult = materialMasterRepository.findAll(pageable);
+			pageResult.forEach(this::populateResponseFields);
 			return pageResult;
 		}
 	}
@@ -176,14 +179,25 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 		MaterialMasterEntity materialMasterEntity = null;
 		if (kk.isPresent()) {
 			materialMasterEntity = kk.get();
-			if (materialMasterEntity.getItemImage() != null && materialMasterEntity.getItemImage().length() > 0) {
-				materialMasterEntity.setItemImagePresignedURL(awsS3Service.generatePresignedUrlForTrading(materialMasterEntity.getItemImage()));
-			}
-			if (materialMasterEntity.getCrossSectionalImage() != null && materialMasterEntity.getCrossSectionalImage().length() > 0) {
-				materialMasterEntity.setCrossSectionalImagePresignedURL(awsS3Service.generatePresignedUrlForTrading(materialMasterEntity.getCrossSectionalImage()));
-			}
+			populateResponseFields(materialMasterEntity);
 		}
 		return materialMasterEntity;
+	}
+
+	private void populateResponseFields(MaterialMasterEntity materialMasterEntity) {
+		if (materialMasterEntity.getCreatedOn() != null) {
+			materialMasterEntity.setMaterialCreationDate(
+					new SimpleDateFormat("dd-MMM-yyyy").format(materialMasterEntity.getCreatedOn()));
+		}
+		if (materialMasterEntity.getItemImage() != null && !materialMasterEntity.getItemImage().trim().isEmpty()) {
+			materialMasterEntity.setItemImagePresignedURL(
+					awsS3Service.generatePresignedUrlForTrading(materialMasterEntity.getItemImage()));
+		}
+		if (materialMasterEntity.getCrossSectionalImage() != null
+				&& !materialMasterEntity.getCrossSectionalImage().trim().isEmpty()) {
+			materialMasterEntity.setCrossSectionalImagePresignedURL(
+					awsS3Service.generatePresignedUrlForTrading(materialMasterEntity.getCrossSectionalImage()));
+		}
 	}
 
 	@Override

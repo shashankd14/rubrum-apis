@@ -50,7 +50,7 @@ public class MaterialMasterEntity {
 	@Column(name = "manufacturer_id")
 	private Integer manufacturerId;
 
-	@Column(name = "additional_params")
+	@Column(name = "additional_params", columnDefinition = "TEXT")
 	private String additionalParams;
 
 	@Column(name = "item_image")
@@ -90,5 +90,8 @@ public class MaterialMasterEntity {
 
 	@Transient
 	private String crossSectionalImagePresignedURL;
+
+	@Transient
+	private String materialCreationDate;
 
 }
