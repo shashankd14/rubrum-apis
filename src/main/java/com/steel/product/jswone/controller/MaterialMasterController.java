@@ -24,6 +24,7 @@ import com.steel.product.jswone.entity.SubgradeMasterJswEntity;
 import com.steel.product.jswone.entity.SurfacetypeMasterJswEntity;
 import com.steel.product.jswone.entity.UomMasterJswEntity;
 import com.steel.product.jswone.request.SearchRequest;
+import com.steel.product.jswone.response.SubGradeDTO;
 import com.steel.product.jswone.service.MaterialMasterJswService;
 import com.steel.product.trading.entity.LocationEntity;
 import com.steel.product.trading.service.LocationService;
@@ -97,6 +98,12 @@ public class MaterialMasterController {
 	@PostMapping({ "/subgrade/list/gradeId" })
 	public ResponseEntity<Object> getSubGradeList(@RequestBody SearchRequest searchPageRequest) {
 		List<SubgradeMasterJswEntity > resp = materialService.getSubGradeListByGrade( searchPageRequest);
+		return new ResponseEntity<Object>(resp, HttpStatus.OK);
+	}
+
+	@PostMapping({ "/subgrade/list/brandid" })
+	public ResponseEntity<Object> getSubGradeListByBrand(@RequestBody SearchRequest searchPageRequest) {
+		List<SubGradeDTO> resp = materialService.subGradeListByBrand(searchPageRequest.getBrandId());
 		return new ResponseEntity<Object>(resp, HttpStatus.OK);
 	}
 

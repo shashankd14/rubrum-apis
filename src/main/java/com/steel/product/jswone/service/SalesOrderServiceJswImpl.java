@@ -93,6 +93,9 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 	@Autowired
 	private WarehouseMasterRepository warehouseMasterRepository;
 
+	@Autowired
+	private MaterialMasterJswRepository materialMasterJswRepository;
+	
 	@Override
 	public ResponseEntity<Object> save(SalesOrderMainRequest salesOrderMainRequest, String option) {
 		log.info("SalesOrderServiceImpl.Save ");
@@ -384,7 +387,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 	}
 
 	@Override
-	public Page<Object[]> findInventory(ListPageSearchRequest request, MaterialMasterJswEntity entity ) {
+	public Page<Object[]> findInventory(ListPageSearchRequest request) {
 		Pageable pageable = null;
 		if (request.getSortColumn() != null && request.getSortColumn().length() > 0 && request.getSortOrder() != null && request.getSortOrder().length() > 0 && "ASC".equalsIgnoreCase(request.getSortOrder())) {
 			pageable = PageRequest.of((request.getPageNo() - 1), request.getPageSize(), Sort.by(request.getSortColumn()).ascending());
@@ -423,19 +426,20 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 		}
 		boolean subGradeListFlag = false;
 
-		if (request.getSubGradeList() != null && request.getSubGradeList().size() > 0) {
+		if (request.getSubgradeList() != null && request.getSubgradeList().size() > 0) {
 			subGradeListFlag=true;
 		}
 		
 		int packetStatus = 0;
+		MaterialMasterJswEntity entity = materialMasterJswRepository.findFirstByMmId(request.getSoChildMmid());
+
 		if ("COIL".equals(request.getAllocationType())) {
-			//MaterialMasterJswEntity entity = materialMasterJswRepository.findFirstByMmId(request.getSoChildMmid());
 			if (entity == null) {
 			    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Material Master not found for MMID: " + request.getSoChildMmid());
 			}
 			return salesOrderRepository.findCoilInventory(request.getSearchText(), partyIds, partyIdsFlag,
 					entity.getBrandId(), entity.getThickness(), entity.getWidth(), request.getFromCoilAge(),
-					request.getToCoilAge(), subGradeListFlag, request.getSubGradeList(), pageable);
+					request.getToCoilAge(), subGradeListFlag, request.getSubgradeList(), pageable);
 
 		} else if ("INWARDSHEET_PACKETS".equals(request.getAllocationType())) {
 			if ("FG".equals(request.getInventoryType())) {
@@ -449,10 +453,11 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			}
 			return salesOrderRepository.findPacketInventory(request.getSearchText(), partyIds, partyIdsFlag,
 					packetStatus, entity.getBrandId(), entity.getThickness(), entity.getWidth(), entity.getLength(),
-					request.getFromCoilAge(), request.getToCoilAge(), subGradeListFlag, request.getSubGradeList(), pageable);
+					request.getFromCoilAge(), request.getToCoilAge(), subGradeListFlag, request.getSubgradeList(), pageable);
 		} else {
-			return salesOrderRepository.findSheetInventory(request.getSoChildMmid(), request.getFromCoilAge(),
-					request.getToCoilAge(), pageable);
+			return salesOrderRepository.findSheetInventory(request.getSearchText(), partyIds, partyIdsFlag,
+					entity.getBrandId(), entity.getThickness(), entity.getWidth(), entity.getLength(), request.getFromCoilAge(),
+					request.getToCoilAge(), subGradeListFlag, request.getSubgradeList(), pageable);
 		}
 	}
 

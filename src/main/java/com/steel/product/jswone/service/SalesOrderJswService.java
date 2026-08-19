@@ -51,5 +51,5 @@ public interface SalesOrderJswService {
 
 	void updateSOStatus(int soIdValue);
 
-	Page<Object[]> findInventory(ListPageSearchRequest request, MaterialMasterJswEntity entity);
+	Page<Object[]> findInventory(ListPageSearchRequest request);
 }

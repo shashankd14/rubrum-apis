@@ -81,6 +81,6 @@ public interface MaterialMasterJswService {
 
 	MaterialGradeDto getSubGradeName(String mmId);
 
-	List<SubGradeDTO> subGradeListByProduct(int productId);
+	List<SubGradeDTO> subGradeListByBrand(int productId);
 
 }

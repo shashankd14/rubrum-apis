@@ -851,7 +851,7 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 						byte[] bytes = null;
 						StringBuilder builder = new StringBuilder();
 
-						file = Paths.get(pdfService.generatePdf(pdfDto).getAbsolutePath());
+						file = Paths.get(pdfService.generateInwardPdf(pdfDto).getAbsolutePath());
 						bytes = Files.readAllBytes(file);
 						builder.append(Base64.getEncoder().encodeToString(bytes));
 					} catch (IOException | DocumentException | org.dom4j.DocumentException ex) {

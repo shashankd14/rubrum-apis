@@ -53,7 +53,7 @@ public class PdfController {
         byte[] bytes = null;
         StringBuilder builder = new StringBuilder();
         try {
-            file = Paths.get(pdfService.generatePdf(pdfDto).getAbsolutePath());
+            file = Paths.get(pdfService.generateInwardPdf(pdfDto).getAbsolutePath());
             bytes = Files.readAllBytes(file);
             builder.append(Base64.getEncoder().encodeToString(bytes));
         } catch (IOException | DocumentException | org.dom4j.DocumentException ex) {
@@ -98,7 +98,7 @@ public class PdfController {
         byte[] bytes;
         StringBuilder builder = new StringBuilder();
         try {
-            file = Paths.get(pdfService.generatePdf(partDto).getAbsolutePath());
+            file = Paths.get(pdfService.generatePlanPdf(partDto).getAbsolutePath());
             bytes = Files.readAllBytes(file);
             builder.append(Base64.getEncoder().encodeToString(bytes));
         } catch (IOException | DocumentException | org.dom4j.DocumentException ex) {

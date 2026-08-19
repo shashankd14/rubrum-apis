@@ -24,6 +24,8 @@ public class SalesOrderCPChildResponse {
 	private String allocatedStts;
 
 	private String itemStatus;
+	
+	private int brandId;
 
 	private String wareHouseName;
 

@@ -160,8 +160,7 @@ public class SoPageExportService {
 	    }
 
 	    // ---- warehouse ----
-	    // FIXED ALIAS: baseSelect() aliases the child table as `soc`, not `so_child`.
-	    // `so_child.wearhouse_id` would fail with "Unknown column".
+	    // FIXED ALIAS: baseSelect() aliases the child table as `soc`, not `so_child`.`so_child.wearhouse_id` would fail with "Unknown column".
 	    if (searchRequest.getWarehouseList() != null && !searchRequest.getWarehouseList().isEmpty()) {
 	        sql.append(" AND soc.wearhouse_id IN (:warehouseList) ");
 	        params.addValue("warehouseList", searchRequest.getWarehouseList());
@@ -281,6 +280,7 @@ public class SoPageExportService {
 			+ "   so.zoho_status                            AS zoho_status, "
 			+ "   (SELECT GROUP_CONCAT(DISTINCT ie.coilnumber ORDER BY ie.coilnumber SEPARATOR ', ') FROM jsw_sales_order_allocation soa ,  product_tblinwardentry ie where ie.inwardentryid = soa.inward_entry_id and soa.so_child_id = soc.so_child_id AND soa.inward_entry_id IS NOT NULL) AS allocated_coil, "
 			+ "   (SELECT GROUP_CONCAT(DISTINCT p.partyname ORDER BY p.partyname SEPARATOR ', ') FROM jsw_sales_order_allocation soa JOIN product_tblinwardentry ie ON ie.inwardentryid = soa.inward_entry_id JOIN product_tblpartydetails p ON p.npartyid = ie.npartyid WHERE soa.so_child_id = soc.so_child_id AND soa.inward_entry_id IS NOT NULL)  AS processing_centre, "
+			+ "   (SELECT partyname FROM jswone_db.jsw_warehouse_master wh, product_tblpartydetails part where wh.party_id=part.npartyid and wh.ware_house_id=soc.wearhouse_id) AS processing_centre_2, "
 			+ "   so.typeofsupply                           AS packing_mode, "
 			+ "   so.special_delivery_instructions          AS sdi, "
 			+ "   so.likely_material_date                   AS likely_mrd, "
@@ -310,6 +310,9 @@ public class SoPageExportService {
 		dto.setInvoicedQtyMt(toBigDecimal(rs.getObject("invoiced_qty_mt")));
 		dto.setZohoStatusOfSo(rs.getString("zoho_status"));
 		dto.setProcessingCentre(rs.getString("processing_centre"));
+		if (!(dto.getProcessingCentre() != null && dto.getProcessingCentre().length() > 0)) {
+			dto.setProcessingCentre(rs.getString("processing_centre_2"));
+		}
 		dto.setAllocatedCoil(rs.getString("allocated_coil"));
 		dto.setPackingMode(rs.getString("packing_mode"));
 		dto.setSdi(rs.getString("sdi"));

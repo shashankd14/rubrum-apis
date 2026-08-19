@@ -117,7 +117,8 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " (SELECT grade_name FROM jsw_grade_master grade where grade.grade_id=mm.grade_id limit 1) as materialgrade,"  
 			+ " alloca.zoho_sync_remarks, alloca.zoho_sync_stts, "  
 			+ " CONCAT(mm.thickness,'*', mm.width,'*', mm.length) as mm_size, "
-			+ " (select mate.form_id from product_tblinwardentry inw, jsw_material_master mate where inw.inwardentryid =alloca.inward_entry_id and mate.mm_id=inw.mm_id) form_id"
+			+ " (select mate.form_id from product_tblinwardentry inw, jsw_material_master mate where inw.inwardentryid =alloca.inward_entry_id and mate.mm_id=inw.mm_id) form_id,"
+			+ " mm.brand_id"
 			+ " FROM jsw_sales_order so "
 			+ " left OUTER JOIN jsw_sales_order_child so_child ON so_child.so_id = so.so_id and so_child.is_deleted = 0 "
 			+ " left outer JOIN jsw_sales_order_allocation alloca ON so_child.so_child_id = alloca.so_child_id"
@@ -129,64 +130,6 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 	List<Object[]> listIdWisedetailsCP(@Param("soIDsList") List<Integer> soIDsList,
 			@Param("warehouseFlag") boolean warehouseFlag,
 			@Param("warehouseList") List<String> warehouseList);
-	 
-	@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, mm_id, materialdesc, materialgrade, fthickness, flength, "
-			+ "(fweight-allocated_soqty), partyname,0 noofpieces,fWidth,coilage,allocated_soqty "
-			+ " from ( "
-			+ " SELECT parent.inwardentryid inwardid,  coilnumber, customerbatchid, parent.mm_id, " 
-			+ " (SELECT product_name FROM jsw_product_master a, jsw_material_master mat where a.product_id=mat.producttype_id and mat.mm_id=parent.mm_id limit 1) as  materialdesc, " 
-			+ " (SELECT subgrade_name FROM jsw_subgrade_master grade, jsw_material_master mat where grade.subgrade_id=mat.subgrade_id and mat.mm_id=parent.mm_id limit 1) as  materialgrade, "  
-			+ " fthickness, NULL as packet_id, fWidth, " 
-			+ " coalesce( parent.flength,0) flength, fpresent fweight, " 
-			+ " fquantity, partyname,0  as siltcutcnt, DATEDIFF(curdate() , date_format(parent.createdon, '%Y-%m-%d')) coilage, "  
-			+ " (SELECT COALESCE(sum(allocated_soqty), 0) FROM jsw_sales_order_allocation alloc where alloc.inward_entry_id=parent.inwardentryid and  (alloc.instruction_id <= 0 OR alloc.instruction_id IS NULL) ) as allocated_soqty"  
-			+ " FROM product_tblinwardentry parent, product_tblpartydetails party, "
-			+ " jsw_material_master mat "
-			+ " where parent.isdeleted=0 and  party.npartyid = parent.npartyid "
-			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (parent.coilNumber like %:searchText% or parent.customerBatchId like %:searchText% or parent.customerInvoiceNo like %:searchText%) else 1=1 end " 
-			+ " and vstatus in (1,2,3) " 
-			+ " and mat.mm_id = parent.mm_id " 
-			+ "	and case when :subGradeListFlag=true then mat.subgrade_id in :subGradeList else mat.brand_id = :brandId end  "
-			//+ " and mat.brand_id = :brandId "
-			+ " and mat.form_id not in (21)"
-			+ " and mat.thickness= :thickness "
-			+ " AND parent.fwidth = :width "
-			+ " and case when :partyIdsFlag=true then parent.npartyid in :partyIds else 1=1 end"
-			+ ") a "
-			+ " where (fweight-allocated_soqty)>0 and case when :fromCoilAge >=0 and :toCoilAge > 0 then coilage between :fromCoilAge and :toCoilAge else 1=1 end ",
-		countQuery = "SELECT count(*) from ( "
-			+ " SELECT parent.inwardentryid inwardid, "
-			+ " fthickness, NULL as packet_id, fWidth, "
-			+ " coalesce(parent.flength,0) flength, fpresent fweight, "
-			+ " fquantity, partyname, 0 as siltcutcnt, DATEDIFF(curdate(), date_format(parent.createdon, '%Y-%m-%d')) coilage, "
-			+ " (SELECT COALESCE(sum(allocated_soqty), 0) FROM jsw_sales_order_allocation alloc where alloc.inward_entry_id=parent.inwardentryid and (alloc.instruction_id <= 0 OR alloc.instruction_id IS NULL)) as allocated_soqty "
-			+ " FROM product_tblinwardentry parent, product_tblpartydetails party, jsw_material_master mat "
-			+ " where parent.isdeleted=0 and party.npartyid = parent.npartyid "
-			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (parent.coilNumber like %:searchText% or parent.customerBatchId like %:searchText% or parent.customerInvoiceNo like %:searchText%) else 1=1 end " 
-			+ " and vstatus in (1,2,3) "
-			+ " and mat.mm_id = parent.mm_id "
-			+ "	and case when :subGradeListFlag=true then mat.subgrade_id in :subGradeList else mat.brand_id = :brandId end  "
-			//+ " and mat.brand_id = :brandId "
-			+ " and mat.form_id not in (21) "
-			+ " and mat.thickness = :thickness "
-			+ " AND parent.fwidth = :width "
-			+ " and case when :partyIdsFlag = true then parent.npartyid in :partyIds else 1=1 end "
-			+ " ) a "
-			+ " where (fweight-allocated_soqty) > 0 "
-			+ " and case when :fromCoilAge >= 0 and :toCoilAge > 0 then coilage between :fromCoilAge and :toCoilAge else 1=1 end ",
-		nativeQuery = true)
-	Page<Object[]> findCoilInventory(
-			@Param("searchText") String searchText,
-			@Param("partyIds") List<Integer> partyIds,
-			@Param("partyIdsFlag") boolean partyIdsFlag,
-			@Param("brandId") int brandId,
-			@Param("thickness") BigDecimal thickness,
-			@Param("width") BigDecimal width,
-			@Param("fromCoilAge") int fromCoilAge,
-			@Param("toCoilAge") int toCoilAge,
-			@Param("subGradeListFlag") boolean subGradeListFlag,
-			@Param("subGradeList") List<Integer> subGradeList,
-			Pageable pageable);
 
 	@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, mm_id, materialdesc, materialgrade,fthickness, flength, (fweight-allocated_soqty), partyname,"
 			+ "  noofpieces, fWidth,coilage,allocated_soqty "
@@ -211,7 +154,6 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ "	and case when :partyIdsFlag=true then parent.npartyid in :partyIds else 1=1 end  "
 			+ " and case when :packetStatus in (2, 3) then child.status = :packetStatus else 1=1 end "
 			+ "	and case when :subGradeListFlag=true then mat.subgrade_id in :subGradeList else mat.brand_id = :brandId end  "
-			//+ " and mat.brand_id = :brandId "
 			+ " and mat.thickness= :thickness "
 			+ " AND coalesce(child.actualwidth, child.plannedwidth) = :width "
 			+ " and coalesce(child.actuallength, child.plannedlength) = :length) a "
@@ -219,25 +161,27 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " and case when :fromCoilAge >=0 and :toCoilAge > 0 then coilage between :fromCoilAge and :toCoilAge else 1=1 end ",
 		countQuery = "SELECT count(packet_id) from "
 			+ " (select instructionid as packet_id, coalesce(actualweight, plannedweight) fweight, "
-			+ " (SELECT count(distinct inss.instructionid) cnt FROM product_instruction inss where inss.inwardid=parent.inwardentryid  and status!=4 and inss.parentgroupid=child.groupid) as siltcutcnt"
+			+ " (SELECT count(distinct inss.instructionid) cnt FROM product_instruction inss where inss.inwardid=parent.inwardentryid  and status!=4 and inss.parentgroupid=child.groupid) as siltcutcnt,"
+			+ " DATEDIFF(curdate(), date_format(parent.createdon, '%Y-%m-%d')) coilage,"
+			+ " (SELECT COALESCE(sum(allocated_soqty), 0) FROM jsw_sales_order_allocation alloc where alloc.inward_entry_id=child.inwardid and alloc.instruction_id=child.instructionid) as allocated_soqty"  
 			+ " FROM product_tblinwardentry parent, " 
 			+ "	product_instruction child, "  
 			+ "	product_tblpartydetails party, " 
 			+ "	jsw_material_master mat " 
 			+ "	where child.status in (1,2,3) and parent.vstatus in (1,2,3) and parent.inwardentryid = child.inwardid "
 			+ " and (child.allocated_soqty=0 or child.allocated_soqty is null ) and child.isdeleted=0  "
-			+ " and parent.isdeleted=0 and party.npartyid = parent.npartyid" 
 			+ " and mat.mm_id = parent.mm_id " 
+			+ " and parent.isdeleted=0 and party.npartyid = parent.npartyid" 
 			+ "	and case when :searchText is not null and LENGTH(:searchText) >0 then (parent.coilNumber like %:searchText% or parent.customerBatchId like %:searchText% or parent.customerInvoiceNo like %:searchText%) else 1=1 end " 
 			+ "	and case when :partyIdsFlag=true then parent.npartyid in :partyIds else 1=1 end  "
 			+ " and case when :packetStatus in (2, 3) then child.status = :packetStatus else 1=1 end "
 			+ "	and case when :subGradeListFlag=true then mat.subgrade_id in :subGradeList else mat.brand_id = :brandId end  "
-			//+ " and mat.brand_id = :brandId "
 			+ " and mat.thickness= :thickness "
 			+ " AND coalesce(child.actualwidth, child.plannedwidth) = :width "
 			+ " and coalesce(child.actuallength, child.plannedlength) = :length) a "
 			+ " where (fweight-allocated_soqty)>0 and CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END"
-			+ " and case when :fromCoilAge >=0 and :toCoilAge > 0 then coilage between :fromCoilAge and :toCoilAge else 1=1 end ", nativeQuery = true)
+			+ " and case when :fromCoilAge >=0 and :toCoilAge > 0 then coilage between :fromCoilAge and :toCoilAge else 1=1 end ", 
+		nativeQuery = true)
 	Page<Object[]> findPacketInventory(
 			@Param("searchText") String searchText,
 			@Param("partyIds") List<Integer> partyIds,
@@ -252,37 +196,120 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			@Param("subGradeListFlag") boolean subGradeListFlag,
 			@Param("subGradeList") List<Integer> subGradeList,
 			Pageable pageable);
-
-	@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, mm_id, materialdesc, materialgrade,fthickness, flength, "
-			+ " (fweight-allocated_soqty) , partyname, 0 as actualNoOfPieces,fWidth,coilage,allocated_soqty "
-			+ " from ( 	"
-			+ " SELECT parent.inwardentryid inwardid, coilnumber, customerbatchid, parent.mm_id,  "
-			+ " (SELECT product_name FROM jsw_product_master a, jsw_material_master mat where a.product_id=mat.producttype_id and mat.mm_id=parent.mm_id limit 1) as  materialdesc,  "
+	
+	@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, mm_id, materialdesc, materialgrade, fthickness, flength, "
+			+ "(fweight-allocated_soqty), partyname,0 noofpieces,fWidth,coilage,allocated_soqty "
+			+ " from ( "
+			+ " SELECT parent.inwardentryid inwardid,  coilnumber, customerbatchid, parent.mm_id, " 
+			+ " (SELECT product_name FROM jsw_product_master a, jsw_material_master mat where a.product_id=mat.producttype_id and mat.mm_id=parent.mm_id limit 1) as  materialdesc, " 
 			+ " (SELECT subgrade_name FROM jsw_subgrade_master grade, jsw_material_master mat where grade.subgrade_id=mat.subgrade_id and mat.mm_id=parent.mm_id limit 1) as  materialgrade, "  
-			+ " fthickness, 0 as packet_id,  fWidth,  "
-			+ " coalesce( parent.flength,0) flength, fpresent fweight, fquantity, partyname,"
-			+ " parent.npartyid, DATEDIFF(curdate(), date_format(parent.createdon, '%Y-%m-%d')) coilage,"
-			+ " (SELECT COALESCE(sum(allocated_soqty), 0) FROM jsw_sales_order_allocation alloc where alloc.inward_entry_id=parent.inwardentryid and  (alloc.instruction_id <= 0 OR alloc.instruction_id IS NULL)) as allocated_soqty"  
-			+ " FROM product_tblinwardentry parent, product_tblpartydetails party  "
-			+ " where parent.vstatus in (1,2,3) and parent.isdeleted=0 and party.npartyid = parent.npartyid  "
-			+ " and parent.mm_id = :mmid) a "
+			+ " fthickness, NULL as packet_id, fWidth, " 
+			+ " coalesce( parent.flength,0) flength, fpresent fweight, " 
+			+ " fquantity, partyname,0  as siltcutcnt, DATEDIFF(curdate() , date_format(parent.createdon, '%Y-%m-%d')) coilage, "  
+			+ " (SELECT COALESCE(sum(allocated_soqty), 0) FROM jsw_sales_order_allocation alloc where alloc.inward_entry_id=parent.inwardentryid and  (alloc.instruction_id <= 0 OR alloc.instruction_id IS NULL) ) as allocated_soqty"  
+			+ " FROM product_tblinwardentry parent, product_tblpartydetails party, "
+			+ " jsw_material_master mat "
+			+ " where parent.isdeleted=0 and  party.npartyid = parent.npartyid "
+			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (parent.coilNumber like %:searchText% or parent.customerBatchId like %:searchText% or parent.customerInvoiceNo like %:searchText%) else 1=1 end " 
+			+ " and vstatus in (1,2,3) " 
+			+ " and mat.mm_id = parent.mm_id " 
+			+ "	and case when :subGradeListFlag=true then mat.subgrade_id in :subGradeList else mat.brand_id = :brandId end  "
+			+ " and mat.form_id not in (21)"
+			+ " and mat.thickness= :thickness "
+			+ " AND parent.fwidth = :width "
+			+ " and case when :partyIdsFlag=true then parent.npartyid in :partyIds else 1=1 end"
+			+ ") a "
 			+ " where (fweight-allocated_soqty)>0 and case when :fromCoilAge >=0 and :toCoilAge > 0 then coilage between :fromCoilAge and :toCoilAge else 1=1 end ",
-			countQuery = "SELECT count(inwardid) from ("
-			+ " SELECT parent.inwardentryid inwardid,  coilnumber, customerbatchid, parent.mm_id,  "
-			+ " (SELECT product_name FROM jsw_product_master a, jsw_material_master mat where a.product_id=mat.producttype_id and mat.mm_id=parent.mm_id limit 1) as  materialdesc,  "
-			+ " (SELECT grade_name FROM jsw_grade_master grade, jsw_material_master mat where grade.grade_id=mat.grade_id and mat.mm_id=parent.mm_id limit 1) as  materialgrade,	"
-			+ " fthickness, '' as packet_id,  fWidth, "
-			+ " coalesce( parent.flength,0) flength,  fpresent fweight, fquantity,in_stock_weight inStockWeight, "
-			+ " 0 actualNoOfPieces,'' as process_status, '' instruction_status,partyname, '' as classification_tag, "
-			+ " '' as enduser_tag_name, parent.npartyid"
-			+ " FROM product_tblinwardentry parent, product_tblpartydetails party  "
-			+ " where parent.vstatus in (1,2,3) and parent.isdeleted=0 and party.npartyid = parent.npartyid  "
-			+ " and parent.mm_id = :mmid) a "
-			+ " where (fweight-allocated_soqty)>0 and case when :fromCoilAge >=0 and :toCoilAge > 0 then coilage between :fromCoilAge and :toCoilAge else 1=1 end ", 
+		countQuery = "SELECT count(*) from ( "
+			+ " SELECT parent.inwardentryid inwardid, "
+			+ " fthickness, NULL as packet_id, fWidth, "
+			+ " coalesce(parent.flength,0) flength, fpresent fweight, "
+			+ " fquantity, partyname, 0 as siltcutcnt, DATEDIFF(curdate(), date_format(parent.createdon, '%Y-%m-%d')) coilage, "
+			+ " (SELECT COALESCE(sum(allocated_soqty), 0) FROM jsw_sales_order_allocation alloc where alloc.inward_entry_id=parent.inwardentryid and (alloc.instruction_id <= 0 OR alloc.instruction_id IS NULL)) as allocated_soqty "
+			+ " FROM product_tblinwardentry parent, product_tblpartydetails party, jsw_material_master mat "
+			+ " where parent.isdeleted=0 and party.npartyid = parent.npartyid "
+			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (parent.coilNumber like %:searchText% or parent.customerBatchId like %:searchText% or parent.customerInvoiceNo like %:searchText%) else 1=1 end " 
+			+ " and vstatus in (1,2,3) "
+			+ " and mat.mm_id = parent.mm_id "
+			+ "	and case when :subGradeListFlag=true then mat.subgrade_id in :subGradeList else mat.brand_id = :brandId end  "
+			+ " and mat.form_id not in (21) "
+			+ " and mat.thickness = :thickness "
+			+ " AND parent.fwidth = :width "
+			+ " and case when :partyIdsFlag = true then parent.npartyid in :partyIds else 1=1 end "
+			+ " ) a "
+			+ " where (fweight-allocated_soqty) > 0 "
+			+ " and case when :fromCoilAge >= 0 and :toCoilAge > 0 then coilage between :fromCoilAge and :toCoilAge else 1=1 end ",
 		nativeQuery = true)
-	Page<Object[]> findSheetInventory(@Param("mmid") String mmid, 
+	Page<Object[]> findCoilInventory(
+			@Param("searchText") String searchText,
+			@Param("partyIds") List<Integer> partyIds,
+			@Param("partyIdsFlag") boolean partyIdsFlag,
+			@Param("brandId") int brandId,
+			@Param("thickness") BigDecimal thickness,
+			@Param("width") BigDecimal width,
 			@Param("fromCoilAge") int fromCoilAge,
 			@Param("toCoilAge") int toCoilAge,
+			@Param("subGradeListFlag") boolean subGradeListFlag,
+			@Param("subGradeList") List<Integer> subGradeList,
+			Pageable pageable);
+
+	@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, mm_id, materialdesc, materialgrade, fthickness, flength, "
+			+ "(fweight-allocated_soqty), partyname,0 noofpieces,fWidth,coilage,allocated_soqty "
+			+ " from ( "
+			+ " SELECT parent.inwardentryid inwardid,  coilnumber, customerbatchid, parent.mm_id, " 
+			+ " (SELECT product_name FROM jsw_product_master a, jsw_material_master mat where a.product_id=mat.producttype_id and mat.mm_id=parent.mm_id limit 1) as  materialdesc, " 
+			+ " (SELECT subgrade_name FROM jsw_subgrade_master grade, jsw_material_master mat where grade.subgrade_id=mat.subgrade_id and mat.mm_id=parent.mm_id limit 1) as  materialgrade, "  
+			+ " fthickness, NULL as packet_id, fWidth, " 
+			+ " coalesce( parent.flength,0) flength, fpresent fweight, " 
+			+ " fquantity, partyname,0  as siltcutcnt, DATEDIFF(curdate() , date_format(parent.createdon, '%Y-%m-%d')) coilage, "  
+			+ " (SELECT COALESCE(sum(allocated_soqty), 0) FROM jsw_sales_order_allocation alloc where alloc.inward_entry_id=parent.inwardentryid and  (alloc.instruction_id <= 0 OR alloc.instruction_id IS NULL) ) as allocated_soqty"  
+			+ " FROM product_tblinwardentry parent, product_tblpartydetails party, "
+			+ " jsw_material_master mat "
+			+ " where parent.isdeleted=0 and  party.npartyid = parent.npartyid "
+			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (parent.coilNumber like %:searchText% or parent.customerBatchId like %:searchText% or parent.customerInvoiceNo like %:searchText%) else 1=1 end " 
+			+ " and vstatus in (1,2,3) " 
+			+ " and mat.mm_id = parent.mm_id " 
+			+ "	and case when :subGradeListFlag=true then mat.subgrade_id in :subGradeList else mat.brand_id = :brandId end  "
+			+ " and mat.form_id in (21)"
+			+ " and mat.thickness= :thickness "
+			+ " AND parent.fwidth = :width "
+			+ " AND parent.flength = :flength "
+			+ " and case when :partyIdsFlag=true then parent.npartyid in :partyIds else 1=1 end"
+			+ ") a "
+			+ " where (fweight-allocated_soqty)>0 and case when :fromCoilAge >=0 and :toCoilAge > 0 then coilage between :fromCoilAge and :toCoilAge else 1=1 end ",
+		countQuery = "SELECT count(*) from ( "
+			+ " SELECT parent.inwardentryid inwardid, "
+			+ " fthickness, NULL as packet_id, fWidth, "
+			+ " coalesce(parent.flength,0) flength, fpresent fweight, "
+			+ " fquantity, partyname, 0 as siltcutcnt, DATEDIFF(curdate(), date_format(parent.createdon, '%Y-%m-%d')) coilage, "
+			+ " (SELECT COALESCE(sum(allocated_soqty), 0) FROM jsw_sales_order_allocation alloc where alloc.inward_entry_id=parent.inwardentryid and (alloc.instruction_id <= 0 OR alloc.instruction_id IS NULL)) as allocated_soqty "
+			+ " FROM product_tblinwardentry parent, product_tblpartydetails party, jsw_material_master mat "
+			+ " where parent.isdeleted=0 and party.npartyid = parent.npartyid "
+			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (parent.coilNumber like %:searchText% or parent.customerBatchId like %:searchText% or parent.customerInvoiceNo like %:searchText%) else 1=1 end " 
+			+ " and vstatus in (1,2,3) "
+			+ " and mat.mm_id = parent.mm_id "
+			+ "	and case when :subGradeListFlag=true then mat.subgrade_id in :subGradeList else mat.brand_id = :brandId end  "
+			+ " and mat.form_id in (21) "
+			+ " and mat.thickness = :thickness "
+			+ " AND parent.fwidth = :width "
+			+ " AND parent.flength = :flength "
+			+ " and case when :partyIdsFlag = true then parent.npartyid in :partyIds else 1=1 end "
+			+ " ) a "
+			+ " where (fweight-allocated_soqty) > 0 "
+			+ " and case when :fromCoilAge >= 0 and :toCoilAge > 0 then coilage between :fromCoilAge and :toCoilAge else 1=1 end ",
+		nativeQuery = true)
+	Page<Object[]> findSheetInventory(
+			@Param("searchText") String searchText,
+			@Param("partyIds") List<Integer> partyIds,
+			@Param("partyIdsFlag") boolean partyIdsFlag,
+			@Param("brandId") int brandId,
+			@Param("thickness") BigDecimal thickness,
+			@Param("width") BigDecimal width,
+			@Param("flength") BigDecimal flength,
+			@Param("fromCoilAge") int fromCoilAge,
+			@Param("toCoilAge") int toCoilAge,
+			@Param("subGradeListFlag") boolean subGradeListFlag,
+			@Param("subGradeList") List<Integer> subGradeList,
 			Pageable pageable);
 
 	Optional<SalesOrderJswEntity> findBySoNumberIgnoreCase(String soNumber);

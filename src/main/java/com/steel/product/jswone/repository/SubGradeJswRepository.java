@@ -23,6 +23,6 @@ public interface SubGradeJswRepository extends JpaRepository<SubgradeMasterJswEn
 	@Query("SELECT new com.steel.product.jswone.response.SubGradeDTO(s.subgradeId, s.subgradeName) "
 			+ " FROM SubgradeMasterJswEntity s , GradeMasterJswEntity g, ProductMasterJswEntity prod"
 			+ " WHERE g.gradeId = s.gradeId and g.productId = prod.productId and prod.brandId = :brandId")
-	List<SubGradeDTO> subGradeListByProduct(@Param("brandId") Integer brandId);
-	
+	List<SubGradeDTO> subGradeListByBrand(@Param("brandId") Integer brandId);
+
 }

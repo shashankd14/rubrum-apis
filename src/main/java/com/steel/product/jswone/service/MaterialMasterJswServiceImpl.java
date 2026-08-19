@@ -419,10 +419,10 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	}
 	
 	@Override
-	@Cacheable(value = "subGradeListByProduct")
-	public List<SubGradeDTO> subGradeListByProduct(int productId) {
-		log.info("In subGradeListByProduct page ");
-		List<SubGradeDTO> kk = subGradeJswRepository.subGradeListByProduct(productId);
+	@Cacheable(value = "subGradeListByBrand")
+	public List<SubGradeDTO> subGradeListByBrand(int brand) {
+		log.info("In subGradeListByBrand page ");
+		List<SubGradeDTO> kk = subGradeJswRepository.subGradeListByBrand(brand);
 		return kk;
-	}
+	} 
 }

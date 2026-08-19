@@ -44,9 +44,7 @@ import com.steel.product.application.dto.quality.ListPageSearchRequest;
 import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.service.InwardEntryService;
 import com.steel.product.jswone.entity.JswoneAuditTrailEntity;
-import com.steel.product.jswone.entity.MaterialMasterJswEntity;
 import com.steel.product.jswone.repository.JswoneAuditTrailRepository;
-import com.steel.product.jswone.repository.MaterialMasterJswRepository;
 import com.steel.product.jswone.request.CPSplitRequest;
 import com.steel.product.jswone.request.SalesOrderBulkRequest;
 import com.steel.product.jswone.request.SalesOrderChildRequest;
@@ -61,8 +59,6 @@ import com.steel.product.jswone.response.SalesOrderChildAllocationResponse;
 import com.steel.product.jswone.response.SalesOrderChildResponse;
 import com.steel.product.jswone.response.SalesOrderDashboardResponse;
 import com.steel.product.jswone.response.SalesOrderMainResponse;
-import com.steel.product.jswone.response.SubGradeDTO;
-import com.steel.product.jswone.service.MaterialMasterJswService;
 import com.steel.product.jswone.service.SalesOrderJswService;
 import com.steel.product.jswone.service.SalesOrderPDFJswService;
 import com.steel.product.jswone.service.SoPageExportService;
@@ -92,12 +88,6 @@ public class SalesOrderJswController {
 	@Autowired
 	private InwardEntryService inwdEntrySvc;
 	
-	@Autowired
-	private MaterialMasterJswRepository materialMasterJswRepository;
-
-	@Autowired
-	private MaterialMasterJswService materialService;
-
 	@ExceptionHandler(HttpMessageNotReadableException.class)
 	public ResponseEntity<Object> handleNotReadable(HttpMessageNotReadableException ex, ServletWebRequest webRequest) {
 
@@ -264,9 +254,7 @@ public class SalesOrderJswController {
 	public ResponseEntity<Object> findInventory(@RequestBody ListPageSearchRequest request) {
 		Map<String, Object> response = new LinkedHashMap<>();
 		
-		MaterialMasterJswEntity entity = materialMasterJswRepository.findFirstByMmId(request.getSoChildMmid());
-
-		Page<Object[]> packetsList1 = salesOrderService.findInventory(request, entity);
+		Page<Object[]> packetsList1 = salesOrderService.findInventory(request);
 		List<InwardEntryResponseDetails> list = new ArrayList<>();
 		Set<Integer> coilAgeSet = new LinkedHashSet<>();
 
@@ -296,7 +284,7 @@ public class SalesOrderJswController {
 
 		if ("INWARDSHEET_PACKETS".equals(request.getAllocationType())) {
 			request.setAllocationType("INWARDSHEET");
-			packetsList1 = salesOrderService.findInventory(request, entity);
+			packetsList1 = salesOrderService.findInventory(request);
 			for (Object[] result : packetsList1) {
 				InwardEntryResponseDetails resp = new InwardEntryResponseDetails();
 				resp.setInstructionId(result[0] != null ? Integer.parseInt(result[0].toString()) : null);
@@ -323,13 +311,11 @@ public class SalesOrderJswController {
 		}
 		List<Integer> coilAgeList = new ArrayList<>(coilAgeSet);
 		Collections.sort(coilAgeList);
-		List<SubGradeDTO> subGradeList = materialService.subGradeListByProduct(entity.getBrandId());
 		response.put("content", list);
 		response.put("currentPage", packetsList1.getNumber());
 		response.put("totalItems", packetsList1.getTotalElements());
 		response.put("totalPages", packetsList1.getTotalPages());
 		response.put("coilAgeList", coilAgeList);
-		response.put("subGradeList", subGradeList);
 		return new ResponseEntity<Object>(response, HttpStatus.OK);
 	}
 
@@ -404,6 +390,7 @@ public class SalesOrderJswController {
 				child.setWareHouseName(result[23] != null ? (String) result[23] : null);
 				child.setWareHouseId(result[22] != null ? (String) result[22] : null);
 				child.setMmidMeasurements(result[34] != null ? (String) result[34] : "");
+				child.setBrandId( result[36] != null ? (Integer) result[36] : 0);
 				soChildMap.put(soChildId, child);
 				isNewChild = true;
 			}

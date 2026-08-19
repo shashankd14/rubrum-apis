@@ -62,6 +62,8 @@ public class InstructionResponsePdfDto {
     
     private String endUserTagName;
     
+    private String soNo;
+    
 	private Date  instructionDate;
 
 }
