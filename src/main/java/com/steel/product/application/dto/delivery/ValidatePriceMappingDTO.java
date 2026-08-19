@@ -9,6 +9,8 @@ public class ValidatePriceMappingDTO {
     private Integer packingRateId;
     
     private Integer laminationId;
+    
+    private String deliveryType;
 
     private List<Integer> inwardList;
 
@@ -42,6 +44,14 @@ public class ValidatePriceMappingDTO {
 
 	public void setInwardList(List<Integer> inwardList) {
 		this.inwardList = inwardList;
+	}
+
+	public String getDeliveryType() {
+		return deliveryType;
+	}
+
+	public void setDeliveryType(String deliveryType) {
+		this.deliveryType = deliveryType;
 	}
 
 

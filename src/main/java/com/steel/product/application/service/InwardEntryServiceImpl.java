@@ -450,6 +450,7 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 			resp.setCustomerInvoiceNo(result[14] != null ? (String) result[14] : "");
 			resp.setCompanyName(result[15] != null ? (String) result[15] : "");
 			resp.setCompanyEmail(result[16] != null ? (String) result[16] : "");
+			resp.setInwardType(result[17] != null ? (String) result[17] : "RM");
 
 			resp.setFthickness(decfor.format(fThickness));
 			resp.setFwidth(decfor.format(fWidth));
@@ -473,5 +474,12 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 	public void updateS3InwardLabelPDF(Integer inwardId, String url) {
 		inwdEntryRepo.updateS3InwardLabelPDF(inwardId, url);
 	}
+	
+	@Override
+	public void updateStockTrasferSeq(Integer inwardId, Integer coilseq) {
+		inwdEntryRepo.updateStockTrasferSeq(inwardId, coilseq);
+	}
+	
+	
 
 }

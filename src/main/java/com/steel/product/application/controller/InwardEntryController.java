@@ -175,7 +175,7 @@ public class InwardEntryController {
 			if("Coil".equals(inwarddto.getInwardType())) {
 				inwardEntry.setStatus(this.statusService.getStatusById(1));
 			} else {
-				inwardEntry.setStatus(this.statusService.getStatusById(inwarddto.getStatusId()));
+				inwardEntry.setStatus(this.statusService.getStatusById(1));
 			}
 
 			inwardEntry.setvProcess(inwarddto.getProcess());

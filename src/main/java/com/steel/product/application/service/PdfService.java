@@ -53,14 +53,14 @@ public class PdfService {
 		this.labelPrintPDFGenerator = labelPrintPDFGenerator;
 	}
 
-    public File generatePdf(PdfDto pdfDto) throws IOException, org.dom4j.DocumentException, DocumentException {
+    public File generateInwardPdf(PdfDto pdfDto) throws IOException, org.dom4j.DocumentException, DocumentException {
     	log.info ("download plan PDF");
         Context context = getContext(pdfDto);
         String html = loadAndFillTemplate(context, pdfDto.getProcessId());
         return renderPdfInstruction(html, "inward", ""+pdfDto.getInwardId(), "INWARD_PDF");
     }
 
-    public File generatePdf(PartDto partDto) throws IOException, org.dom4j.DocumentException, DocumentException {
+    public File generatePlanPdf(PartDto partDto) throws IOException, org.dom4j.DocumentException, DocumentException {
         Context context = getContext(partDto);
         InwardEntryPdfDto inwardEntryPdfDto = (InwardEntryPdfDto)context.getVariable("inward");
         String html = loadAndFillTemplate(context,Integer.parseInt(inwardEntryPdfDto.getVProcess()));
@@ -96,8 +96,13 @@ public class PdfService {
         List<InwardEntry> inwardEntries = inwardEntryService.findDeliveryItemsByInstructionIds(deliveryPdfDto.getInstructionIds());
         CompanyDetails companyDetails = companyDetailsService.findById(1);
             	
-        DeliveryChallanPdfDto deliveryChallanPdfDto = new DeliveryChallanPdfDto(companyDetails,inwardEntries);
-        context.setVariable("deliveryChallan",deliveryChallanPdfDto);
+        DeliveryChallanPdfDto deliveryChallanPdfDto = new DeliveryChallanPdfDto(companyDetails, inwardEntries);
+        if(deliveryPdfDto!=null && "Stock Transfer".equals(deliveryPdfDto.getDeliveryType()))  {
+            deliveryChallanPdfDto.setDcHeading("STOCK TRANSFER"); 
+        } else {
+            deliveryChallanPdfDto.setDcHeading("DELIVERY CHALLAN"); 
+        }
+        context.setVariable("deliveryChallan", deliveryChallanPdfDto);
         return context;
     }
 

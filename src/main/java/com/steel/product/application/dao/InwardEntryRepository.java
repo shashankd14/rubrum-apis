@@ -147,7 +147,8 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 			" DATE_FORMAT(dreceiveddate, '%d-%m-%Y') as dt, DATE_FORMAT(createdon, '%d-%m-%Y') as credt, parentcoilnumber, " +
 			" (select partyname from product_tblpartydetails part where part.npartyid = inward.npartyid) as partyname,batchnumber,customerinvoiceno, " +
 			" (select company_name from product_company_details where id=1) compname, " +
-			" (select email from product_company_details where id=1) email " +
+			" (select email from product_company_details where id=1) email, " +
+			" CASE WHEN inward_type = 'Sheet' THEN 'FG' else 'RM' END AS inward_type " +
 			" FROM product_tblinwardentry inward WHERE inwardentryid=:inwardId ", nativeQuery = true)
 	List<Object[]> getQRCodeDetails(@Param("inwardId") Integer inwardId);
 
@@ -187,5 +188,9 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 		nativeQuery = true)
 	Page<Object[]> findAllEndUserTagWiseData(@Param("endUserTagId") Integer endUserTagId, Pageable pageable);
 
+	@Modifying
+	@Transactional
+	@Query("update InwardEntry set coilSeq=:coilseq where inwardEntryId= :inwardId ")
+	public void updateStockTrasferSeq(@Param("inwardId") Integer inwardId, @Param("coilseq") Integer coilseq);
 
 }

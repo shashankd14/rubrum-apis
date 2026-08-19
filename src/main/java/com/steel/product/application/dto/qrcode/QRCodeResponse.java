@@ -45,6 +45,8 @@ public class QRCodeResponse {
 
 	private String receivedDate;
 
+	private String inwardType;
+
 	private String finishedDate;
 
 	private String motherCoilNo;

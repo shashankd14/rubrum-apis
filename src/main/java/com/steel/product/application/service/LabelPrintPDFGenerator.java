@@ -134,7 +134,7 @@ public class LabelPrintPDFGenerator {
 			barcode.setX(1.0f); //Adjust the width of the barcode bars
  			Image barcodeImage = barcode.createImageWithBarcode(pdfWriter.getDirectContent(), null, null);*/
  			
-			PdfPCell companyNameCell1 = new PdfPCell(new Phrase(new Chunk("RM", font12b)));			
+			PdfPCell companyNameCell1 = new PdfPCell(new Phrase(new Chunk(resp.getInwardType(), font12b)));			
 			companyNameCell1.setHorizontalAlignment( Element.ALIGN_CENTER);
 			companyNameCell1.setVerticalAlignment( Element.ALIGN_MIDDLE);
 			companyNameCell1.setFixedHeight(tableRowHeight);

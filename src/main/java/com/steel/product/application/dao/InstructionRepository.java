@@ -166,4 +166,14 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
 	public void updateClassification(@Param("instructionId") Integer instructionId, @Param("inwardId") Integer inwardId,
 			@Param("classificationId") Integer classificationId);
 
+	@Query(value = "select inwardentryid, packet_id, CAST(weight AS DECIMAL(10,2)) weight, CAST(fquantity AS DECIMAL(10,2)) fquantity, classification_tag,status from"
+			+ " (SELECT parent.inwardentryid, parent.fquantity, child.status, instructionid packet_id, ifnull(actualweight, plannedweight) weight, "
+			+ " (SELECT count(distinct inss.instructionid) cnt FROM product_instruction inss where inss.inwardid=parent.inwardentryid  and status!=4 and inss.parentgroupid=child.groupid) as siltcutcnt, "
+			+ " (select classification_name from product_packet_classification where classification_id=child.packet_classification_id) as classification_tag "
+			+ " FROM product_tblinwardentry parent left outer join product_instruction child on child.isdeleted=0 and parent.inwardentryid = child.inwardid and child.status in (2,3,4) "
+			+ " where 1=1 ) a "
+			+ " where inwardentryid= :inwardId and CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END order by packet_id asc", 
+		nativeQuery = true)
+	List<Object[]> findPacketsForPositiveTolerence(@Param("inwardId") Integer inwardId);
+	
 }

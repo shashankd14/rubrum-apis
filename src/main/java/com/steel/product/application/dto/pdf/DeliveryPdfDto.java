@@ -9,7 +9,9 @@ public class DeliveryPdfDto {
     private Integer packingRateId;
     
     private Integer laminationId;
-
+    
+    private String deliveryType;
+    
     public List<Integer> getInstructionIds() {
         return instructionIds;
     }
@@ -32,6 +34,14 @@ public class DeliveryPdfDto {
 
 	public void setLaminationId(Integer laminationId) {
 		this.laminationId = laminationId;
+	}
+
+	public String getDeliveryType() {
+		return deliveryType;
+	}
+
+	public void setDeliveryType(String deliveryType) {
+		this.deliveryType = deliveryType;
 	}
     
     

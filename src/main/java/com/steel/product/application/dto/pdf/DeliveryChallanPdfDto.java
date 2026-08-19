@@ -21,6 +21,7 @@ public class DeliveryChallanPdfDto {
     private String partyGSTNo;
     private String partyAddress;
     private String customerInvoiceNo;
+    private String dcHeading;
 
     public DeliveryChallanPdfDto() {
     }
@@ -158,6 +159,14 @@ public class DeliveryChallanPdfDto {
 
 	public void setCustomerInvoiceNo(String customerInvoiceNo) {
 		this.customerInvoiceNo = customerInvoiceNo;
+	}
+
+	public String getDcHeading() {
+		return dcHeading;
+	}
+
+	public void setDcHeading(String dcHeading) {
+		this.dcHeading = dcHeading;
 	}
     
 }

@@ -340,7 +340,9 @@ public class InstructionServiceImpl implements InstructionService {
         Status currentStatus;
         Float scrapWeight=0f;
         Long partDetailsId = null;
-
+        HttpHeaders headers = new HttpHeaders();
+		headers.set("Content-Type", "application/json");
+		
         if("WIPtoFG".equalsIgnoreCase(instructionFinishDto.getTaskType())) {    // WIPtoFG
         	statusId = inProgressStatusId;
         	currentStatus= readyToDeliverStatus;
@@ -351,6 +353,22 @@ public class InstructionServiceImpl implements InstructionService {
         	statusId = readyToDeliverStatusId;
         	currentStatus = readyToDeliverStatus;
         }
+		try {
+			BigDecimal pt = calculatePTinUpdate(instructionFinishDto);
+			if (pt.compareTo(BigDecimal.ZERO) > 0) {
+				log.info("Positive tolerance available: {} KG", pt);
+
+				Map<String, Object> body = new LinkedHashMap<>();
+				body.put("status", "failure");
+				body.put("code", "PACKETS_WEIGHT_EXCEEDS_COIL");
+				body.put("message", "Total processing weight should not be greater than coil weight");
+				return new ResponseEntity<>(body, headers, HttpStatus.BAD_REQUEST);
+			}
+		} catch (Exception e) {
+			log.error("calculatePTinUpdate failed for instructionFinishDto={}", instructionFinishDto, e);
+			// decide deliberately: rethrow, or return a 500, rather than silently continuing
+		}
+		
         List<Instruction> instructions = this.findAllByInstructionIdInAndStatus(InstructionRequestDtos.stream()
                 .map(ins -> ins.getInstructionId()).collect(Collectors.toList()), statusId);
         
@@ -1130,6 +1148,22 @@ public class InstructionServiceImpl implements InstructionService {
             double incomingWeight = 0f, availableWeight = 0f, existingWeight = 0f, remainingWeight = 0f;
             double incomingLength = 0f, availableLength = 0f, existingLength = 0f, remainingLength = 0f;
             
+            try {
+            	HttpHeaders headers = new HttpHeaders();
+        		headers.set("Content-Type", "application/json");
+    			BigDecimal pt = calculatePTinAdd(instructionSaveRequestDtos.get(0).getInstructionRequestDTOs());
+    			if (pt.compareTo(BigDecimal.ZERO) > 0) {
+    				log.info("Positive tolerance available: {} KG", pt);
+    				Map<String, Object> body = new LinkedHashMap<>();
+    				body.put("status", "failure");
+    				body.put("code", "PACKETS_WEIGHT_EXCEEDS_COIL");
+    				body.put("message", "Total processing weight should not be greater than coil weight");
+    				return new ResponseEntity<>(body, headers, HttpStatus.BAD_REQUEST);
+    			}
+    		} catch (Exception e) {
+    			log.error("calculatePTinUpdate failed for instructionFinishDto={}", e);
+    		}
+            
             for (InstructionSaveRequestDto instructionSaveRequestDTO : instructionSaveRequestDtos) {
 				if (instructionSaveRequestDTO.getParentInstructionIds() != null && instructionSaveRequestDTO.getParentInstructionIds().getInstructionIds() != null && instructionSaveRequestDTO.getParentInstructionIds().getInstructionIds().size() > 0) {
 					instructionRepository.updateInstructionGroupId(instructionSaveRequestDTO.getParentInstructionIds().getGroupId(), instructionSaveRequestDTO.getParentInstructionIds().getInstructionIds());
@@ -1305,7 +1339,91 @@ public class InstructionServiceImpl implements InstructionService {
             }
             return new ResponseEntity<Object>(partDetailsResponseList, HttpStatus.CREATED);
     }
+    
+    public BigDecimal calculatePTinAdd(List<InstructionRequestDto> instructionRequestDTOs) {
+        if (instructionRequestDTOs == null || instructionRequestDTOs.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
 
+        // In ADD, no packet has an instructionId yet, so findInstructionById() can't
+        // resolve the coil. The inward entry id must come from the request itself.
+        Integer inwardEntryId = instructionRequestDTOs.get(0).getInwardId();   // <-- adjust getter
+        if (inwardEntryId == null) {
+            return BigDecimal.ZERO;
+        }
+
+        // Every packet in an ADD request is new -> sum all their weights
+        BigDecimal totalPacketWeight = BigDecimal.ZERO;
+        for (InstructionRequestDto dto : instructionRequestDTOs) {
+            totalPacketWeight = totalPacketWeight.add(BigDecimal.valueOf(dto.getPlannedWeight()));
+        }
+
+        // Add the weight of packets already on this coil, and read the coil weight
+        List<Object[]> results = instructionRepository.findPacketsForPositiveTolerence(inwardEntryId);
+        BigDecimal totalCoilWeight = BigDecimal.ZERO;
+        for (Object[] row : results) {
+            BigDecimal rowWeight  = (BigDecimal) row[2];
+            BigDecimal coilWeight = (BigDecimal) row[3];
+            if (rowWeight != null) {
+                totalPacketWeight = totalPacketWeight.add(rowWeight);
+            }
+            if (coilWeight != null) {
+                totalCoilWeight = coilWeight;
+            }
+        }
+
+		return totalPacketWeight.compareTo(totalCoilWeight) > 0 ? totalPacketWeight.subtract(totalCoilWeight) : BigDecimal.ZERO;
+    }
+    
+	public BigDecimal calculatePTinUpdate(InstructionFinishDto instructionFinishDto) {
+		List<InstructionRequestDto> instructionRequestDtos = instructionFinishDto.getInstructionDtos();
+		if (instructionRequestDtos == null || instructionRequestDtos.isEmpty()) {
+			return BigDecimal.ZERO;
+		}
+
+		// Build a lookup once: instructionId -> actualWeight (O(n) instead of a nested loop)
+		Map<Integer, BigDecimal> actualWeightByInstruction = new HashMap<>();
+		for (InstructionRequestDto dto : instructionRequestDtos) {
+			actualWeightByInstruction.put(dto.getInstructionId(), BigDecimal.valueOf(dto.getActualWeight()));
+		}
+
+		// Resolve the inward entry id from the first instruction that exists
+		Integer inwardEntryId = null;
+		for (InstructionRequestDto dto : instructionRequestDtos) {
+			Instruction instruction = findInstructionById(dto.getInstructionId());
+			if (instruction != null) {
+				inwardEntryId = instruction.getInwardId().getInwardEntryId();
+				break;
+			}
+		}
+		if (inwardEntryId == null) {
+			return BigDecimal.ZERO;
+		}
+
+		List<Object[]> results = instructionRepository.findPacketsForPositiveTolerence(inwardEntryId);
+		BigDecimal totalPacketWeight = BigDecimal.ZERO;
+		BigDecimal totalCoilWeight = BigDecimal.ZERO;
+
+		for (Object[] row : results) {
+			Integer instructionId = (Integer) row[1];
+			BigDecimal rowWeight = (BigDecimal) row[2];
+			BigDecimal coilWeight = (BigDecimal) row[3];
+
+			// Prefer the actual weight supplied in the request, if this packet is in it
+			BigDecimal weight = actualWeightByInstruction.getOrDefault(instructionId, rowWeight);
+			if (weight == null) {
+				weight = BigDecimal.ZERO; // guard against null packet weight
+			}
+			totalPacketWeight = totalPacketWeight.add(weight);
+
+			// Coil weight is the same on every row; take the first non-null value
+			if (coilWeight != null) {
+				totalCoilWeight = coilWeight;
+			}
+		}
+
+		return totalPacketWeight.compareTo(totalCoilWeight) > 0 ? totalPacketWeight.subtract(totalCoilWeight): BigDecimal.ZERO;
+	}
 	@Override
 	public int getPartCount(Long theId) {
 

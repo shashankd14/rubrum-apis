@@ -69,4 +69,6 @@ public class InstructionRequestDto {
     private Boolean isSlitAndCut;
 
     private Boolean isScrapWeightUsed;
+
+	private Float pt;
 }

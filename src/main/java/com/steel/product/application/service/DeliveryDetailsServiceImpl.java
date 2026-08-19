@@ -495,13 +495,6 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 				boolean innerStts = false;
 				InwardEntry inwardEntry = instruction.getInwardId();
 				
-				/*PriceCalculateDTO priceCalculateDTO = priceMasterService.calculateInstructionWisePrice(
-						inwardEntry.getParty().getnPartyId(), BigDecimal.valueOf(inwardEntry.getfThickness()),
-						instruction.getProcess().getProcessId(), inwardEntry.getMaterialGrade().getGradeId(),
-						deliveryDto.getPackingRateId(), instruction.getActualWeight(), instruction.getActualLength(),
-						instruction.getPlannedNoOfPieces(), inwardEntry.getInstructions().size(),
-						instruction.getPartDetails().getId());*/
-				
 				PriceCalculateDTO priceCalculateDTO = priceMasterService.calculateInstructionWisePrice(instruction, deliveryDto.getPackingRateId(), deliveryDto.getLaminationId());
 
 				priceCalculateDTO.setCoilNo(inwardEntry.getCoilNumber());
@@ -533,14 +526,20 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 					priceCalculateDTO.setTotalPrice(totalAmount.setScale(3, RoundingMode.HALF_EVEN));
 				}
 				if (priceCalculateDTO.getBasePrice() != null && priceCalculateDTO.getBasePrice().compareTo(BigDecimal.ZERO) > 0) {
-					//if (priceCalculateDTO.getPackingPrice() != null && priceCalculateDTO.getPackingPrice().compareTo(BigDecimal.ZERO) > 0) {
-						innerStts = true;
-					//}
+					innerStts = true;
+				}
+				if (deliveryDto != null && "Stock Transfer".equals(deliveryDto.getDeliveryType())) {
+					innerStts = true;
+					priceCalculateDTO.setRate(BigDecimal.ZERO);
+					priceCalculateDTO.setAdditionalPrice(BigDecimal.ZERO);
+					priceCalculateDTO.setLaminationCharges(BigDecimal.ZERO);
+					priceCalculateDTO.setPackingPrice(BigDecimal.ZERO);
+					priceCalculateDTO.setBasePrice(BigDecimal.ZERO);
+					priceCalculateDTO.setTotalPrice(BigDecimal.ZERO);
 				}
 				priceDetailsList.add(priceCalculateDTO);
 				mainStts = innerStts;
 			}
-			
 			priceCalculateResponseDTO.setValidationStatus(mainStts);
 			if(priceCalculateResponseDTO.isValidationStatus()) {
 			    priceCalculateResponseDTO.setRemarks("Thickness range found for all selected packets");
@@ -617,9 +616,16 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 					priceCalculateDTO.setTotalPrice(totalAmount.setScale(3, RoundingMode.HALF_EVEN));
 				}
 				if (priceCalculateDTO.getBasePrice() != null && priceCalculateDTO.getBasePrice().compareTo(BigDecimal.ZERO) > 0) {
-					//if (priceCalculateDTO.getPackingPrice() != null && priceCalculateDTO.getPackingPrice().compareTo(BigDecimal.ZERO) > 0) {
-						innerStts = true;
-					//}
+					innerStts = true;
+				}
+				if (deliveryDto != null && "Stock Transfer".equals(deliveryDto.getDeliveryType())) {
+					innerStts = true;
+					priceCalculateDTO.setRate(BigDecimal.ZERO);
+					priceCalculateDTO.setAdditionalPrice(BigDecimal.ZERO);
+					priceCalculateDTO.setLaminationCharges(BigDecimal.ZERO);
+					priceCalculateDTO.setPackingPrice(BigDecimal.ZERO);
+					priceCalculateDTO.setBasePrice(BigDecimal.ZERO);
+					priceCalculateDTO.setTotalPrice(BigDecimal.ZERO);
 				}
 				priceDetailsList.add(priceCalculateDTO);
 				mainStts = innerStts;

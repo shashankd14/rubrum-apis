@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.steel.product.application.dto.delivery.DeliveryDto;
 import com.steel.product.application.dto.delivery.DeliveryPacketsDto;
 import com.steel.product.application.dto.delivery.ValidatePriceMappingDTO;
+import com.steel.product.application.dto.pdf.PdfDto;
 import com.steel.product.application.dto.pricemaster.PriceCalculateResponseDTO;
 import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.Instruction;
@@ -33,6 +34,7 @@ import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.service.DeliveryDetailsService;
 import com.steel.product.application.service.InwardEntryService; // TODO: confirm actual package/service name
 import com.steel.product.application.service.LocationMasterService;
+import com.steel.product.application.service.PdfService;
 import com.steel.product.application.service.StatusService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -54,6 +56,9 @@ public class DeliveryDetailsController {
     @Autowired
     private LocationMasterService locationMasterService;
 
+    @Autowired
+    private PdfService pdfService;
+    
     @Autowired
     private StatusService statusService;
 
@@ -220,21 +225,21 @@ public class DeliveryDetailsController {
 				newInwardEntry.setCoilNumber(sourceInwardEntry.getCoilNumber() + "-ST_" + counter);
 				newInwardEntry.setBatchNumber(sourceInwardEntry.getBatchNumber());
 				newInwardEntry.setParentCoilNumber(sourceInwardEntry.getCoilNumber());
-				newInwardEntry.setCoilSeq(counter);
+				newInwardEntry.setCoilSeq(0);
 
 				// Transferred quantity = what was actually processed on this instruction,
 				// falling back to the planned amount if actuals aren't recorded yet
 				Float width = instruction.getActualWidth() != null ? instruction.getActualWidth() : instruction.getPlannedWidth();
 				Float length = instruction.getActualLength() != null ? instruction.getActualLength() : instruction.getPlannedLength();
 				Float weight = instruction.getActualWeight() != null ? instruction.getActualWeight() : instruction.getPlannedWeight();
-				Integer pieces = instruction.getActualNoOfPieces() != null ? instruction.getActualNoOfPieces() : instruction.getPlannedNoOfPieces();
-
+				int pieces = instruction.getActualNoOfPieces() != null ? instruction.getActualNoOfPieces() : (instruction.getPlannedNoOfPieces() != null ? instruction.getPlannedNoOfPieces() : 0);
+				
 				newInwardEntry.setfWidth(width != null ? width : 0f);
 				newInwardEntry.setfLength(length != null ? length : 0f);
 				newInwardEntry.setfQuantity(weight != null ? weight : 0f);
 				newInwardEntry.setGrossWeight(weight != null ? weight : 0f);
 				newInwardEntry.setNoofpieces(pieces);
-				newInwardEntry.setStatus(this.statusService.getStatusById(6));
+				newInwardEntry.setStatus(this.statusService.getStatusById(1));
 				// New stock arriving = fully available stock
 				newInwardEntry.setInStockWeight(weight);
 				newInwardEntry.setAvailableLength(length);
@@ -248,16 +253,18 @@ public class DeliveryDetailsController {
 				newInwardEntry.setfThickness(sourceInwardEntry.getfThickness());
 				newInwardEntry.setdReceivedDate(sourceInwardEntry.getdReceivedDate());
 				newInwardEntry.setdInvoiceDate(sourceInwardEntry.getdInvoiceDate());
+				newInwardEntry.setvLorryNo(sourceInwardEntry.getvLorryNo());
 				newInwardEntry.setCustomerInvoiceNo(sourceInwardEntry.getCustomerInvoiceNo());
+				newInwardEntry.setvInvoiceNo(sourceInwardEntry.getvInvoiceNo());
 				newInwardEntry.setCustomerCoilId(sourceInwardEntry.getCustomerCoilId());
 				newInwardEntry.setCustomerBatchId(sourceInwardEntry.getCustomerBatchId());
-				if (pieces > 0) {
+				if ("Sheet".equals(sourceInwardEntry.getInwardType())) {
 					newInwardEntry.setInwardType("Sheet");
 				} else {
+					newInwardEntry.setInwardType("Coil");
 					if (instruction.getProcess().getProcessId() < 7) {
 						newInwardEntry.setInwardType("Sheet");
 					}
-					newInwardEntry.setInwardType("Coil");
 				}
 				newInwardEntry.setRemarks("Auto-created from Stock Transfer Delivery ID: " + deliveryDetails.getDeliveryId());
 				newInwardEntry.setCreatedBy(userId);
@@ -265,10 +272,18 @@ public class DeliveryDetailsController {
 					locationId=3;
 				}
 				newInwardEntry.setLocation(this.locationMasterService.getByLocationId(locationId));
-				inwdEntrySvc.saveEntry(newInwardEntry);
+				newInwardEntry = inwdEntrySvc.saveEntry(newInwardEntry);
+				inwdEntrySvc.updateStockTrasferSeq(sourceInwardEntry.getInwardEntryId(), counter);
+
+				// inward PDF generation part and inward QR Code generation part	
+				PdfDto pdfDto =new PdfDto();
+				pdfDto.setInwardId(newInwardEntry.getInwardEntryId());
+				pdfService.generateInwardPdf(pdfDto);
 			} catch (Exception e) {
+				//e.printStackTrace();
 				log.info("Error while creating inward {} ", e.getMessage());
 			}
+            
         }
     }
 

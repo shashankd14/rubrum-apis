@@ -1,17 +1,18 @@
 package com.steel.product.application.service;
 
+import java.util.List;
+import java.util.Set;
+
+import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
+
 import com.steel.product.application.dto.delivery.DeliveryPDFRequestDTO;
-import com.steel.product.application.dto.inward.EndUserTagWisePacketsDTO;
 import com.steel.product.application.dto.inward.InwardEntryResponseDto;
 import com.steel.product.application.dto.inward.SearchListPageRequest;
 import com.steel.product.application.dto.qrcode.QRCodeResponse;
 import com.steel.product.application.entity.InwardEntry;
-import net.minidev.json.JSONObject;
 
-import org.springframework.data.domain.Page;
-import org.springframework.http.ResponseEntity;
-import java.util.List;
-import java.util.Set;
+import net.minidev.json.JSONObject;
 
 public interface InwardEntryService {
 
@@ -68,5 +69,7 @@ public interface InwardEntryService {
 	public Page<InwardEntry> partywiselist(SearchListPageRequest searchListPageRequest);
 
 	public Page<Object[]> partywiselistEndUserTagWise(SearchListPageRequest searchListPageRequest);
+
+	void updateStockTrasferSeq(Integer inwardId, Integer coilseq);
 
 }
