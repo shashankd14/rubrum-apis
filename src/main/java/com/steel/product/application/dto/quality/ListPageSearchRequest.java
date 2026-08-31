@@ -33,6 +33,8 @@ public class ListPageSearchRequest {
 
 	private List<Integer> subgradeList = new ArrayList<>();
 
+	private List<Integer> gradeList = new ArrayList<>();
+
 	private List<String> status = new ArrayList<>();
 
 	private List<String> zohoStatus = new ArrayList<>();

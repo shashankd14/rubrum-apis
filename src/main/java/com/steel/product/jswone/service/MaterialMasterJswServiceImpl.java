@@ -25,12 +25,14 @@ import com.steel.product.jswone.repository.SubGradeJswRepository;
 import com.steel.product.jswone.repository.SurfacetypeMasterJswRepository;
 import com.steel.product.jswone.repository.UomMasterJswRepository;
 import com.steel.product.jswone.request.SearchRequest;
+import com.steel.product.jswone.response.GradeDTO;
 import com.steel.product.jswone.response.SubGradeDTO;
 
 import lombok.extern.log4j.Log4j2;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -419,10 +421,30 @@ public class MaterialMasterJswServiceImpl implements MaterialMasterJswService {
 	}
 	
 	@Override
-	@Cacheable(value = "subGradeListByBrand")
-	public List<SubGradeDTO> subGradeListByBrand(int brand) {
-		log.info("In subGradeListByBrand page ");
-		List<SubGradeDTO> kk = subGradeJswRepository.subGradeListByBrand(brand);
-		return kk;
-	} 
+	@Cacheable(value = "gradeWithSubGradesByBrand")
+	public List<GradeDTO> getGradeWithSubGradesByBrand(int brand) {
+	    log.info("In getGradeWithSubGradesByBrand page ");
+	    List<Object[]> rows = subGradeJswRepository.gradeWithSubGradesByBrand(brand);
+
+	    Map<Integer, GradeDTO> gradeMap = new LinkedHashMap<>();
+	    for (Object[] row : rows) {
+	        Integer gradeId = (Integer) row[0];
+	        String gradeName = (String) row[1];
+	        Integer subgradeId = (Integer) row[2];
+	        String subgradeName = (String) row[3];
+
+	        GradeDTO grade = gradeMap.computeIfAbsent(gradeId, id -> {
+	            GradeDTO g = new GradeDTO();
+	            g.setGradeId(id);
+	            g.setGradeName(gradeName);
+	            return g;
+	        });
+
+	        if (subgradeId != null) {
+	            grade.getSubgradesList().add(new SubGradeDTO(subgradeId, subgradeName));
+	        }
+	    }
+
+	    return new ArrayList<>(gradeMap.values());
+	}
 }

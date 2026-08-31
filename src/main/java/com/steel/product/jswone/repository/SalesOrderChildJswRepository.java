@@ -37,6 +37,6 @@ public interface SalesOrderChildJswRepository extends JpaRepository<SalesOrderPa
 	@Modifying
 	@Transactional
 	@Query(value = "update jsw_sales_order_child set item_so_status= :itemSOStatus where so_child_id =:soChildId", nativeQuery = true)
-	public int updateItemCPStataus(@Param("itemSOStatus") String itemSOStatus, @Param("soChildId") int soChildId);
+	public int updateItemStataus(@Param("itemSOStatus") String itemSOStatus, @Param("soChildId") int soChildId);
 	
 }

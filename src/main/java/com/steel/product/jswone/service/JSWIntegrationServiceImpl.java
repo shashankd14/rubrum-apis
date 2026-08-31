@@ -9,6 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
@@ -28,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -41,7 +43,9 @@ import com.steel.product.application.dao.InstructionRepository;
 import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.dto.delivery.DeliveryDto;
 import com.steel.product.application.dto.quality.ListPageSearchRequest;
+import com.steel.product.application.dto.salesorder.InventoryAdjustmentStatusUpdate;
 import com.steel.product.application.dto.salesorder.SalesOrderListDTO;
+import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.service.AWSS3Service;
 import com.steel.product.application.util.CommonUtil;
 import com.steel.product.jswone.entity.JswoneAuditTrailEntity;
@@ -1070,8 +1074,14 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 				response.setCode( response.getCode());
 				response.setMessage( response.getMessage());
 			}
-			audit.setSourceRespone( mapper.writeValueAsString(response));
-			deliveryDetailsRepository.updateZohoSyncRemarks(request.getDeliveryId(), response.getMessage(), "SUCCESS", response.getData() );
+			audit.setSourceRespone(mapper.writeValueAsString(response));
+			String zohoSyncStatus = "";
+			if ("Invoice created".equalsIgnoreCase(response.getMessage())) {
+				zohoSyncStatus = "SUCCESS";
+			} else {
+				zohoSyncStatus = response.getMessage();
+			}
+			deliveryDetailsRepository.updateZohoSyncRemarks(request.getDeliveryId(), response.getMessage(), zohoSyncStatus, response.getData() );
 		} catch (HttpClientErrorException | HttpServerErrorException ex) {
 			String error = ex.getResponseBodyAsString();
 			audit.setStatusCode("" + ex.getStatusCode().value());
@@ -1328,5 +1338,83 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 		return req;
 	}
 
+	@Override
+	public ResponseEntity<Object> inventoryAdjustmentStatusUpdate(InventoryAdjustmentStatusUpdate request) {
+
+		log.info("JSWIntegrationServiceImpl.inventoryAdjustmentStatusUpdate started");
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+
+		JswoneAuditTrailEntity audit = new JswoneAuditTrailEntity();
+		List<String> errorList = new ArrayList<>();
+
+		try {
+			// Set audit details
+			audit.setPoId(String.valueOf(request.getDcNumber()));
+			audit.setProcessType("INVADJ_STTS_UPDATE");
+
+			String requestStr = objectMapper.writeValueAsString(request);
+			audit.setRequestObj(requestStr);
+
+			// Validate DC Number
+			if (request.getDcNumber() <= 0) {
+				errorList.add("DC Number should be greater than 0");
+			} else {
+				Optional<DeliveryDetails> deliveryDetails = deliveryDetailsRepository.findById(request.getDcNumber());
+
+				if (!deliveryDetails.isPresent()) {
+					errorList.add("Please enter a valid DC Number");
+				}
+			}
+
+			// Validate Remarks
+			if (!StringUtils.hasText(request.getInvAdjustmentRemarks())) {
+				errorList.add("Please enter valid Remarks");
+			}
+
+			// Validate Sales Invoice Number
+			if (!StringUtils.hasText(request.getSalesInvoiceNo())) {
+				errorList.add("Please enter valid Sales Invoice No");
+			}
+
+			// Validate Zoho Sync Status
+			if (!StringUtils.hasText(request.getZohoSyncStatus())) {
+				errorList.add("Please enter valid Status");
+			}
+
+			// Return validation errors
+			if (!errorList.isEmpty()) {
+				Map<String, Object> errorResponse = new LinkedHashMap<>();
+				errorResponse.put("code", "400");
+				errorResponse.put("message", "Invalid request parameters");
+				errorResponse.put("errorInfo", errorList);
+
+				audit.setDestinationResponse(objectMapper.writeValueAsString(errorResponse));
+				jswoneAuditTrailRepository.save(audit);
+
+				return new ResponseEntity<Object>(errorResponse, headers, HttpStatus.BAD_REQUEST);
+			}
+
+			// Update Delivery Details
+			deliveryDetailsRepository.updateZohoSyncRemarks(request.getDcNumber(), request.getInvAdjustmentRemarks(),
+					request.getZohoSyncStatus(), request.getSalesInvoiceNo());
+
+			Map<String, String> successResponse = new LinkedHashMap<>();
+			successResponse.put("code", "200");
+			successResponse.put("message", "Inventory Adjustment details updated successfully");
+			audit.setDestinationResponse(objectMapper.writeValueAsString(successResponse));
+			jswoneAuditTrailRepository.save(audit);
+			return ResponseEntity.status(HttpStatus.OK).body(successResponse);
+		} catch (Exception e) {
+			Map<String, Object> errorResponse = new LinkedHashMap<>();
+			errorResponse.put("code", "400");
+			errorResponse.put("message", "Invalid request parameters");
+			errorResponse.put("errorInfo", errorList);
+			audit.setDestinationResponse(errorResponse.toString());
+			jswoneAuditTrailRepository.save(audit);
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+		}
+	}
 
 }

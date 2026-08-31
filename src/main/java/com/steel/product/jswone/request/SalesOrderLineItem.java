@@ -34,6 +34,8 @@ public class SalesOrderLineItem {
     private Double item_total;
 
     private String item_type;
+    
+    private String quantity_invoiced;
 
     private String hsn_or_sac;
 

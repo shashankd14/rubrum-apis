@@ -15,9 +15,15 @@ public class InwardEntryResponseDetails {
 
 	private String coilNumber;
 
-	private String material;
+	private String product;
 
+	private String brand;
+
+	private String grade;
+	
 	private String materialSubGrade;
+	
+	private String warehouseId;
 
 	private String mmId;
 
@@ -30,9 +36,9 @@ public class InwardEntryResponseDetails {
 	private Float fWidth;
 
 	private Integer noofPieces;
-	
+
 	private BigDecimal availQty;
-	
+
 	private BigDecimal allocatedQty;
 
 	private int coilage;

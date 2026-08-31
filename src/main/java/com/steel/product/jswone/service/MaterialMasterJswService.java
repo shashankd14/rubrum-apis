@@ -17,6 +17,7 @@ import com.steel.product.jswone.entity.SubgradeMasterJswEntity;
 import com.steel.product.jswone.entity.SurfacetypeMasterJswEntity;
 import com.steel.product.jswone.entity.UomMasterJswEntity;
 import com.steel.product.jswone.request.SearchRequest;
+import com.steel.product.jswone.response.GradeDTO;
 import com.steel.product.jswone.response.SubGradeDTO;
 
 public interface MaterialMasterJswService {
@@ -81,6 +82,6 @@ public interface MaterialMasterJswService {
 
 	MaterialGradeDto getSubGradeName(String mmId);
 
-	List<SubGradeDTO> subGradeListByBrand(int productId);
+	List<GradeDTO> getGradeWithSubGradesByBrand(int brand);
 
 }

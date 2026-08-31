@@ -1,7 +1,5 @@
 package com.steel.product.jswone.controller;
 
-import io.swagger.v3.oas.annotations.tags.Tag;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,7 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.steel.product.jswone.entity.BrandMasterJswEntity;
 import com.steel.product.jswone.entity.CategoryMasterJswEntity;
@@ -24,10 +26,12 @@ import com.steel.product.jswone.entity.SubgradeMasterJswEntity;
 import com.steel.product.jswone.entity.SurfacetypeMasterJswEntity;
 import com.steel.product.jswone.entity.UomMasterJswEntity;
 import com.steel.product.jswone.request.SearchRequest;
-import com.steel.product.jswone.response.SubGradeDTO;
+import com.steel.product.jswone.response.GradeDTO;
 import com.steel.product.jswone.service.MaterialMasterJswService;
 import com.steel.product.trading.entity.LocationEntity;
 import com.steel.product.trading.service.LocationService;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @CrossOrigin
@@ -103,7 +107,7 @@ public class MaterialMasterController {
 
 	@PostMapping({ "/subgrade/list/brandid" })
 	public ResponseEntity<Object> getSubGradeListByBrand(@RequestBody SearchRequest searchPageRequest) {
-		List<SubGradeDTO> resp = materialService.subGradeListByBrand(searchPageRequest.getBrandId());
+		List<GradeDTO> resp = materialService.getGradeWithSubGradesByBrand(searchPageRequest.getBrandId());
 		return new ResponseEntity<Object>(resp, HttpStatus.OK);
 	}
 

@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 
 import com.steel.product.application.dto.inward.SearchListPageRequest;
 import com.steel.product.application.dto.quality.ListPageSearchRequest;
-import com.steel.product.jswone.entity.MaterialMasterJswEntity;
 import com.steel.product.jswone.request.CPSplitRequest;
 import com.steel.product.jswone.request.SalesOrderBulkRequest;
 import com.steel.product.jswone.request.SalesOrderChildRequest;
@@ -43,13 +42,10 @@ public interface SalesOrderJswService {
 
 	List<CoilAllocationDTO> coilAllocationDetails(SalesOrderChildRequest request);
 
-	void updateCPStatus(int soId);
-
 	List<Object[]> dashboard(SearchListPageRequest req);
 
 	SalesOrderSheetResponse fetchMappedSheetSONo(int inwardId);
 
-	void updateSOStatus(int soIdValue);
-
 	Page<Object[]> findInventory(ListPageSearchRequest request);
+
 }

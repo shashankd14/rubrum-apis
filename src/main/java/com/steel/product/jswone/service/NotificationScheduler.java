@@ -20,15 +20,15 @@ public class NotificationScheduler {
 	CommonUtil commonUtil;
 
 	@Autowired
-	SalesOrderJswService salesOrderJswService;
+	SalesOrderJswHelperService salesOrderJswService;
 
-	@Scheduled(cron = "${email.soUpdateStatusTime}")
+	//@Scheduled(cron = "${email.soUpdateStatusTime}")
 	public void soUpdateStatusTime() throws InterruptedException {
 
 		log.info("in UpdateStatusTime ");
 		if (soUpdateStatusFlag) {
-			salesOrderJswService.updateCPStatus(1);
-			salesOrderJswService.updateSOStatus(1);
+			//salesOrderJswService.updateCPStatus(1095);
+			//salesOrderJswService.updateSOStatus(1095);
 		}
 	}
 

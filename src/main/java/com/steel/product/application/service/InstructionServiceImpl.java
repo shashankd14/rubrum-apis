@@ -55,6 +55,7 @@ import com.steel.product.application.util.CommonUtil;
 import com.steel.product.jswone.entity.SalesOrderAllocationEntity;
 import com.steel.product.jswone.repository.SalesOrderAllocationJswRepository;
 import com.steel.product.jswone.service.MaterialMasterJswService;
+import com.steel.product.jswone.service.SalesOrderJswHelperService;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -97,13 +98,12 @@ public class InstructionServiceImpl implements InstructionService {
     
     private MaterialMasterJswService materialMasterJswService;
     
-    private SalesOrderAllocationJswRepository salesOrderAllocationJswRepository;
-
-	@Autowired
-	CommonUtil commonUtil;
+	private SalesOrderAllocationJswRepository soAllocationRepository;
+    
+	private SalesOrderJswHelperService helperService;
 	
 	@Autowired
-	SalesOrderAllocationJswRepository soAllocation;
+	CommonUtil commonUtil;
 	
 	@Autowired
 	public InstructionServiceImpl(InstructionRepository instructionRepository,
@@ -113,7 +113,9 @@ public class InstructionServiceImpl implements InstructionService {
 			PartDetailsService partDetailsService, PartDetailsMapper partDetailsMapper,
 			InstructionMapper instructionMapper, DeliveryDetailsRepository deliveryDetailsRepository,
 			QualityService qualityService, PartDetailsRepository partDetailsRepository,
-			MaterialMasterJswService materialMasterJswService, SalesOrderAllocationJswRepository salesOrderAllocationJswRepository) {
+			MaterialMasterJswService materialMasterJswService, 
+			SalesOrderAllocationJswRepository soAllocationRepository,
+			SalesOrderJswHelperService helperService) {
 		this.instructionRepository = instructionRepository;
 		this.inwardEntryRepository = inwardEntryRepository;
 		this.deliveryDetailsRepository = deliveryDetailsRepository;
@@ -128,7 +130,8 @@ public class InstructionServiceImpl implements InstructionService {
 		this.qualityService = qualityService;
 		this.partDetailsRepository = partDetailsRepository;
 		this.materialMasterJswService = materialMasterJswService;
-		this.salesOrderAllocationJswRepository = salesOrderAllocationJswRepository;
+		this.soAllocationRepository = soAllocationRepository;
+		this.helperService = helperService;
 	}
 
 	@Override
@@ -1345,30 +1348,6 @@ public class InstructionServiceImpl implements InstructionService {
     	HttpHeaders headers = new HttpHeaders();
     	headers.setContentType(MediaType.APPLICATION_JSON);
 	
-		for (InstructionSaveRequestDto instructionSaveRequestDTO : instructionSaveRequestDtos) {
-			int inwardEntryId = instructionSaveRequestDTO.getInstructionRequestDTOs().get(0).getInwardId();
-			log.info("getInwardId =============== "+ inwardEntryId);
-			List<SalesOrderAllocationEntity> allocatedSOList = salesOrderAllocationJswRepository.findByInwardEntryId(inwardEntryId);
-			for (InstructionRequestDto instructionRequestDto : instructionSaveRequestDTO.getInstructionRequestDTOs()) {
-				for (SalesOrderAllocationEntity soEntity : allocatedSOList) {
-					if(instructionRequestDto.getInwardId().equals(soEntity.getInwardEntryId())) {
-						if(instructionRequestDto.getPlannedWeight() <= soEntity.getAllocatedSoqty().floatValue()) {
-							log.info("data matching ");
-						} else {
-							if(instructionSaveRequestDTO.getApprovalComments() !=null && instructionSaveRequestDTO.getApprovalComments().length()>0 ) {
-								
-							} else {
-								//return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \""+soEntity.getAllocatedSoqty()+" Qty is allocated for SO. create the packet with "+soEntity.getAllocatedSoqty()+" OR enter the Approval Comments\"}", headers, HttpStatus.BAD_REQUEST);
-							}
-						}
-						
-					}
-					log.info("getInwardEntryId == " + soEntity.getInwardEntryId() +", allocated weight "+soEntity.getAllocatedSoqty());
-				}
-				log.info("getPlannedWeight == " + instructionRequestDto.getPlannedWeight());
-			}
-		}
-		
         log.info("no of requests " + instructionSaveRequestDtos.size());
         Map<PartDetails, List<InstructionRequestDto>> instructionPlanAndListMap = new HashMap<>();
         log.info("inside save instruction method");
@@ -1574,17 +1553,30 @@ public class InstructionServiceImpl implements InstructionService {
 			}
         	inwardEntry.setUpdatedBy(userId);
             inwardService.saveEntry(inwardEntry);
-            for (InstructionSaveRequestDto instructionSaveRequestDto : instructionSaveRequestDtos) {
-    			for (InstructionRequestDto instructionRequestChildDto : instructionSaveRequestDto.getInstructionRequestDTOs()) {
-					if (instructionRequestChildDto.getSoAllocationId() > 0) {
-	                	List<Instruction> list = instructionRepository.findBySonoAndMmidAndInwardIdAndPlannedWeight(instructionRequestChildDto.getSoRefNo(), instructionRequestChildDto.getMmid(), inwardEntry, instructionRequestChildDto.getPlannedWeight());
-	                	soAllocation.updateAllocation(instructionRequestChildDto.getSoAllocationId(), list.get(0).getInstructionId());
+            
+            for (InstructionSaveRequestDto requestDto : instructionSaveRequestDtos) {
+    			for (InstructionRequestDto instructiontChildDto : requestDto.getInstructionRequestDTOs()) {
+					if (instructiontChildDto.getSoAllocationId() > 0) {
+						List<Instruction> list = instructionRepository.findBySonoAndMmidAndInwardIdAndPlannedWeight(
+								instructiontChildDto.getSoRefNo(), instructiontChildDto.getMmid(),
+								inwardEntry, instructiontChildDto.getPlannedWeight());
+						updateAllocation(instructiontChildDto.getSoAllocationId(), list.get(0).getInstructionId());
 					}
     			}
     		}
         }
         return new ResponseEntity<Object>(partDetailsResponseList, headers, HttpStatus.CREATED);
     }
+
+	private void updateAllocation(int soAllocationId, Integer instructionId) {
+		soAllocationRepository.updateAllocation(soAllocationId, instructionId);
+		Optional<SalesOrderAllocationEntity> entity = soAllocationRepository.findById(soAllocationId);
+		if (entity != null && entity.isPresent()) {
+			helperService.updateCPStatus(entity.get().getSoId());
+			helperService.updateSOStatus(entity.get().getSoId());
+		}
+
+	}
 
 	@Override
 	public int getPartCount(Long theId) {

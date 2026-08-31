@@ -88,46 +88,6 @@ public class SalesOrderJswController {
 	@Autowired
 	private InwardEntryService inwdEntrySvc;
 	
-	@ExceptionHandler(HttpMessageNotReadableException.class)
-	public ResponseEntity<Object> handleNotReadable(HttpMessageNotReadableException ex, ServletWebRequest webRequest) {
-
-		HttpServletRequest request = webRequest.getRequest();
-		String rawBody = "";
-		try {
-			rawBody = request.getReader().lines().collect(Collectors.joining("\n"));
-		} catch (Exception ignore) {
-			rawBody = "";
-		}
-
-		JswoneAuditTrailEntity audit = new JswoneAuditTrailEntity();
-		try {
-			audit.setProcessType("SO_POST");
-			audit.setCreatedOn(new Date());
-			audit.setRequestUrl(request.getRequestURI());
-			audit.setRequestObj(rawBody);
-			audit.setStatusCode("400");
-
-			String msg = ex.getMostSpecificCause() != null ? ex.getMostSpecificCause().getMessage() : ex.getMessage();
-			String resp = "{\"code\":\"failure\",\"message\":\"Invalid request payload\",\"error\":\"" + safeJson(msg)
-					+ "\"}";
-			audit.setSourceRespone(resp);
-			audit.setDestinationResponse("");
-
-			jswoneAuditTrailRepository.save(audit);
-		} catch (Exception ignore) {
-			// empty
-		}
-
-		return new ResponseEntity<>("{\"code\":\"failure\",\"message\":\"Invalid request payload\"}",
-				HttpStatus.BAD_REQUEST);
-	}
-
-	private String safeJson(String s) {
-		if (s == null)
-			return "";
-		return s.replace("\"", "'").replace("\n", " ").replace("\r", " ");
-	}
-
 	@PostMapping(value = "/create", produces = "application/json")
 	public ResponseEntity<Object> save(@RequestBody SalesOrderMainRequest salesOrderMainRequest) {
 		log.info("inside SalesOrderJswController.create");
@@ -163,6 +123,7 @@ public class SalesOrderJswController {
 			Integer soId = (result[0] != null ? (Integer) result[0] : null);
 			soIDsList.add(soId);
 		}
+		
 		List<Object[]> packetsList = salesOrderService.listAllSOs(soIDsList);
 		SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 		Map<Integer, SalesOrderMainResponse> soMap = new LinkedHashMap<>();
@@ -197,12 +158,7 @@ public class SalesOrderJswController {
 			resp.setStandard_material_date(formatDate(result[22]));
 			resp.setZohoStatus(result[44] != null ? (String) result[44] : null);
 			resp.setBranchId(result[45] != null ? (String) result[45] : null);
-			
-			resp.setInvoicedSoQty(toBigDecimal(result[47]));
-			BigDecimal soQty1 = resp.getTotalSoqty() != null ? resp.getTotalSoqty() : BigDecimal.ZERO;
-			BigDecimal invQty1 = resp.getInvoicedSoQty() != null ? resp.getInvoicedSoQty() : BigDecimal.ZERO;
-			resp.setBalInvoicedSoQty(soQty1.subtract(invQty1).setScale(2, RoundingMode.HALF_UP));
-			
+
 			child.setSoChildId(result[23] != null ? (Integer) result[23] : null);
 			child.setMmId(result[24] != null ? (String) result[24] : null);
 			child.setSoqty(result[27] != null ? (BigDecimal) result[27] : null);
@@ -212,9 +168,15 @@ public class SalesOrderJswController {
 			child.setWearhouse_id(result[31] != null ? (String) result[31] : null);
 			child.setTax(result[32] != null ? (String) result[32] : null);
 			child.setInvoicedItemQty(toBigDecimal(result[46]));
-			BigDecimal soQty = child.getSoqty() != null ? child.getSoqty() : BigDecimal.ZERO;
-			BigDecimal invQty = child.getInvoicedItemQty() != null ? child.getInvoicedItemQty() : BigDecimal.ZERO;
-			child.setBalInvoicedItemQty(soQty.subtract(invQty).setScale(2, RoundingMode.HALF_UP));
+			BigDecimal itemSOQty = child.getSoqty() != null ? child.getSoqty() : BigDecimal.ZERO;
+			BigDecimal itemInvQty = child.getInvoicedItemQty() != null ? child.getInvoicedItemQty() : BigDecimal.ZERO;
+			child.setBalInvoicedItemQty(itemSOQty.subtract(itemInvQty).setScale(2, RoundingMode.HALF_UP));
+
+			resp.setInvoicedSoQty(toBigDecimal(result[47]));
+			BigDecimal soQty1 = resp.getTotalSoqty() != null ? resp.getTotalSoqty() : BigDecimal.ZERO;
+			BigDecimal invQty1 = resp.getInvoicedSoQty() != null ? resp.getInvoicedSoQty() : BigDecimal.ZERO;
+			resp.setBalInvoicedSoQty(soQty1.subtract(invQty1).setScale(2, RoundingMode.HALF_UP));
+			
 			child.setMm_description(result[33] != null ? (String) result[33] : null);
 			child.setHsn(result[34] != null ? String.valueOf(result[34]) : null);
 			child.setWare_house_name(result[35] != null ? (String) result[35] : null);
@@ -265,7 +227,7 @@ public class SalesOrderJswController {
 			resp.setCoilNumber(result[2] != null ? (String) result[2] : null);
 			resp.setCustomerBatchId(result[3] != null ? (String) result[3] : null);
 			resp.setMmId(result[4] != null ? (String) result[4] : null);
-			resp.setMaterial(result[5] != null ? (String) result[5] : null);
+			resp.setProduct(result[5] != null ? (String) result[5] : null);
 			resp.setMaterialSubGrade(result[6] != null ? (String) result[6] : null);
 			resp.setFThickness(result[7] != null ? (float) result[7] : null);
 			resp.setFLength(result[8] != null ? (float) result[8] : null);
@@ -275,6 +237,9 @@ public class SalesOrderJswController {
 			resp.setFWidth(result[12] != null ? (float) result[12] : null);
 			Integer coilage = result[13] != null ? Integer.parseInt(result[13].toString()) : null;
 			resp.setAllocatedQty(result[14] != null ? BigDecimal.valueOf(((Number) result[14]).doubleValue()) : null);
+			resp.setGrade(result[15] != null ? (String) result[15] : null);
+			resp.setBrand(result[16] != null ? (String) result[16] : null);
+			resp.setWarehouseId(result[17] != null ? (String) result[17] : null);
 	        resp.setCoilage(coilage);
 	        if (coilage != null) {
 	        	coilAgeSet.add(coilage);  
@@ -292,7 +257,7 @@ public class SalesOrderJswController {
 				resp.setCoilNumber(result[2] != null ? (String) result[2] : null);
 				resp.setCustomerBatchId(result[3] != null ? (String) result[3] : null);
 				resp.setMmId(result[4] != null ? (String) result[4] : null);
-				resp.setMaterial(result[5] != null ? (String) result[5] : null);
+				resp.setProduct(result[5] != null ? (String) result[5] : null);
 				resp.setMaterialSubGrade(result[6] != null ? (String) result[6] : null);
 				resp.setFThickness(result[7] != null ? (float) result[7] : null);
 				resp.setFLength(result[8] != null ? (float) result[8] : null);
@@ -303,6 +268,10 @@ public class SalesOrderJswController {
 				Integer coilage = result[13] != null ? Integer.parseInt(result[13].toString()) : null;
 				resp.setCoilage(coilage);
 				resp.setAllocatedQty(result[14] != null ? BigDecimal.valueOf(((Number) result[14]).doubleValue()) : null);
+				resp.setGrade(result[15] != null ? (String) result[15] : null);
+				resp.setBrand(result[16] != null ? (String) result[16] : null);
+				resp.setWarehouseId(result[17] != null ? (String) result[17] : null);
+
 				if (coilage != null) {
 					coilAgeSet.add(coilage);
 				}
@@ -569,10 +538,8 @@ public class SalesOrderJswController {
 		// Exposed so a browser fetch() can read the filename back.
 		headers.add(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, HttpHeaders.CONTENT_DISPOSITION);
 		headers.setCacheControl("no-store");
-
 		return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
 	}
-	
 	
 	private SalesOrderDashboardResponse build(int value, BigDecimal totalWeight) {
 		SalesOrderDashboardResponse res = new SalesOrderDashboardResponse();
@@ -620,5 +587,45 @@ public class SalesOrderJswController {
 		return value.toString(); // fallback
 	}
 	
+	@ExceptionHandler(HttpMessageNotReadableException.class)
+	public ResponseEntity<Object> handleNotReadable(HttpMessageNotReadableException ex, ServletWebRequest webRequest) {
+
+		HttpServletRequest request = webRequest.getRequest();
+		String rawBody = "";
+		try {
+			rawBody = request.getReader().lines().collect(Collectors.joining("\n"));
+		} catch (Exception ignore) {
+			rawBody = "";
+		}
+
+		JswoneAuditTrailEntity audit = new JswoneAuditTrailEntity();
+		try {
+			audit.setProcessType("SO_POST");
+			audit.setCreatedOn(new Date());
+			audit.setRequestUrl(request.getRequestURI());
+			audit.setRequestObj(rawBody);
+			audit.setStatusCode("400");
+
+			String msg = ex.getMostSpecificCause() != null ? ex.getMostSpecificCause().getMessage() : ex.getMessage();
+			String resp = "{\"code\":\"failure\",\"message\":\"Invalid request payload\",\"error\":\"" + safeJson(msg)
+					+ "\"}";
+			audit.setSourceRespone(resp);
+			audit.setDestinationResponse("");
+
+			jswoneAuditTrailRepository.save(audit);
+		} catch (Exception ignore) {
+			// empty
+		}
+
+		return new ResponseEntity<>("{\"code\":\"failure\",\"message\":\"Invalid request payload\"}",
+				HttpStatus.BAD_REQUEST);
+	}
+
+	private String safeJson(String s) {
+		if (s == null)
+			return "";
+		return s.replace("\"", "'").replace("\n", " ").replace("\r", " ");
+	}
+
 	
 }
