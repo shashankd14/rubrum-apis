@@ -175,5 +175,18 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
 			+ " where inwardentryid= :inwardId and CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END order by packet_id asc", 
 		nativeQuery = true)
 	List<Object[]> findPacketsForPositiveTolerence(@Param("inwardId") Integer inwardId);
+
+	@Query(value = "SELECT ins.deliveryid, del.delivery_type, " +
+	        "(SELECT CONCAT(address, ' - ', pincode) FROM location_master WHERE location_id = del.to_location_id) AS toAddress, " +
+	        "(SELECT address FROM location_master WHERE location_id = inWARD.location_id) AS details, " +
+	        "(SELECT city FROM location_master WHERE location_id = inWARD.location_id) AS city, " +
+	        "(SELECT state FROM location_master WHERE location_id = inWARD.location_id) AS state, " +
+	        "(SELECT pincode FROM location_master WHERE location_id = inWARD.location_id) AS pincode " +
+	        "FROM product_tblinwardentry inWARD, product_instruction ins, product_tbl_delivery_details del " +
+	        "WHERE ins.inwardid = inWARD.inwardentryid " +
+	        "AND ins.deliveryid = del.deliveryid " +
+	        "AND ins.instructionid = :instructionid",
+	        nativeQuery = true)
+	public List<Object[]> fetchDeliveryDetails(@Param("instructionid") int instructionid);
 	
 }

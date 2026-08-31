@@ -1,5 +1,6 @@
 package com.steel.product.application.service;
 
+import com.steel.product.application.dto.delivery.DeliveryDto;
 import com.steel.product.application.dto.instruction.*;
 import com.steel.product.application.dto.pdf.InwardEntryPdfDto;
 import com.steel.product.application.dto.qrcode.QRCodeResponse;
@@ -98,5 +99,8 @@ public interface InstructionService {
 	public void updateS3FGLabelPDF(String partDetailsId, String string);
 
 	public ResponseEntity<Object> updateClassification(UpdateClassificationDTO updateClassificationDTO);
+	
+	DeliveryDto fetchDeliveryDetails(int instructionId);
+
 }
 

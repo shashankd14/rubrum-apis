@@ -72,7 +72,7 @@ public class LocationMasterServiceImpl implements LocationMasterService {
 	    LocationMasterDto dto = new LocationMasterDto();
 	    dto.setLocationId(entity.getLocationId());
 	    dto.setLocationName(entity.getLocationName());
-	    dto.setLocationDesc(entity.getLocationDesc());
+	    dto.setLocationDesc(entity.getDesc());
 	    return dto;
 	}
 }

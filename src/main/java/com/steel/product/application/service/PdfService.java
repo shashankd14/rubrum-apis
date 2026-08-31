@@ -1,14 +1,13 @@
 package com.steel.product.application.service;
 
-import com.lowagie.text.DocumentException;
-import com.steel.product.application.dto.instruction.InstructionFinishDto;
-import com.steel.product.application.dto.pdf.*;
-import com.steel.product.application.dto.qrcode.QRCodeResponse;
-import com.steel.product.application.entity.CompanyDetails;
-import com.steel.product.application.entity.Instruction;
-import com.steel.product.application.entity.InwardEntry;
-
-import lombok.extern.log4j.Log4j2;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,12 +17,23 @@ import org.thymeleaf.context.Context;
 import org.thymeleaf.spring5.SpringTemplateEngine;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.*;
-import java.util.stream.Collectors;
+import com.lowagie.text.DocumentException;
+import com.steel.product.application.dto.delivery.DeliveryDto;
+import com.steel.product.application.dto.instruction.InstructionFinishDto;
+import com.steel.product.application.dto.pdf.DeliveryChallanPdfDto;
+import com.steel.product.application.dto.pdf.DeliveryPdfDto;
+import com.steel.product.application.dto.pdf.InstructionResponsePdfDto;
+import com.steel.product.application.dto.pdf.InwardEntryPdfDto;
+import com.steel.product.application.dto.pdf.LabelPrintDTO;
+import com.steel.product.application.dto.pdf.PartDto;
+import com.steel.product.application.dto.pdf.PdfDto;
+import com.steel.product.application.dto.qrcode.QRCodeResponse;
+import com.steel.product.application.entity.Address;
+import com.steel.product.application.entity.CompanyDetails;
+import com.steel.product.application.entity.Instruction;
+import com.steel.product.application.entity.InwardEntry;
+
+import lombok.extern.log4j.Log4j2;
 
 @Service
 @Log4j2
@@ -68,18 +78,14 @@ public class PdfService {
     }
 
     public File generateDeliveryPdf(DeliveryPdfDto deliveryPdfDto) throws IOException, org.dom4j.DocumentException, DocumentException {
-        Context context = getDeliveryContext(deliveryPdfDto);
-        String html = loadAndFillDeliveryTemplate(context, deliveryPdfDto);
-        int deliverId=0;
-        
-        if(deliveryPdfDto.getInstructionIds()!=null && deliveryPdfDto.getInstructionIds().size()>0) {
-            List<InwardEntry> inwardEntries = inwardEntryService.findDeliveryItemsByInstructionIds(deliveryPdfDto.getInstructionIds());
-            InwardEntry inwardEntry =inwardEntries.get(0);
-            for ( Instruction instruction : inwardEntry.getInstructions()) {
-            	deliverId = instruction.getDeliveryDetails().getDeliveryId();
-            }
-        }
-        return renderPdfInstruction(html, "delivery", ""+deliverId, "DC_PDF");
+    	DeliveryDto deliveryDto =new DeliveryDto();
+		if (deliveryPdfDto.getInstructionIds() != null && !deliveryPdfDto.getInstructionIds().isEmpty()) {
+			deliveryDto = instructionService.fetchDeliveryDetails(deliveryPdfDto.getInstructionIds().get(0));
+		}
+
+    	Context context = getDeliveryContext(deliveryPdfDto, deliveryDto);
+    	String html = loadAndFillDeliveryTemplate(context, deliveryPdfDto);
+    	return renderPdfInstruction(html, "delivery", String.valueOf(deliveryDto.getDeliveryId()), "DC_PDF");
     }
 
     private String loadAndFillDeliveryTemplate(Context context, DeliveryPdfDto deliveryPdfDto) {
@@ -91,33 +97,30 @@ public class PdfService {
         }
     }
 
-    private Context getDeliveryContext(DeliveryPdfDto deliveryPdfDto) {
+    private Context getDeliveryContext(DeliveryPdfDto deliveryPdfDto, DeliveryDto deliveryDto) {
         Context context = new Context();
         List<InwardEntry> inwardEntries = inwardEntryService.findDeliveryItemsByInstructionIds(deliveryPdfDto.getInstructionIds());
         CompanyDetails companyDetails = companyDetailsService.findById(1);
-            	
-        DeliveryChallanPdfDto deliveryChallanPdfDto = new DeliveryChallanPdfDto(companyDetails, inwardEntries);
-        if(deliveryPdfDto!=null && "Stock Transfer".equals(deliveryPdfDto.getDeliveryType()))  {
-            deliveryChallanPdfDto.setDcHeading("STOCK TRANSFER"); 
-        } else {
-            deliveryChallanPdfDto.setDcHeading("DELIVERY CHALLAN"); 
-        }
-        context.setVariable("deliveryChallan", deliveryChallanPdfDto);
+
+		DeliveryChallanPdfDto deliveryChallanPdfDto = new DeliveryChallanPdfDto(companyDetails, inwardEntries);
+		if (deliveryDto != null && "Stock Transfer".equalsIgnoreCase(deliveryDto.getDeliveryType())) {
+			deliveryChallanPdfDto.setDcHeading("STOCK TRANSFER");
+			Address fromLocationAddress = new Address();
+			fromLocationAddress.setDetails(deliveryDto.getDetails());
+			fromLocationAddress.setCity(deliveryDto.getCity());
+			fromLocationAddress.setState(deliveryDto.getState());
+			fromLocationAddress.setPincode(deliveryDto.getPincode());
+			deliveryChallanPdfDto.setAddressBranch(fromLocationAddress);
+			deliveryChallanPdfDto.setPartyAddress(deliveryDto.getToLocationAddress());
+			deliveryChallanPdfDto.getInwardPdfDtos().get(0).setPartyName("Aspen Steel");
+			
+		} else {
+			deliveryChallanPdfDto.setDcHeading("DELIVERY CHALLAN");
+		}
+		context.setVariable("deliveryChallan", deliveryChallanPdfDto);
         return context;
     }
-
-    private File renderPdf(String html,String filename) throws IOException, DocumentException {
-        File file = File.createTempFile("aspen-steel-"+filename, ".pdf");
-        OutputStream outputStream = new FileOutputStream(file);
-        ITextRenderer renderer = new ITextRenderer(20f * 4f / 3f, 20);
-        renderer.setDocumentFromString(html, new ClassPathResource("/").getURL().toExternalForm());
-        renderer.layout();
-        renderer.createPDF(outputStream);        
-        outputStream.close();
-        file.deleteOnExit();
-        return file;
-    }
-
+ 
     private File renderPdfInstruction(String html, String filename, String id, String processType) throws IOException, DocumentException {
         File file = File.createTempFile("aspen-steel-"+filename, ".pdf");
 		File labelFile = File.createTempFile("labelprintInward_" +System.currentTimeMillis(), ".pdf");

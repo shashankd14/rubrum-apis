@@ -4,6 +4,7 @@ import com.steel.product.application.dao.DeliveryDetailsRepository;
 import com.steel.product.application.dao.InstructionRepository;
 import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.dao.PartDetailsRepository;
+import com.steel.product.application.dto.delivery.DeliveryDto;
 import com.steel.product.application.dto.instruction.*;
 import com.steel.product.application.dto.partDetails.PartDetailsResponse;
 import com.steel.product.application.dto.partDetails.PartDetailsRequest;
@@ -1555,6 +1556,23 @@ public class InstructionServiceImpl implements InstructionService {
 			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Failed to updated Classification. Please enter valid data..! \"}", new HttpHeaders(), HttpStatus.OK);
 		}
 		return response;
+	}
+     
+	@Override
+	public DeliveryDto fetchDeliveryDetails(int instructionId) {
+		DeliveryDto result = new DeliveryDto();
+		List<Object[]> rows = instructionRepository.fetchDeliveryDetails(instructionId);
+		if (rows != null) {
+			Object[] row = rows.get(0);
+			result.setDeliveryId(row[0] != null ? ((Number) row[0]).intValue() : 0);
+			result.setDeliveryType(row[1] != null ? (String) row[1] : "");
+			result.setToLocationAddress(row[2] != null ? (String) row[2] : "");
+			result.setDetails(row[3] != null ? (String) row[3] : "");
+			result.setCity(row[4] != null ? (String) row[4] : "");
+			result.setState(row[5] != null ? (String) row[5] : "");
+			result.setPincode(row[6] != null ? ((Number) row[6]).intValue() : 0);
+		}
+		return result;
 	}
 
 }

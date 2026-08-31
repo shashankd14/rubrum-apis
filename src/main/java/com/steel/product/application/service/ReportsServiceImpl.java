@@ -3,7 +3,6 @@ package com.steel.product.application.service;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -631,10 +630,9 @@ public class ReportsServiceImpl implements ReportsService {
             List<OutwardReportViewEntity> list   =
                 outwardReportViewRepository.findByPartyIdAndMnthAndYer(partyId, month, year);
 
-            Object[] hdrs = {"S.No","Aspen DC No","customerbatchid","material description","vehicleno",
-                "customer name","sap invoice No","sap invoice date","material grade","tdc no",
-                "process type","Qty","Base Rate","Packing Charges","Lamination Charges",
-                "Additional Charges","Rate","Total Amount"};
+			Object[] hdrs = { "S.No", "Aspen DC No", "customer name", "sap invoice No",
+					"sap invoice date", "material description", "vehicleno", "tdc no", "process type",
+					"Qty", "Rate", "Sub Total", "Total Amount", "CGST 9%", "SGST 9%", "Gross Amount" };
 
             Sheet  sheet  = wb.createSheet("Outward_Report");
             int[]  maxLen = new int[hdrs.length];
@@ -649,37 +647,34 @@ public class ReportsServiceImpl implements ReportsService {
 
             int        rowIdx      = 1;
             int        cnt         = 1;
-            int        oldDCNo     = 0;
-            BigDecimal totalweight = BigDecimal.ZERO;
+            //int        oldDCNo     = 0;
+            //BigDecimal totalweight = BigDecimal.ZERO;
 
-            for (OutwardReportViewEntity kk : list) {
-                if (oldDCNo > 0 && oldDCNo != kk.getAspendcno()) {
-                    Object[] sub = {cnt,"","","","","","","","","","",
-                        totalweight.divide(new BigDecimal("1000")).setScale(3, RoundingMode.HALF_UP),
-                        "","","","","",""};
-                    Row sr = sheet.createRow(rowIdx++);
-                    for (int c = 0; c < sub.length; c++) {
-                        populateCell(sr.createCell(c), sub[c], styles);
-                    }
-                }
-                Object[] cols = {cnt, kk.getAspendcno(), kk.getCustomerbatchid(), kk.getMaterialgrade(),
-                    kk.getVehicleno(), kk.getCustomername(), kk.getSapinvoiceno(), kk.getSapinvoicedate(),
-                    kk.getMaterialdesc(), kk.getTdcNo(), kk.getProcessname(),
-                    kk.getQty().divide(new BigDecimal("1000")).setScale(3, RoundingMode.HALF_UP),
-                    kk.getBasePrice(), kk.getPackingCharges(), kk.getLaminationCharges(),
-                    kk.getAdditionalCharges(), kk.getRate(),
-                    kk.getTotalprice().setScale(2, RoundingMode.HALF_UP)};
-                Row dr = sheet.createRow(rowIdx++);
-                for (int c = 0; c < cols.length; c++) {
-                    Cell cell = dr.createCell(c);
-                    populateCell(cell, cols[c], styles);
-                    String repr = cols[c] != null ? cols[c].toString() : "";
-                    if (repr.length() > maxLen[c]) maxLen[c] = Math.min(repr.length(), 60);
-                }
-                oldDCNo     = kk.getAspendcno();
-                totalweight = kk.getTotalweight();
-                cnt++;
-            }
+			for (OutwardReportViewEntity kk : list) {
+				//if (oldDCNo > 0 && oldDCNo != kk.getAspendcno()) {
+					//Object[] sub = { "", "", "", "", "", "", "", "", "", totalweight, "", "", "", "", "", "" };
+					//Row sr = sheet.createRow(rowIdx++);
+					//for (int c = 0; c < sub.length; c++) {
+						//populateCell(sr.createCell(c), sub[c], styles);
+					//}
+					//totalweight = BigDecimal.ZERO;
+				//}
+				Object[] cols = { cnt, kk.getAspendcno(), kk.getCustomername(), kk.getSapinvoiceno(),
+						kk.getSapinvoicedate(), kk.getMaterialdesc(), kk.getVehicleno(), kk.getTdcNo(),
+						kk.getProcessname(), kk.getQty(), kk.getRate(), kk.getTotalprice(), kk.getTotalprice(),
+						kk.getCgst(), kk.getSgst(), kk.getGrossTotal() };
+				Row dr = sheet.createRow(rowIdx++);
+				for (int c = 0; c < cols.length; c++) {
+					Cell cell = dr.createCell(c);
+					populateCell(cell, cols[c], styles);
+					String repr = cols[c] != null ? cols[c].toString() : "";
+					if (repr.length() > maxLen[c])
+						maxLen[c] = Math.min(repr.length(), 60);
+				}
+				//oldDCNo = kk.getAspendcno();
+				//totalweight = totalweight.add(kk.getQty());
+				cnt++;
+			}
             for (int i = 0; i < hdrs.length; i++) sheet.setColumnWidth(i, Math.max(maxLen[i], 12) * 310);
             sheet.createFreezePane(0, 1);
 

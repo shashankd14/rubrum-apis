@@ -26,6 +26,9 @@ public class DeliveryDetails {
     @Column(name = "lamination_id")
     private Integer laminationId;
     
+    @Column(name = "to_location_id")
+    private Integer toLocationId;
+    
     @Column(name = "totalweight")
     private Float totalWeight;
 
@@ -239,6 +242,14 @@ public class DeliveryDetails {
 
 	public void setDeliveryType(String deliveryType) {
 		this.deliveryType = deliveryType;
+	}
+
+	public Integer getToLocationId() {
+		return toLocationId;
+	}
+
+	public void setToLocationId(Integer toLocationId) {
+		this.toLocationId = toLocationId;
 	}
     
     
