@@ -75,7 +75,7 @@ public class SalesOrderListDTO {
 
 	private int soChildId;
 
-	private int plannedNoofPieces;
+	private Integer plannedNoofPieces;
 
 	private List<String> mappedSOList = new ArrayList<>();
 

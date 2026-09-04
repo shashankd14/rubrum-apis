@@ -201,8 +201,11 @@ public class SalesOrderJswHelperService {
 			List<Object[]> rows = salesOrderRepository.getAllSODetailsWithAllocationStatusforSOStatus(soIdValue);
 
 			Map<Integer, List<String>> soStatusMap = buildSoStatusMap(rows);
+			Map<Integer, List<String>> soItemStatusMap = buildSoItemStatusMap(rows);
 
-			Map<Integer, String> finalSOStatusMap = resolveFinalSoStatus(soStatusMap);
+			System.out.println("soStatusMap == "+ soStatusMap);
+			System.out.println("soItemStatusMap == "+ soItemStatusMap);
+			Map<Integer, String> finalSOStatusMap = resolveFinalSoStatus(soStatusMap, soItemStatusMap);
 
 			for (Map.Entry<Integer, String> entry : finalSOStatusMap.entrySet()) {
 				Integer soId = entry.getKey();
@@ -251,6 +254,27 @@ public class SalesOrderJswHelperService {
 		return map;
 	}
 
+	private Map<Integer, List<String>> buildSoItemStatusMap(List<Object[]> rows) {
+
+		Map<Integer, List<String>> map = new HashMap<>();
+
+		for (Object[] result : rows) {
+
+			Integer soId = parseInt(result[0]);
+			Integer soChildId = parseInt(result[1]);
+
+			if (soId == null || soChildId == null) {
+				continue;
+			}
+			String itemSOStatus = safeString(result[9]);
+			System.out.println("soId == " + soId + ", soChildId == " + soChildId + ", itemSOStatus == " + itemSOStatus);
+
+			map.computeIfAbsent(soId, k -> new ArrayList<>()).add(itemSOStatus);
+		}
+
+		return map;
+	}
+
 	private Integer parseInt(Object obj) {
 		if (obj == null)
 			return null;
@@ -271,7 +295,8 @@ public class SalesOrderJswHelperService {
 		return obj != null ? obj.toString() : null;
 	}
 
-	private Map<Integer, String> resolveFinalSoStatus(Map<Integer, List<String>> soStatusMap) {
+	private Map<Integer, String> resolveFinalSoStatus(Map<Integer, List<String>> soStatusMap,
+			Map<Integer, List<String>> soItemStatusMap) {
 
 		Map<Integer, String> result = new HashMap<>();
 
@@ -288,7 +313,39 @@ public class SalesOrderJswHelperService {
 
 			System.out.println("SO ID = " + soId + " FINAL STATUS = " + finalStatus);
 		}
+		
+		for (Map.Entry<Integer, List<String>> entry : soItemStatusMap.entrySet()) {
 
+			
+			
+			
+			String finalStatus = "";
+
+			
+			Integer soId = entry.getKey();
+			List<String> statuses = entry.getValue();
+			
+			if (statuses.contains("Allocated")) {
+				finalStatus = "SO_CREATED";
+			}
+			if (statuses.contains("Allocated - Partially")) {
+				finalStatus = "PENDING_PLAN";
+			}
+			if (statuses.contains("Allocated - RECEIVED")) {
+				finalStatus = "PENDING_PLAN";
+			}
+			if (statuses.contains("Allocated - IN PROGRESS")) {
+				finalStatus = "PENDING_ALLOCATION";
+			}
+			if (statuses.contains("Allocated - READY TO DELIVER")) {
+				finalStatus = "PENDING_DELIVERY";
+			}
+			if (statuses.contains("Allocated - DISPATCHED")) {
+				finalStatus = "FULFILLED";
+			}
+			result.put(soId, finalStatus);
+			System.out.println("SO ID = " + soId + " FINAL STATUS = " + finalStatus);
+		}
 		return result;
 	}
 

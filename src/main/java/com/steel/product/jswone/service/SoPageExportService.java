@@ -276,7 +276,7 @@ public class SoPageExportService {
 			+ "   soc.material_name                         AS sku_description, "
 			+ "   CAST(NULLIF(TRIM(soc.number_of_sheets), '') AS DECIMAL(18,0)) AS order_qty_sheets, "
 			+ "   CAST(ROUND(COALESCE(soc.soqty, 0) / 1000, 3) AS DECIMAL(18,3)) AS order_qty_mt, "
-			+ "   (select ROUND(SUM(COALESCE(ins.allocated_soqty, alloc.allocated_soqty, 0)) / 1000, 3) from jsw_sales_order_allocation alloc, product_instruction ins where deliveryid>0 and alloc.instruction_id = ins.instructionid and alloc.so_child_id = soc.so_child_id) invoiced_qty_mt, "
+			+ "   CAST(ROUND(COALESCE(soc.quantity_invoiced, 0) / 1000, 3) AS DECIMAL(18,3)) AS invoiced_qty_mt, "
 			+ "   so.zoho_status                            AS zoho_status, "
 			+ "   (SELECT GROUP_CONCAT(DISTINCT ie.coilnumber ORDER BY ie.coilnumber SEPARATOR ', ') FROM jsw_sales_order_allocation soa ,  product_tblinwardentry ie where ie.inwardentryid = soa.inward_entry_id and soa.so_child_id = soc.so_child_id AND soa.inward_entry_id IS NOT NULL) AS allocated_coil, "
 			+ "   (SELECT GROUP_CONCAT(DISTINCT p.partyname ORDER BY p.partyname SEPARATOR ', ') FROM jsw_sales_order_allocation soa JOIN product_tblinwardentry ie ON ie.inwardentryid = soa.inward_entry_id JOIN product_tblpartydetails p ON p.npartyid = ie.npartyid WHERE soa.so_child_id = soc.so_child_id AND soa.inward_entry_id IS NOT NULL)  AS processing_centre, "
@@ -307,7 +307,13 @@ public class SoPageExportService {
 		dto.setSkuDescription(rs.getString("sku_description"));
 		dto.setOrderQtySheets(toBigDecimal(rs.getObject("order_qty_sheets")));
 		dto.setOrderQtyMt(toBigDecimal(rs.getObject("order_qty_mt")));
+		
+		
 		dto.setInvoicedQtyMt(toBigDecimal(rs.getObject("invoiced_qty_mt")));
+		
+		
+		
+		
 		dto.setZohoStatusOfSo(rs.getString("zoho_status"));
 		dto.setProcessingCentre(rs.getString("processing_centre"));
 		if (!(dto.getProcessingCentre() != null && dto.getProcessingCentre().length() > 0)) {
