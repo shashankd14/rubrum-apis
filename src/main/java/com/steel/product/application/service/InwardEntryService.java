@@ -72,4 +72,6 @@ public interface InwardEntryService {
 
 	void updateStockTrasferSeq(Integer inwardId, Integer coilseq);
 
+	public List<InwardEntry> findInwardByDeliveryId(Integer id);
+
 }

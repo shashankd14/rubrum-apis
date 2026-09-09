@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 @Entity
 @Table(name = "product_tblinwardentry")
 public class InwardEntry {
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "inwardentryid")
@@ -171,14 +172,11 @@ public class InwardEntry {
     @Column(name = "pdf_s3_url")
     private String pdfS3Url;
 
-    //@Column(name = "qrcode_s3_url")
-    //private String qrcodeS3Url;
-
-    //@Column(name = "qrcode_editfinish_s3_url")
-    //private String qrcodeEditfinishS3Url;
-
     @Column(name = "labelpdf_s3_url")
     private String labelpdfS3Url;
+
+    @Column(name = "delivery_id")
+    private Integer deliveryId;
 
 	public void addInstruction(Instruction instruction){
 		if(this.instructions == null){
@@ -595,6 +593,14 @@ public class InwardEntry {
 
 	public void setCoilSeq(int coilSeq) {
 		this.coilSeq = coilSeq;
+	}
+
+	public int getDeliveryId() {
+		return deliveryId;
+	}
+
+	public void setDeliveryId(int deliveryId) {
+		this.deliveryId = deliveryId;
 	}
 
 	public static InwardEntryPdfDto valueOf(InwardEntry inwardEntry, List<InstructionResponsePdfDto> instructionResponsePdfDtos){

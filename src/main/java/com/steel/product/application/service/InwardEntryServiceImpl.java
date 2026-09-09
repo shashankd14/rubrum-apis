@@ -479,6 +479,11 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 	public void updateStockTrasferSeq(Integer inwardId, Integer coilseq) {
 		inwdEntryRepo.updateStockTrasferSeq(inwardId, coilseq);
 	}
+
+	@Override
+	public List<InwardEntry> findInwardByDeliveryId(Integer id) {
+		return inwdEntryRepo.findInwardByDeliveryId(id);
+	}
 	
 	
 

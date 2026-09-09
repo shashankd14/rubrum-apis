@@ -178,7 +178,7 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 			+ "	(select tag_name from product_enduser_tags where tag_id=instr.enduser_tag_id) as enduser_tag_name,\r\n"
 			+ "	(select statusname from product_status where statusid=inward.vstatus) as inward_status,\r\n"
 			+ "	(select statusname from product_status where statusid=instr.status) as packet_status\r\n"
-			+ "	 from product_tblinwardentry inward, product_instruction instr\r\n"
+			+ "	from product_tblinwardentry inward, product_instruction instr\r\n"
 			+ "	 where inward.inwardentryid=instr.inwardid  \r\n"
 			+ "	 and instr.enduser_tag_id = :endUserTagId order by inwardentryid desc", 
 		countQuery = "select count(instructionid) "
@@ -193,4 +193,7 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 	@Query("update InwardEntry set coilSeq=:coilseq where inwardEntryId= :inwardId ")
 	public void updateStockTrasferSeq(@Param("inwardId") Integer inwardId, @Param("coilseq") Integer coilseq);
 
+	@Query("select inw from InwardEntry inw where inw.deliveryId= :deliveryId ")
+	public List<InwardEntry> findInwardByDeliveryId(@Param("deliveryId") Integer deliveryId);
+    
 }

@@ -258,6 +258,7 @@ public class DeliveryDetailsController {
 				newInwardEntry.setvInvoiceNo(sourceInwardEntry.getvInvoiceNo());
 				newInwardEntry.setCustomerCoilId(sourceInwardEntry.getCustomerCoilId());
 				newInwardEntry.setCustomerBatchId(sourceInwardEntry.getCustomerBatchId());
+				newInwardEntry.setDeliveryId(deliveryDetails.getDeliveryId());
 				if ("Sheet".equals(sourceInwardEntry.getInwardType())) {
 					newInwardEntry.setInwardType("Sheet");
 				} else {
@@ -291,7 +292,21 @@ public class DeliveryDetailsController {
 	public ResponseEntity<Object> deleteById(@PathVariable("deliveryId") Integer id) {
 		try {
 			deliveryDetailsService.deleteById(id);
-			return new ResponseEntity<>("Deleted successful!", HttpStatus.OK);
+			
+			try {
+				List<InwardEntry> inwardList = inwdEntrySvc.findInwardByDeliveryId(id);
+				if (inwardList != null && inwardList.size() > 0) {
+					for (InwardEntry entry : inwardList) {
+						if (entry != null && entry.getInwardEntryId() > 0) {
+							inwdEntrySvc.deleteById(entry.getInwardEntryId());
+						}
+					}
+				}
+			} catch (Exception e) {
+				log.error("error while deleting the deliveryId = ", id);
+				log.error(e.getMessage());
+			}
+			return new ResponseEntity<>("Deleted successfully!", HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
