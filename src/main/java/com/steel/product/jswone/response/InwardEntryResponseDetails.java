@@ -42,4 +42,6 @@ public class InwardEntryResponseDetails {
 	private BigDecimal allocatedQty;
 
 	private int coilage;
+	
+	private String classificationTag;
 }

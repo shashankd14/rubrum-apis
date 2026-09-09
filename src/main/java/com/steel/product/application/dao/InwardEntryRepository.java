@@ -297,7 +297,7 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 			+ " FROM product_tblinwardentry parent "
 			+ " JOIN jsw_material_master mat ON parent.mm_id = mat.mm_id "
 			+ " JOIN product_tblpartydetails party ON party.npartyid = parent.npartyid "
-			+ " LEFT OUTER JOIN product_instruction child ON parent.inwardentryid = child.inwardid AND child.isdeleted = 0 "
+			+ " LEFT OUTER JOIN product_instruction child ON child.status=2 and parent.inwardentryid = child.inwardid AND child.isdeleted = 0 "
 			+ " where parent.isdeleted=0 "
 			+ " and parent.inwardentryid in :inwardIdList ORDER BY FIELD(inwardentryid, :inwardIdList)" + " ) a "
 			+ " where 1=1 AND CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END", nativeQuery = true)
@@ -312,14 +312,14 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 			+ " (select subgrade.subgrade_name from jsw_subgrade_master subgrade where subgrade.subgrade_id=mat.subgrade_id limit 1) as subgradename, "
 			+ " (select brand.brand_name from jsw_brand_master brand where brand.brand_id=mat.brand_id limit 1) as brandname "
 			+ " from product_tblinwardentry inw, product_instruction ins, jsw_material_master mat, product_tblpartydetails party"
-			+ " where inw.isdeleted=0 and mat.mm_id=inw.mm_id and ins.inwardid=inw.inwardentryid and inw.npartyid=party.npartyid "
+			+ " where child.status=2 and inw.isdeleted=0 and mat.mm_id=inw.mm_id and ins.inwardid=inw.inwardentryid and inw.npartyid=party.npartyid "
 			+ " and (case when :partyIdsFlag=true then inw.npartyid in :partyIds else 1=1 end ) "
 			+ " and (case when :status >0 then inw.vstatus=:status else 1=1 end ) "
 			+ " and ins.instructionid=:searchText  "
 			+ " ) product where 1=1 ", 
 		countQuery = "SELECT count(distinct inw.inwardentryid) "
 			+ " from product_tblinwardentry inw, product_instruction ins, jsw_material_master mat, product_tblpartydetails party"
-			+ " where inw.isdeleted=0 and mat.mm_id=inw.mm_id and ins.inwardid=inw.inwardentryid and inw.npartyid=party.npartyid "
+			+ " where child.status=2 and inw.isdeleted=0 and mat.mm_id=inw.mm_id and ins.inwardid=inw.inwardentryid and inw.npartyid=party.npartyid "
 			+ " and (case when :partyIdsFlag=true then inw.npartyid in :partyIds else 1=1 end ) "
 			+ " and (case when :status >0 then inw.vstatus=:status else 1=1 end ) "
 			+ " and ins.instructionid=:searchText ", 
@@ -352,7 +352,7 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 			+ " (SELECT so.so_number from sales_order so, sales_order_child sochild where so.so_id=sochild.so_id and sochild.instruction_id = child.instructionid limit 1) as sono,"
 			+ " (SELECT count(distinct a.instructionid) cnt FROM product_instruction a where a.inwardid=parent.inwardentryid and status!=4 and a.parentgroupid=child.groupid) as siltcutcnt "
 			+ " FROM product_tblinwardentry parent, jsw_material_master mat, product_instruction child, product_tblpartydetails party  "
-			+ " where child.isdeleted=0 and parent.isdeleted=0 and parent.inwardentryid = child.inwardid and parent.mm_id= mat.mm_id and party.npartyid = parent.npartyid "
+			+ " where child.status=2 and child.isdeleted=0 and parent.isdeleted=0 and parent.inwardentryid = child.inwardid and parent.mm_id= mat.mm_id and party.npartyid = parent.npartyid "
 			+ " and child.instructionid = :planId " + " ) a "
 			+ " where 1=1 AND CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END", nativeQuery = true)
 	List<Object[]> wipListNewQueryWithPlanId(@Param("planId") String planId);
@@ -492,5 +492,69 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 			@Param("scInwardIdFilter") String scInwardIdFilter,
 			@Param("batchNoFilter") String batchNoFilter,
 			Pageable pageable);
-
+	
+	@Query(value = "select inwardentryid, coilnumber, coilage, fthickness, flength, fwidth, material, "
+			+ " gradename, subgradename,brandname, partyname,customerbatchid, mm_id, mm_description from ("
+			+ " select distinct inw.inwardentryid ,inw.coilnumber, DATEDIFF(curdate(), date_format(inw.dreceiveddate, '%Y-%m-%d')) coilage,"
+			+ " inw.fthickness, inw.fLength, inw.fWidth,party.partyname, customerbatchid,"
+			+ " (select product.product_name from jsw_product_master product where product.product_id=mat.producttype_id limit 1 ) as material, "
+			+ " (select grade.grade_name from jsw_grade_master grade where grade.grade_id=mat.grade_id limit 1) as gradename, "
+			+ " (select subgrade.subgrade_name from jsw_subgrade_master subgrade where subgrade.subgrade_id=mat.subgrade_id limit 1) as subgradename, "
+			+ " (select brand.brand_name from jsw_brand_master brand where brand.brand_id=mat.brand_id limit 1) as brandname, "
+			+ " inw.mm_id, mat.mm_description "
+			+ " from product_tblinwardentry inw, product_instruction ins, jsw_material_master mat, product_tblpartydetails party"
+			+ " where ins.status=2 and inw.inwardentryid=ins.inwardid AND ins.isdeleted = 0 "
+			+ " and inw.isdeleted=0 and mat.mm_id=inw.mm_id and inw.npartyid=party.npartyid "
+			+ " and (case when :materialFilterValue >0 then mat.producttype_id=:materialFilterValue else 1=1 end ) "
+			+ " and (case when :gradeFilterValue >0 then mat.grade_id=:gradeFilterValue else 1=1 end ) "
+			+ " and (case when :subgradeFilterValue >0 then mat.subgrade_id=:subgradeFilterValue else 1=1 end ) "
+			+ " and (case when :brandFilterValue >0 then mat.brand_id=:brandFilterValue else 1=1 end ) "
+			+ " and (case when :partyIdsFlag=true then inw.npartyid in :partyIds else 1=1 end ) "
+			+ " and (case when :thicknessMinValue > 0 then inw.fthickness between :thicknessMinValue and :thicknessMaxValue else 1=1 end )"
+			+ " and (case when :lengthMinValue > 0 then inw.fLength between :lengthMinValue and :lengthMaxValue else 1=1 end )"
+			+ " and (case when :widthMinValue > 0 then inw.fWidth between :widthMinValue and :widthMaxValue else 1=1 end )"
+			+ " and (case when :ageingMinValue > 0 then  DATEDIFF(curdate(), date_format(inw.dreceiveddate, '%Y-%m-%d'))  between :ageingMinValue and :ageingMaxValue else 1=1 end )"
+			+ " and (case when :scInwardIdFilter is not null and LENGTH(:scInwardIdFilter) >0 then inw.customerbatchid=:scInwardIdFilter else 1=1 end ) " 
+			+ " and (case when :batchNoFilter is not null and LENGTH(:batchNoFilter) >0 then inw.coilnumber=:batchNoFilter else 1=1 end ) " 
+			+ " and (inw.coilnumber like %:searchText% or inw.customerbatchid like %:searchText% "
+			+ " or mat.mm_description like %:searchText% or inw.customerinvoiceno like %:searchText% or  party.partyname like %:searchText% ) "
+			+ " ) product where 1=1 ", 
+		countQuery = "SELECT count(distinct inw.inwardentryid) "
+			+ " from product_tblinwardentry inw, product_instruction ins, jsw_material_master mat, product_tblpartydetails party"
+			+ " where ins.status=2 and inw.inwardentryid=ins.inwardid AND ins.isdeleted = 0 "
+			+ " and inw.isdeleted=0 and mat.mm_id=inw.mm_id and inw.npartyid=party.npartyid "
+			+ " and (case when :materialFilterValue >0 then mat.producttype_id=:materialFilterValue else 1=1 end ) "
+			+ " and (case when :gradeFilterValue >0 then mat.grade_id=:gradeFilterValue else 1=1 end ) "
+			+ " and (case when :subgradeFilterValue >0 then mat.subgrade_id=:subgradeFilterValue else 1=1 end ) "
+			+ " and (case when :brandFilterValue >0 then mat.brand_id=:brandFilterValue else 1=1 end ) "
+			+ " and (case when :partyIdsFlag=true then inw.npartyid in :partyIds else 1=1 end ) "
+			+ " and (case when :thicknessMinValue > 0 then inw.fthickness between :thicknessMinValue and :thicknessMaxValue else 1=1 end )"
+			+ " and (case when :lengthMinValue > 0 then inw.fLength between :lengthMinValue and :lengthMaxValue else 1=1 end )"
+			+ " and (case when :widthMinValue > 0 then inw.fWidth between :widthMinValue and :widthMaxValue else 1=1 end )"
+			+ " and (case when :ageingMinValue > 0 then  DATEDIFF(curdate(), date_format(inw.dreceiveddate, '%Y-%m-%d'))  between :ageingMinValue and :ageingMaxValue else 1=1 end )"
+			+ " and (case when :scInwardIdFilter is not null and LENGTH(:scInwardIdFilter) >0 then inw.customerbatchid=:scInwardIdFilter else 1=1 end ) " 
+			+ " and (case when :batchNoFilter is not null and LENGTH(:batchNoFilter) >0 then inw.coilnumber=:batchNoFilter else 1=1 end ) " 
+			+ " and (inw.coilnumber like %:searchText% or inw.customerbatchid like %:searchText% or mat.mm_description like %:searchText% or inw.customerinvoiceno like %:searchText% or "
+			+ " party.partyname like %:searchText% ) ", 
+		nativeQuery = true)
+	Page<Object[]> listWIPInwards(
+			@Param("searchText") String searchText,
+			@Param("partyIds") List<Integer> partyIds, 
+			@Param("partyIdsFlag") boolean partyIdsFlag,
+			@Param("materialFilterValue") int materialFilterValue, 
+			@Param("gradeFilterValue") int gradeFilterValue, 
+			@Param("subgradeFilterValue") int subgradeFilterValue, 
+			@Param("brandFilterValue") int brandFilterValue, 
+			@Param("thicknessMinValue") float thicknessMinValue, 
+			@Param("thicknessMaxValue") float thicknessMaxValue,
+			@Param("lengthMinValue") float lengthMinValue, 
+			@Param("lengthMaxValue") float lengthMaxValue,
+			@Param("widthMinValue") float widthMinValue, 
+			@Param("widthMaxValue") float widthMaxValue,
+			@Param("ageingMinValue") int ageingMinValue, 
+			@Param("ageingMaxValue") int ageingMaxValue,
+			@Param("scInwardIdFilter") String scInwardIdFilter,
+			@Param("batchNoFilter") String batchNoFilter,
+			Pageable pageable);
+	 
 }

@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -384,21 +383,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 
 	@Override
 	public Page<Object[]> findInventory(ListPageSearchRequest request) {
-		Pageable pageable = null;
-		if (request.getSortColumn() != null && request.getSortColumn().length() > 0 && request.getSortOrder() != null
-				&& request.getSortOrder().length() > 0 && "ASC".equalsIgnoreCase(request.getSortOrder())) {
-			pageable = PageRequest.of((request.getPageNo() - 1), request.getPageSize(),
-					Sort.by(request.getSortColumn()).ascending());
-		} else if (request.getSortColumn() != null && request.getSortColumn().length() > 0
-				&& request.getSortOrder() != null && request.getSortOrder().length() > 0
-				&& "DESC".equalsIgnoreCase(request.getSortOrder())) {
-			pageable = PageRequest.of((request.getPageNo() - 1), request.getPageSize(),
-					Sort.by(request.getSortColumn()).descending());
-		} else {
-			pageable = PageRequest.of((request.getPageNo() - 1), request.getPageSize(),
-					Sort.by("inwardid").descending());
-		}
-
+		Pageable pageable = PageRequest.of((request.getPageNo() - 1), request.getPageSize());
 		List<Integer> partyIds = new ArrayList<>();
 		boolean partyIdsFlag = false;
 		if (request.getPartyId() != null && request.getPartyId() > 0) {

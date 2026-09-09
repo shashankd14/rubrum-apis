@@ -28,6 +28,7 @@ public class SoPageExportDto {
 	private BigDecimal balanceQtyMt;             // M  <- orderQtyMt - invoicedQtyMt
 	private String zohoStatusOfSo;               // N  <- so.zoho_status
 	private String processingCentre;              // O  <- so.destinationcode
+	private String zohoWarehouseName;              // O  <- so.zohoWarehouseName
 	private String allocatedCoil;                 // P  <- GROUP_CONCAT over jsw_sales_order_allocation
 	private String packingMode;                   // Q  <- so.typeofsupply
 	private String sdi;                           // R  <- so.special_delivery_instructions

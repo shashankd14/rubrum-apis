@@ -366,12 +366,11 @@ public class InwardEntryController {
 	public ResponseEntity<Object> wiplist(@RequestBody SearchListPageRequest request) {
 		log.info("in wiplist ");
 		Map<String, Object> response = new HashMap<>();
-		request.setStatus(2);
 		Page<Object[]> packetsList1 = null;
 		if (request.getSearchText() != null && request.getSearchText().length() > 0) {
 			packetsList1 = inwdEntrySvc.wipInwardIdListPlanId(request);
 		} else {
-			packetsList1 = inwdEntrySvc.listAllLocationWiseInwards(request);
+			packetsList1 = inwdEntrySvc.listWIPInwards(request);
 		}
  
 		List<Integer> inwardIdList = new ArrayList<>();

@@ -224,11 +224,11 @@ public class SalesOrderJswController {
 			InwardEntryResponseDetails resp = new InwardEntryResponseDetails();
 			resp.setInstructionId(result[0] != null ? Integer.parseInt(result[0].toString()) : null);
 			resp.setInwardEntryId(result[1] != null ? Integer.parseInt(result[1].toString()) : null);
-			resp.setCoilNumber(result[2] != null ? (String) result[2] : null);
-			resp.setCustomerBatchId(result[3] != null ? (String) result[3] : null);
-			resp.setMmId(result[4] != null ? (String) result[4] : null);
-			resp.setProduct(result[5] != null ? (String) result[5] : null);
-			resp.setMaterialSubGrade(result[6] != null ? (String) result[6] : null);
+			resp.setCoilNumber(result[2] != null ? (String) result[2] : "");
+			resp.setCustomerBatchId(result[3] != null ? (String) result[3] : "");
+			resp.setMmId(result[4] != null ? (String) result[4] : "");
+			resp.setProduct(result[5] != null ? (String) result[5] : "");
+			resp.setMaterialSubGrade(result[6] != null ? (String) result[6] : "");
 			resp.setFThickness(result[7] != null ? (float) result[7] : null);
 			resp.setFLength(result[8] != null ? (float) result[8] : null);
 			resp.setAvailQty(result[9] != null ? BigDecimal.valueOf(((Number) result[9]).doubleValue()) : null);
@@ -237,9 +237,10 @@ public class SalesOrderJswController {
 			resp.setFWidth(result[12] != null ? (float) result[12] : null);
 			Integer coilage = result[13] != null ? Integer.parseInt(result[13].toString()) : null;
 			resp.setAllocatedQty(result[14] != null ? BigDecimal.valueOf(((Number) result[14]).doubleValue()) : null);
-			resp.setGrade(result[15] != null ? (String) result[15] : null);
-			resp.setBrand(result[16] != null ? (String) result[16] : null);
-			resp.setWarehouseId(result[17] != null ? (String) result[17] : null);
+			resp.setGrade(result[15] != null ? (String) result[15] : "");
+			resp.setBrand(result[16] != null ? (String) result[16] : "");
+			resp.setWarehouseId(result[17] != null ? (String) result[17] : "");
+			resp.setClassificationTag( result[18] != null ? (String) result[18] : "");
 	        resp.setCoilage(coilage);
 	        if (coilage != null) {
 	        	coilAgeSet.add(coilage);  
@@ -268,10 +269,10 @@ public class SalesOrderJswController {
 				Integer coilage = result[13] != null ? Integer.parseInt(result[13].toString()) : null;
 				resp.setCoilage(coilage);
 				resp.setAllocatedQty(result[14] != null ? BigDecimal.valueOf(((Number) result[14]).doubleValue()) : null);
-				resp.setGrade(result[15] != null ? (String) result[15] : null);
-				resp.setBrand(result[16] != null ? (String) result[16] : null);
-				resp.setWarehouseId(result[17] != null ? (String) result[17] : null);
-
+				resp.setGrade(result[15] != null ? (String) result[15] : "");
+				resp.setBrand(result[16] != null ? (String) result[16] : "");
+				resp.setWarehouseId(result[17] != null ? (String) result[17] : "");
+				resp.setClassificationTag( result[18] != null ? (String) result[18] : "");
 				if (coilage != null) {
 					coilAgeSet.add(coilage);
 				}
@@ -360,6 +361,7 @@ public class SalesOrderJswController {
 				child.setWareHouseId(result[22] != null ? (String) result[22] : null);
 				child.setMmidMeasurements(result[34] != null ? (String) result[34] : "");
 				child.setBrandId( result[36] != null ? (Integer) result[36] : 0);
+				child.setNumberOfSheets(result[37] != null ? (String) result[37] : null);
 				soChildMap.put(soChildId, child);
 				isNewChild = true;
 			}

@@ -1,5 +1,25 @@
 package com.steel.product.application.service;
 
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+
 import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.dao.UserRepository;
 import com.steel.product.application.dto.delivery.DeliveryPDFRequestDTO;
@@ -13,23 +33,8 @@ import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.entity.UserPartyMap;
 import com.steel.product.application.util.CommonUtil;
-import org.springframework.data.domain.Sort;
 
 import net.minidev.json.JSONObject;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-
-import java.text.DecimalFormat;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class InwardEntryServiceImpl implements InwardEntryService {
@@ -516,6 +521,69 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 		Page<Object[]> pageResult = inwdEntryRepo.listAllLocationWiseInwards(
 				searchListPageRequest.getSearchText(),  
 				searchListPageRequest.getStatus(),
+				partyIds,
+				partyIdsFlag,   
+				searchListPageRequest.getMaterialFilterValue(),
+				searchListPageRequest.getGradeFilterValue(),
+				searchListPageRequest.getSubgradeFilterValue() ,
+				searchListPageRequest.getBrandFilterValue(),
+				searchListPageRequest.getThicknessMinValue(),
+				searchListPageRequest.getThicknessMaxValue(), 
+				searchListPageRequest.getLengthMinValue(),
+				searchListPageRequest.getLengthMaxValue(), 
+				searchListPageRequest.getWidthMinValue(),
+				searchListPageRequest.getWidthMaxValue(), 
+				searchListPageRequest.getAgeingMinValue(),
+				searchListPageRequest.getAgeingMaxValue(),
+				searchListPageRequest.getScInwardIdFilter(),
+				searchListPageRequest.getBatchNoFilter(),
+				pageable);
+		 
+		return pageResult;
+	}
+
+	@Override
+	public Page<Object[]> listWIPInwards(SearchListPageRequest searchListPageRequest) {
+
+		LOGGER.info("In listWIPInwards page ");
+		Pageable pageable = null;
+		if (searchListPageRequest.getSortColumn() != null && searchListPageRequest.getSortColumn().length() > 0
+				&& searchListPageRequest.getSortOrder() != null && searchListPageRequest.getSortOrder().length() > 0
+				&& "ASC".equalsIgnoreCase(searchListPageRequest.getSortOrder())) {
+			pageable = PageRequest.of((searchListPageRequest.getPageNo()-1), searchListPageRequest.getPageSize(), Sort.by(searchListPageRequest.getSortColumn()).ascending());
+		}else if (searchListPageRequest.getSortColumn() != null && searchListPageRequest.getSortColumn().length() > 0
+				&& searchListPageRequest.getSortOrder() != null && searchListPageRequest.getSortOrder().length() > 0
+				&& "DESC".equalsIgnoreCase(searchListPageRequest.getSortOrder())) {
+			pageable = PageRequest.of((searchListPageRequest.getPageNo()-1), searchListPageRequest.getPageSize(), Sort.by(searchListPageRequest.getSortColumn()).descending());
+		} else {
+			if(searchListPageRequest.getPageNo() == null ) {
+				searchListPageRequest.setPageNo(1);
+			}
+			pageable = PageRequest.of((searchListPageRequest.getPageNo()-1), searchListPageRequest.getPageSize(), Sort.by("inwardentryid").descending());
+		}
+		
+		List<Integer> partyIds = new ArrayList<>();
+		boolean partyIdsFlag = false;
+		if (searchListPageRequest.getPartyId() != null && searchListPageRequest.getPartyId().length() > 0) {
+			partyIds.add(Integer.parseInt(searchListPageRequest.getPartyId()));
+			partyIdsFlag = true;
+		} else {
+			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
+			if (adminUserEntity.getUserPartyMap() != null && adminUserEntity.getUserPartyMap().size() > 0) {
+				partyIds = new ArrayList<>();
+				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
+					partyIds.add(userPartyMap.getPartyId());
+					partyIdsFlag = true;
+				}
+				LOGGER.info("In partyIds === " + partyIds);
+			} else {
+				partyIdsFlag = false;
+				partyIds = new ArrayList<>();
+			}
+		}
+		
+		Page<Object[]> pageResult = inwdEntryRepo.listWIPInwards(
+				searchListPageRequest.getSearchText(),  
 				partyIds,
 				partyIdsFlag,   
 				searchListPageRequest.getMaterialFilterValue(),

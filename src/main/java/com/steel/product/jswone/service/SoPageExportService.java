@@ -280,7 +280,7 @@ public class SoPageExportService {
 			+ "   so.zoho_status                            AS zoho_status, "
 			+ "   (SELECT GROUP_CONCAT(DISTINCT ie.coilnumber ORDER BY ie.coilnumber SEPARATOR ', ') FROM jsw_sales_order_allocation soa ,  product_tblinwardentry ie where ie.inwardentryid = soa.inward_entry_id and soa.so_child_id = soc.so_child_id AND soa.inward_entry_id IS NOT NULL) AS allocated_coil, "
 			+ "   (SELECT GROUP_CONCAT(DISTINCT p.partyname ORDER BY p.partyname SEPARATOR ', ') FROM jsw_sales_order_allocation soa JOIN product_tblinwardentry ie ON ie.inwardentryid = soa.inward_entry_id JOIN product_tblpartydetails p ON p.npartyid = ie.npartyid WHERE soa.so_child_id = soc.so_child_id AND soa.inward_entry_id IS NOT NULL)  AS processing_centre, "
-			+ "   (SELECT partyname FROM jswone_db.jsw_warehouse_master wh, product_tblpartydetails part where wh.party_id=part.npartyid and wh.ware_house_id=soc.wearhouse_id) AS processing_centre_2, "
+			+ "   (SELECT partyname FROM jsw_warehouse_master wh, product_tblpartydetails part where wh.party_id=part.npartyid and wh.ware_house_id=soc.wearhouse_id) AS processing_centre_2, "
 			+ "   so.typeofsupply                           AS packing_mode, "
 			+ "   so.special_delivery_instructions          AS sdi, "
 			+ "   so.likely_material_date                   AS likely_mrd, "
@@ -307,15 +307,10 @@ public class SoPageExportService {
 		dto.setSkuDescription(rs.getString("sku_description"));
 		dto.setOrderQtySheets(toBigDecimal(rs.getObject("order_qty_sheets")));
 		dto.setOrderQtyMt(toBigDecimal(rs.getObject("order_qty_mt")));
-		
-		
 		dto.setInvoicedQtyMt(toBigDecimal(rs.getObject("invoiced_qty_mt")));
-		
-		
-		
-		
 		dto.setZohoStatusOfSo(rs.getString("zoho_status"));
 		dto.setProcessingCentre(rs.getString("processing_centre"));
+		dto.setZohoWarehouseName(rs.getString("processing_centre_2"));
 		if (!(dto.getProcessingCentre() != null && dto.getProcessingCentre().length() > 0)) {
 			dto.setProcessingCentre(rs.getString("processing_centre_2"));
 		}
@@ -420,6 +415,7 @@ public class SoPageExportService {
 		setDecimal(row, Col.BALANCE_QTY_MT.ordinal(), dto.getBalanceQtyMt(), styles.qty);
 		setString(row, Col.ZOHO_STATUS.ordinal(), dto.getZohoStatusOfSo(), styles.text);
 		setString(row, Col.PROCESSING_CENTRE.ordinal(), dto.getProcessingCentre(), styles.text);
+		setString(row, Col.ZOHO_WAREHOUSE_NAME.ordinal(), dto.getZohoWarehouseName(), styles.text);
 		setString(row, Col.ALLOCATED_COIL.ordinal(), dto.getAllocatedCoil(), styles.text);
 		setString(row, Col.PACKING_MODE.ordinal(), dto.getPackingMode(), styles.text);
 		setString(row, Col.SDI.ordinal(), dto.getSdi(), styles.wrapText);
@@ -542,6 +538,7 @@ public class SoPageExportService {
 		BALANCE_QTY_MT("Balance Qty (MT)", 10.73),
 		ZOHO_STATUS("Zoho Status of SO", 14.54),
 		PROCESSING_CENTRE("Processing Centre", 9.91),
+		ZOHO_WAREHOUSE_NAME("Zoho Warehouse Name", 9.91),
 		ALLOCATED_COIL("Allocated Coil", 12.45),
 		PACKING_MODE("Packing Mode", 12.36),
 		SDI("SDI", 45.27),

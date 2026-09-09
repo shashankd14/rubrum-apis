@@ -80,5 +80,7 @@ public interface InwardEntryService {
 
 	Page<Object[]> listAllocatedCoils(SearchListPageRequest searchListPageRequest);
 
+	Page<Object[]> listWIPInwards(SearchListPageRequest searchListPageRequest);
+
 
 }

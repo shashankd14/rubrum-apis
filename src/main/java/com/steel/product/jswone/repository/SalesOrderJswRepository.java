@@ -112,7 +112,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " alloca.zoho_sync_remarks, alloca.zoho_sync_stts, "  
 			+ " CONCAT(mm.thickness,'*', mm.width,'*', mm.length) as mm_size, "
 			+ " (select mate.form_id from product_tblinwardentry inw, jsw_material_master mate where inw.inwardentryid =alloca.inward_entry_id and mate.mm_id=inw.mm_id) form_id,"
-			+ " mm.brand_id"
+			+ " mm.brand_id, so_child.number_of_sheets "
 			+ " FROM jsw_sales_order so "
 			+ " left OUTER JOIN jsw_sales_order_child so_child ON so_child.so_id = so.so_id and so_child.is_deleted = 0 "
 			+ " left outer JOIN jsw_sales_order_allocation alloca ON so_child.so_child_id = alloca.so_child_id"
@@ -126,7 +126,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			@Param("warehouseList") List<String> warehouseList);
 
 	@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, mm_id, materialdesc, materialgrade,fthickness, flength, (fweight-allocated_soqty), partyname,"
-			+ " noofpieces, fWidth,coilage,allocated_soqty,grade, brand, ware_house_id "
+			+ " noofpieces, fWidth,coilage,allocated_soqty,grade, brand, ware_house_id, classificationtag  "
 			+ " from ( SELECT parent.inwardentryid inwardid,  coilnumber, customerbatchid, parent.mm_id,"
 			+ " (SELECT product_name FROM jsw_product_master a, jsw_material_master mat where a.product_id=mat.producttype_id and mat.mm_id=parent.mm_id limit 1) as  materialdesc,"
 			+ " (SELECT subgrade_name FROM jsw_subgrade_master grade, jsw_material_master mat where grade.subgrade_id=mat.subgrade_id and mat.mm_id=parent.mm_id limit 1) as  materialgrade, "  
@@ -138,7 +138,8 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " (SELECT COALESCE(sum(allocated_soqty), 0) FROM jsw_sales_order_allocation alloc where alloc.inward_entry_id=child.inwardid and alloc.instruction_id=child.instructionid) as allocated_soqty,"  
 			+ " (SELECT grade_name FROM jsw_grade_master grade, jsw_material_master mat where grade.grade_id=mat.grade_id and mat.mm_id=parent.mm_id limit 1) as grade, "  
 			+ " (SELECT brand_name FROM jsw_brand_master brand, jsw_material_master mat where brand.brand_id=mat.brand_id and mat.mm_id=parent.mm_id limit 1) as brand, "  
-			+ " (SELECT wh2.ware_house_id FROM jsw_warehouse_master wh2 where wh2.party_id = parent.npartyid limit 1) as ware_house_id"
+			+ " (SELECT wh2.ware_house_id FROM jsw_warehouse_master wh2 where wh2.party_id = parent.npartyid limit 1) as ware_house_id, "
+			+ " (SELECT classification_name FROM product_packet_classification vvvv where vvvv.classification_id=child.packet_classification_id) as classificationtag "
 			+ " FROM product_tblinwardentry parent, " 
 			+ "	product_instruction child, "  
 			+ "	product_tblpartydetails party, " 
@@ -157,7 +158,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " and coalesce(child.actuallength, child.plannedlength) = :length) a "
 			+ " where (fweight-allocated_soqty)>0 and CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END"
 			+ " and case when :warehouseListFlag=true then ware_house_id in :warehouseList else 1=1 end "
-			+ " and case when :fromCoilAge >=0 and :toCoilAge > 0 then coilage between :fromCoilAge and :toCoilAge else 1=1 end ",
+			+ " and case when :fromCoilAge >=0 and :toCoilAge > 0 then coilage between :fromCoilAge and :toCoilAge else 1=1 end order by coilage desc  ",
 		countQuery = "SELECT count(packet_id) from "
 			+ " (select instructionid as packet_id, coalesce(actualweight, plannedweight) fweight, "
 			+ " (SELECT count(distinct inss.instructionid) cnt FROM product_instruction inss where inss.inwardid=parent.inwardentryid  and status!=4 and inss.parentgroupid=child.groupid) as siltcutcnt,"
@@ -204,7 +205,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			Pageable pageable);
 	
 	@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, mm_id, materialdesc, materialgrade, fthickness, flength, "
-			+ " (fweight-allocated_soqty), partyname,0 noofpieces,fWidth,coilage,allocated_soqty,grade, brand, ware_house_id"
+			+ " (fweight-allocated_soqty), partyname,0 noofpieces,fWidth,coilage,allocated_soqty,grade, brand, ware_house_id, '' as classificationtag "
 			+ " from ( "
 			+ " SELECT parent.inwardentryid inwardid,  coilnumber, customerbatchid, parent.mm_id, " 
 			+ " (SELECT product_name FROM jsw_product_master a, jsw_material_master mat where a.product_id=mat.producttype_id and mat.mm_id=parent.mm_id limit 1) as  materialdesc, " 
@@ -231,7 +232,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ ") a "
 			+ " where (fweight-allocated_soqty)>0 "
 			+ " and case when :warehouseListFlag=true then ware_house_id in :warehouseList else 1=1 end "
-			+ " and case when :fromCoilAge >=0 and :toCoilAge > 0 then coilage between :fromCoilAge and :toCoilAge else 1=1 end ",
+			+ " and case when :fromCoilAge >=0 and :toCoilAge > 0 then coilage between :fromCoilAge and :toCoilAge else 1=1 end order by coilage desc ",
 		countQuery = "SELECT count(*) from ( "
 			+ " SELECT parent.inwardentryid inwardid, "
 			+ " fthickness, NULL as packet_id, fWidth, "
@@ -273,7 +274,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 				Pageable pageable);
 
 		@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, mm_id, materialdesc, materialgrade, fthickness, flength, "
-				+ " (fweight-allocated_soqty), partyname,0 noofpieces,fWidth,coilage,allocated_soqty,grade, brand,ware_house_id "
+				+ " (fweight-allocated_soqty), partyname,0 noofpieces,fWidth,coilage,allocated_soqty,grade, brand,ware_house_id, '' as classificationtag  "
 				+ " from ( "
 				+ " SELECT parent.inwardentryid inwardid,  coilnumber, customerbatchid, parent.mm_id, " 
 				+ " (SELECT product_name FROM jsw_product_master a, jsw_material_master mat where a.product_id=mat.producttype_id and mat.mm_id=parent.mm_id limit 1) as  materialdesc, " 
@@ -301,7 +302,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 				+ ") a "
 				+ " where (fweight-allocated_soqty)>0 "
 				+ " and case when :warehouseListFlag=true then ware_house_id in :warehouseList else 1=1 end "
-				+ " and case when :fromCoilAge >=0 and :toCoilAge > 0 then coilage between :fromCoilAge and :toCoilAge else 1=1 end ",
+				+ " and case when :fromCoilAge >=0 and :toCoilAge > 0 then coilage between :fromCoilAge and :toCoilAge else 1=1 end order by coilage desc ",
 			countQuery = "SELECT count(*) from ( "
 				+ " SELECT parent.inwardentryid inwardid, "
 				+ " fthickness, NULL as packet_id, fWidth, "
