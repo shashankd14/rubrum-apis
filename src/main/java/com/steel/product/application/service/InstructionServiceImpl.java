@@ -1381,13 +1381,14 @@ public class InstructionServiceImpl implements InstructionService {
 		if (instructionRequestDtos == null || instructionRequestDtos.isEmpty()) {
 			return BigDecimal.ZERO;
 		}
-
-		// Build a lookup once: instructionId -> actualWeight (O(n) instead of a nested loop)
+		
 		Map<Integer, BigDecimal> actualWeightByInstruction = new HashMap<>();
 		for (InstructionRequestDto dto : instructionRequestDtos) {
-			actualWeightByInstruction.put(dto.getInstructionId(), BigDecimal.valueOf(dto.getActualWeight()));
+			Float actualWeight = dto.getActualWeight();
+			BigDecimal weight = (actualWeight != null) ? BigDecimal.valueOf(actualWeight) : BigDecimal.ZERO;
+			actualWeightByInstruction.put(dto.getInstructionId(), weight);
 		}
-
+		
 		// Resolve the inward entry id from the first instruction that exists
 		Integer inwardEntryId = null;
 		for (InstructionRequestDto dto : instructionRequestDtos) {

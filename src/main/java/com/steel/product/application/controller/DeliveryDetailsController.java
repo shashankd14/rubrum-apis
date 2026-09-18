@@ -105,7 +105,7 @@ public class DeliveryDetailsController {
 		HttpHeaders headers = new HttpHeaders();
 		headers.set("Content-Type", "application/json");
 		try {
-			int userId = (request.getHeader("userId") == null ? 1 : Integer.parseInt(request.getHeader("userId")));
+			//int userId = (request.getHeader("userId") == null ? 1 : Integer.parseInt(request.getHeader("userId")));
 			if(!(deliveryDto.getPackingRateId() !=null && deliveryDto.getPackingRateId() > 0 )) {
 				deliveryDto.setPackingRateId(0);
 			}		
@@ -131,7 +131,7 @@ public class DeliveryDetailsController {
 		HttpHeaders headers = new HttpHeaders();
 		headers.set("Content-Type", "application/json");
 		try {
-			int userId = (request.getHeader("userId") == null ? 1 : Integer.parseInt(request.getHeader("userId")));
+			//int userId = (request.getHeader("userId") == null ? 1 : Integer.parseInt(request.getHeader("userId")));
 			if(!(validatePriceMappingDTO.getPackingRateId() !=null && validatePriceMappingDTO.getPackingRateId() > 0 )) {
 				validatePriceMappingDTO.setPackingRateId(0);
 			}		

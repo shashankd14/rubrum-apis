@@ -244,9 +244,10 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
         List<Instruction> instructions = this.findInstructionsByDeliveryId(deliveryId);
         DeliveryDetails deliveryDetails = instructions.get(0).getDeliveryDetails();
         log.info("deleting delivery "+deliveryDetails.getDeliveryId());
-        Integer deliveredStatusId = 4,readyToDeliverStatusId = 3;
+        Integer deliveredStatusId = 4,readyToDeliverStatusId = 3, reaceivedStatusId = 1;
         Status deliveredStatus = statusService.getStatusById(deliveredStatusId);
         Status readyToDeliverStatus = statusService.getStatusById(readyToDeliverStatusId);
+        Status reaceivedStatus = statusService.getStatusById(reaceivedStatusId);
 
         InwardEntry inwardEntry = null;
         Instruction parentInstruction = null;
@@ -280,25 +281,29 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
                     parentInstruction.setStatus(readyToDeliverStatus);
                 }
             }
-            else if(inwardEntry != null){
-                log.info("instruction has inward id " + inwardEntry.getInwardEntryId());
-                inwardEntry.setStatus(readyToDeliverStatus);
+            else if(inwardEntry != null) {
+				log.info("instruction has inward id " + inwardEntry.getInwardEntryId());
+				inwardEntry.setStatus(readyToDeliverStatus);
+				if (ins != null && (ins.getProcess().getProcessId() == 8)) {
+					inwardEntry.setStatus(reaceivedStatus);
+					inwardEntry.removeInstruction(ins);
+				}
             }
             else{
                 log.error("No inward id or parent instruction id found in instruction with id " + ins.getInstructionId());
                 throw new RuntimeException("No inward id or parent instruction id found in instruction with id " + ins.getInstructionId());
-            }
-            ins.setStatus(readyToDeliverStatus);
-            Float inStockWeight = inwardEntry.getInStockWeight();
-            inwardEntry.setInStockWeight(inStockWeight + ins.getActualWeight());
+			}
+			ins.setStatus(readyToDeliverStatus);
+			Float inStockWeight = inwardEntry.getInStockWeight();
+			inwardEntry.setInStockWeight(inStockWeight + ins.getActualWeight());
+			Float fPresent = inwardEntry.getFpresent();
+			inwardEntry.setFpresent(fPresent + ins.getActualWeight());
             log.info("adding instruction actual weight "+ins.getActualWeight()+" and setting inward inStock weight from "+inStockWeight+" to "+(inStockWeight + ins.getActualWeight()));
             if(inwardEntry.getStatus().equals(deliveredStatus)){
                 log.info("setting inward " + inwardEntry.getInwardEntryId() + " status to ready to deliver");
                 inwardEntry.setStatus(readyToDeliverStatus);
             }
-            deliveryDetails.removeInstruction(ins);
         }
-        //deliveryDetailsRepo.deleteById(deliveryId);
         deliveryDetails.setDeleted(true);
         deliveryDetailsRepo.save(deliveryDetails);
     }
