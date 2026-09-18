@@ -6,8 +6,13 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
@@ -96,6 +101,8 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 
 	@Autowired
 	private SalesOrderJswHelperService helperService;
+	
+	private static final BigDecimal QTY_UNIT_MULTIPLIER = new BigDecimal("1000"); // clarify: tons->kg? confirm unit
 
 	@Override
 	public ResponseEntity<Object> save(SalesOrderMainRequest salesOrderMainRequest, String option) {
@@ -494,19 +501,23 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			SalesOrderCustomFields c = req.getCustom_fields();
 
 			// ----------------------- FIND EXISTING SO BY SO_NUMBER -----------------------
-			Optional<SalesOrderJswEntity> existingSoOpt = salesOrderRepository
-					.findBySoNumberAndIsDeletedFalse(d.getSalesorder_number());
+			Optional<SalesOrderJswEntity> existingSoOpt = salesOrderRepository.findBySoNumberAndIsDeletedFalse(d.getSalesorder_number());
 
 			SalesOrderJswEntity so;
+
+			Map<String, SalesOrderPacketsJswEntity> existingItemsByLineItemId = new HashMap<>();
 
 			if (existingSoOpt.isPresent()) {
 				// ======================= UPDATE FLOW =======================
 				so = existingSoOpt.get();
 
 				if (so.getItemslist() != null) {
-					so.getItemslist().clear();
+					for (SalesOrderPacketsJswEntity existing : so.getItemslist()) {
+						existingItemsByLineItemId.put(existing.getLineItemId(), existing);
+					}
 				}
-
+				so.setSoStatus(so.getSoStatus());
+				so.setCpStatus(so.getCpStatus());
 			} else {
 				// ======================= INSERT FLOW =======================
 				so = new SalesOrderJswEntity();
@@ -515,6 +526,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				so.setCreatedOn(new Date());
 				so.setAllocatedStts("PENDING");
 				so.setIsDeleted(false);
+				so.setCpStatus("UnAllocated");
 				so.setSoStatus(StatusType.SO_CREATED.getType());
 			}
 
@@ -533,10 +545,9 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			so.setSupplysource(c.getCf_supply_source());
 			so.setTypeofsupply(d.getDelivery_method());
 			so.setZbooksSo(d.getSalesorder_id());
-			so.setCpStatus("UnAllocated");
 			so.setUpdatedBy(commonUtil.getUserId());
 			so.setUpdatedOn(new Date());
-			so.setTotalSoqty(d.getTotal_quantity().multiply(new BigDecimal("1000")));
+			so.setTotalSoqty(d.getTotal_quantity().multiply(QTY_UNIT_MULTIPLIER));
 
 			// ----------------------- Branch -----------------------
 			if (d.getBranch_id() != null) {
@@ -560,41 +571,52 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			}
 
 			// ----------------------- LINE ITEMS (CHILD UPSERT) -----------------------
+			Set<String> incomingLineItemIds = new HashSet<>();
+
 			for (SalesOrderLineItem li : req.getLine_items()) {
+				incomingLineItemIds.add(li.getLine_item_id());
 
-				SalesOrderPacketsJswEntity item = new SalesOrderPacketsJswEntity();
+				SalesOrderPacketsJswEntity existingItem = existingItemsByLineItemId.get(li.getLine_item_id());
+				SalesOrderPacketsJswEntity item = (existingItem != null) ? existingItem : new SalesOrderPacketsJswEntity();
 
-				item.setSoId(so);
-				item.setMmId(li.getSku());
-				item.setSoqty(li.getQuantity().multiply(new BigDecimal("1000")));
-				item.setTax_percentage(String.valueOf(li.getTax_percentage()));
-				item.setQuantity_invoiced(toBigDecimal(li.getQuantity_invoiced()));
-				item.setItem_id(li.getItem_id());
-				item.setHsn_or_sac(li.getHsn_or_sac());
-				item.setMaterialName(li.getName());
-				item.setItemSoStatus("Unallocated");
-				item.setAllocatedStts("PENDING");
+				item.setSoqty(li.getQuantity() != null ? li.getQuantity().multiply(QTY_UNIT_MULTIPLIER) : BigDecimal.ZERO);
+				item.setLineItemId(li.getLine_item_id());
 				item.setIsDeleted(false);
-				item.setCreatedBy(commonUtil.getUserId());
 				item.setUpdatedBy(commonUtil.getUserId());
-				item.setCreatedOn(new Date());
 				item.setUpdatedOn(new Date());
-				item.setNumber_of_sheets(li.getNumberOfSheets());
-				if (li.getWarehouse_id() != null) {
-					item.setWearhouseId(li.getWarehouse_id());
-				}
-				so.addItem(item);
-			}
-			salesOrderRepository.save(so);
-			finalResponse = ResponseEntity
-					.ok("{\"code\":\"success\", \"message\":\"External Sales Order processed successfully\"}");
-			return finalResponse;
+				item.setQuantity_invoiced(toBigDecimal(li.getQuantity_invoiced()));
 
+				if (existingItem == null) {
+					// ======================= true insert =======================
+					item.setItem_id(li.getItem_id());
+					item.setHsn_or_sac(li.getHsn_or_sac());
+					item.setMmId(li.getSku());
+					item.setMaterialName(li.getName());
+					item.setItemSoStatus("Unallocated");
+					item.setAllocatedStts("PENDING");
+					item.setCreatedBy(commonUtil.getUserId());
+					item.setCreatedOn(new Date());
+					item.setNumber_of_sheets(li.getNumberOfSheets());
+					item.setWearhouseId(li.getWarehouse_id());
+					item.setTax_percentage(String.valueOf(li.getTax_percentage()));
+					so.addItem(item); 
+				}
+			}
+
+			// ----------------------- REMOVE ITEMS DROPPED FROM THE REQUEST -----------------------
+			if (so.getItemslist() != null) {
+				List<SalesOrderPacketsJswEntity> toRemove = so.getItemslist().stream()
+						.filter(existing -> !incomingLineItemIds.contains(existing.getLineItemId()))
+						.collect(Collectors.toList());
+				toRemove.forEach(so::removeItem);
+			}
+
+			salesOrderRepository.save(so);
+			finalResponse = ResponseEntity.ok("{\"code\":\"success\", \"message\":\"External Sales Order processed successfully\"}");
+			return finalResponse;
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			finalResponse = new ResponseEntity<>(
-					"{\"code\":\"failure\", \"message\": \"" + safeMsg(ex.getMessage()) + "\"}",
-					HttpStatus.INTERNAL_SERVER_ERROR);
+			finalResponse = new ResponseEntity<>("{\"code\":\"failure\", \"message\": \"" + safeMsg(ex.getMessage()) + "\"}", HttpStatus.INTERNAL_SERVER_ERROR);
 			return finalResponse;
 		} finally {
 			try {
@@ -626,7 +648,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			}
 		}
 	}
-
+	
 	private BigDecimal toBigDecimal(Object value) {
 		if (value == null) {
 			return BigDecimal.ZERO.setScale(3);

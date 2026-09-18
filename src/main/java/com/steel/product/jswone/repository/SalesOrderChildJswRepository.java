@@ -31,6 +31,8 @@ public interface SalesOrderChildJswRepository extends JpaRepository<SalesOrderPa
 			@Param("userId") int userId);
 
 	SalesOrderPacketsJswEntity findBySoChildId(Integer soChildId);
+	
+	SalesOrderPacketsJswEntity findByLineItemId(String line_item_id);
 
 	List<SalesOrderPacketsJswEntity> findBySoId_SoId(Integer soId); 
 
@@ -38,5 +40,10 @@ public interface SalesOrderChildJswRepository extends JpaRepository<SalesOrderPa
 	@Transactional
 	@Query(value = "update jsw_sales_order_child set item_so_status= :itemSOStatus where so_child_id =:soChildId", nativeQuery = true)
 	public int updateItemStataus(@Param("itemSOStatus") String itemSOStatus, @Param("soChildId") int soChildId);
-	
+
+	@Modifying
+	@Transactional
+	@Query(value = "update jsw_sales_order_child set quantity_invoiced= :quantityInvoiced where so_child_id =:soChildId", nativeQuery = true)
+	public int updatePostItemDetails(@Param("quantityInvoiced") BigDecimal quantity_invoiced, @Param("soChildId") int soChildId);
+
 }

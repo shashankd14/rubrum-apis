@@ -1314,25 +1314,41 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 	}
 
 	private WarehouseReassignmentMainRequest wareHouseReassignmentRequest(Integer soAllocationId, String option) {
-		
 		List<Object[]> poDetails = sollocationJswRepository.wareHouseReassignmentDetails(soAllocationId);
-		
+
 		WarehouseReassignmentMainRequest req = new WarehouseReassignmentMainRequest();
 		List<WarehouseReassignmentLineItemsDto> lineItems = new ArrayList<>();
+		BigDecimal totalAllocatedQty = new BigDecimal("0.00");
+		BigDecimal totalQty = null;
+		String lastItemId = null;
+		String itemWarehouseId = null;
+		String itemWarehouseName = null;
 
 		for (Object[] result : poDetails) {
 			req.setCustomer_id(result[0] != null ? result[0].toString() : null);
 			req.setSalesorder_id(result[1] != null ? result[1].toString() : null);
+
 			WarehouseReassignmentLineItemsDto lineitem = new WarehouseReassignmentLineItemsDto();
 			lineitem.setItem_id(result[2] != null ? result[2].toString() : null);
-			lineitem.setQuantity((result[3] == null ? null : new BigDecimal(String.valueOf(result[3]))));
+			lineitem.setQuantity(result[3] == null ? null : new BigDecimal(String.valueOf(result[3])));
 			lineitem.setWarehouse_id(result[4] != null ? result[4].toString() : null);
 			lineitem.setWarehouse_name(result[5] != null ? result[5].toString() : null);
-			if (option!=null && "unallocate".equals(option)) {
-				lineitem.setWarehouse_id(result[6] != null ? result[6].toString() : null);
-				lineitem.setWarehouse_name(result[7] != null ? result[7].toString() : null);
-			}
+			totalQty = (result[6] == null ? null : new BigDecimal(String.valueOf(result[6])));
+			itemWarehouseId = (result[7] != null ? result[7].toString() : null);
+			itemWarehouseName = (result[8] != null ? result[8].toString() : null);
+			totalAllocatedQty = totalAllocatedQty.add(lineitem.getQuantity());
+			lastItemId = lineitem.getItem_id();
 			lineItems.add(lineitem);
+		}
+
+		if (totalQty != null && totalQty.subtract(totalAllocatedQty).compareTo(BigDecimal.ZERO) > 0) {
+			BigDecimal remainingQty = totalQty.subtract(totalAllocatedQty);
+			WarehouseReassignmentLineItemsDto remainingItem = new WarehouseReassignmentLineItemsDto();
+			remainingItem.setItem_id(lastItemId);
+			remainingItem.setQuantity(remainingQty);
+			remainingItem.setWarehouse_id(itemWarehouseId);
+			remainingItem.setWarehouse_name(itemWarehouseName);
+			lineItems.add(remainingItem);
 		}
 		req.setLine_items(lineItems);
 		return req;
