@@ -115,11 +115,6 @@
                     <span th:if="${inwStat.first}" th:text="${deliveryChallan?.soNumber}"></span>
                 </th:block>
             </p>
-			<p class="col"><strong>Customer Code : </strong>
-                <th:block th:each="inw : ${deliveryChallan.inwardPdfDtos}">
-                    <span th:if="${inwStat.first}" th:text="${deliveryChallan?.customerCode}"></span>
-                </th:block>
-            </p>
         </div>
          <div class="inline-block w-50 font-size-small">
             <p class="col"><strong>To M/s. : </strong><span

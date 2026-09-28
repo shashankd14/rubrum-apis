@@ -533,10 +533,8 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			// ----------------------- COMMON HEADER UPDATE -----------------------
 			so.setSocreatedate(convertToDate(d.getDate()));
 			so.setRefno(d.getReference_number());
-			so.setCustomerid(d.getCustomer_id());
 			so.setZohoStatus(d.getStatus());
 			so.setSalesorder_id(d.getSalesorder_id());
-			so.setCustomer_name(d.getCustomer_name());
 			so.setCustomer_number(d.getCustomer_number());
 			so.setDeliverymethod(d.getDelivery_method());
 			so.setTerms(req.getPayment_terms_label());
@@ -579,12 +577,13 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				SalesOrderPacketsJswEntity existingItem = existingItemsByLineItemId.get(li.getLine_item_id());
 				SalesOrderPacketsJswEntity item = (existingItem != null) ? existingItem : new SalesOrderPacketsJswEntity();
 
-				item.setSoqty(li.getQuantity() != null ? li.getQuantity().multiply(QTY_UNIT_MULTIPLIER) : BigDecimal.ZERO);
+				item.setSoqty(toBigDecimal(li.getQuantity()));
 				item.setLineItemId(li.getLine_item_id());
 				item.setIsDeleted(false);
 				item.setUpdatedBy(commonUtil.getUserId());
 				item.setUpdatedOn(new Date());
 				item.setQuantity_invoiced(toBigDecimal(li.getQuantity_invoiced()));
+				item.setWearhouseId(li.getWarehouse_id());
 
 				if (existingItem == null) {
 					// ======================= true insert =======================
@@ -598,7 +597,6 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 					item.setCreatedOn(new Date());
 					item.setNumber_of_sheets(li.getNumberOfSheets());
 					item.setWearhouseId(li.getWarehouse_id());
-					item.setTax_percentage(String.valueOf(li.getTax_percentage()));
 					so.addItem(item); 
 				}
 			}

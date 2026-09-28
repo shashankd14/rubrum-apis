@@ -60,21 +60,6 @@ public class DeliveryDetailsController {
 
 	@Autowired
 	private MaterialMasterJswService materialService;
-	
-	/*@GetMapping("/list/{pageNo}/{pageSize}")
-	public ResponseEntity<Object> findAllWithPaginationOld(@PathVariable int pageNo, @PathVariable int pageSize,
-			@RequestParam(required = false, name = "searchText") String searchText,
-			@RequestParam(required = false, name = "partyId") String partyId) {
-
-		Map<String, Object> response = new HashMap<>();
-		Page<DeliveryDetails> pageResult = deliveryDetailsService.deliveryListPagination(pageNo, pageSize, searchText, partyId);
-		List<DeliveryPacketsDto> list = pageResult.getContent().stream().map(inw -> new DeliveryPacketsDto(inw)).collect(Collectors.toList());
-		response.put("content", list);
-		response.put("currentPage", pageResult.getNumber());
-		response.put("totalItems", pageResult.getTotalElements());
-		response.put("totalPages", pageResult.getTotalPages());
-		return new ResponseEntity<Object>(response, HttpStatus.OK);
-	}*/
 
 	@GetMapping("/list/{pageNo}/{pageSize}")
 	public ResponseEntity<Object> findAllDeliveryList(@PathVariable int pageNo, @PathVariable int pageSize,

@@ -57,8 +57,8 @@ public class SalesOrderJswEntity {
 	@Column(name = "terms")
 	private String terms;
 
-	@Column(name = "customerid")
-	private String customerid;
+	//@Column(name = "customerid")
+	//private String customerid;
 
 	@Column(name = "salesorder_id")
 	private String salesorder_id;
@@ -66,8 +66,8 @@ public class SalesOrderJswEntity {
 	@Column(name = "customer_number")
 	private String customer_number;
 
-	@Column(name = "customer_name")
-	private String customer_name;
+	//@Column(name = "customer_name")
+	//private String customer_name;
 
 	@Column(name = "total_soqty")
 	private BigDecimal totalSoqty;

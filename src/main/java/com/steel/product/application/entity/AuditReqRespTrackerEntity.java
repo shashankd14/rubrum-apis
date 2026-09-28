@@ -52,8 +52,8 @@ public class AuditReqRespTrackerEntity {
     @Column(name = "request_url")
     private String requestUrl;
 
-    @Column(name = "coil_number")
-    private String coilNumber;
+    @Column(name = "coil_inward_id")
+    private String coilInwardId;
 
     @Column(name = "user_name")
     private String userName;

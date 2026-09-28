@@ -80,7 +80,7 @@
     </div>
     <div style="margin: auto;">
         <h1 style="text-align:center;" th:text="${deliveryChallan?.companyName}"></h1>
-    </div> 
+    </div>
     <div>
         <div class="inline-block w-60">
             <p class="font-size-small"><strong>Head Office At: </strong><span
@@ -89,7 +89,7 @@
                     th:text="${deliveryChallan?.addressBranch}"></span></p>
         </div>
         <div class="inline-block w-30">
-        	<p class="font-size-small"><strong>Inward Doc No: </strong><span th:text="${deliveryChallan?.customerInvoiceNo}"></span></p>
+            <p class="font-size-small"><strong>Inward Doc No: </strong><span th:text="${deliveryChallan?.customerInvoiceNo}"></span></p>
             <p class="font-size-small"><strong>Email: </strong><span th:text="${deliveryChallan?.email}"></span></p>
             <p class="font-size-small inline-block" style="vertical-align: top;"><strong>GST No: </strong><span
                     th:text="${deliveryChallan?.gstN}"></span></p>
@@ -97,7 +97,8 @@
     </div>
 
     <hr style="text-align:center;color:black;"/>
-	<div>
+
+    <div>
         <div class="inline-block w-40 font-size-small">
             <p>
                 <strong>DC Date : </strong>
@@ -114,20 +115,15 @@
                     <span th:if="${inwStat.first}" th:text="${deliveryChallan?.soNumber}"></span>
                 </th:block>
             </p>
-			<p class="col"><strong>Customer Code : </strong>
-                <th:block th:each="inw : ${deliveryChallan.inwardPdfDtos}">
-                    <span th:if="${inwStat.first}" th:text="${deliveryChallan?.customerCode}"></span>
-                </th:block>
-            </p>
         </div>
          <div class="inline-block w-50 font-size-small">
             <p class="col"><strong>To M/s. : </strong><span
                     th:text="${deliveryChallan.inwardPdfDtos[0]?.partyName}"></span></p>
-           <p class="font-size-small"><strong>Shipped From</strong><span
+           <p class="font-size-small"><strong>Shipped From: </strong><span
                     th:text="${deliveryChallan?.partyAddress}"></span></p>
             <p class="font-size-small" style="vertical-align: top;">
             	<strong>GST No: </strong><span th:text="${deliveryChallan?.partyGSTNo}"></span></p>
-            <p class="col"><strong>Desp By Lorry No : </strong>
+			<p class="col"><strong>Desp By Lorry No : </strong>
                 <th:block th:each="inw : ${deliveryChallan.inwardPdfDtos}">
                     <span th:if="${inwStat.first}" th:text="${inw.instructions[0].deliveryDetails.vehicleNo}"></span>
                 </th:block>
@@ -141,67 +137,31 @@
                 <th class="t-head font-size-small" >Cust Batch No</th>
                 <th class="t-head font-size-small" >TxWxL (mm)</th>
                 <th class="t-head font-size-small" >Sub Grade</th>
-                <th class="t-head font-size-small" >Mtrl Grade</th>
-                <th class="t-head font-size-small" >Mtrl Desc</th>
-                <th class="t-head font-size-small" >No'of PCs</th>
-                <th class="t-head font-size-small" >Deli Weight (Kg)</th>
+                <th class="t-head font-size-small" >Material Grade</th>
+                <th class="t-head font-size-small" >Material Desc</th>
+          		<th class="t-head font-size-small" >Remarks</th>
+          		<th class="t-head font-size-small" >No'of PCs</th>
+                <th class="t-head font-size-small" >Delivery Weight (Kg)</th>
                 <th class="t-head font-size-small" >Value of Goods (Rs)</th>
-                <th class="t-head font-size-small" >Base Price (Rs)</th>
-                <th class="t-head font-size-small" >Addtnl+ lamntn Price (Rs)</th>
-                <th class="t-head font-size-small" >Packing Price (Rs)</th>
-                <th class="t-head font-size-small" >Total Price (Rs)</th>
             </tr>
             <th:block th:each="inw : ${deliveryChallan.inwardPdfDtos}">
                 <tr th:each="ins : ${inw.instructions}" style="margin-top: 2%;margin-left: -30px;">
                     <td class="font-size-x-small" th:text="${inw.coilNumber}"></td>
                     <td class="font-size-x-small" th:text="${inw?.customerBatchId}"></td>
-<!--                    <td class="font-size-x-small"-->
-<!--                        th:if="${ins.process.processId == 1 or ins.process.processId == 3}"-->
-<!--                        th:text="${inw?.fThickness + ' x ' + inw?.fWidth + ' x ' + ins?.actualLength}"></td>-->
-<!--                    <td class="font-size-x-small" th:if="${ins.process.processId == 2}"-->
-<!--                        th:text="${inw?.fThickness + ' x ' + ins?.actualWidth + ' x ' + inw?.fLength}"></td>-->
                     <td class="font-size-x-small" th:text="${inw?.fThickness + ' x ' + ins?.actualWidth + ' x ' + ins?.actualLength}"></td>
                     <td class="font-size-x-small" th:text="${inw?.subGradeName}"></td>
                     <td class="font-size-x-small" th:text="${inw?.materialGradeName}"></td>
                     <td class="font-size-x-small" th:text="${inw?.matDescription}"></td>
+                    <td class="font-size-x-small" th:text="${ins?.remarks}"></td>
                     <td class="font-size-x-small" th:text="${ins?.actualNoOfPieces}"></td>
                     <td class="font-size-x-small" th:text="${ins?.actualWeight}"></td>
                     <td class="font-size-x-small" th:text="${#numbers.formatDecimal(ins?.valueOfGoods,1,2)}"></td>
-                    <td class="font-size-x-small" th:text="${#numbers.formatDecimal(ins?.baseTotalPrice,1,2)}"></td>
-                    <td class="font-size-x-small" th:text="${#numbers.formatDecimal(ins?.additionalTotalPrice,1,2)}"></td>
-                    <td class="font-size-x-small" th:text="${#numbers.formatDecimal(ins?.packingRate,1,2)}"></td>
-                    <td class="font-size-x-small" th:text="${#numbers.formatDecimal(ins?.totalPrice,1,2)}"></td>
                 </tr>
-
             </th:block>
             <tr>
-                <td class="t-row font-size-small" colspan="7" style="text-align: center; font-weight: bold;">SUB TOTAL</td>
-                <td class="t-row font-size-small"  style="text-align: center; font-weight: bold;" th:text="${#numbers.formatDecimal(deliveryChallan?.totalDeliveryWeight,2,2)}"></td>
-                <td class="t-row font-size-small"  style="text-align: center; font-weight: bold;" th:text="${#numbers.formatDecimal(deliveryChallan?.totalValueOfGoods,2,2)}"></td>
-                <td class="t-row font-size-small" ></td>
-                <td class="t-row font-size-small" ></td>
-                <td class="t-row font-size-small" ></td>
-                <td class="t-row font-size-small"  style="text-align: center; font-weight: bold;" th:text="${#numbers.formatDecimal(deliveryChallan?.totalPrice,2,2)}"></td>
-            </tr>
-      <!--  <tr>
-                <td class="font-size-small" style="text-align: right;" colspan="10">SGST  9%</td>
-                <td class="font-size-small" ></td>
-                <td class="font-size-small"></td>
-            </tr>
-            <tr>
-                <td class="font-size-small" style="text-align: right;" colspan="10">CGST  9%</td>
-                <td class="font-size-small" ></td>
-                <td class="font-size-small" ></td>
-            </tr>
-            <tr>
-                <td class="font-size-small" style="text-align: right;" colspan="10">IF INTERSTATE IGST  18%</td>
-                <td class="font-size-small" ></td>
-                <td class="font-size-small"></td>
-            </tr> -->
-            <tr>
-                <td class="t-row font-size-small"  style="text-align: center; font-weight: bold;" colspan="11">GRAND TOTAL</td>
-                <td class="t-row font-size-small" ></td>
-                <td class="t-row font-size-small" style="text-align: center; font-weight: bold;" th:text="${#numbers.formatDecimal(deliveryChallan?.totalPrice,2,2)}"></td>
+                <td class="t-head" colspan="8" style="text-align: center; font-weight: bold;">Total</td>
+                <td class="t-head font-size-small" th:text="${#numbers.formatDecimal(deliveryChallan?.totalDeliveryWeight,2,2)}"></td>
+                <td class="t-head font-size-small" th:text="${#numbers.formatDecimal(deliveryChallan?.totalValueOfGoods,2,2)}"></td>
             </tr>
         </table>
     </div>

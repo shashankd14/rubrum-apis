@@ -109,7 +109,7 @@ public class PdfService {
 		SalesOrderListResponse resp = salesOrderService.getSoNoAndCustCode(deliveryPdfDto.getInstructionIds());
 		if (resp != null) {
 			deliveryChallanPdfDto.setSoNumber(resp.getSoNumber());
-			deliveryChallanPdfDto.setCustomerCode(resp.getCustomerCode());
+			//deliveryChallanPdfDto.setCustomerCode(resp.getCustomerCode());
 		}
 		context.setVariable("deliveryChallan", deliveryChallanPdfDto);
 		return context;

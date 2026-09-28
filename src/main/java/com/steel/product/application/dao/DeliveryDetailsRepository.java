@@ -116,27 +116,43 @@ public interface DeliveryDetailsRepository extends JpaRepository<DeliveryDetails
 			@Param("zohoSyncStts") String zohoSyncStts, @Param("salesInvoiceNo") String salesInvoiceNo);
 
 	@Query(value = "SELECT DISTINCT ptdd.deliveryid, totalweight"
-			+ " FROM product_tblinwardentry inw,  product_instruction inss,  "
-			+ " product_tbl_delivery_details ptdd,  product_tblpartydetails party "
-			+ " WHERE inw.npartyid=party.npartyid and inw.inwardentryid = inss.inwardid  "
-			+ " AND ptdd.deliveryid = inss.deliveryid  "
-			+ " and (inw.coilnumber like %:searchText% or inw.customerbatchid like %:searchText% or inw.customerinvoiceno like %:searchText% or party.partyname like %:searchText% ) "
-			+ " and (case when :partyIdsFlag=true then inw.npartyid in :partyIds else 1=1 end ) "
-			+ " AND inss.deliveryid IS NOT NULL order by ptdd.deliveryid desc", 
-			countQuery = "SELECT count(DISTINCT ptdd.deliveryid)"
-			+ "	FROM product_tblinwardentry inw,  product_instruction inss,  "
-			+ "	product_tbl_delivery_details ptdd,  product_tblpartydetails party "
-			+ "	WHERE inw.npartyid=party.npartyid and inw.inwardentryid = inss.inwardid  "
-			+ "	AND ptdd.deliveryid = inss.deliveryid  "
-			+ "	and (inw.coilnumber like %:searchText% or inw.customerbatchid like %:searchText% or inw.customerinvoiceno like %:searchText% or party.partyname like %:searchText% ) "
-			+ "	and (case when :partyIdsFlag=true then inw.npartyid in :partyIds else 1=1 end ) "
-			+ "	AND inss.deliveryid IS NOT NULL order by ptdd.deliveryid desc", 
-		nativeQuery = true)
+	        + " FROM product_tblinwardentry inw"
+	        + " JOIN product_tblpartydetails party ON inw.npartyid = party.npartyid"
+	        + " JOIN product_instruction inss ON inw.inwardentryid = inss.inwardid"
+	        + " JOIN product_tbl_delivery_details ptdd ON ptdd.deliveryid = inss.deliveryid"
+	        + " WHERE inss.deliveryid IS NOT NULL"
+	        + " AND (:searchText IS NULL OR :searchText = ''"
+	        + "      OR inw.coilnumber = :searchText"
+	        + "      OR inw.customerbatchid = :searchText"
+	        + "      OR inw.customerinvoiceno = :searchText"
+	        + "      OR party.partyname LIKE CONCAT('%', :searchText, '%')"
+	        + "      OR ptdd.vehicleno LIKE CONCAT('%', :searchText, '%')"
+	        + "      OR ptdd.sales_invoice_no LIKE CONCAT('%', :searchText, '%')"
+	        + "      OR CAST(ptdd.deliveryid AS CHAR) = :searchText)"
+	        + " AND (:partyIdsFlag = false OR inw.npartyid IN (:partyIds))"
+	        + " ORDER BY ptdd.deliveryid DESC",
+	    countQuery = "SELECT COUNT(DISTINCT ptdd.deliveryid)"
+	        + " FROM product_tblinwardentry inw"
+	        + " JOIN product_tblpartydetails party ON inw.npartyid = party.npartyid"
+	        + " JOIN product_instruction inss ON inw.inwardentryid = inss.inwardid"
+	        + " JOIN product_tbl_delivery_details ptdd ON ptdd.deliveryid = inss.deliveryid"
+	        + " WHERE inss.deliveryid IS NOT NULL"
+	        + " AND (:searchText IS NULL OR :searchText = ''"
+	        + "      OR inw.coilnumber = :searchText"
+	        + "      OR inw.customerbatchid = :searchText"
+	        + "      OR inw.customerinvoiceno = :searchText"
+	        + "      OR party.partyname LIKE CONCAT('%', :searchText, '%')"
+	        + "      OR ptdd.vehicleno LIKE CONCAT('%', :searchText, '%')"
+	        + "      OR ptdd.sales_invoice_no LIKE CONCAT('%', :searchText, '%')"
+	        + "      OR CAST(ptdd.deliveryid AS CHAR) = :searchText)"
+	        + " AND (:partyIdsFlag = false OR inw.npartyid IN (:partyIds))",
+	    nativeQuery = true)
 	Page<Object[]> listAllDeliveryList(
-			@Param("searchText") String searchText,
-			@Param("partyIds") List<Integer> partyIds, 
-			@Param("partyIdsFlag") boolean partyIdsFlag,
-			Pageable pageable);
+	        @Param("searchText") String searchText,
+	        @Param("partyIds") List<Integer> partyIds,
+	        @Param("partyIdsFlag") boolean partyIdsFlag,
+	        Pageable pageable);
+	
 	
 	@Query(value = " SELECT DISTINCT ptdd.deliveryId, vehicleNo, packing_rate_id,lamination_id,"
 			+ " totalWeight, ptdd.createdby, ptdd.updatedby, ptdd.createdon, ptdd.updatedon,"

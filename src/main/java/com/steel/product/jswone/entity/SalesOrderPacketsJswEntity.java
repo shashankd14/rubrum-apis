@@ -90,8 +90,8 @@ public class SalesOrderPacketsJswEntity {
 	@Column(name = "wearhouse_id")
 	private String wearhouseId;
 
-	@Column(name = "tax_percentage")
-	private String tax_percentage;
+	//@Column(name = "tax_percentage")
+	//private String tax_percentage;
 
 	@Column(name = "quantity_invoiced")
 	private BigDecimal quantity_invoiced;
