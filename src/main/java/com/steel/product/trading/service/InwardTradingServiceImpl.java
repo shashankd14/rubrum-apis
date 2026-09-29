@@ -5,9 +5,11 @@ import com.steel.product.trading.dto.InwardTradingResponse;
 import com.steel.product.trading.entity.DocumentTypeStaticEntity;
 import com.steel.product.trading.entity.InwardTradingChildEntity;
 import com.steel.product.trading.entity.InwardTradingEntity;
+import com.steel.product.trading.entity.InwardPurposeEntity;
 import com.steel.product.trading.repository.DocumentTypeStaticRepository;
 import com.steel.product.trading.repository.InwardTradingChildRepository;
 import com.steel.product.trading.repository.InwardTradingRepository;
+import com.steel.product.trading.repository.InwardPurposeRepository;
 import com.steel.product.trading.repository.SeqGeneratorRepository;
 import com.steel.product.trading.request.BaseRequest;
 import com.steel.product.trading.request.DeleteRequest;
@@ -37,6 +39,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 @Service
 @Log4j2
@@ -53,8 +57,12 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 
 	@Autowired
 	SeqGeneratorRepository seqGeneratorRepository;
+
+	@Autowired
+	InwardPurposeRepository inwardPurposeRepository;
 	
 	@Override
+	@Transactional
 	public ResponseEntity<Object> save(InwardTradingRequest request) {
 		log.info("In InwardTradingService page ");
 		ResponseEntity<Object> response = null;
@@ -64,7 +72,16 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 		try {
 			InwardTradingEntity inwardTradingEntity = new InwardTradingEntity();
 			BeanUtils.copyProperties(request, inwardTradingEntity);
+			applyPurpose(request, inwardTradingEntity);
 			inwardTradingEntity.setIsDeleted( false);
+			if (inwardTradingEntity.getStatus() == null || inwardTradingEntity.getStatus().trim().isEmpty()) {
+				inwardTradingEntity.setStatus("DRAFT");
+			}
+			if (inwardTradingEntity.getCurrencyCode() == null || inwardTradingEntity.getCurrencyCode().trim().isEmpty()) {
+				inwardTradingEntity.setCurrencyCode("INR");
+			}
+			if (inwardTradingEntity.getDeductFreight() == null) inwardTradingEntity.setDeductFreight(false);
+			if (inwardTradingEntity.getRaiseDebitNote() == null) inwardTradingEntity.setRaiseDebitNote(false);
 			
 			Map<Integer, Integer> oldChildIdsMap = new HashMap<>();
 			List<Integer> missedChildIds = new ArrayList<>();
@@ -77,6 +94,11 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 					oldEntity = kk.get();
 				}
 				if(oldEntity!=null && oldEntity.getInwardId()>0) {
+					if (inwardTradingEntity.getInwardNo() == null || inwardTradingEntity.getInwardNo().trim().isEmpty()) {
+						inwardTradingEntity.setInwardNo(oldEntity.getInwardNo() != null
+								? oldEntity.getInwardNo()
+								: String.format("INW-%07d", oldEntity.getInwardId()));
+					}
 					
 					//List<InwardTradingEntity> testInwardName = inwardTradingRepository.findByInwardNumber(inwardTradingEntity.getInwardNumber(), oldEntity.getInwardId());
 					//if(testInwardName!=null && testInwardName.size()>0) {
@@ -99,14 +121,18 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 				inwardTradingRepository.save(inwardTradingEntity);
 				List<InwardTradingChildEntity> itemsList = new ArrayList<>();
 				for (InwardTradingItemRequest childReq : request.getItemsList()) {
-					InwardTradingChildEntity childEntity = new InwardTradingChildEntity();
+					InwardTradingChildEntity childEntity = childReq.getItemchildId() != null && childReq.getItemchildId() > 0
+							? childRepository.findById(childReq.getItemchildId()).orElse(new InwardTradingChildEntity())
+							: new InwardTradingChildEntity();
+					Integer createdBy = childEntity.getCreatedBy();
+					Date createdOn = childEntity.getCreatedOn();
 					BeanUtils.copyProperties(childReq, childEntity);
 					childEntity.setIsDeleted(false);
 					childEntity.setInwardId(inwardTradingEntity);
 					childEntity.setUpdatedBy(request.getUserId());
 					childEntity.setUpdatedOn(new Date());
-					childEntity.setCreatedBy(request.getUserId());
-					childEntity.setCreatedOn(new Date());
+					childEntity.setCreatedBy(createdBy != null ? createdBy : request.getUserId());
+					childEntity.setCreatedOn(createdOn != null ? createdOn : new Date());
 					itemsList.add(childEntity);
 					if (childReq.getItemchildId() != null && childReq.getItemchildId() > 0) {
 						oldChildIdsMap.remove(childReq.getItemchildId());
@@ -119,7 +145,9 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 				//System.out.println("hi getItemsList().size - "+itemsList.size());
 				//System.out.println("hi missedChildIds size - "+missedChildIds.size());
 				childRepository.saveAll(itemsList);
-				childRepository.deleteData(missedChildIds, request.getUserId());
+				if (!missedChildIds.isEmpty()) {
+					childRepository.deleteData(missedChildIds, request.getUserId());
+				}
 			} else {
 				// INWARD CREATE LOGIC 				
 				//List<InwardTradingEntity> testItemName = inwardTradingRepository.findByInwardNumber( inwardTradingEntity.getInwardNumber());
@@ -140,9 +168,31 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 					inwardTradingEntity.addItem(childEntity);
 				}
 				inwardTradingRepository.save(inwardTradingEntity);
+				if (inwardTradingEntity.getInwardNo() == null || inwardTradingEntity.getInwardNo().trim().isEmpty()) {
+					inwardTradingEntity.setInwardNo(String.format("INW-%07d", inwardTradingEntity.getInwardId()));
+				}
+				int lineNumber = 1;
+				for (InwardTradingChildEntity item : inwardTradingEntity.getItemsList()) {
+					if (item.getInwardItemId() == null || item.getInwardItemId().trim().isEmpty()) {
+						item.setInwardItemId(inwardTradingEntity.getInwardNo() + "-" + lineNumber);
+					}
+					lineNumber++;
+				}
+				inwardTradingRepository.save(inwardTradingEntity);
 			}
-			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \""+message+" \"}",	new HttpHeaders(), HttpStatus.OK);
+			Map<String, Object> responseBody = new HashMap<>();
+			responseBody.put("status", "success");
+			responseBody.put("message", message.trim());
+			responseBody.put("inwardId", inwardTradingEntity.getInwardId());
+			responseBody.put("inwardNo", inwardTradingEntity.getInwardNo());
+			responseBody.put("consignmentId", inwardTradingEntity.getConsignmentId());
+			responseBody.put("inwardStatus", inwardTradingEntity.getStatus());
+			response = new ResponseEntity<>(responseBody, new HttpHeaders(), HttpStatus.OK);
+		} catch (IllegalArgumentException e) {
+			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"" + e.getMessage() + "\"}", header, HttpStatus.BAD_REQUEST);
 		} catch (Exception e) {
+			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
 			e.printStackTrace();
 			log.info("error is ==" + e.getMessage());
 			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -156,10 +206,17 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 		Map<String, Object> response = new HashMap<>();
 		Pageable pageable = PageRequest.of((searchPageRequest.getPageNo() - 1), searchPageRequest.getPageSize());
 		
-		Page<Object[]> pageResult = inwardTradingRepository.findAllInwardsWithSearchText(searchPageRequest.getInwardId(), searchPageRequest.getVendorId(), searchPageRequest.getSearchText(),pageable);
+		Page<Object[]> pageResult = inwardTradingRepository.findAllInwardsWithSearchText(searchPageRequest.getInwardId(), searchPageRequest.getVendorId(), searchPageRequest.getSearchText(), searchPageRequest.getStatus(), pageable);
 		List<Integer> inwardIdsList = new ArrayList<>();
 		for (Object[] result : pageResult) {
 			inwardIdsList.add(result[0] != null ? (Integer) result[0] : null);
+		}
+		if (inwardIdsList.isEmpty()) {
+			response.put("content", new ArrayList<InwardTradingResponse>());
+			response.put("currentPage", pageResult.getNumber() + 1);
+			response.put("totalItems", pageResult.getTotalElements());
+			response.put("totalPages", pageResult.getTotalPages());
+			return response;
 		}
 
 		Map<Integer, List<InwardTradingChildResponse>> map = new LinkedHashMap<>();
@@ -211,6 +268,16 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 			childDTO.setTheoreticalNoofPieces(result[37] != null ? (Integer) result[37] : null);
 			childDTO.setItemName(result[38] != null ? (String) result[38] : null);
 			childDTO.setInwardItemId( result[39] != null ? (String) result[39] : null);
+			dto.setInwardNo(result[40] != null ? (String) result[40] : null);
+			dto.setStatus(result[41] != null ? (String) result[41] : null);
+			dto.setCurrencyCode(result[42] != null ? (String) result[42] : null);
+			dto.setReconciliationRemark(result[43] != null ? (String) result[43] : null);
+			dto.setDeductFreight(toBoolean(result[44]));
+			dto.setRaiseDebitNote(toBoolean(result[45]));
+			dto.setVendorCode(result[46] != null ? (String) result[46] : null);
+			dto.setLocationName(result[47] != null ? (String) result[47] : null);
+			dto.setCreatedOn(result[48] != null ? (Date) result[48] : null);
+			dto.setPurposeId(result[49] != null ? ((Number) result[49]).intValue() : null);
 
 			if (map.get(dto.getInwardId()) != null) {
 				List<InwardTradingChildResponse> dummyList = map.get(dto.getInwardId());
@@ -230,7 +297,7 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 		}
 
 		response.put("content", responseList);
-		response.put("currentPage", pageResult.getNumber());
+		response.put("currentPage", pageResult.getNumber() + 1);
 		response.put("totalItems", pageResult.getTotalElements());
 		response.put("totalPages", pageResult.getTotalPages());
 
@@ -238,6 +305,7 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 	}
 
 	@Override
+	@Transactional
 	public ResponseEntity<Object> inwardDelete(DeleteRequest deleteRequest) {
 		log.info("In inwardDelete page ");
 		ResponseEntity<Object> response = null;
@@ -246,11 +314,20 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 		
 		try {
 			inwardTradingRepository.deleteData(deleteRequest.getIds(), deleteRequest.getUserId());
+			childRepository.deleteByInwardIds(deleteRequest.getIds(), deleteRequest.getUserId());
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Selected Inward has been deleted successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
+			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
 			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		return response;
+	}
+
+	private Boolean toBoolean(Object value) {
+		if (value == null) return false;
+		if (value instanceof Boolean) return (Boolean) value;
+		if (value instanceof Number) return ((Number) value).intValue() != 0;
+		return Boolean.valueOf(value.toString());
 	}
 	
 	@Override
@@ -311,6 +388,36 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 	public ResponseEntity<Object> getDocumentList(BaseRequest req) {
 		List<DocumentTypeStaticEntity> response = documentTypeStaticRepository.findAll();
 		return new ResponseEntity<Object>(response, HttpStatus.OK);
+	}
+
+	@Override
+	public ResponseEntity<Object> getPurposeList() {
+		List<InwardPurposeEntity> response = inwardPurposeRepository.findByIsActiveTrueOrderByDisplayOrderAsc();
+		return new ResponseEntity<Object>(response, HttpStatus.OK);
+	}
+
+	private void applyPurpose(InwardTradingRequest request, InwardTradingEntity inwardTradingEntity) {
+		if (request.getPurposeId() != null) {
+			InwardPurposeEntity purpose = inwardPurposeRepository.findByPurposeIdAndIsActiveTrue(request.getPurposeId())
+					.orElseThrow(() -> new IllegalArgumentException("Invalid inward purpose"));
+			inwardTradingEntity.setPurposeId(purpose.getPurposeId());
+			inwardTradingEntity.setPurposeType(purpose.getPurposeName());
+			return;
+		}
+		if (request.getPurposeType() != null && !request.getPurposeType().trim().isEmpty()) {
+			String purposeType = request.getPurposeType().trim();
+			Optional<InwardPurposeEntity> purpose = inwardPurposeRepository.findByPurposeNameIgnoreCaseAndIsActiveTrue(purposeType);
+			if (purpose.isPresent()) {
+				inwardTradingEntity.setPurposeId(purpose.get().getPurposeId());
+				inwardTradingEntity.setPurposeType(purpose.get().getPurposeName());
+			} else {
+				// Preserve legacy clients and records whose purpose predates the master table.
+				inwardTradingEntity.setPurposeId(null);
+				inwardTradingEntity.setPurposeType(purposeType);
+			}
+			return;
+		}
+		throw new IllegalArgumentException("Inward purpose is required");
 	}
 
 }

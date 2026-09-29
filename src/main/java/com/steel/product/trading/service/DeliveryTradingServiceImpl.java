@@ -23,6 +23,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 @Service
 @Log4j2
@@ -41,6 +43,7 @@ public class DeliveryTradingServiceImpl implements DeliveryTradingService {
 	EQPChildRepository childRepository;
 
 	@Override
+	@Transactional
 	public ResponseEntity<Object> save(DeliveryOrderRequest request) {
 		log.info("In DeliveryTradingServiceImpl.save page ");
 		ResponseEntity<Object> response = null;
@@ -50,7 +53,7 @@ public class DeliveryTradingServiceImpl implements DeliveryTradingService {
 		try {
 
 			EQPEntity eqpEntity = new EQPEntity();
-			Optional<EQPEntity> kk1 = eqpRepository.findById(request.getEnquiryId());
+			Optional<EQPEntity> kk1 = eqpRepository.findForDispatchUpdate(request.getEnquiryId());
 			if (kk1.isPresent()) {
 				eqpEntity = kk1.get();
 			} else {
@@ -81,12 +84,17 @@ public class DeliveryTradingServiceImpl implements DeliveryTradingService {
 					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid data\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
 				}
 			} else {
-				if (eqpEntity.getCurrentStatus() == null || (!"PROFORMA".equals(eqpEntity.getCurrentStatus()))) {
+				if (eqpEntity.getCurrentStatus() == null || (!"PROFORMA".equals(eqpEntity.getCurrentStatus()) || !"PENDING_DO".equals(eqpEntity.getProformaStatus()))) {
 					return new ResponseEntity<>( "{\"status\": \"fail\", \"message\": \"Please enter valid enquiry data\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
 				}
 				doEntity.setCreatedBy(request.getUserId());
 				doEntity.setCreatedOn(new Date());
 				doEntity.setEnquiryId(eqpEntity);
+			}
+			// Editing logistics requires a fresh loading approval.
+			if ("DO".equals(eqpEntity.getCurrentStatus())) {
+				eqpEntity.setdOStatus("DO");
+				eqpRepository.save(eqpEntity);
 			}
 			doRepository.save(doEntity);
 			List<Integer> ids = new ArrayList<>();
@@ -97,6 +105,7 @@ public class DeliveryTradingServiceImpl implements DeliveryTradingService {
 		} catch (Exception e) {
 			e.printStackTrace();
 			log.info("error is ==" + e.getMessage());
+			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
 			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		return response;
@@ -121,6 +130,7 @@ public class DeliveryTradingServiceImpl implements DeliveryTradingService {
 	}
 
 	@Override
+	@Transactional
 	public ResponseEntity<Object> dcSave(DeliveryChalanRequest request) {
 		log.info("In DeliveryTradingServiceImpl.dcSave page ");
 		ResponseEntity<Object> response = null;
@@ -130,7 +140,7 @@ public class DeliveryTradingServiceImpl implements DeliveryTradingService {
 		try {
 
 			EQPEntity eqpEntity = new EQPEntity();
-			Optional<EQPEntity> kk1 = eqpRepository.findById(request.getEnquiryId());
+			Optional<EQPEntity> kk1 = eqpRepository.findForDispatchUpdate(request.getEnquiryId());
 			if (kk1.isPresent()) {
 				eqpEntity = kk1.get();
 			} else {
@@ -161,8 +171,8 @@ public class DeliveryTradingServiceImpl implements DeliveryTradingService {
 					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid data\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
 				}
 			} else {
-				if (eqpEntity.getCurrentStatus() == null || (!"DO".equals(eqpEntity.getCurrentStatus()))) {
-					return new ResponseEntity<>( "{\"status\": \"fail\", \"message\": \"Please enter valid enquiry data\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+				if (!"DO".equals(eqpEntity.getCurrentStatus()) || !"APPROVED".equals(eqpEntity.getdOStatus())) {
+					return new ResponseEntity<>( "{\"status\": \"fail\", \"message\": \"Approve delivery order loading before creating a challan.\"}", header, HttpStatus.CONFLICT);
 				}
 				doEntity.setCreatedBy(request.getUserId());
 				doEntity.setCreatedOn(new Date());
@@ -177,6 +187,7 @@ public class DeliveryTradingServiceImpl implements DeliveryTradingService {
 		} catch (Exception e) {
 			e.printStackTrace();
 			log.info("error is ==" + e.getMessage());
+			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
 			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		return response;

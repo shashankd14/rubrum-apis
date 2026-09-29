@@ -21,8 +21,17 @@ public class InwardTradingEntity {
 	@Column(name = "inward_id")
 	private Integer inwardId;
 
+	@Column(name = "inward_no")
+	private String inwardNo;
+
+	@Column(name = "status")
+	private String status;
+
 	@Column(name = "purpose_type")
 	private String purposeType;
+
+	@Column(name = "purpose_id")
+	private Integer purposeId;
 
 	@Column(name = "consignment_id")
 	private String consignmentId;
@@ -66,6 +75,9 @@ public class InwardTradingEntity {
 	@Column(name = "value_of_goods")
 	private BigDecimal valueOfGoods;
 
+	@Column(name = "currency_code")
+	private String currencyCode;
+
 	@Column(name = "extra_charges_option")
 	private String extraChargesOption;
 
@@ -98,6 +110,15 @@ public class InwardTradingEntity {
 
 	@Column(name = "total_volume")
 	private Integer totalVolume;
+
+	@Column(name = "reconciliation_remark")
+	private String reconciliationRemark;
+
+	@Column(name = "deduct_freight", columnDefinition = "BIT")
+	private Boolean deductFreight;
+
+	@Column(name = "raise_debit_note", columnDefinition = "BIT")
+	private Boolean raiseDebitNote;
 	
 	@Column(name = "is_deleted", columnDefinition = "BIT")
 	private Boolean isDeleted;
@@ -132,12 +153,36 @@ public class InwardTradingEntity {
 		this.inwardId = inwardId;
 	}
 
+	public String getInwardNo() {
+		return inwardNo;
+	}
+
+	public void setInwardNo(String inwardNo) {
+		this.inwardNo = inwardNo;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
 	public String getPurposeType() {
 		return purposeType;
 	}
 
 	public void setPurposeType(String purposeType) {
 		this.purposeType = purposeType;
+	}
+
+	public Integer getPurposeId() {
+		return purposeId;
+	}
+
+	public void setPurposeId(Integer purposeId) {
+		this.purposeId = purposeId;
 	}
 
 	public Integer getVendorId() {
@@ -252,6 +297,14 @@ public class InwardTradingEntity {
 		this.valueOfGoods = valueOfGoods;
 	}
 
+	public String getCurrencyCode() {
+		return currencyCode;
+	}
+
+	public void setCurrencyCode(String currencyCode) {
+		this.currencyCode = currencyCode;
+	}
+
 	public String getExtraChargesOption() {
 		return extraChargesOption;
 	}
@@ -338,6 +391,30 @@ public class InwardTradingEntity {
 
 	public void setTotalVolume(Integer totalVolume) {
 		this.totalVolume = totalVolume;
+	}
+
+	public String getReconciliationRemark() {
+		return reconciliationRemark;
+	}
+
+	public void setReconciliationRemark(String reconciliationRemark) {
+		this.reconciliationRemark = reconciliationRemark;
+	}
+
+	public Boolean getDeductFreight() {
+		return deductFreight;
+	}
+
+	public void setDeductFreight(Boolean deductFreight) {
+		this.deductFreight = deductFreight;
+	}
+
+	public Boolean getRaiseDebitNote() {
+		return raiseDebitNote;
+	}
+
+	public void setRaiseDebitNote(Boolean raiseDebitNote) {
+		this.raiseDebitNote = raiseDebitNote;
 	}
 
 	public Boolean getIsDeleted() {

@@ -41,4 +41,7 @@ public interface SubCategoryRepository extends JpaRepository<SubCategoryEntity, 
 	
 	Optional<SubCategoryEntity> findBySubcategoryIdAndIsDeleted(Integer subcategoryId, Boolean isDeleted);
 
+	@Query("select sub from SubCategoryEntity sub where sub.isDeleted is false and sub.categoryId in :categoryIds order by sub.subcategoryName asc")
+	List<SubCategoryEntity> findActiveByCategoryIds(@Param("categoryIds") List<Integer> categoryIds);
+
 }

@@ -1,5 +1,6 @@
 package com.steel.product.trading.dto;
 
+import java.math.BigDecimal;
 import lombok.Data;
 
 @Data
@@ -21,13 +22,19 @@ public class EQPChildResponse {
 	
 	private String locationName;
 
-	private Integer qty1;
+	private BigDecimal qty1;
 
 	private String unit1;
 
-	private Integer qty2;
+	private BigDecimal qty2;
 
 	private String unit2;
+
+	private BigDecimal rate;
+
+	private String chargeableUnit;
+
+	private BigDecimal amount;
 
 	private String estimateDeliveryDate;
 

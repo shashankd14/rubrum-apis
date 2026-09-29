@@ -19,6 +19,8 @@ import com.steel.product.trading.request.MaterialMasterRequest;
 import com.steel.product.trading.request.SearchRequest;
 import com.steel.product.trading.request.SubCategoryRequest;
 
+import java.util.List;
+
 public interface MaterialMasterService {
 
 	ResponseEntity<Object> save(MaterialMasterRequest materialRequest, MultipartFile itemImage,
@@ -33,6 +35,8 @@ public interface MaterialMasterService {
 	CategoryEntity findByCategoryId(Integer id);
 
 	Page<CategoryEntity> getCategoryList(SearchRequest searchListPageRequest);
+
+	List<SubCategoryEntity> getSubCategoriesByCategoryIds(List<Integer> categoryIds);
 
 	ResponseEntity<Object> materialDelete(DeleteRequest deleteRequest);
 

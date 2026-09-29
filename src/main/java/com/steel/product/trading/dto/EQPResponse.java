@@ -18,7 +18,7 @@ public class EQPResponse {
 
 	private String enqEnquiryDate;;
 
-	private Integer enqQty;
+	private BigDecimal enqQty;
 
 	private BigDecimal enqValue;
 
@@ -30,11 +30,15 @@ public class EQPResponse {
 
 	private String quoteEnquiryDate;;
 
-	private Integer quoteQty;
+	private BigDecimal quoteQty;
 
 	private BigDecimal quoteValue;
 
+	private String latestRevisionStatus;
+
 	private String status;
+	private String proformaStatus;
+	private String deliveryOrderStatus;
 
 	private EQPTermsEntity terms = new EQPTermsEntity();
 

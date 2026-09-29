@@ -12,7 +12,13 @@ public class InwardTradingRequest extends BaseRequest {
 
 	private Integer inwardId;
 
+	private String inwardNo;
+
+	private String status;
+
 	private String purposeType;
+
+	private Integer purposeId;
 
 	private String consignmentId;
 
@@ -42,6 +48,8 @@ public class InwardTradingRequest extends BaseRequest {
 
 	private BigDecimal valueOfGoods;
 
+	private String currencyCode;
+
 	private String extraChargesOption;
 
 	private BigDecimal freightCharges;
@@ -63,5 +71,11 @@ public class InwardTradingRequest extends BaseRequest {
 	private BigDecimal totalWeight;
 
 	private Integer totalVolume;
+
+	private String reconciliationRemark;
+
+	private Boolean deductFreight;
+
+	private Boolean raiseDebitNote;
 
 }

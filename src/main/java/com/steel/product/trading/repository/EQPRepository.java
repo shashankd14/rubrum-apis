@@ -14,10 +14,14 @@ import com.steel.product.trading.entity.EQPEntity;
 
 @Repository
 public interface EQPRepository extends JpaRepository<EQPEntity, Integer> {
+	@org.springframework.data.jpa.repository.Lock(javax.persistence.LockModeType.PESSIMISTIC_WRITE)
+	@Query("select e from EQPEntity e where e.enquiryId = :enquiryId")
+	java.util.Optional<EQPEntity> findForDispatchUpdate(@Param("enquiryId") Integer enquiryId);
 	
 	@Query(value = "SELECT inward.enquiry_id, inward.enq_qty"
 			+ " FROM trading_eqp inward, trading_customer_master customer \r\n"
 			+ " where inward.is_deleted = 0"
+			+ " and (:dispatchOnly = false or inward.current_status in ('DO','DC') or inward.proforma_status = 'PENDING_DO') "
 			+ " and inward.current_status = ifnull(:status, inward.current_status) "
 			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (customer.customer_name like %:searchText% or inward.enq_enquiry_from like %:searchText%) else 1=1 end " 
 			+ " and inward.enq_customer_id = ifnull(:customerId, inward.enq_customer_id) \r\n"
@@ -26,14 +30,15 @@ public interface EQPRepository extends JpaRepository<EQPEntity, Integer> {
 	countQuery = "SELECT count(inward.enquiry_id) "
 			+ " FROM trading_eqp inward, trading_customer_master customer \r\n"
 			+ " where inward.is_deleted = 0" 
-			+ " and inward.current_status = ifnull(:status, inward.status) "
+			+ " and (:dispatchOnly = false or inward.current_status in ('DO','DC') or inward.proforma_status = 'PENDING_DO') "
+			+ " and inward.current_status = ifnull(:status, inward.current_status) "
 			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (customer.customer_name like %:searchText% or inward.enq_enquiry_from like %:searchText%) else 1=1 end " 
-			+ " and inward.customer_id = ifnull(:customerId, inward.customer_id) \r\n"
+			+ " and inward.enq_customer_id = ifnull(:customerId, inward.enq_customer_id) \r\n"
 			+ " and inward.enquiry_id = ifnull(:enquiryId, inward.enquiry_id) \r\n"
 			+ " and inward.enq_customer_id=customer.customer_id",
 	nativeQuery = true)
 	Page<Object[]> findAllInwardsWithSearchText(@Param("enquiryId") Integer enquiryId, @Param("status") String status, 
-			@Param("customerId") Integer customerId, @Param("searchText") String searchText, Pageable pageable);
+			@Param("customerId") Integer customerId, @Param("searchText") String searchText, @Param("dispatchOnly") boolean dispatchOnly, Pageable pageable);
 	
 	@Query(value = "SELECT inward.enquiry_id, inward.enq_customer_id, customer.customer_name, inward.enq_enquiry_from, DATE_FORMAT(inward.enq_enquiry_date, '%d-%m-%y') enqenquirydate, "
 			+ " inward.enq_qty, inward.enq_value, inward.quote_enquiry_from,  "
@@ -45,7 +50,11 @@ public interface EQPRepository extends JpaRepository<EQPEntity, Integer> {
 			+ " (select location_name from trading_location_master location where location.location_id =  child.location_id) ,"
 			+ " terms.terms_id, terms.payment_method, terms.weight, terms.loading, terms.transport_method, terms.other_charges_method, "
 			+ " terms.tax_method, terms.validity, terms.remarks, terms.taxable_amount, terms.loadinge200_per_ton, terms.transport_charges, "
-			+ " terms.other_charges, terms.total_taxable_amount, terms.gst, terms.total_estimate, terms.r_o "
+			+ " terms.other_charges, terms.total_taxable_amount, terms.gst, terms.total_estimate, terms.r_o, "
+			+ " terms.loading_qty, terms.loading_rate, terms.transport_qty, terms.transport_rate, "
+			+ " child.rate, child.chargeable_unit, child.amount, "
+			+ " (select revision.revision_status from trading_quote_revision revision "
+			+ " where revision.enquiry_id = inward.enquiry_id order by revision.version_no desc limit 1) latestRevisionStatus, inward.proforma_status, inward.quote_customer_id, inward.do_status "
 			+ " FROM trading_eqp inward "
 			+ " left outer join trading_customer_master customer on inward.enq_customer_id=customer.customer_id"
 			+ " left outer join trading_eqp_items child on inward.enquiry_id=child.enquiryid and inward.current_status =  child.status and child.is_deleted = 0 \r\n"

@@ -32,6 +32,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 @Service
 @Log4j2
@@ -42,6 +44,9 @@ public class EQPServiceImpl implements EQPService {
 
 	@Autowired
 	EQPChildRepository childRepository;
+
+	@Autowired
+	QuoteRevisionService quoteRevisionService;
 
 	@Override
 	public ResponseEntity<Object> save(EQPRequest request) {
@@ -125,7 +130,8 @@ public class EQPServiceImpl implements EQPService {
 				System.out.println("eqpEntity.getItemsList ==  " + eqpEntity.getItemsList().size());
 				eqpRepository.save(eqpEntity);
 			}
-			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \""+message+" \"}",	new HttpHeaders(), HttpStatus.OK);
+			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \""+message
+					+" \", \"enquiryId\": "+eqpEntity.getEnquiryId()+"}", new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
 			log.info("error is ==" + e.getMessage());
@@ -148,7 +154,7 @@ public class EQPServiceImpl implements EQPService {
 		}
 		Page<Object[]> pageResult = eqpRepository.findAllInwardsWithSearchText(searchPageRequest.getEnquiryId(),
 				searchPageRequest.getStatus(), searchPageRequest.getCustomerId(), searchPageRequest.getSearchText(),
-				pageable);
+				Boolean.TRUE.equals(searchPageRequest.getDispatchOnly()), pageable);
 		List<Integer> inwardIdsList = new ArrayList<>();
 		for (Object[] result : pageResult) {
 			inwardIdsList.add(result[0] != null ? (Integer) result[0] : null);
@@ -159,7 +165,7 @@ public class EQPServiceImpl implements EQPService {
 		Map<Integer, List<EQPChildResponse>> map = new LinkedHashMap<>();
 		Map<Integer, EQPResponse> inwardMap = new LinkedHashMap<>();
 		List<EQPResponse> responseList = new ArrayList<>();
-		List<Object[]> pageResultChild = eqpRepository.findAllInwardsWiseData(inwardIdsList, searchPageRequest.getStatus());
+		List<Object[]> pageResultChild = inwardIdsList.isEmpty() ? new ArrayList<>() : eqpRepository.findAllInwardsWiseData(inwardIdsList, searchPageRequest.getStatus());
 		for (Object[] result : pageResultChild) {
 			EQPResponse dto = new EQPResponse();
 			EQPChildResponse childDTO = new EQPChildResponse();
@@ -168,11 +174,11 @@ public class EQPServiceImpl implements EQPService {
 			dto.setEnqCustomerName( result[2] != null ? (String) result[2] : null);
 			dto.setEnqEnquiryFrom( result[3] != null ? (String) result[3] : null);
 			dto.setEnqEnquiryDate( result[4] != null ? (String) result[4] : null);
-			dto.setEnqQty( result[5] != null ? (Integer) result[5] : null);
+			dto.setEnqQty( result[5] != null ? (BigDecimal) result[5] : null);
 			dto.setEnqValue( result[6] != null ? (BigDecimal) result[6] : null);
 			dto.setQuoteEnquiryFrom( result[7] != null ? (String) result[7] : null);
 			dto.setQuoteEnquiryDate( result[8] != null ? (String) result[8] : null);
-			dto.setQuoteQty( result[9] != null ? (Integer) result[9] : null);
+			dto.setQuoteQty( result[9] != null ? (BigDecimal) result[9] : null);
 			dto.setQuoteValue( result[10] != null ? (BigDecimal) result[10] : null);
 			dto.setStatus( result[11] != null ? (String) result[11] : null);
 			dto.setQuoteCustomerName( result[12] != null ? (String) result[12] : null);
@@ -183,9 +189,9 @@ public class EQPServiceImpl implements EQPService {
 			childDTO.setItemSpecs( result[15] != null ? (String) result[15] : null);
 			childDTO.setMake( result[16] != null ? (String) result[16] : null);
 			childDTO.setAltMake( result[17] != null ? (String) result[17] : null);
-			childDTO.setQty1( result[18] != null ? (Integer) result[18] : null);
+			childDTO.setQty1( result[18] != null ? (BigDecimal) result[18] : null);
 			childDTO.setUnit1( result[19] != null ? (String) result[19] : null);
-			childDTO.setQty2(result[20] != null ? (Integer) result[20] : null);
+			childDTO.setQty2(result[20] != null ? (BigDecimal) result[20] : null);
 			childDTO.setUnit2(result[21] != null ? (String) result[21] : null);
 			childDTO.setEstimateDeliveryDate( result[22] != null ? (String) result[22] : null);
 			childDTO.setRemarks( result[23] != null ? (String) result[23] : null);
@@ -211,6 +217,17 @@ public class EQPServiceImpl implements EQPService {
 			dto.getTerms().setGst(result[42] != null ? (BigDecimal) result[42] : null);
 			dto.getTerms().setTotalEstimate(result[43] != null ? (BigDecimal) result[43] : null);
 			dto.getTerms().setRAndO( result[44] != null ? (BigDecimal) result[44] : null);
+			dto.getTerms().setLoadingQty(result[45] != null ? (BigDecimal) result[45] : null);
+			dto.getTerms().setLoadingRate(result[46] != null ? (BigDecimal) result[46] : null);
+			dto.getTerms().setTransportQty(result[47] != null ? (BigDecimal) result[47] : null);
+			dto.getTerms().setTransportRate(result[48] != null ? (BigDecimal) result[48] : null);
+			childDTO.setRate(result[49] != null ? (BigDecimal) result[49] : null);
+			childDTO.setChargeableUnit(result[50] != null ? (String) result[50] : null);
+			childDTO.setAmount(result[51] != null ? (BigDecimal) result[51] : null);
+			dto.setLatestRevisionStatus(result[52] != null ? (String) result[52] : null);
+			dto.setProformaStatus(result[53] != null ? (String) result[53] : null);
+			dto.setQuoteCustomerId(result[54] != null ? ((Number) result[54]).intValue() : null);
+			dto.setDeliveryOrderStatus(result[55] != null ? (String) result[55] : null);
 			
 			if (map.get(dto.getEnquiryId() ) != null) {
 				List<EQPChildResponse> dummyList = map.get(dto.getEnquiryId());
@@ -238,6 +255,7 @@ public class EQPServiceImpl implements EQPService {
 	}
  
 	@Override
+	@Transactional
 	public ResponseEntity<Object> quoteSave(EQPRequest request) {
 		log.info("In EQPServiceImpl.save page ");
 		ResponseEntity<Object> response = null;
@@ -246,8 +264,6 @@ public class EQPServiceImpl implements EQPService {
 		String message = "Quote Details saved successfully..! ";
 		try {
 			EQPEntity eqpEntity = new EQPEntity();
-			Map<Integer, Integer> oldChildIdsMap = new HashMap<>();
-			List<Integer> missedChildIds = new ArrayList<>();
 			Optional<EQPEntity> kk = eqpRepository.findById(request.getEnquiryId());
 			EQPEntity oldEntity = null;
 			if (kk.isPresent()) {
@@ -256,6 +272,7 @@ public class EQPServiceImpl implements EQPService {
 			} else {
 				return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid enquiry data\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
 			}
+			boolean isQuoteUpdate = "QUOTE".equals(oldEntity.getCurrentStatus());
 			
 			eqpEntity.setQuoteCustomerId(request.getQuoteCustomerId() );
 			eqpEntity.setQuoteEnquiryFrom(request.getQuoteEnquiryFrom() );
@@ -266,70 +283,92 @@ public class EQPServiceImpl implements EQPService {
 			eqpEntity.setQuoteStatus( request.getStatus());
 
 			if (oldEntity.getEnquiryId() != null && oldEntity.getEnquiryId() > 0 && "QUOTE".equals(oldEntity.getCurrentStatus())) {
+				Map<Integer, EQPChildEntity> existingChildren = new HashMap<>();
 				for (EQPChildEntity childEntity : oldEntity.getItemsList()) {
 					if("QUOTE".equals(childEntity.getStatus())) {
-						oldChildIdsMap.put(childEntity.getEnquiryChildId(), childEntity.getEnquiryChildId());
+						existingChildren.put(childEntity.getEnquiryChildId(), childEntity);
 					}
 				}
-				eqpEntity.setItemsList(oldEntity.getItemsList());
 				eqpEntity.setQuoteUpdatedBy(request.getUserId());
 				eqpEntity.setQuoteUpdatedOn(new Date());
-				//eqpEntity.setQuoteCreatedBy(oldEntity.getCreatedBy());
-				//eqpEntity.setQuoteCreatedOn(oldEntity.getCreatedOn());
 				eqpEntity.setCurrentStatus(request.getStatus());
 				message = "Quote Details updated successfully..! ";
 
-				EQPTermsEntity termsEntity = request.getTerms();
-				termsEntity.setTermsId(eqpEntity.getTerms().getTermsId() );
+				EQPTermsEntity termsEntity = eqpEntity.getTerms();
+				if (termsEntity == null) {
+					termsEntity = new EQPTermsEntity();
+				}
+				BeanUtils.copyProperties(request.getTerms(), termsEntity, "termsId", "enquiryId");
 				termsEntity.setIsDeleted(false);
 				termsEntity.setEnquiryId(eqpEntity);
-				//termsEntity.setQuoteCreatedBy(request.getUserId());
 				termsEntity.setQuoteUpdatedBy(request.getUserId());
 				termsEntity.setQuoteUpdatedOn(new Date());
-				//termsEntity.setQuoteCreatedOn(new Date());
 				termsEntity.setStatus(request.getStatus());
-				eqpEntity.setTerms( termsEntity);
-				
-				// QUOTE UPDATE LOGIC
-				eqpRepository.save(eqpEntity);
-				List<EQPChildEntity> itemsList = new ArrayList<>();
+				eqpEntity.setTerms(termsEntity);
+
 				for (EQPChildRequest childReq : request.getItemsList()) {
-					EQPChildEntity childEntity = new EQPChildEntity();
+					EQPChildEntity childEntity = childReq.getEnquiryChildId() == null
+							? null
+							: existingChildren.remove(childReq.getEnquiryChildId());
+					boolean isNewChild = childEntity == null;
+					if (isNewChild) {
+						childEntity = new EQPChildEntity();
+					}
 					BeanUtils.copyProperties(childReq, childEntity);
 					childEntity.setIsDeleted(false);
 					childEntity.setEnquiryId(eqpEntity);
 					childEntity.setQuoteUpdatedBy(request.getUserId());
 					childEntity.setQuoteUpdatedOn(new Date());
-					childEntity.setQuoteCreatedBy(request.getUserId());
-					childEntity.setQuoteCreatedOn(new Date());
 					childEntity.setStatus(request.getStatus());
-					itemsList.add(childEntity);
-					if (childReq.getEnquiryChildId() != null && childReq.getEnquiryChildId() > 0) {
-						oldChildIdsMap.remove(childReq.getEnquiryChildId());
+					if (isNewChild) {
+						childEntity.setQuoteCreatedBy(request.getUserId());
+						childEntity.setQuoteCreatedOn(new Date());
+						eqpEntity.addItem(childEntity);
 					}
 				}
 
-				if (oldChildIdsMap != null && oldChildIdsMap.size() > 0) {
-					missedChildIds = new ArrayList<Integer>(oldChildIdsMap.values());
+				for (EQPChildEntity omittedChild : existingChildren.values()) {
+					omittedChild.setIsDeleted(true);
+					omittedChild.setUpdatedBy(request.getUserId());
+					omittedChild.setUpdatedOn(new Date());
 				}
-				childRepository.saveAll(itemsList);
-				childRepository.deleteData(missedChildIds, request.getUserId());
+				eqpRepository.save(eqpEntity);
 			} else {
-				eqpEntity.setCreatedBy(request.getUserId());
-				eqpEntity.setCreatedOn(new Date());
+				eqpEntity.setQuoteCreatedBy(request.getUserId());
+				eqpEntity.setQuoteCreatedOn(new Date());
 				eqpEntity.setCurrentStatus(request.getStatus());
-				System.out.println("request.getItemsList.size ==  " + request.getItemsList().size());
+
+				Map<Integer, EQPChildEntity> existingChildren = new HashMap<>();
+				for (EQPChildEntity existingChild : eqpEntity.getItemsList()) {
+					if (existingChild.getEnquiryChildId() != null) {
+						existingChildren.put(existingChild.getEnquiryChildId(), existingChild);
+					}
+				}
+
 				for (EQPChildRequest childReq : request.getItemsList()) {
-					EQPChildEntity childEntity = new EQPChildEntity();
+					EQPChildEntity childEntity = childReq.getEnquiryChildId() == null
+							? null
+							: existingChildren.remove(childReq.getEnquiryChildId());
+					boolean isNewChild = childEntity == null;
+					if (isNewChild) {
+						childEntity = new EQPChildEntity();
+					}
 					BeanUtils.copyProperties(childReq, childEntity);
 					childEntity.setIsDeleted(false);
 					childEntity.setEnquiryId(eqpEntity);
 					childEntity.setQuoteCreatedBy(request.getUserId());
 					childEntity.setQuoteCreatedOn(new Date());
 					childEntity.setStatus(request.getStatus());
-					eqpEntity.addItem(childEntity);
+					if (isNewChild) {
+						eqpEntity.addItem(childEntity);
+					}
 				}
-				System.out.println("eqpEntity.getItemsList ==  " + eqpEntity.getItemsList().size());
+
+				for (EQPChildEntity omittedChild : existingChildren.values()) {
+					omittedChild.setIsDeleted(true);
+					omittedChild.setUpdatedBy(request.getUserId());
+					omittedChild.setUpdatedOn(new Date());
+				}
 				EQPTermsEntity termsEntity = request.getTerms();
 				termsEntity.setIsDeleted(false);
 				termsEntity.setEnquiryId(eqpEntity);
@@ -339,8 +378,10 @@ public class EQPServiceImpl implements EQPService {
 				eqpEntity.setTerms( termsEntity);
 				eqpRepository.save(eqpEntity);
 			}
+			quoteRevisionService.captureRevision(request, isQuoteUpdate);
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \""+message+" \"}",	new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
+			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
 			e.printStackTrace();
 			log.info("error is ==" + e.getMessage());
 			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -462,28 +503,53 @@ public class EQPServiceImpl implements EQPService {
 				childRepository.saveAll(itemsList);
 				childRepository.deleteData(missedChildIds, request.getUserId());
 			} else {
-				eqpEntity.setCreatedBy(request.getUserId());
-				eqpEntity.setCreatedOn(new Date());
+				eqpEntity.setProformaCreatedBy(request.getUserId());
+				eqpEntity.setProformaCreatedOn(new Date());
 				eqpEntity.setCurrentStatus(request.getStatus());
-				System.out.println("request.getItemsList.size ==  " + request.getItemsList().size());
+
+				Map<Integer, EQPChildEntity> existingChildren = new HashMap<>();
+				for (EQPChildEntity existingChild : eqpEntity.getItemsList()) {
+					if (existingChild.getEnquiryChildId() != null) {
+						existingChildren.put(existingChild.getEnquiryChildId(), existingChild);
+					}
+				}
+
 				for (EQPChildRequest childReq : request.getItemsList()) {
-					EQPChildEntity childEntity = new EQPChildEntity();
+					EQPChildEntity childEntity = childReq.getEnquiryChildId() == null
+							? null
+							: existingChildren.remove(childReq.getEnquiryChildId());
+					boolean isNewChild = childEntity == null;
+					if (isNewChild) {
+						childEntity = new EQPChildEntity();
+					}
 					BeanUtils.copyProperties(childReq, childEntity);
 					childEntity.setIsDeleted(false);
 					childEntity.setEnquiryId(eqpEntity);
 					childEntity.setProformaCreatedBy(request.getUserId());
 					childEntity.setProformaCreatedOn(new Date());
 					childEntity.setStatus(request.getStatus());
-					eqpEntity.addItem(childEntity);
+					if (isNewChild) {
+						eqpEntity.addItem(childEntity);
+					}
 				}
-				System.out.println("eqpEntity.getItemsList ==  " + eqpEntity.getItemsList().size());
-				EQPTermsEntity termsEntity = request.getTerms();
+
+				for (EQPChildEntity omittedChild : existingChildren.values()) {
+					omittedChild.setIsDeleted(true);
+					omittedChild.setUpdatedBy(request.getUserId());
+					omittedChild.setUpdatedOn(new Date());
+				}
+
+				EQPTermsEntity termsEntity = eqpEntity.getTerms();
+				if (termsEntity == null) {
+					termsEntity = new EQPTermsEntity();
+				}
+				BeanUtils.copyProperties(request.getTerms(), termsEntity, "termsId", "enquiryId");
 				termsEntity.setIsDeleted(false);
 				termsEntity.setEnquiryId(eqpEntity);
 				termsEntity.setProformaCreatedBy(request.getUserId());
 				termsEntity.setProformaCreatedOn(new Date());
 				termsEntity.setStatus(request.getStatus());
-				eqpEntity.setTerms( termsEntity);
+				eqpEntity.setTerms(termsEntity);
 				eqpRepository.save(eqpEntity);
 			}
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \""+message+" \"}",	new HttpHeaders(), HttpStatus.OK);

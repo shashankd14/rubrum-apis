@@ -59,4 +59,9 @@ public class InwardTradingController {
 		return inwardTradingService.getDocumentList(req);
 	}
 
+	@GetMapping(value = "/inward/purpose/list", produces = "application/json")
+	public ResponseEntity<Object> getPurposeList() {
+		return inwardTradingService.getPurposeList();
+	}
+
 }

@@ -25,6 +25,7 @@ import com.steel.product.trading.request.SubCategoryRequest;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.Date;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -84,17 +85,23 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 			MaterialMasterEntity materialMasterEntity = new MaterialMasterEntity();
 			BeanUtils.copyProperties(materialMasterRequest, materialMasterEntity);
 
-			if(materialMasterRequest.getSubCategoryId()!=null && materialMasterRequest.getSubCategoryId() >0 ) {
-				Optional<SubCategoryEntity> subCat = subCategoryRepository.findById(materialMasterRequest.getSubCategoryId());
-				if (subCat.isPresent()) {
-					materialMasterEntity.setSubCategoryEntity(subCat.get());
-				}
-			}
 			if(materialMasterRequest.getCategoryId()!=null && materialMasterRequest.getCategoryId() >0 ) {
-				Optional<CategoryEntity> cate = categoryRepository.findById(materialMasterRequest.getCategoryId());
-				if (cate.isPresent()) {
-					materialMasterEntity.setCategoryEntity(cate.get());
+				Optional<CategoryEntity> category = categoryRepository.findByCategoryIdAndIsDeleted(
+						materialMasterRequest.getCategoryId(), false);
+				if (!category.isPresent()) {
+					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please select a valid category\"}", header, HttpStatus.BAD_REQUEST);
 				}
+				materialMasterEntity.setCategoryEntity(category.get());
+			}
+			if(materialMasterRequest.getSubCategoryId()!=null && materialMasterRequest.getSubCategoryId() >0 ) {
+				Optional<SubCategoryEntity> subcategory = subCategoryRepository.findBySubcategoryIdAndIsDeleted(
+						materialMasterRequest.getSubCategoryId(), false);
+				if (!subcategory.isPresent()
+						|| materialMasterRequest.getCategoryId() == null
+						|| !materialMasterRequest.getCategoryId().equals(subcategory.get().getCategoryId())) {
+					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please select a valid subcategory for the selected category\"}", header, HttpStatus.BAD_REQUEST);
+				}
+				materialMasterEntity.setSubCategoryEntity(subcategory.get());
 			}
 			if(materialMasterEntity.getItemId()!=null && materialMasterEntity.getItemId()>0) {
 				MaterialMasterEntity oldEntity = null;
@@ -117,8 +124,12 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 					materialMasterEntity.setUpdatedOn(new Date());
 					materialMasterEntity.setCreatedBy(oldEntity.getCreatedBy());
 					materialMasterEntity.setCreatedOn(oldEntity.getCreatedOn());
-					materialMasterEntity.setItemImage(oldEntity.getItemImage());
-					materialMasterEntity.setCrossSectionalImage(oldEntity.getCrossSectionalImage());
+					if (!Boolean.TRUE.equals(materialMasterRequest.getRemoveItemImage())) {
+						materialMasterEntity.setItemImage(oldEntity.getItemImage());
+					}
+					if (!Boolean.TRUE.equals(materialMasterRequest.getRemoveCrossSectionalImage())) {
+						materialMasterEntity.setCrossSectionalImage(oldEntity.getCrossSectionalImage());
+					}
 					materialMasterEntity.setIsDeleted(false);
 					message="Materal details updated successfully..! ";
 				} else {
@@ -266,6 +277,14 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 			Page<CategoryEntity> pageResult = categoryRepository.findAll(pageable);
 			return pageResult;
 		}
+	}
+
+	@Override
+	public List<SubCategoryEntity> getSubCategoriesByCategoryIds(List<Integer> categoryIds) {
+		if (categoryIds == null || categoryIds.isEmpty()) {
+			return Collections.emptyList();
+		}
+		return subCategoryRepository.findActiveByCategoryIds(categoryIds);
 	}
 
 	@Override

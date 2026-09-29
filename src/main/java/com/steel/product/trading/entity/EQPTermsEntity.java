@@ -1,6 +1,8 @@
 package com.steel.product.trading.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Data;
 
@@ -55,8 +57,20 @@ public class EQPTermsEntity {
 	@Column(name = "loadinge200_per_ton")
 	private BigDecimal loadinge200PerTon;
 
+	@Column(name = "loading_qty")
+	private BigDecimal loadingQty;
+
+	@Column(name = "loading_rate")
+	private BigDecimal loadingRate;
+
 	@Column(name = "transport_charges")
 	private BigDecimal transportCharges;
+
+	@Column(name = "transport_qty")
+	private BigDecimal transportQty;
+
+	@Column(name = "transport_rate")
+	private BigDecimal transportRate;
 
 	@Column(name = "other_charges")
 	private BigDecimal otherCharges;
@@ -72,6 +86,17 @@ public class EQPTermsEntity {
 
 	@Column(name = "r_o")
 	private BigDecimal rAndO;
+
+	@JsonProperty("rAndO")
+	public BigDecimal getRAndO() {
+		return rAndO;
+	}
+
+	@JsonProperty("rAndO")
+	@JsonAlias("randO")
+	public void setRAndO(BigDecimal value) {
+		this.rAndO = value;
+	}
 
 	@Column(name = "status")
 	private String status;

@@ -29,7 +29,7 @@ public class EQPEntity {
 	private Date enqEnquiryDate;;
 
 	@Column(name = "enq_qty")
-	private Integer enqQty;
+	private BigDecimal enqQty;
 
 	@Column(name = "enq_value")
 	private BigDecimal enqValue;
@@ -44,7 +44,7 @@ public class EQPEntity {
 	private Date quoteEnquiryDate;;
 
 	@Column(name = "quote_qty")
-	private Integer quoteQty;
+	private BigDecimal quoteQty;
 
 	@Column(name = "quote_value")
 	private BigDecimal quoteValue;
@@ -158,11 +158,11 @@ public class EQPEntity {
 		this.enqEnquiryDate = enqEnquiryDate;
 	}
 
-	public Integer getEnqQty() {
+	public BigDecimal getEnqQty() {
 		return enqQty;
 	}
 
-	public void setEnqQty(Integer enqQty) {
+	public void setEnqQty(BigDecimal enqQty) {
 		this.enqQty = enqQty;
 	}
 
@@ -278,11 +278,11 @@ public class EQPEntity {
 		this.quoteEnquiryDate = quoteEnquiryDate;
 	}
 
-	public Integer getQuoteQty() {
+	public BigDecimal getQuoteQty() {
 		return quoteQty;
 	}
 
-	public void setQuoteQty(Integer quoteQty) {
+	public void setQuoteQty(BigDecimal quoteQty) {
 		this.quoteQty = quoteQty;
 	}
 
