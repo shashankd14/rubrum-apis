@@ -13,6 +13,8 @@ public class LocationRequest extends BaseRequest {
 
 	private String locationName;
 
+	private String branchType;
+
 	private String contactName;
 
 	private String phoneNo;

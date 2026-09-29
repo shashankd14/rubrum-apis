@@ -23,6 +23,7 @@ import com.steel.product.trading.request.MaterialMasterRequest;
 import com.steel.product.trading.request.SearchRequest;
 import com.steel.product.trading.request.SubCategoryRequest;
 import com.steel.product.trading.service.MaterialMasterService;
+import com.steel.product.trading.service.SellerMasterExcelImportService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.ArrayList;
@@ -47,6 +48,15 @@ public class MaterialController {
 
 	@Autowired
 	private MaterialMasterService materialMasterService;
+
+	@Autowired
+	private SellerMasterExcelImportService sellerMasterExcelImportService;
+
+	@PostMapping(value = "/material/master/import", consumes = "multipart/form-data", produces = "application/json")
+	public ResponseEntity<Object> importSellerMasters(@RequestParam("file") MultipartFile file,
+			@RequestParam("userId") Integer userId) {
+		return ResponseEntity.ok(sellerMasterExcelImportService.importWorkbook(file, userId));
+	}
 
 	@Autowired
 	private ProcessService processService;
