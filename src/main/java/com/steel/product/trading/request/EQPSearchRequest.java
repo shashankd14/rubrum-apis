@@ -13,6 +13,7 @@ public class EQPSearchRequest implements Serializable {
 	private Integer customerId;
 	
 	private String status;
+	private Boolean dispatchOnly;
 
 	private String searchText;
 

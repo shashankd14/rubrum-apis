@@ -22,6 +22,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 @Service
 @Log4j2
@@ -29,8 +31,12 @@ public class LocationServiceImpl implements LocationService {
 
 	@Autowired
 	LocationRepository locationRepository;
+
+	@Autowired
+	SharedContactAddressService sharedContactAddressService;
 	
 	@Override
+	@Transactional
 	public ResponseEntity<Object> save(LocationRequest vendorRequest) {
 		log.info("In location save page ");
 		ResponseEntity<Object> response = null;
@@ -39,7 +45,7 @@ public class LocationServiceImpl implements LocationService {
 		String message="Location details saved successfully..! ";
 		try {
 			LocationEntity locationEntity = new LocationEntity();
-			BeanUtils.copyProperties(vendorRequest, locationEntity);
+			BeanUtils.copyProperties(vendorRequest, locationEntity, "additionalContacts");
 			locationEntity.setIsDeleted(false);
 			if (locationEntity.getLocationId() != null && locationEntity.getLocationId() > 0) {
 				LocationEntity oldEntity = null;
@@ -70,11 +76,14 @@ public class LocationServiceImpl implements LocationService {
 				locationEntity.setCreatedBy(vendorRequest.getUserId());
 				locationEntity.setCreatedOn(new Date());
 			}
-			locationRepository.save(locationEntity);
+			locationEntity = locationRepository.save(locationEntity);
+			sharedContactAddressService.syncContacts(
+					"LOCATION", locationEntity.getLocationId(),
+					vendorRequest.getAdditionalContacts(), vendorRequest.getUserId());
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \""+message+" \"}",	new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
-			e.printStackTrace();
-			log.info("error is ==" + e.getMessage());
+			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+			log.error("Unable to save location", e);
 			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		return response;
@@ -87,9 +96,11 @@ public class LocationServiceImpl implements LocationService {
 
 		if (searchListPageRequest.getSearchText() != null && searchListPageRequest.getSearchText().length() > 0) {
 			Page<LocationEntity> pageResult = locationRepository.findAllWithSearchText(searchListPageRequest.getSearchText(), pageable);
+			pageResult.forEach(this::populateAdditionalContacts);
 			return pageResult;
 		} else {
 			Page<LocationEntity> pageResult = locationRepository.findAll(pageable);
+			pageResult.forEach(this::populateAdditionalContacts);
 			return pageResult;
 		}
 	}
@@ -101,6 +112,7 @@ public class LocationServiceImpl implements LocationService {
 		LocationEntity categoryEntity = null;
 		if (kk.isPresent()) {
 			categoryEntity = kk.get();
+			populateAdditionalContacts(categoryEntity);
 		}
 		return categoryEntity;
 	}
@@ -119,6 +131,11 @@ public class LocationServiceImpl implements LocationService {
 			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		return response;
+	}
+
+	private void populateAdditionalContacts(LocationEntity location) {
+		location.setAdditionalContacts(
+				sharedContactAddressService.getContacts("LOCATION", location.getLocationId()));
 	}
 
 	@Override

@@ -10,13 +10,21 @@ public class InwardTradingResponse {
 
 	private Integer inwardId;
 
+	private String inwardNo;
+
+	private String status;
+
 	private String purposeType;
+
+	private Integer purposeId;
 
 	private String consignmentId;
 
 	private Integer vendorId;
 
 	private String vendorName;
+
+	private String vendorCode;
 
 	private String transporterName;
 
@@ -25,6 +33,8 @@ public class InwardTradingResponse {
 	private String vendorBatchNo;
 
 	private Integer locationId;
+
+	private String locationName;
 
 	private String vehicleNo;
 
@@ -39,6 +49,8 @@ public class InwardTradingResponse {
 	private Date ewayBillDate;
 
 	private BigDecimal valueOfGoods;
+
+	private String currencyCode;
 
 	private String extraChargesOption;
 
@@ -61,6 +73,14 @@ public class InwardTradingResponse {
 	private BigDecimal totalWeight;
 
 	private BigDecimal totalVolume;
+
+	private String reconciliationRemark;
+
+	private Boolean deductFreight;
+
+	private Boolean raiseDebitNote;
+
+	private Date createdOn;
 
 	private List<InwardTradingChildResponse> itemsList;
 

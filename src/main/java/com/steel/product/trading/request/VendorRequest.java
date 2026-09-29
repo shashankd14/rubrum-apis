@@ -1,5 +1,7 @@
 package com.steel.product.trading.request;
 
+import java.util.List;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -54,5 +56,9 @@ public class VendorRequest extends BaseRequest {
 	private Integer alternatePincode;
 
 	private Boolean isDeleted;
+
+	private List<ContactMasterRequest> additionalContacts;
+
+	private List<AddressMasterRequest> additionalAddresses;
 
 }

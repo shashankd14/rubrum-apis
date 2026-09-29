@@ -1,5 +1,6 @@
 package com.steel.product.trading.request;
 
+import java.math.BigDecimal;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,13 +20,19 @@ public class EQPChildRequest extends BaseRequest {
 	
 	private Integer locationId;
 
-	private Integer qty1;
+	private BigDecimal qty1;
 
 	private String unit1;
 
-	private Integer qty2;
+	private BigDecimal qty2;
 
 	private String unit2;
+
+	private BigDecimal rate;
+
+	private String chargeableUnit;
+
+	private BigDecimal amount;
 
 	private String estimateDeliveryDate;
 

@@ -1,5 +1,7 @@
 package com.steel.product.trading.request;
 
+import java.util.List;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,6 +12,14 @@ public class LocationRequest extends BaseRequest {
 	private Integer locationId;
 
 	private String locationName;
+
+	private String contactName;
+
+	private String phoneNo;
+
+	private String contactNo;
+
+	private String emailId;
 
 	private String address1;
 
@@ -22,5 +32,7 @@ public class LocationRequest extends BaseRequest {
 	private Integer pincode;
 
 	private String gstNo;
+
+	private List<ContactMasterRequest> additionalContacts;
 
 }

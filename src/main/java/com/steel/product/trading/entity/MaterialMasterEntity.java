@@ -33,6 +33,9 @@ public class MaterialMasterEntity {
 	@Column(name = "item_grade_id")
 	private Integer itemGradeId;
 
+	@Column(name = "item_grade")
+	private String itemGrade;
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "category_id")
 	private CategoryEntity categoryEntity;
@@ -47,11 +50,29 @@ public class MaterialMasterEntity {
 	@Column(name = "brand_id")
 	private Integer brandId;
 
+	@Column(name = "brand_name")
+	private String brandName;
+
 	@Column(name = "manufacturer_id")
 	private Integer manufacturerId;
 
+	@Column(name = "manufacturer_name")
+	private String manufacturerName;
+
+	@Column(name = "can_be_processed", columnDefinition = "BIT")
+	private Boolean canBeProcessed;
+
+	@Column(name = "applicable_processes", columnDefinition = "JSON")
+	private String applicableProcesses;
+
 	@Column(name = "additional_params")
 	private String additionalParams;
+
+	@Column(name = "technical_specs", columnDefinition = "JSON")
+	private String technicalSpecs;
+
+	@Column(name = "unit_weights", columnDefinition = "JSON")
+	private String unitWeights;
 
 	@Column(name = "item_image")
 	private String itemImage;

@@ -37,7 +37,7 @@ public class EQPChildEntity {
 	private String altMake;
 
 	@Column(name = "qty1")
-	private Integer qty1;
+	private BigDecimal qty1;
 
 	@Column(name = "location_id")
 	private Integer locationId;
@@ -46,7 +46,7 @@ public class EQPChildEntity {
 	private String unit1;
 
 	@Column(name = "qty2")
-	private Integer qty2;
+	private BigDecimal qty2;
 
 	@Column(name = "unit2")
 	private String unit2;

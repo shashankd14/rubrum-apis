@@ -21,7 +21,7 @@ public class EQPRequest extends BaseRequest {
 
 	private Date enqEnquiryDate;;
 
-	private Integer enqQty;
+	private BigDecimal enqQty;
 
 	private BigDecimal enqValue;
 	
@@ -31,7 +31,7 @@ public class EQPRequest extends BaseRequest {
 
 	private Date quoteEnquiryDate;;
 
-	private Integer quoteQty;
+	private BigDecimal quoteQty;
 
 	private BigDecimal quoteValue;
 	

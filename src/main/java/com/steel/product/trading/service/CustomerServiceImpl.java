@@ -22,6 +22,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 @Service
 @Log4j2
@@ -29,8 +31,12 @@ public class CustomerServiceImpl implements CustomerService {
 
 	@Autowired
 	CustomerRepository customerRepository;
+
+	@Autowired
+	SharedContactAddressService sharedContactAddressService;
 	
 	@Override
+	@Transactional
 	public ResponseEntity<Object> save(CustomerRequest customerRequest) {
 		log.info("In CustomerSave page ");
 		ResponseEntity<Object> response = null;
@@ -39,7 +45,7 @@ public class CustomerServiceImpl implements CustomerService {
 		String message="Customer details saved successfully..! ";
 		try {
 			CustomerEntity customerEntity = new CustomerEntity();
-			BeanUtils.copyProperties(customerRequest, customerEntity);
+			BeanUtils.copyProperties(customerRequest, customerEntity, "additionalContacts", "additionalAddresses");
 			customerEntity.setIsDeleted(false);
 			if (customerEntity.getCustomerId() != null && customerEntity.getCustomerId() > 0) {
 				CustomerEntity oldEntity = null;
@@ -70,11 +76,17 @@ public class CustomerServiceImpl implements CustomerService {
 				customerEntity.setCreatedBy(customerRequest.getUserId());
 				customerEntity.setCreatedOn(new Date());
 			}
-			customerRepository.save(customerEntity);
+			customerEntity = customerRepository.save(customerEntity);
+			sharedContactAddressService.syncContacts(
+					"CUSTOMER", customerEntity.getCustomerId(),
+					customerRequest.getAdditionalContacts(), customerRequest.getUserId());
+			sharedContactAddressService.syncAddresses(
+					"CUSTOMER", customerEntity.getCustomerId(),
+					customerRequest.getAdditionalAddresses(), customerRequest.getUserId());
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \""+message+" \"}",	new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
-			e.printStackTrace();
-			log.info("error is ==" + e.getMessage());
+			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+			log.error("Unable to save customer", e);
 			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		return response;
@@ -87,9 +99,11 @@ public class CustomerServiceImpl implements CustomerService {
 
 		if (searchListPageRequest.getSearchText() != null && searchListPageRequest.getSearchText().length() > 0) {
 			Page<CustomerEntity> pageResult = customerRepository.findAllWithSearchText(searchListPageRequest.getSearchText(), pageable);
+			pageResult.forEach(this::populateAdditionalDetails);
 			return pageResult;
 		} else {
 			Page<CustomerEntity> pageResult = customerRepository.findAll(pageable);
+			pageResult.forEach(this::populateAdditionalDetails);
 			return pageResult;
 		}
 	}
@@ -101,6 +115,7 @@ public class CustomerServiceImpl implements CustomerService {
 		CustomerEntity categoryEntity = null;
 		if (kk.isPresent()) {
 			categoryEntity = kk.get();
+			populateAdditionalDetails(categoryEntity);
 		}
 		return categoryEntity;
 	}
@@ -119,6 +134,13 @@ public class CustomerServiceImpl implements CustomerService {
 			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		return response;
+	}
+
+	private void populateAdditionalDetails(CustomerEntity customer) {
+		customer.setAdditionalContacts(
+				sharedContactAddressService.getContacts("CUSTOMER", customer.getCustomerId()));
+		customer.setAdditionalAddresses(
+				sharedContactAddressService.getAddresses("CUSTOMER", customer.getCustomerId()));
 	}
 	
 }

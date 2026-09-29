@@ -2,12 +2,15 @@ package com.steel.product.trading.entity;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.Where;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Data;
 import javax.persistence.*;
 import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
 
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Entity
@@ -100,5 +103,15 @@ public class VendorEntity {
 	@Column(name = "updated_on")
 	@UpdateTimestamp
 	private Date updatedOn;
+
+	@OneToMany(fetch = FetchType.LAZY)
+	@JoinColumn(name = "reference_id", referencedColumnName = "vendor_id", insertable = false, updatable = false)
+	@Where(clause = "reference_type = 'VENDOR' AND is_deleted = 0")
+	private List<ContactMasterEntity> additionalContacts = new ArrayList<>();
+
+	@OneToMany(fetch = FetchType.LAZY)
+	@JoinColumn(name = "reference_id", referencedColumnName = "vendor_id", insertable = false, updatable = false)
+	@Where(clause = "reference_type = 'VENDOR' AND is_deleted = 0")
+	private List<AddressMasterEntity> additionalAddresses = new ArrayList<>();
 
 }

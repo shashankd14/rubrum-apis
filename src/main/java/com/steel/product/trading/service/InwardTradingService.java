@@ -24,4 +24,6 @@ public interface InwardTradingService {
 
 	ResponseEntity<Object> getDocumentList(BaseRequest req);
 
+	ResponseEntity<Object> getPurposeList();
+
 }

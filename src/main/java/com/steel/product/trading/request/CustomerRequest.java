@@ -1,5 +1,7 @@
 package com.steel.product.trading.request;
 
+import java.util.List;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -58,5 +60,9 @@ public class CustomerRequest extends BaseRequest {
 	private String purchaseReport;
 
 	private Boolean isDeleted;
+
+	private List<ContactMasterRequest> additionalContacts;
+
+	private List<AddressMasterRequest> additionalAddresses;
 
 }

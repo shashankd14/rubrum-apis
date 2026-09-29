@@ -18,4 +18,9 @@ public interface InwardTradingChildRepository extends JpaRepository<InwardTradin
 	@Transactional
 	@Query("update InwardTradingChildEntity inward set inward.isDeleted = true, inward.updatedBy=:userId, inward.updatedOn=CURRENT_TIMESTAMP where inward.itemchildId in :itemchildIds")
 	void deleteData(@Param("itemchildIds") List<Integer> itemchildIds, @Param("userId") Integer userId);
+
+	@Modifying
+	@Transactional
+	@Query("update InwardTradingChildEntity item set item.isDeleted = true, item.updatedBy=:userId, item.updatedOn=CURRENT_TIMESTAMP where item.inwardId.inwardId in :inwardIds")
+	void deleteByInwardIds(@Param("inwardIds") List<Integer> inwardIds, @Param("userId") Integer userId);
 }

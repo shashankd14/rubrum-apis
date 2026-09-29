@@ -22,6 +22,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 @Service
 @Log4j2
@@ -29,8 +31,12 @@ public class VendorServiceImpl implements VendorService {
 
 	@Autowired
 	VendorRepository vendorRepository;
+
+	@Autowired
+	SharedContactAddressService sharedContactAddressService;
 	
 	@Override
+	@Transactional
 	public ResponseEntity<Object> save(VendorRequest vendorRequest) {
 		log.info("In vendorsave page ");
 		ResponseEntity<Object> response = null;
@@ -39,7 +45,7 @@ public class VendorServiceImpl implements VendorService {
 		String message="Vendor details saved successfully..! ";
 		try {
 			VendorEntity vendorEntity = new VendorEntity();
-			BeanUtils.copyProperties(vendorRequest, vendorEntity);
+			BeanUtils.copyProperties(vendorRequest, vendorEntity, "additionalContacts", "additionalAddresses");
 			vendorEntity.setIsDeleted(false);
 			if (vendorEntity.getVendorId() != null && vendorEntity.getVendorId() > 0) {
 				VendorEntity oldEntity = null;
@@ -70,11 +76,17 @@ public class VendorServiceImpl implements VendorService {
 				vendorEntity.setCreatedBy(vendorRequest.getUserId());
 				vendorEntity.setCreatedOn(new Date());
 			}
-			vendorRepository.save(vendorEntity);
+			vendorEntity = vendorRepository.save(vendorEntity);
+			sharedContactAddressService.syncContacts(
+					"VENDOR", vendorEntity.getVendorId(),
+					vendorRequest.getAdditionalContacts(), vendorRequest.getUserId());
+			sharedContactAddressService.syncAddresses(
+					"VENDOR", vendorEntity.getVendorId(),
+					vendorRequest.getAdditionalAddresses(), vendorRequest.getUserId());
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \""+message+" \"}",	new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
-			e.printStackTrace();
-			log.info("error is ==" + e.getMessage());
+			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+			log.error("Unable to save vendor", e);
 			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		return response;
@@ -87,9 +99,11 @@ public class VendorServiceImpl implements VendorService {
 
 		if (searchListPageRequest.getSearchText() != null && searchListPageRequest.getSearchText().length() > 0) {
 			Page<VendorEntity> pageResult = vendorRepository.findAllWithSearchText(searchListPageRequest.getSearchText(), pageable);
+			pageResult.forEach(this::populateAdditionalDetails);
 			return pageResult;
 		} else {
 			Page<VendorEntity> pageResult = vendorRepository.findAll(pageable);
+			pageResult.forEach(this::populateAdditionalDetails);
 			return pageResult;
 		}
 	}
@@ -101,6 +115,7 @@ public class VendorServiceImpl implements VendorService {
 		VendorEntity categoryEntity = null;
 		if (kk.isPresent()) {
 			categoryEntity = kk.get();
+			populateAdditionalDetails(categoryEntity);
 		}
 		return categoryEntity;
 	}
@@ -120,5 +135,10 @@ public class VendorServiceImpl implements VendorService {
 		}
 		return response;
 	}
-	
+
+	private void populateAdditionalDetails(VendorEntity vendor) {
+		vendor.setAdditionalContacts(sharedContactAddressService.getContacts("VENDOR", vendor.getVendorId()));
+		vendor.setAdditionalAddresses(sharedContactAddressService.getAddresses("VENDOR", vendor.getVendorId()));
+	}
+
 }
