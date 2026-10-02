@@ -57,17 +57,11 @@ public class SalesOrderJswEntity {
 	@Column(name = "terms")
 	private String terms;
 
-	//@Column(name = "customerid")
-	//private String customerid;
-
 	@Column(name = "salesorder_id")
 	private String salesorder_id;
 	
 	@Column(name = "customer_number")
 	private String customer_number;
-
-	//@Column(name = "customer_name")
-	//private String customer_name;
 
 	@Column(name = "total_soqty")
 	private BigDecimal totalSoqty;
@@ -95,10 +89,6 @@ public class SalesOrderJswEntity {
 
 	@Column(name = "branch_id")
 	private String branchId;
-
-//	@ManyToOne(fetch = FetchType.LAZY)
-//	@JoinColumn(name = "branch_id", referencedColumnName = "branch_id", insertable = false, updatable = false)
-//	private SalesOrderBranchEntity branch;
 
 	@Column(name = "expected_delivery_date")
 	private Date expectedDeliveryDate;

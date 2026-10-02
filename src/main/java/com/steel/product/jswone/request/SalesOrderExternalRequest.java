@@ -13,9 +13,9 @@ public class SalesOrderExternalRequest {
 	@JsonProperty("line_items")
 	private List<SalesOrderLineItem> line_items;
 
-//    private BillingAddress billing_address;
+	//private BillingAddress billing_address;
 
-//    private ShippingAddress shipping_address;
+	//private ShippingAddress shipping_address;
 
 	private Integer payment_terms;
 

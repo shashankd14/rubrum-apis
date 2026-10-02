@@ -19,17 +19,11 @@ public class SalesOrderLineItem {
 
     private String name;
 
-    private Double rate;
+    //private Double rate;
 
     private BigDecimal quantity;
 
     private String unit;
-
-    private String tax_id;
-
-    private String tax_name;
-
-    private BigDecimal tax_percentage;
 
     private Double item_total;
 

@@ -49,13 +49,13 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 	
 	@Query(value = "SELECT so.so_id, so.so_number, so.socreatedate, so.deliverymethod, "
 			+ " so.destinationcode, so.refno, so.joplsorefno, so.bizsegment, so.ecommerce, so.supplysource, so.typeofsupply, "
-			+ " so.incomingpayment, so.paymentmode, so.terms, so.customerid, so.total_soqty, "
+			+ " so.incomingpayment, so.paymentmode, so.terms, '' as customerid, so.total_soqty, "
 			+ " (select sum(allocated_soqty) from jsw_sales_order_allocation alloc where alloc.so_id = so.so_id ) total_allocated_soqty, "
 			+ " so.allocated_stts as soallstts, so.so_status , so.zbooks_so, so.expected_delivery_date, so.likely_material_date, so.standard_material_date, so_child.so_child_id,  "
 			+ " so_child.mm_id, '' instruction_id, '' inward_entry_d, so_child.soqty, "
 			+ " (select sum(allocated_soqty) from jsw_sales_order_allocation alloc where alloc.so_child_id = so_child.so_child_id and alloc.so_id = so.so_id ) allocated_soqty, "
-			+ " so_child.allocated_stts, so_child.item_so_status, so_child.wearhouse_id , so_child.tax_percentage, mm.mm_description, so_child.hsn_or_sac, wm.ware_house_name, "
-			+ " br.branch_name, so.cam_code, so.remarks, so.customer_name, so.customer_number, so_child.number_of_sheets , so.special_delivery_instructions, so.order_confirmation_time, "
+			+ " so_child.allocated_stts, so_child.item_so_status, so_child.wearhouse_id , '' as taxpercentage, mm.mm_description, so_child.hsn_or_sac, wm.ware_house_name, "
+			+ " br.branch_name, so.cam_code, so.remarks, '' as customer_name, so.customer_number, so_child.number_of_sheets , so.special_delivery_instructions, so.order_confirmation_time, "
 			+ " so.zoho_status,so.branch_id, IFNULL(so_child.quantity_invoiced, 0.00)," 
 			+ " (select SUM(IFNULL(child11.quantity_invoiced, 0.00)) from jsw_sales_order_child child11 where child11.so_id = so.so_id) as totaldispatchedqty"
 			+ " FROM jsw_sales_order so "
@@ -94,7 +94,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			@Param("warehouseList") List<String> warehouseList,
 			Pageable pageable);
 
-	@Query(value = "select so.so_id,so.so_number,so.expected_delivery_date,so.customerid,so.total_soqty, so.cp_status,"
+	@Query(value = "select so.so_id,so.so_number,so.expected_delivery_date,'ok',so.total_soqty, so.cp_status,"
 			+ " so_child.so_child_id,instruction_id,so_child.mm_id,inward_entry_id, so_child.soqty, so_child.allocated_soqty, "
 			+ " so_child.allocated_stts,so_child.item_so_status,mm.mm_description, alloca.so_allocation_id, alloca.allocated_soqty alloqty, "
 			+ " (select coilnumber from product_tblinwardentry inw where inw.inwardentryid = alloca.inward_entry_id) coilno, "
@@ -366,7 +366,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 
 	SalesOrderJswEntity findBySoId(Integer soId);
 
-	@Query(value = "select distinct so.so_id,so.so_number,so.expected_delivery_date,so.customerid, so.total_soqty,so.cp_status,"
+	@Query(value = "select distinct so.so_id,so.so_number,so.expected_delivery_date,'' custdetails, so.total_soqty,so.cp_status,"
 			+ " so_child.so_child_id,instruction_id,so_child.mm_id,inward_entry_id, so_child.soqty, alloca.allocated_soqty,"
 			+ " so_child.allocated_stts,so_child.item_so_status,mm.mm_description, alloca.so_allocation_id,alloca.allocated_soqty allocated_s, "
 			+ " (select coilnumber from product_tblinwardentry inw where inw.inwardentryid = alloca.inward_entry_id) coilno, "
@@ -384,7 +384,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " where so.is_deleted = 0 and alloca.inward_entry_id = :inwardEntryId order by so.so_id desc", nativeQuery = true)
 	List<Object[]> coilAllocationDetails(@Param("inwardEntryId") int inwardEntryId);
 
-	@Query(value = "select so.so_id,so.refno so_number,material_name,so.customerid,so.total_soqty, so.cp_status,"
+	@Query(value = "select so.so_id,so.refno so_number,material_name,'',so.total_soqty, so.cp_status,"
 			+ " so_child.so_child_id, DATE_FORMAT(socreatedate, '%d-%m-%Y'), so_child.mm_id, inward.inwardentryid, so_child.soqty, so_child.allocated_soqty, "
 			+ " so_child.allocated_stts,so_child.item_so_status,mm.mm_description, alloca.so_allocation_id, alloca.allocated_soqty alloqty, "
 			+ " coilnumber, "

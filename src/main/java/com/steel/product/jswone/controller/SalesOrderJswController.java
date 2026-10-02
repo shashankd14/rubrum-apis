@@ -166,7 +166,7 @@ public class SalesOrderJswController {
 			child.setAllocatedStts(result[29] != null ? (String) result[29] : null);
 			child.setItemStatus(result[30] != null ? (String) result[30] : null);
 			child.setWearhouse_id(result[31] != null ? (String) result[31] : null);
-			child.setTax(result[32] != null ? (String) result[32] : null);
+			child.setTax("");
 			child.setInvoicedItemQty(toBigDecimal(result[46]));
 			BigDecimal itemSOQty = child.getSoqty() != null ? child.getSoqty() : BigDecimal.ZERO;
 			BigDecimal itemInvQty = child.getInvoicedItemQty() != null ? child.getInvoicedItemQty() : BigDecimal.ZERO;

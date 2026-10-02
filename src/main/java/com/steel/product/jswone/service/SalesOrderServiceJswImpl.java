@@ -398,18 +398,22 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			partyIdsFlag = true;
 		} else {
 			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
-			if (adminUserEntity.getUserPartyMap() != null && adminUserEntity.getUserPartyMap().size() > 0) {
-				partyIds = new ArrayList<>();
-				// for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
-				// partyIds.add(userPartyMap.getPartyId());
-				// partyIdsFlag = true;
-				// }
-				// log.info("In partyIds === " + partyIds);
-			} else {
+			if ("Y".equals(adminUserEntity.getSuperAdminFlag())) {
 				partyIdsFlag = false;
 				partyIds = new ArrayList<>();
+			} else {
+				if (adminUserEntity.getUserPartyMap() != null && adminUserEntity.getUserPartyMap().size() > 0) {
+					partyIds = new ArrayList<>();
+					// for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
+					// partyIds.add(userPartyMap.getPartyId());
+					// partyIdsFlag = true;
+					// }
+					// log.info("In partyIds === " + partyIds);
+				} else {
+					partyIdsFlag = false;
+					partyIds = new ArrayList<>();
+				}
 			}
-
 			List<Object[]> partyList = warehouseMasterRepository.partyIdsByBranchId(request.getBranchId());
 			for (Object[] row : partyList) {
 				if (row[0] != null) {
@@ -686,8 +690,8 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			return "SalesOrder_Details.status";
 		if (isEmpty(d.getReference_number()))
 			return "SalesOrder_Details.reference_number";
-		if (isEmpty(d.getCustomer_id()))
-			return "SalesOrder_Details.customer_id";
+		//if (isEmpty(d.getCustomer_id()))
+			//return "SalesOrder_Details.customer_id";
 		if (isEmpty(d.getDelivery_method()))
 			return "SalesOrder_Details.delivery_method";
 		if (isEmpty(d.getBranch_id()))
@@ -1021,7 +1025,7 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 			// dto.setSoId(soId);
 			// dto.setSoNumber(result[1] != null ? (String) result[1] : null);
 			dto.setExpectedDeliveryDate(result[2] != null ? sdf.format(result[2]) : null);
-			dto.setCustomerCode(result[3] != null ? (String) result[3] : null);
+			dto.setCustomerCode("");
 			// dto.setTotalQty(result[4] != null ? (BigDecimal) result[4] : null);
 			dto.setCpStatus(result[5] != null ? (String) result[5] : null);
 			// dto.setBranchId(result[1] != null ? (String) result[1] : null);

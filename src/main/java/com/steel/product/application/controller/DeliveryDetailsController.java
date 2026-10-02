@@ -31,7 +31,7 @@ import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.Process;
 import com.steel.product.application.entity.Status;
 import com.steel.product.application.service.DeliveryDetailsService;
-import com.steel.product.application.service.SalesOrderService;
+//import com.steel.product.application.service.SalesOrderService;
 import com.steel.product.application.util.CommonUtil;
 import com.steel.product.jswone.service.JSWIntegrationService;
 import com.steel.product.jswone.service.MaterialMasterJswService;
@@ -49,8 +49,8 @@ public class DeliveryDetailsController {
     @Autowired
     private DeliveryDetailsService deliveryDetailsService;
     
-    @Autowired
-	private SalesOrderService salesOrderService;
+    //@Autowired
+	//private SalesOrderService salesOrderService;
     
     @Autowired
 	private CommonUtil commonUtil;
@@ -197,7 +197,7 @@ public class DeliveryDetailsController {
 		ResponseEntity<Object> result = null;
 
 		try {
-			if ("Sales Order".equals((deliveryDto.getDeliveryType()))) {
+			/*if ("Sales Order".equals((deliveryDto.getDeliveryType()))) {
 				int sonovalidationCNt = salesOrderService.validateSoNoAndCustCode(deliveryDto.getDeliveryItemDetails());
 				if (sonovalidationCNt > 1) {
 					HttpHeaders headers = new HttpHeaders();                    
@@ -206,7 +206,7 @@ public class DeliveryDetailsController {
 							"{\"status\": \"failure\", \"message\": \"The selected packets don't have the same SONO and CUSTCODE\"}",
 							headers, HttpStatus.INTERNAL_SERVER_ERROR);
 				}
-			}
+			}*/
 			
 			int userId = commonUtil.getUserId();	
 			if(!(deliveryDto.getPackingRateId() !=null && deliveryDto.getPackingRateId() > 0 )) {

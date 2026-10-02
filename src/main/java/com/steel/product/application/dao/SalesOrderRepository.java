@@ -146,10 +146,8 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrderEntity, In
 	void deleteData(@Param("itemIds") List<Integer> itemIds, @Param("userId") Integer userId);
 
 	List<SalesOrderEntity> findBySoNumber(String soNumber);
-
-	@Query(value = "SELECT DISTINCT pi2.sono,customerid FROM product_instruction pi2 "
-			+ "  LEFT OUTER JOIN jsw_sales_order sale ON pi2.sono = sale.refno "
-			+ " where pi2.isdeleted = 0 and pi2.instructionid in :instructionIdList ", nativeQuery = true)
+	
+	@Query(value = " SELECT DISTINCT pi2.sono, pi2.instructionid FROM  product_instruction pi2 WHERE pi2.isdeleted = 0  AND pi2.instructionid IN :instructionIdList ", nativeQuery = true)
 	List<Object[]> validateSoNoAndCustCode(@Param("instructionIdList") List<Integer> instructionIdList);
 
 	@Query(value = "SELECT distinct so.refno, wm.party_id "

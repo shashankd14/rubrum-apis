@@ -164,35 +164,47 @@ public class PartyDetailsServiceImpl implements PartyDetailsService {
 	public Page<Party> findAllWithPagination(int pageNo, int pageSize) {
 		Pageable pageable = PageRequest.of(pageNo, pageSize);
 		AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
-		if(adminUserEntity.getUserPartyMap()!=null && adminUserEntity.getUserPartyMap().size()>0) {
-			List<Integer> partyIds=new ArrayList<>();
-			for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
-				partyIds.add(userPartyMap.getPartyId());
-			}
-			LOGGER.info("In partyIds === "+partyIds);
-			Page<Party> pageResult = partyRepo.findAllParties(pageable, partyIds);
-			return pageResult;
-		} else {
+
+		if ("Y".equals(adminUserEntity.getSuperAdminFlag())) {
 			Page<Party> pageResult = partyRepo.findAllParties(pageable);
 			return pageResult;
+		} else {
+			if (adminUserEntity.getUserPartyMap() != null && adminUserEntity.getUserPartyMap().size() > 0) {
+				List<Integer> partyIds = new ArrayList<>();
+				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
+					partyIds.add(userPartyMap.getPartyId());
+				}
+				LOGGER.info("In partyIds === " + partyIds);
+				Page<Party> pageResult = partyRepo.findAllParties(pageable, partyIds);
+				return pageResult;
+			} else {
+				Page<Party> pageResult = partyRepo.findAllParties(pageable);
+				return pageResult;
+			}
 		}
-		
+
 	}
 
 	@Override
 	public List<PartyResponse> findAllParties() {
 		AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
-		if(adminUserEntity.getUserPartyMap()!=null && adminUserEntity.getUserPartyMap().size()>0) {
-			List<Integer> partyIds=new ArrayList<>();
-			for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
-				partyIds.add(userPartyMap.getPartyId());
-			}
-			LOGGER.info("In partyIds === "+partyIds);
-			List<Party> parties = partyRepo.findAllParties(partyIds);
-			return partyMapper.toResponseList(parties);
-		} else {
+
+		if ("Y".equals(adminUserEntity.getSuperAdminFlag())) {
 			List<Party> parties = partyRepo.findAllParties();
 			return partyMapper.toResponseList(parties);
+		} else {
+			if (adminUserEntity.getUserPartyMap() != null && adminUserEntity.getUserPartyMap().size() > 0) {
+				List<Integer> partyIds = new ArrayList<>();
+				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
+					partyIds.add(userPartyMap.getPartyId());
+				}
+				LOGGER.info("In partyIds === " + partyIds);
+				List<Party> parties = partyRepo.findAllParties(partyIds);
+				return partyMapper.toResponseList(parties);
+			} else {
+				List<Party> parties = partyRepo.findAllParties();
+				return partyMapper.toResponseList(parties);
+			}
 		}
 	}
 

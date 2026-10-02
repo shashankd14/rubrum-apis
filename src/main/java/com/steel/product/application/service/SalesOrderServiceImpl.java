@@ -1,19 +1,18 @@
 package com.steel.product.application.service;
 
-import com.lowagie.text.DocumentException;
-import com.steel.product.application.dao.SalesOrderChildRepository;
-import com.steel.product.application.dao.SalesOrderRepository;
-import com.steel.product.application.dto.delivery.DeliveryItemDetails;
-import com.steel.product.application.dto.quality.ListPageSearchRequest;
-import com.steel.product.application.dto.salesorder.FetchMMIDBySO;
-import com.steel.product.application.dto.salesorder.SalesOrderCreateDTO;
-import com.steel.product.application.dto.salesorder.SalesOrderListDTO;
-import com.steel.product.application.dto.salesorder.SalesOrderListResponse;
-import com.steel.product.application.entity.*;
-import com.steel.product.application.util.CommonUtil;
-import com.steel.product.trading.request.DeleteRequest;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
-import lombok.extern.log4j.Log4j2;
+import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
@@ -29,14 +28,22 @@ import org.thymeleaf.context.Context;
 import org.thymeleaf.spring5.SpringTemplateEngine;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.math.BigDecimal;
-import java.util.*;
+import com.lowagie.text.DocumentException;
+import com.steel.product.application.dao.SalesOrderChildRepository;
+import com.steel.product.application.dao.SalesOrderRepository;
+import com.steel.product.application.dto.quality.ListPageSearchRequest;
+import com.steel.product.application.dto.salesorder.FetchMMIDBySO;
+import com.steel.product.application.dto.salesorder.SalesOrderCreateDTO;
+import com.steel.product.application.dto.salesorder.SalesOrderListDTO;
+import com.steel.product.application.dto.salesorder.SalesOrderListResponse;
+import com.steel.product.application.entity.AdminUserEntity;
+import com.steel.product.application.entity.SalesOrderEntity;
+import com.steel.product.application.entity.SalesOrderPacketsEntity;
+import com.steel.product.application.entity.UserPartyMap;
+import com.steel.product.application.util.CommonUtil;
+import com.steel.product.trading.request.DeleteRequest;
 
-import javax.transaction.Transactional;
+import lombok.extern.log4j.Log4j2;
 
 @Service
 @Log4j2
@@ -89,16 +96,21 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 			partyIdsFlag = true;
 		} else {
 			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
-			if (adminUserEntity.getUserPartyMap() != null && adminUserEntity.getUserPartyMap().size() > 0) {
-				partyIds = new ArrayList<>();
-				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
-					partyIds.add(userPartyMap.getPartyId());
-					partyIdsFlag = true;
-				}
-				log.info("In partyIds === " + partyIds);
-			} else {
+			if ("Y".equals(adminUserEntity.getSuperAdminFlag())) {
 				partyIdsFlag = false;
 				partyIds = new ArrayList<>();
+			} else {
+				if (adminUserEntity.getUserPartyMap() != null && adminUserEntity.getUserPartyMap().size() > 0) {
+					partyIds = new ArrayList<>();
+					for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
+						partyIds.add(userPartyMap.getPartyId());
+						partyIdsFlag = true;
+					}
+					log.info("In partyIds === " + partyIds);
+				} else {
+					partyIdsFlag = false;
+					partyIds = new ArrayList<>();
+				}
 			}
 		}
 		Page<Object[]> packetsList = salesOrderRepository.listAllPackets(
@@ -217,16 +229,21 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 			partyIdsFlag = true;
 		} else {
 			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
-			if (adminUserEntity.getUserPartyMap() != null && adminUserEntity.getUserPartyMap().size() > 0) {
-				partyIds = new ArrayList<>();
-				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
-					partyIds.add(userPartyMap.getPartyId());
-					partyIdsFlag = true;
-				}
-				log.info("In partyIds === " + partyIds);
-			} else {
+			if ("Y".equals(adminUserEntity.getSuperAdminFlag())) {
 				partyIdsFlag = false;
 				partyIds = new ArrayList<>();
+			} else {
+				if (adminUserEntity.getUserPartyMap() != null && adminUserEntity.getUserPartyMap().size() > 0) {
+					partyIds = new ArrayList<>();
+					for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
+						partyIds.add(userPartyMap.getPartyId());
+						partyIdsFlag = true;
+					}
+					log.info("In partyIds === " + partyIds);
+				} else {
+					partyIdsFlag = false;
+					partyIds = new ArrayList<>();
+				}
 			}
 		}
 		Page<Object[]> packetsList = salesOrderRepository.listAllSOIDs(listPageSearchRequest.getSearchText(), partyIds,
@@ -274,6 +291,7 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 		return response;
 	}
 
+	/*
 	@Override
 	public int validateSoNoAndCustCode(List<DeliveryItemDetails> deliveryItemDetails) {
 		int cnt = 0;
@@ -290,7 +308,7 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 			}
 		}
 		return cnt;
-	}
+	}*/
 
 	@Override
 	public SalesOrderListResponse getSoNoAndCustCode(List<Integer> list) {
@@ -298,7 +316,7 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 		List<Object[]> packetsList = salesOrderRepository.validateSoNoAndCustCode(list);
 		for (Object[] result : packetsList) {
 			resp.setSoNumber(result[0] != null ? (String) result[0] : null);
-			resp.setCustomerCode(result[1] != null ? (String) result[1] : null);
+			//resp.setCustomerCode(result[1] != null ? (String) result[1] : null);
 		}
 		return resp;
 	}

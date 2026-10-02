@@ -148,21 +148,31 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 			}
 		} else {
 			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
-			if(adminUserEntity.getUserPartyMap()!=null && adminUserEntity.getUserPartyMap().size()>0) {
-				List<Integer> partyIds=new ArrayList<>();
-				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
-					partyIds.add(userPartyMap.getPartyId());
-				}
-				LOGGER.info("In partyIds === "+partyIds);
-				Page<InwardEntry> pageResult = inwdEntryRepo.findAll(searchListPageRequest.getSearchText(), partyIds, pageable);
-				return pageResult;
-			} else {
+			if ("Y".equals(adminUserEntity.getSuperAdminFlag())) {
 				if(searchListPageRequest.getSearchText()!=null && searchListPageRequest.getSearchText().length()>0) {
 					Page<InwardEntry> pageResult = inwdEntryRepo.findAllWithSearch(searchListPageRequest.getSearchText(), commonUtil.getLoginWiseMappedUserIds(), pageable);
 					return pageResult;
 				} else {
 					Page<InwardEntry> pageResult = inwdEntryRepo.findAllInwardList(pageable);
 					return pageResult;
+				}
+			} else {
+				if(adminUserEntity.getUserPartyMap()!=null && adminUserEntity.getUserPartyMap().size()>0) {
+					List<Integer> partyIds=new ArrayList<>();
+					for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
+						partyIds.add(userPartyMap.getPartyId());
+					}
+					LOGGER.info("In partyIds === "+partyIds);
+					Page<InwardEntry> pageResult = inwdEntryRepo.findAll(searchListPageRequest.getSearchText(), partyIds, pageable);
+					return pageResult;
+				} else {
+					if(searchListPageRequest.getSearchText()!=null && searchListPageRequest.getSearchText().length()>0) {
+						Page<InwardEntry> pageResult = inwdEntryRepo.findAllWithSearch(searchListPageRequest.getSearchText(), commonUtil.getLoginWiseMappedUserIds(), pageable);
+						return pageResult;
+					} else {
+						Page<InwardEntry> pageResult = inwdEntryRepo.findAllInwardList(pageable);
+						return pageResult;
+					}
 				}
 			}
 		}
@@ -197,21 +207,31 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 			}
 		} else {
 			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
-			if(adminUserEntity.getUserPartyMap()!=null && adminUserEntity.getUserPartyMap().size()>0) {
-				List<Integer> partyIds=new ArrayList<>();
-				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
-					partyIds.add(userPartyMap.getPartyId());
-				}
-				LOGGER.info("In partyIds === "+partyIds);
-				Page<InwardEntry> pageResult = inwdEntryRepo.findAll(searchListPageRequest.getSearchText(), partyIds, pageable);
-				return pageResult;
-			} else {
+			if ("Y".equals(adminUserEntity.getSuperAdminFlag())) {
 				if(searchListPageRequest.getSearchText()!=null && searchListPageRequest.getSearchText().length()>0) {
 					Page<InwardEntry> pageResult = inwdEntryRepo.findAllWithSearch(searchListPageRequest.getSearchText(), commonUtil.getLoginWiseMappedUserIds(), pageable);
 					return pageResult;
 				} else {
 					Page<InwardEntry> pageResult = inwdEntryRepo.findAllPartyWiseRegister(commonUtil.getLoginWiseMappedUserIds(), pageable);
 					return pageResult;
+				}
+			} else {
+				if(adminUserEntity.getUserPartyMap()!=null && adminUserEntity.getUserPartyMap().size()>0) {
+					List<Integer> partyIds=new ArrayList<>();
+					for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
+						partyIds.add(userPartyMap.getPartyId());
+					}
+					LOGGER.info("In partyIds === "+partyIds);
+					Page<InwardEntry> pageResult = inwdEntryRepo.findAll(searchListPageRequest.getSearchText(), partyIds, pageable);
+					return pageResult;
+				} else {
+					if(searchListPageRequest.getSearchText()!=null && searchListPageRequest.getSearchText().length()>0) {
+						Page<InwardEntry> pageResult = inwdEntryRepo.findAllWithSearch(searchListPageRequest.getSearchText(), commonUtil.getLoginWiseMappedUserIds(), pageable);
+						return pageResult;
+					} else {
+						Page<InwardEntry> pageResult = inwdEntryRepo.findAllPartyWiseRegister(commonUtil.getLoginWiseMappedUserIds(), pageable);
+						return pageResult;
+					}
 				}
 			}
 		}
@@ -242,17 +262,22 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 			return pageResult;
 		} else {
 			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
-			if(adminUserEntity.getUserPartyMap()!=null && adminUserEntity.getUserPartyMap().size()>0) {
-				List<Integer> partyIds=new ArrayList<>();
-				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
-					partyIds.add(userPartyMap.getPartyId());
-				}
-				LOGGER.info("In partyIds === "+partyIds);
-				Page<InwardEntry> pageResult = inwdEntryRepo.findAllWIP(searchText, partyIds, pageable);
-				return pageResult;
-			} else {
+			if ("Y".equals(adminUserEntity.getSuperAdminFlag())) {
 				Page<InwardEntry> pageResult = inwdEntryRepo.findAllWIP(searchText,   pageable);
 				return pageResult;
+			} else {
+				if(adminUserEntity.getUserPartyMap()!=null && adminUserEntity.getUserPartyMap().size()>0) {
+					List<Integer> partyIds=new ArrayList<>();
+					for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
+						partyIds.add(userPartyMap.getPartyId());
+					}
+					LOGGER.info("In partyIds === "+partyIds);
+					Page<InwardEntry> pageResult = inwdEntryRepo.findAllWIP(searchText, partyIds, pageable);
+					return pageResult;
+				} else {
+					Page<InwardEntry> pageResult = inwdEntryRepo.findAllWIP(searchText,   pageable);
+					return pageResult;
+				}
 			}
 		}
 	}
@@ -505,16 +530,21 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 			partyIdsFlag = true;
 		} else {
 			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
-			if (adminUserEntity.getUserPartyMap() != null && adminUserEntity.getUserPartyMap().size() > 0) {
-				partyIds = new ArrayList<>();
-				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
-					partyIds.add(userPartyMap.getPartyId());
-					partyIdsFlag = true;
-				}
-				LOGGER.info("In partyIds === " + partyIds);
-			} else {
+			if ("Y".equals(adminUserEntity.getSuperAdminFlag())) {
 				partyIdsFlag = false;
 				partyIds = new ArrayList<>();
+			} else {
+				if (adminUserEntity.getUserPartyMap() != null && adminUserEntity.getUserPartyMap().size() > 0) {
+					partyIds = new ArrayList<>();
+					for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
+						partyIds.add(userPartyMap.getPartyId());
+						partyIdsFlag = true;
+					}
+					LOGGER.info("In partyIds === " + partyIds);
+				} else {
+					partyIdsFlag = false;
+					partyIds = new ArrayList<>();
+				}
 			}
 		}
 		
@@ -569,19 +599,23 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 			partyIdsFlag = true;
 		} else {
 			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
-			if (adminUserEntity.getUserPartyMap() != null && adminUserEntity.getUserPartyMap().size() > 0) {
-				partyIds = new ArrayList<>();
-				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
-					partyIds.add(userPartyMap.getPartyId());
-					partyIdsFlag = true;
-				}
-				LOGGER.info("In partyIds === " + partyIds);
-			} else {
+			if ("Y".equals(adminUserEntity.getSuperAdminFlag())) {
 				partyIdsFlag = false;
 				partyIds = new ArrayList<>();
+			} else {
+				if (adminUserEntity.getUserPartyMap() != null && adminUserEntity.getUserPartyMap().size() > 0) {
+					partyIds = new ArrayList<>();
+					for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
+						partyIds.add(userPartyMap.getPartyId());
+						partyIdsFlag = true;
+					}
+					LOGGER.info("In partyIds === " + partyIds);
+				} else {
+					partyIdsFlag = false;
+					partyIds = new ArrayList<>();
+				}
 			}
 		}
-		
 		Page<Object[]> pageResult = inwdEntryRepo.listWIPInwards(
 				searchListPageRequest.getSearchText(),  
 				partyIds,
@@ -632,16 +666,21 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 			partyIdsFlag = true;
 		} else {
 			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
-			if (adminUserEntity.getUserPartyMap() != null && adminUserEntity.getUserPartyMap().size() > 0) {
-				partyIds = new ArrayList<>();
-				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
-					partyIds.add(userPartyMap.getPartyId());
-					partyIdsFlag = true;
-				}
-				LOGGER.info("In partyIds === " + partyIds);
-			} else {
+			if ("Y".equals(adminUserEntity.getSuperAdminFlag())) {
 				partyIdsFlag = false;
 				partyIds = new ArrayList<>();
+			} else {
+				if (adminUserEntity.getUserPartyMap() != null && adminUserEntity.getUserPartyMap().size() > 0) {
+					partyIds = new ArrayList<>();
+					for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
+						partyIds.add(userPartyMap.getPartyId());
+						partyIdsFlag = true;
+					}
+					LOGGER.info("In partyIds === " + partyIds);
+				} else {
+					partyIdsFlag = false;
+					partyIds = new ArrayList<>();
+				}
 			}
 		}
 		
@@ -700,16 +739,21 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 			partyIdsFlag = true;
 		} else {
 			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
-			if (adminUserEntity.getUserPartyMap() != null && adminUserEntity.getUserPartyMap().size() > 0) {
-				partyIds = new ArrayList<>();
-				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
-					partyIds.add(userPartyMap.getPartyId());
-					partyIdsFlag = true;
-				}
-				LOGGER.info("In partyIds === " + partyIds);
-			} else {
+			if ("Y".equals(adminUserEntity.getSuperAdminFlag())) {
 				partyIdsFlag = false;
 				partyIds = new ArrayList<>();
+			} else {
+				if (adminUserEntity.getUserPartyMap() != null && adminUserEntity.getUserPartyMap().size() > 0) {
+					partyIds = new ArrayList<>();
+					for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
+						partyIds.add(userPartyMap.getPartyId());
+						partyIdsFlag = true;
+					}
+					LOGGER.info("In partyIds === " + partyIds);
+				} else {
+					partyIdsFlag = false;
+					partyIds = new ArrayList<>();
+				}
 			}
 		}
 		

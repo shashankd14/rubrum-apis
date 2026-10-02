@@ -17,9 +17,9 @@ public class SalesOrderDetails {
 
     private String reference_number;
 
-    private String customer_id;
+    //private String customer_id;
 
-    private String customer_name;
+    //private String customer_name;
 
     private String customer_number;
 

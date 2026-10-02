@@ -348,18 +348,24 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 	        return deliveryList;
 		} else {
 			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
-			if(adminUserEntity.getUserPartyMap()!=null && adminUserEntity.getUserPartyMap().size()>0) {
-				List<Integer> partyIds=new ArrayList<>();
-				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
-					partyIds.add(userPartyMap.getPartyId());
-				}
-				LOGGER.info("In partyIds === "+partyIds);
-				Page<DeliveryDetails> deliveryList = deliveryDetailsRepo.findAllDeliveries(searchText, partyIds, pageable);
-				return deliveryList;
-			} else {
+			if ("Y".equals(adminUserEntity.getSuperAdminFlag())) {
 				Page<DeliveryDetails> deliveryList = deliveryDetailsRepo.findAllDeliveries(searchText, pageable);
 		        LOGGER.info("Delivery details list size "+deliveryList.getSize());
 		        return deliveryList;
+			} else {
+				if(adminUserEntity.getUserPartyMap()!=null && adminUserEntity.getUserPartyMap().size()>0) {
+					List<Integer> partyIds=new ArrayList<>();
+					for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
+						partyIds.add(userPartyMap.getPartyId());
+					}
+					LOGGER.info("In partyIds === "+partyIds);
+					Page<DeliveryDetails> deliveryList = deliveryDetailsRepo.findAllDeliveries(searchText, partyIds, pageable);
+					return deliveryList;
+				} else {
+					Page<DeliveryDetails> deliveryList = deliveryDetailsRepo.findAllDeliveries(searchText, pageable);
+			        LOGGER.info("Delivery details list size "+deliveryList.getSize());
+			        return deliveryList;
+				}
 			}
 		}
     }
@@ -748,21 +754,25 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 			partyIdsFlag = true;
 		} else {
 			AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
-			if (adminUserEntity.getUserPartyMap() != null && adminUserEntity.getUserPartyMap().size() > 0) {
-				partyIds = new ArrayList<>();
-				for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
-					partyIds.add(userPartyMap.getPartyId());
-					partyIdsFlag = true;
-				}
-				LOGGER.info("In partyIds === " + partyIds);
-			} else {
+			if ("Y".equals(adminUserEntity.getSuperAdminFlag())) {
 				partyIdsFlag = false;
 				partyIds = new ArrayList<>();
+			} else {
+				if (adminUserEntity.getUserPartyMap() != null && adminUserEntity.getUserPartyMap().size() > 0) {
+					partyIds = new ArrayList<>();
+					for (UserPartyMap userPartyMap : adminUserEntity.getUserPartyMap()) {
+						partyIds.add(userPartyMap.getPartyId());
+						partyIdsFlag = true;
+					}
+					LOGGER.info("In partyIds === " + partyIds);
+				} else {
+					partyIdsFlag = false;
+					partyIds = new ArrayList<>();
+				}
 			}
 		}
 
-		Page<Object[]> deliveryList = deliveryDetailsRepo.listAllDeliveryList(searchText, partyIds, partyIdsFlag,
-				pageable);
+		Page<Object[]> deliveryList = deliveryDetailsRepo.listAllDeliveryList(searchText, partyIds, partyIdsFlag, pageable);
 		
 		
 		
