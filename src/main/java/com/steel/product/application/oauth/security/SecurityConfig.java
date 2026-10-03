@@ -1,7 +1,5 @@
 package com.steel.product.application.oauth.security;
 
-import javax.sql.DataSource;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,8 +33,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Autowired
 	ClientDetailsService clientDetailsService;
-	@Autowired
-	private DataSource dataSource;
 
 	@Autowired
 	private DaoAuthenticationProvider authenticationProvider;
@@ -79,9 +75,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
 		// @formatter:off
 
-		auth.authenticationProvider(authenticationProvider).jdbcAuthentication().dataSource(dataSource)
-				.usersByUsernameQuery("SELECT USER_NAME,PASSWORD,1 FROM USERS WHERE USER_NAME = ?")
-				.authoritiesByUsernameQuery("SELECT USER_NAME, ROLE_ADMIN as role FROM USERS WHERE USER_NAME = ?");
+		auth.authenticationProvider(authenticationProvider);
 
 		// @formatter:on
 	}
