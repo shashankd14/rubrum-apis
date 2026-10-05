@@ -175,7 +175,7 @@ public class MaterialController {
 		return ResponseEntity.badRequest().body(response);
 	}
 
-	@PostMapping({ "/material/list" })
+	@PostMapping("/material/master/list")
 	public ResponseEntity<Object> getMaterialList(@RequestBody SearchRequest searchPageRequest) {
 		Map<String, Object> response = new HashMap<>();
 
