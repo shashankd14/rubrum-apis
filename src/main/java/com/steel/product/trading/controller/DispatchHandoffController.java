@@ -1,5 +1,6 @@
 package com.steel.product.trading.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.springframework.beans.BeanUtils;
@@ -13,7 +14,7 @@ import com.steel.product.trading.service.DispatchHandoffService;
 
 @RestController
 @CrossOrigin
-@RequestMapping("/trading")
+@Tag(name = "Dispatch Handoff", description = "Dispatch handoff")
 public class DispatchHandoffController {
     private final DispatchHandoffService handoff;
     private final DORepository orders;
