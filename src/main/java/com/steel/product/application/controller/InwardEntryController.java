@@ -618,37 +618,5 @@ public class InwardEntryController {
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-
-	/*
-	@PostMapping({ "/qrcode/inward" })
-	public ResponseEntity<PdfResponseDto> qrcode(@RequestBody PdfDto pdfDto ) {
-		InputStreamResource inputStreamResource = null;
-		ResponseEntity<PdfResponseDto> kk = null ;
-		try {
-
-			QRCodeResponse resp = inwdEntrySvc.getQRCodeDetails(pdfDto.getInwardId());
-			byte[] pngData;
-			StringBuilder text = new StringBuilder();
-			text.append("Coil NO : " + resp.getCoilNo());
-			text.append("\nCustomer BatchNo : " + resp.getCustomerBatchNo());
-			text.append("\nMaterial Type : " + resp.getMaterialDesc());
-			text.append("\nMaterial Grade : " + resp.getMaterialGrade());
-			text.append("\nThickness : " + resp.getFthickness());
-			text.append("\nWidth : " + resp.getFwidth());
-			text.append("\nNet Weight : " + resp.getFweight());
-			text.append("\nGross Weight : " + resp.getFweight());
-			pngData = pdfGenerator.getQRCode(text.toString(), 0, 0);
-			inputStreamResource = pdfGenerator.inputStreamResource(pngData, pdfDto.getInwardId());
-			byte[] sourceBytes = IOUtils.toByteArray(inputStreamResource.getInputStream());
-			StringBuilder builder = new StringBuilder();
-			builder.append(Base64.getEncoder().encodeToString(sourceBytes));
-			String encodedFile = builder.toString();
-			kk = new ResponseEntity<PdfResponseDto>(new PdfResponseDto(encodedFile), HttpStatus.OK);
-		} catch (WriterException | IOException e) {
-			e.printStackTrace();
-		} catch (DocumentException e) {
-			e.printStackTrace();
-		}
-		return kk;
-	}*/
+ 
 }

@@ -1,6 +1,7 @@
 package com.steel.product.application.controller;
 
 import com.steel.product.application.dto.instruction.*;
+import com.steel.product.application.dto.pdf.PartDto;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.exception.MockException;
 import com.steel.product.application.service.*;
@@ -128,46 +129,9 @@ public class InstructionController {
 		return instructionService.updateClassification(updateClassificationDTO);
 	}
 	
-	/*
-	@PostMapping({ "/qrcode/plan" })
-	public ResponseEntity<PdfResponseDto> qrcode(@RequestBody PartDto partDto) {
-		InputStreamResource inputStreamResource = null;
-		ResponseEntity<PdfResponseDto> kk = null ;
-		try {
-	        InwardEntryPdfDto inwardEntryPdfDto = instructionService.findQRCodeInwardJoinFetchInstructionsAndPartDetails(partDto.getPartDetailsId(), partDto.getGroupIds());
-	        List<QRCodeResponse> resp = instructionService.getQRCodeDetails(inwardEntryPdfDto);
-			inputStreamResource = pdfGenerator.planInputStreamResource( resp, partDto);
-			byte[] sourceBytes = IOUtils.toByteArray(inputStreamResource.getInputStream());
-			StringBuilder builder = new StringBuilder();
-			builder.append(Base64.getEncoder().encodeToString(sourceBytes));
-			String encodedFile = builder.toString();
-			kk = new ResponseEntity<PdfResponseDto>(new PdfResponseDto(encodedFile), HttpStatus.OK);
-		} catch (WriterException | IOException e) {
-			e.printStackTrace();
-		} catch (DocumentException e) {
-			e.printStackTrace();
-		}
-		return kk;
+	@PostMapping(value ="/plandoc/email", produces = "application/json" )
+	public ResponseEntity<Object> planDocEmail(@RequestBody PartDto partDto) {
+		return instructionService.planDocEmail(partDto);
 	}
-
-	@PostMapping({ "/qrcode/editfinish" })
-	public ResponseEntity<PdfResponseDto> editFinishQRCode(@RequestBody PdfDto pdfDto ) {
-		InputStreamResource inputStreamResource = null;
-		ResponseEntity<PdfResponseDto> kk = null ;
-		try {
-	        List<QRCodeResponse> instructionList = instructionService.getQRCodeDetails_Finish(pdfDto.getInwardId());
-			inputStreamResource = pdfGenerator.planInputStreamResource_Finish( instructionList, pdfDto);
-			byte[] sourceBytes = IOUtils.toByteArray(inputStreamResource.getInputStream());
-			StringBuilder builder = new StringBuilder();
-			builder.append(Base64.getEncoder().encodeToString(sourceBytes));
-			String encodedFile = builder.toString();
-			kk = new ResponseEntity<PdfResponseDto>(new PdfResponseDto(encodedFile), HttpStatus.OK);
-		} catch (WriterException | IOException e) {
-			e.printStackTrace();
-		} catch (DocumentException e) {
-			e.printStackTrace();
-		}
-		return kk;
-	}*/
-
+	 
 }

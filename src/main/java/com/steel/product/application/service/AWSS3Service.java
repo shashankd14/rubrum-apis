@@ -29,4 +29,6 @@ public interface AWSS3Service {
 	
     String downloadPdfAsBase64(String fileName) ;
 
+	byte[] downloadPdfBytes(String fileName);
+
 }

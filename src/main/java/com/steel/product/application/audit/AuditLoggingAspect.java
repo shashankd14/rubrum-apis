@@ -34,7 +34,7 @@ import com.steel.product.application.entity.AuditReqRespTrackerEntity;
 
 import lombok.extern.log4j.Log4j2;
 
-@Aspect
+//@Aspect
 @Component
 @Log4j2
 public class AuditLoggingAspect {

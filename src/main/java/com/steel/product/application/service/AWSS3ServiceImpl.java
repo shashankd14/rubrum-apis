@@ -250,6 +250,26 @@ public class AWSS3ServiceImpl implements AWSS3Service {
 		}
         return localPath;
     }
+    /**
+     * Downloads a PDF from the PDFs bucket as raw bytes.
+     * Returns null if the object does not exist or cannot be read.
+     */
+    public byte[] downloadPdfBytes(String fileName) {
+        GetObjectRequest getRequest = GetObjectRequest.builder()
+                .bucket(bucketPDFs)
+                .key(fileName)
+                .build();
+        try (S3Client s3 = s3Client()) {
+            return s3.getObjectAsBytes(getRequest).asByteArray();
+        } catch (software.amazon.awssdk.services.s3.model.NoSuchKeyException e) {
+            log.error("PDF not found in S3. Bucket: {}, Key: {}", bucketPDFs, fileName);
+            return null;
+        } catch (Exception e) {
+            log.error("Error downloading PDF from S3. Key: {}", fileName, e);
+            return null;
+        }
+    }
+
     public String downloadPdfAsBase64(String fileName) {
         try {
             GetObjectRequest getRequest = GetObjectRequest.builder()

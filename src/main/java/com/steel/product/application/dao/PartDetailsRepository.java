@@ -50,4 +50,15 @@ public interface PartDetailsRepository extends JpaRepository<PartDetails, Long> 
 	public void updateActualYLR(@Param("partDetailsId") Long partDetailsId,
 			@Param("actualYieldLossRatio") BigDecimal actualYieldLossRatio);
 
+
+	/** Returns [part_details_id, coilnumber, email1, email2] for the plan. */
+	@Query(value = "SELECT DISTINCT part.part_details_id, inward.coilnumber, party.email1, party.email2 "
+			+ " FROM product_part_details part, product_instruction ins, "
+			+ "      product_tblinwardentry inward, product_tblpartydetails party "
+			+ " WHERE ins.part_details_id = part.id "
+			+ "   AND ins.inwardid = inward.inwardentryid "
+			+ "   AND inward.npartyid = party.npartyid "
+			+ "   AND part.part_details_id = :planId ", nativeQuery = true)
+	List<Object[]> getPlanDocEmailData(@Param("planId") String planId);
+	
 }

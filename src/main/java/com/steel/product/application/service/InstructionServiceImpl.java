@@ -13,6 +13,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -38,6 +40,7 @@ import com.steel.product.application.dto.partDetails.PartDetailsResponse;
 import com.steel.product.application.dto.pdf.InstructionResponsePdfDto;
 import com.steel.product.application.dto.pdf.InwardEntryPdfDto;
 import com.steel.product.application.dto.pdf.PartDetailsPdfResponse;
+import com.steel.product.application.dto.pdf.PartDto;
 import com.steel.product.application.dto.qrcode.QRCodeResponse;
 import com.steel.product.application.dto.quality.KQPPartyMappingResponse;
 import com.steel.product.application.entity.EndUserTagsEntity;
@@ -102,9 +105,18 @@ public class InstructionServiceImpl implements InstructionService {
     
 	private SalesOrderJswHelperService helperService;
 	
+	private AWSS3Service awsS3Service;
+
+	
 	@Autowired
 	CommonUtil commonUtil;
-	
+
+	// @Lazy avoids a circular dependency (MailSender -> ReportsService -> ... -> InstructionService)
+	@Lazy
+	@Autowired
+	@Qualifier("apiEmailReports")
+	private MailSender mailSender;
+
 	@Autowired
 	public InstructionServiceImpl(InstructionRepository instructionRepository,
 			InwardEntryRepository inwardEntryRepository, InwardEntryService inwardService,
@@ -115,7 +127,8 @@ public class InstructionServiceImpl implements InstructionService {
 			QualityService qualityService, PartDetailsRepository partDetailsRepository,
 			MaterialMasterJswService materialMasterJswService, 
 			SalesOrderAllocationJswRepository soAllocationRepository,
-			SalesOrderJswHelperService helperService) {
+			SalesOrderJswHelperService helperService,
+			AWSS3Service awsS3Service) {
 		this.instructionRepository = instructionRepository;
 		this.inwardEntryRepository = inwardEntryRepository;
 		this.deliveryDetailsRepository = deliveryDetailsRepository;
@@ -132,6 +145,7 @@ public class InstructionServiceImpl implements InstructionService {
 		this.materialMasterJswService = materialMasterJswService;
 		this.soAllocationRepository = soAllocationRepository;
 		this.helperService = helperService;
+		this.awsS3Service = awsS3Service;
 	}
 
 	@Override
@@ -164,148 +178,14 @@ public class InstructionServiceImpl implements InstructionService {
         }
 
         return theInstruction;
-    }
-
-//    @Override
-//    @Transactional
-//    public ResponseEntity<Object> addCutInstruction(List<InstructionSaveRequestDto> cutInstructionSaveRequestDtos) {
-//        log.info("inside save cut instruction method");
-//        log.info("no of requests " + cutInstructionSaveRequestDtos.size());
-//        Map<PartDetails, List<InstructionRequestDto>> instructionPlanAndListMap = new HashMap<>();
-//        partDetailsRequest partDetailsRequest;
-//        InstructionRequestDto instructionRequestDto = cutInstructionSaveRequestDtos.get(0).getInstructionRequestDTOs().get(0);
-//        Integer inwardId = instructionRequestDto.getInwardId();
-//        Integer parentInstructionId = instructionRequestDto.getParentInstructionId();
-//        Integer groupId = instructionRequestDto.getGroupId();
-//        boolean fromInward = false, fromParentInstruction = false, fromGroup = false;
-//
-//        InwardEntry inwardEntry;
-//        Instruction parentInstruction = null;
-//        PartDetails partDetails = null;
-//        String partDetailsId;
-//        Process process;
-//        double incomingWeight = 0f, availableWeight = 0f, existingWeight = 0f, remainingWeight = 0f;
-//        double incomingLength = 0f, availableLength = 0f, existingLength = 0f, remainingLength = 0f;
-//
-//        if (inwardId != null && groupId != null) {
-//            log.info("adding instructions from inward "+ inwardId +", group id " + groupId);
-//            inwardEntry = inwardService.getByInwardEntryId(inwardId);
-//            TotalLengthAndWeight totalLengthAndWeight = this.sumOfPlannedLengthAndWeightOfInstructionsHavingGroupId(groupId);
-//            availableWeight = totalLengthAndWeight.getTotalWeight();
-//            availableLength = totalLengthAndWeight.getTotalLength();
-//            log.info("available length,weight for instructions with group id "+groupId+ " is "+availableLength+", "+availableWeight);
-//            process = processService.getById(this.slitAndCutProcessId);
-//            partDetailsId = null;
-//            fromGroup = true;
-//        } else if (inwardId != null) {
-//            log.info("adding instructions from inward id " + inwardId);
-//            inwardEntry = inwardService.getByInwardEntryId(inwardId);
-//            availableWeight = inwardEntry.getFpresent();
-//            availableLength = inwardEntry.getAvailableLength();
-//            log.info("available length,weight of inward "+inwardEntry.getInwardEntryId()+" is "+availableLength+", "+availableWeight);
-//            process = processService.getById(cutProcessId);
-//            partDetailsId = "DOC_" + System.nanoTime();
-//            fromInward = true;
-//        } else if (parentInstructionId != null) {
-//                log.info("adding instructions from parent instruction id " + parentInstructionId);
-//                TotalLengthAndWeight totalLengthAndWeight = this.sumOfPlannedLengthAndWeightOfInstructionsHavingParentInstructionId(parentInstructionId);
-//                existingLength = totalLengthAndWeight.getTotalLength();
-//                existingWeight = totalLengthAndWeight.getTotalWeight();
-//                log.info("existing length,weight is " +existingLength+", " +existingWeight);
-//                parentInstruction = this.findInstructionById(parentInstructionId);
-//                inwardEntry = parentInstruction.getInwardId();
-//                availableWeight = parentInstruction.getPlannedWeight();
-//                log.info("available length,weight is" + availableLength+", "+availableWeight);
-//                process = processService.getById(cutProcessId);
-//                partDetailsId = "DOC_" + System.nanoTime();
-//                fromParentInstruction = true;
-//            }
-//        else {
-//                return new ResponseEntity<Object>("Invalid request.", HttpStatus.BAD_REQUEST);
-//            }
-//        if (inwardEntry.getFpresent() < 0) {
-//            log.error("inward has negative fPresent value "+inwardEntry.getFpresent());
-//            return new ResponseEntity<Object>("Inward with id " + inwardId + " has invalid fpresent value " + inwardEntry.getFpresent(), HttpStatus.BAD_REQUEST);
-//        }
-//
-//        for (InstructionSaveRequestDto cutInstructionDto : cutInstructionSaveRequestDtos) {
-//            incomingWeight += cutInstructionDto.getInstructionRequestDTOs().stream().filter(dto -> dto.getPlannedWeight() != null).reduce(0f, (sum, dto) -> sum + dto.getPlannedWeight(), Float::sum);
-//            incomingLength += cutInstructionDto.getInstructionRequestDTOs().stream().filter(dto -> dto.getPlannedWeight() != null).reduce(0f, (sum, dto) -> sum + dto.getPlannedLength(), Float::sum);
-//            partDetailsRequest = cutInstructionDto.getPartDetailsRequest();
-//            if(!fromGroup) {
-//                PartDetails partDetails1 = partDetailsMapper.toEntityForCut(partDetailsRequest);
-//                partDetails1.setPartDetailsId(partDetailsId);
-//                instructionPlanAndListMap.put(partDetails1, cutInstructionDto.getInstructionRequestDTOs());
-//            }else{
-//                instructionPlanAndListMap.put(null, cutInstructionDto.getInstructionRequestDTOs());
-//            }
-//
-//        }
-//
-//        remainingWeight = availableWeight - existingWeight - incomingWeight;
-//        remainingLength = availableLength - existingLength - incomingLength;
-//        log.info("remaining length,weight is "+remainingLength+", "+remainingWeight);
-//        if (fromGroup && Math.abs(remainingWeight) > 1f) {
-//            return new ResponseEntity<Object>("Input instructions total weight must be equal to instructions with group id " + groupId, HttpStatus.BAD_REQUEST);
-//        } else if (!fromGroup && remainingWeight < 0f) {
-//            log.error("remaining weight is invalid " + remainingWeight);
-//            return new ResponseEntity<Object>("inward " + inwardId + " has no available weight for processing.", HttpStatus.BAD_REQUEST);
-//        }
-//        if(remainingLength < 0f){
-//            log.error("remaining length is invalid "+ remainingLength);
-//            return new ResponseEntity<Object>("inward " + inwardId + " has no available length for processing.", HttpStatus.BAD_REQUEST);
-//        }
-//        if (fromInward) {
-//            log.info("setting fPresent for inward " + inwardEntry.getInwardEntryId() + " to " + remainingWeight);
-//            inwardEntry.setFpresent((float) remainingWeight);
-//            inwardEntry.setAvailableLength((float)remainingLength);
-//        }
-//        Status inProgressStatus = statusService.getStatusById(inProgressStatusId);
-//        inwardEntry.setStatus(inProgressStatus);
-//        List<Instruction> savedInstructionList = new ArrayList<Instruction>();
-//        for (PartDetails pd : instructionPlanAndListMap.keySet()) {
-//            for (InstructionRequestDto requestDto : instructionPlanAndListMap.get(pd)) {
-//                Instruction instruction = instructionMapper.toEntity(requestDto);
-//                instruction.setProcess(process);
-//                instruction.setStatus(inProgressStatus);
-//                if (fromParentInstruction) {
-//                    parentInstruction.addChildInstruction(instruction);
-//                } else if (fromInward) {
-//                    inwardEntry.addInstruction(instruction);
-//                } else {
-//                    inwardEntry.addInstruction(instruction);
-//                    instruction.setParentGroupId(groupId);
-//                }
-//                if(pd != null) {
-//                    pd.addInstruction(instruction);
-//                }
-//                savedInstructionList.add(instruction);
-//            }
-//        }
-//        log.info("saving " + instructionPlanAndListMap.keySet().size() + " part details objects");
-//        if(fromGroup) {
-//            savedInstructionList = saveAll(savedInstructionList);
-//            return new ResponseEntity<>(savedInstructionList.stream().map(i -> Instruction.valueOf(i)), HttpStatus.OK);
-//        }
-//        List<PartDetails> partDetailsList = partDetailsService.saveAll(instructionPlanAndListMap.keySet());
-//        List<PartDetailsResponse> partDetailsResponseList = partDetailsMapper.toResponseDto(partDetailsList);
-//
-//        if (fromParentInstruction) {
-//            instructionRepository.save(parentInstruction);
-//        } else if (fromInward) {
-//            inwardService.saveEntry(inwardEntry);
-//        }
-//        return new ResponseEntity<Object>(partDetailsResponseList, HttpStatus.CREATED);
-//    }
+    } 
 
     @Override
     @Transactional
     public void deleteById(Integer instructionId) {
         log.info("inside delete instruction method");
         Instruction deleteInstruction = instructionRepository.getOne(instructionId);
-        Integer inProgressStatusId = 2, readyToDeliverStatusId = 3, receivedStatusId = 1, despatchedStatusId = 4, statusId = 0;
 
-//        if(deleteInstruction.getInwardId() != null && deleteInstruction.getParentGroupId() != null)
         deleteInstruction.setPacketClassification(null);
         deleteInstruction.setDeliveryDetails(null);
         if (deleteInstruction.getInwardId() != null) {
@@ -1723,6 +1603,59 @@ public class InstructionServiceImpl implements InstructionService {
 	@Override
 	public void updateSonoMmid(String sono, String mmid, int instructionId) {
 		instructionRepository.updateSonoMmid(sono, mmid, instructionId);
+	}
+
+	@Override
+	public ResponseEntity<Object> planDocEmail(PartDto partDto) {
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+
+		if (partDto == null || partDto.getPartDetailsId() == null || partDto.getPartDetailsId().trim().isEmpty()) {
+			return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"partDetailsId is required\"}", headers, HttpStatus.BAD_REQUEST);
+		}
+		String partDetailsId = partDto.getPartDetailsId().trim();
+
+		try {
+			// 1. Download PDF from S3
+			byte[] pdfBytes = awsS3Service.downloadPdfBytes(partDetailsId);
+			if (pdfBytes == null || pdfBytes.length == 0) {
+				log.error("planDocEmail: PDF not found in S3 for partDetailsId {}", partDetailsId);
+				return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Plan document not found for partDetailsId " + partDetailsId + "\"}", headers, HttpStatus.NOT_FOUND);
+			}
+
+			// 2. Resolve recipients: party email1 -> To, email2 -> CC
+			String coilNumber = null;
+			String toEmails = null;
+			String ccEmails = null;
+			List<Object[]> rows = partDetailsRepository.getPlanDocEmailData(partDetailsId);
+			if (rows != null && !rows.isEmpty()) {
+				Object[] row = rows.get(0);
+				coilNumber = row[1] != null ? row[1].toString().trim() : null;
+				toEmails = row[2] != null ? row[2].toString().trim() : null;
+				ccEmails = row[3] != null ? row[3].toString().trim() : null;
+			} else {
+				log.warn("planDocEmail: no party/coil data found for partDetailsId {}", partDetailsId);
+			}
+			if (toEmails == null || toEmails.isEmpty()) {
+				// No primary party email: promote CC, else fall back to configured address
+				if (ccEmails != null && !ccEmails.isEmpty()) {
+					toEmails = ccEmails;
+					ccEmails = null;
+				}
+			}
+			log.info("toEmails== {}, ccEmails== {}", toEmails, ccEmails);
+			// 3. Send email with PDF attachment
+			boolean sent = mailSender.sendPlanDocMail(toEmails, ccEmails, partDetailsId, coilNumber, pdfBytes);
+			if (!sent) {
+				return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Failed to send plan document email\"}", headers, HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+
+			return new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Plan document emailed successfully to " + toEmails
+					+ ((ccEmails != null && !ccEmails.isEmpty()) ? ", cc " + ccEmails : "") + "\"}", headers, HttpStatus.OK);
+		} catch (Exception e) {
+			log.error("planDocEmail failed for partDetailsId {}", partDetailsId, e);
+			return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"" + e.getMessage() + "\"}", headers, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
 
 }

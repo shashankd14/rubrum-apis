@@ -2,6 +2,7 @@ package com.steel.product.application.service;
 
 import com.steel.product.application.dto.instruction.*;
 import com.steel.product.application.dto.pdf.InwardEntryPdfDto;
+import com.steel.product.application.dto.pdf.PartDto;
 import com.steel.product.application.dto.qrcode.QRCodeResponse;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.exception.MockException;
@@ -102,4 +103,6 @@ public interface InstructionService {
 	public void updateAdditionalWeight(int instructionId, Float additionalWeight);
 
 	public void updateSonoMmid(String sono, String mmid, int instructionId);
+
+	public ResponseEntity<Object> planDocEmail(PartDto partDto);
 }

@@ -188,6 +188,53 @@ public class MailSender {
 		);
 	}
 
+	/**
+	 * Sends the Plan document PDF as an attachment.
+	 * @return true if sent, false otherwise
+	 */
+	public boolean sendPlanDocMail(String toEmails, String ccEmails, String partDetailsId, String coilNumber, byte[] pdfBytes) {
+		logger.info("******MailSender.sendPlanDocMail************** partDetailsId={}, to={}, cc={}", partDetailsId, toEmails, ccEmails);
+		try {
+			MimeMessage message = javaMailSender.createMimeMessage();
+			MimeMessageHelper helper = new MimeMessageHelper(message, true);
+			helper.setFrom(fromMailId);
+
+			java.util.List<String> toList = new java.util.ArrayList<>();
+			StringTokenizer st = new StringTokenizer(toEmails, ",");
+			while (st.hasMoreTokens()) {
+				String id = st.nextToken().trim();
+				if (!id.isEmpty()) toList.add(id);
+			}
+			helper.setTo(toList.toArray(new String[0]));
+
+			if (ccEmails != null && !ccEmails.trim().isEmpty()) {
+				StringTokenizer cc = new StringTokenizer(ccEmails, ",");
+				while (cc.hasMoreTokens()) {
+					String id = cc.nextToken().trim();
+					if (!id.isEmpty()) helper.addCc(id);
+				}
+			}
+
+			String coilText = (coilNumber != null && !coilNumber.isEmpty()) ? " / Coil " + coilNumber : "";
+			helper.setSubject("Plan Document - " + partDetailsId + coilText);
+			helper.setText("<p>Dear Sir/Madam,</p>"
+					+ "<p>Please find attached the plan document for Plan ID <b>" + partDetailsId + "</b>"
+					+ ((coilNumber != null && !coilNumber.isEmpty()) ? ", Coil Number <b>" + coilNumber + "</b>" : "")
+					+ ".</p>"
+					+ "<p>Regards,<br/>JSW One</p>", true);
+
+			String attachmentName = partDetailsId.toLowerCase().endsWith(".pdf") ? partDetailsId : partDetailsId + ".pdf";
+			helper.addAttachment(attachmentName, new org.springframework.core.io.ByteArrayResource(pdfBytes), "application/pdf");
+
+			javaMailSender.send(message);
+			logger.info("Plan doc email sent successfully to {}", toEmails);
+			return true;
+		} catch (Exception e) {
+			logger.error("MailSender.sendPlanDocMail failed: {}", e.getMessage(), e);
+			return false;
+		}
+	}
+
 	/*
 	public void sendMonthlyReportsMail(Party party, Integer month, Integer year) {
 
