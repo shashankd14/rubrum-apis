@@ -824,15 +824,16 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 
 			kk.setPoInvoiceNo(result[0] != null ? result[0].toString() : null);
 			kk.setPoInvSyncStatus(result[1] != null ? result[1].toString() : "PENDING");
-			kk.setPoInvSyncRemarks( result[2] != null ? result[2].toString() : "");
-			kk.setManualPoFlag( result[3] != null ? result[3].toString() : "Y");
-			kk.setBillId( result[4] != null ? result[4].toString() : "");
+			kk.setPoInvSyncRemarks(result[2] != null ? result[2].toString() : "");
+			kk.setManualPoFlag(result[3] != null ? result[3].toString() : "Y");
+			kk.setBillId(result[4] != null ? result[4].toString() : "");
 			kk.setZohoDocumentUploadStts(result[5] != null ? result[5].toString() : "PENDING");
 			kk.setZohoDocumentUploadRemarks(result[6] != null ? result[6].toString() : "");
 			kk.setInwardDate((result[11] != null ? result[11].toString() : null));
 			kk.setLocationName((result[12] != null ? result[12].toString() : null));
-			kk.setPoNumber( (result[13] != null ? result[13].toString() : null));
-			
+			kk.setPoNumber((result[13] != null ? result[13].toString() : null));
+			kk.setCreatedByName(result[14] != null ? result[14].toString() : null);
+
 			child.setCoilNumber(result[7] != null ? (String) result[7] : null);
 			child.setCustomerBatchId(result[8] != null ? (String) result[8] : null);
 			child.setCoilStatus(result[9] != null ? (String) result[9] : null);

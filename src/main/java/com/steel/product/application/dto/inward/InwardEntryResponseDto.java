@@ -78,6 +78,8 @@ public class InwardEntryResponseDto {
 
     private int createdBy;
 
+    private String createdByName;
+
     private int updatedBy;
 
     private Date createdOn;
@@ -358,7 +360,15 @@ public class InwardEntryResponseDto {
         this.createdBy = createdBy;
     }
 
-    public int getUpdatedBy() {
+    public String getCreatedByName() {
+		return createdByName;
+	}
+
+	public void setCreatedByName(String createdByName) {
+		this.createdByName = createdByName;
+	}
+
+	public int getUpdatedBy() {
         return updatedBy;
     }
 

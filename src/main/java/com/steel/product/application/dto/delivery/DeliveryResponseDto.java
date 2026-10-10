@@ -18,6 +18,8 @@ public class DeliveryResponseDto {
 
     private Integer createdBy;
 
+    private String createdByName;
+
     private Integer updatedBy;
 
     private Date createdOn;
@@ -164,6 +166,14 @@ public class DeliveryResponseDto {
 
 	public void setSalesInvoiceNo(String salesInvoiceNo) {
 		this.salesInvoiceNo = salesInvoiceNo;
+	}
+
+	public String getCreatedByName() {
+		return createdByName;
+	}
+
+	public void setCreatedByName(String createdByName) {
+		this.createdByName = createdByName;
 	}
 
 

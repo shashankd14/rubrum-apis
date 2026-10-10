@@ -780,7 +780,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 	}
 
 	@Override
-	public List<DeliveryPacketsDto> getDeliveryDetails(List<Integer> deliveryIdList) {
+	public List<DeliveryPacketsDto> getDeliveryDetails(List<Integer> deliveryIdList, Map<Integer, String> userMap) {
 		List<Object[]> deliveryList = deliveryDetailsRepo.getDeliveryDetails(deliveryIdList);
 		List<DeliveryPacketsDto> packetsList = new ArrayList<DeliveryPacketsDto>();
 		for (Object[] result : deliveryList) {
@@ -793,6 +793,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 			deliveryDetails.setLaminationId(result[3] != null ? (Integer) result[3] : null); 
 			deliveryDetails.setTotalWeight(result[4] != null ? ((Number) result[4]).floatValue() : null);
 			deliveryDetails.setCreatedBy(result[5] != null ? (Integer) result[5] : null); 
+			deliveryDetails.setCreatedByName(userMap.get(deliveryDetails.getCreatedBy()));
 			deliveryDetails.setUpdatedBy (result[6] != null ? (Integer) result[6] : null); 
 			deliveryDetails.setCreatedOn(result[7] != null ? (Date) result[7] : null); 
 			deliveryDetails.setUpdatedOn (result[8] != null ? (Date) result[8] : null); 

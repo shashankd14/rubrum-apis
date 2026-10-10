@@ -33,6 +33,8 @@ public class WIPListResponseDTO {
 
 	private String mmId;
 
+	private String createdByName;
+
 	private Float fWidth;
 
 	private Float fThickness;

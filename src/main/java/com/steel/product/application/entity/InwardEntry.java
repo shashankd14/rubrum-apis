@@ -806,7 +806,8 @@ public class InwardEntry {
         return inwardEntryPdfDto;
     }
 	
-	public static InwardEntryResponseDto valueOfResponse (InwardEntry inwardEntry, MaterialMasterJswService materialService) {
+	public static InwardEntryResponseDto valueOfResponse (InwardEntry inwardEntry, 
+			MaterialMasterJswService materialService, Map<Integer, String> userMap) {
 		InwardEntryResponseDto inwardEntryResponseDto = new InwardEntryResponseDto();
 		inwardEntryResponseDto.setInwardEntryId(inwardEntry.getInwardEntryId());
 		inwardEntryResponseDto.setParty(inwardEntry.getParty() != null ? Party.valueOf(inwardEntry.getParty()) : null);
@@ -817,7 +818,6 @@ public class InwardEntry {
 		inwardEntryResponseDto.setfQuantity(inwardEntry.getfQuantity());
 		inwardEntryResponseDto.setMaterial(inwardEntry.getMmId()!= null ? materialService.getProductName( inwardEntry.getMmId()) : null);
 		inwardEntryResponseDto.setMaterialGrade(inwardEntry.getMmId()!= null ? materialService.getGradeName(inwardEntry.getMmId()) : null);
-		//inwardEntryResponseDto.setMaterialGrade(inwardEntry.getMaterialGrade() != null ? MaterialGrade.valueOf(inwardEntry.getMaterialGrade()) : null);
 		inwardEntryResponseDto.setfThickness(inwardEntry.getfThickness());
 		inwardEntryResponseDto.setfWidth(inwardEntry.getfWidth());
 		inwardEntryResponseDto.setGrossWeight(inwardEntry.getGrossWeight());
@@ -838,6 +838,7 @@ public class InwardEntry {
 		inwardEntryResponseDto.setdInvoiceDate(inwardEntry.getdInvoiceDate());
 		inwardEntryResponseDto.setValueOfGoods(inwardEntry.getValueOfGoods());
 		inwardEntryResponseDto.setCreatedBy(inwardEntry.getCreatedBy());
+		inwardEntryResponseDto.setCreatedByName(userMap.get(inwardEntry.getCreatedBy()));
 		inwardEntryResponseDto.setCreatedOn(inwardEntry.getCreatedOn());
 		inwardEntryResponseDto.setUpdatedBy(inwardEntry.getUpdatedBy());
 		inwardEntryResponseDto.setUpdatedOn(inwardEntry.getUpdatedOn());
@@ -874,7 +875,8 @@ public class InwardEntry {
 		return inwardEntryResponseDto;
 	}
 
-	public static InwardEntryResponseDto valueOfResponsePartyWise (InwardEntry inwardEntry, Map<String, String> matDescMap) {
+	public static InwardEntryResponseDto valueOfResponsePartyWise (InwardEntry inwardEntry, 
+			Map<String, String> matDescMap, Map<Integer, String> userMap) {
 		InwardEntryResponseDto inwardEntryResponseDto = new InwardEntryResponseDto();
 		inwardEntryResponseDto.setInwardEntryId(inwardEntry.getInwardEntryId());
 		inwardEntryResponseDto.setParty(inwardEntry.getParty() != null ? Party.valueOf(inwardEntry.getParty()) : null);
@@ -892,6 +894,7 @@ public class InwardEntry {
 		inwardEntryResponseDto.setfWidth(inwardEntry.getfWidth());
 		inwardEntryResponseDto.setGrossWeight(inwardEntry.getGrossWeight());
 		inwardEntryResponseDto.setCreatedOn(inwardEntry.getCreatedOn());
+		inwardEntryResponseDto.setCreatedByName(userMap.get(inwardEntry.getCreatedBy()));
 		inwardEntryResponseDto.setInstruction(inwardEntry.getInstructions() != null ?
 				inwardEntry.getInstructions().stream().filter(i -> !i.getIsDeleted())
 						.map(i -> Instruction.valueOf(i)).collect(Collectors.toList()): null);

@@ -1,6 +1,8 @@
 package com.steel.product.application.dao;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.transaction.Transactional;
@@ -49,4 +51,6 @@ public interface UserRepository extends CrudRepository<AdminUserEntity, Integer>
 	@Query("select party from AdminUserEntity party where 1=1 order by userId desc")
 	public List<AdminUserEntity> getAllUsers();
 
+	@Query("select u.userId as userId, u.userName as userName,u.firstName as firstName, u.lastName as lastName from AdminUserEntity u where u.enabled = :enabled")
+	List<Map<String, Object>> findActiveUserMap(@Param("enabled") short enabled);
 }

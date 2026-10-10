@@ -30,7 +30,7 @@ public class JSWReportController {
 	 *   "reportType": "PURCHASE | SALES | STOCK | OPEN_ORDERS | JOB_ORDERS | FIFO_BREACH | AUDIT_TRAIL",
 	 *   "fromDate":   "2026-09-01",      // inclusive, ignored for STOCK
 	 *   "toDate":     "2026-09-30",      // inclusive, ignored for STOCK
-	 *   "locationid": 0
+	 *   "locationId": 0
 	 * }
 	 * reportType blank -> AUDIT_TRAIL. Dates blank -> 1st of current month .. today.
 	 */
@@ -50,4 +50,7 @@ public class JSWReportController {
 		headers.setCacheControl("no-store");
 		return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
 	}
+	
+	
+	
 }

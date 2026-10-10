@@ -355,9 +355,12 @@ public class InstructionServiceImpl implements InstructionService {
                 instruction.setPacketClassification(null);
             }
             instruction.setEndUserTagsEntity(endUserTagsEntityMap.get(ins.getEndUserTagId()));
-            instruction.setStatus(currentStatus);
-            instruction.setUpdatedBy(userId);
-            instruction.setFinishedDate(new Date());
+			instruction.setStatus(currentStatus);
+			instruction.setUpdatedBy(userId);
+			if (currentStatus != null && currentStatus.getStatusId() == 3) {
+				instruction.setFinishedDate(new Date());
+				instruction.setFinishedBy(userId);
+			}
             updatedInstructionList.add(instruction);
         }
         instructionRepository.saveAll(updatedInstructionList);
@@ -658,6 +661,7 @@ public class InstructionServiceImpl implements InstructionService {
         unprocessedInstruction.setUpdatedBy(userId);
         unprocessedInstruction.setCreatedOn(date);
         unprocessedInstruction.setUpdatedOn(date);
+        unprocessedInstruction.setFinishedBy(userId);
         unprocessedInstruction.setFinishedDate(date);
         unprocessedInstruction.setIsDeleted(false);
         unprocessedInstruction.setIsSlitAndCut(false);
@@ -702,6 +706,7 @@ public class InstructionServiceImpl implements InstructionService {
         unprocessedInstruction.setCreatedOn(date);
         unprocessedInstruction.setUpdatedOn(date);
         unprocessedInstruction.setFinishedDate(date);
+        unprocessedInstruction.setFinishedBy(userId);
         unprocessedInstruction.setIsDeleted(false);
         unprocessedInstruction.setIsSlitAndCut(false);
 

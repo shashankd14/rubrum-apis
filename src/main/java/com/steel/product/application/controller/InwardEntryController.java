@@ -9,6 +9,7 @@ import com.steel.product.application.dto.inward.SearchListPageRequest;
 import com.steel.product.application.dto.inward.WIPListResponseDTO;
 import com.steel.product.application.entity.InwardDoc;
 import com.steel.product.application.entity.InwardEntry;
+import com.steel.product.application.oauth.service.UserInfoService;
 import com.steel.product.application.service.*;
 import com.steel.product.application.util.CommonUtil;
 import com.steel.product.jswone.service.MaterialMasterJswService;
@@ -59,6 +60,8 @@ public class InwardEntryController {
 	private InwardDocService inwardDocService;
 	
 	private MaterialMasterJswService materialService;
+	
+	private UserInfoService userInfoService;
 
 	private Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 
@@ -66,7 +69,8 @@ public class InwardEntryController {
 	public InwardEntryController(InwardEntryService inwdEntrySvc, PartyDetailsService partyDetailsService,
 			StatusService statusService, MaterialDescriptionService matDescService,
 			MaterialGradeService matGradeService, UserService userSerive, AWSS3Service awsS3Service,
-			InwardDocService inwardDocService, CommonUtil commonUtil, MaterialMasterJswService materialService) {
+			InwardDocService inwardDocService, CommonUtil commonUtil, MaterialMasterJswService materialService,
+			UserInfoService userInfoService) {
 		this.inwdEntrySvc = inwdEntrySvc;
 		this.partyDetailsService = partyDetailsService;
 		this.statusService = statusService;
@@ -76,6 +80,7 @@ public class InwardEntryController {
 		this.inwardDocService = inwardDocService;
 		this.commonUtil = commonUtil;
 		this.materialService = materialService;
+		this.userInfoService = userInfoService;
 	}
 
 	@PostMapping("/addNew")
@@ -273,26 +278,6 @@ public class InwardEntryController {
 		}
 	}
 
-	/*@GetMapping({ "/partywise/{pageNo}/{pageSize}" })
-	public ResponseEntity<Object> findAllPartyWiseWithPagination(@PathVariable int pageNo, @PathVariable int pageSize,
-			@RequestParam(required = false, name = "searchText") String searchText,
-			@RequestParam(required = false, name = "partyId") String partyId) {
-		SearchListPageRequest searchListPageRequest = new SearchListPageRequest();
-		searchListPageRequest.setPageNo( pageNo);
-		searchListPageRequest.setPageSize(pageSize);
-		searchListPageRequest.setSearchText( searchText);
-		searchListPageRequest.setPartyId( partyId);
-		
-		Map<String, Object> response = new HashMap<>();
-		Page<InwardEntry> pageResult = inwdEntrySvc.partywiselist(searchListPageRequest);
-		List<Object> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponse(inw)).collect(Collectors.toList());
-		response.put("content", inwardList);
-		response.put("currentPage", pageResult.getNumber());
-		response.put("totalItems", pageResult.getTotalElements());
-		response.put("totalPages", pageResult.getTotalPages());
-		return new ResponseEntity<Object>(response, HttpStatus.OK);
-	}*/
-
 	@PostMapping({ "/partywiselist" })
 	public ResponseEntity<Object> partywiselist(@RequestBody SearchListPageRequest searchListPageRequest) {
 		Map<String, Object> response = new HashMap<>();
@@ -313,6 +298,7 @@ public class InwardEntryController {
 				dto.setEndUserTagName( result[8] != null ? (String) result[8] : null);
 				dto.setInwardStatus(result[9] != null ? (String) result[9] : null);
 				dto.setPacketStatus(result[10] != null ? (String) result[10] : null);
+				dto.setCreatedBy(result[11] != null ? (String) result[11] : null);
 				responseList.add(dto);
 			}
 			response.put("content", responseList);
@@ -321,6 +307,7 @@ public class InwardEntryController {
 			response.put("totalPages", pageResult.getTotalPages());
 			return new ResponseEntity<Object>(response, HttpStatus.OK);
 		} else {
+			Map<Integer, String> userMap = userInfoService.getAllActiveUserNameMap();
 			Page<Object[]> packetsList1 = inwdEntrySvc.listAllLocationWiseInwards(searchListPageRequest);
 			Map<String, String> matDescMap = new HashMap<>();
 
@@ -332,7 +319,7 @@ public class InwardEntryController {
 			}
 			//log.info("In InwardEntryController.partywiselist === " + matDescMap);
 			List<InwardEntry> pageResult = inwdEntrySvc.locationWiseListByInwardId(inwardIdList);
-			List<InwardEntryResponseDto> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponsePartyWise(inw, matDescMap)).collect(Collectors.toList());
+			List<InwardEntryResponseDto> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponsePartyWise(inw, matDescMap, userMap)).collect(Collectors.toList());
 			response.put("content", inwardList);
 			response.put("currentPage", packetsList1.getNumber());
 			response.put("totalItems", packetsList1.getTotalElements());
@@ -353,8 +340,9 @@ public class InwardEntryController {
 			inwardIdList.add(inwardId);
 		}
 		log.info("In InwardEntryController.inwardIdList === " + inwardIdList);
+		Map<Integer, String> userMap = userInfoService.getAllActiveUserNameMap();
 		List<InwardEntry> pageResult = inwdEntrySvc.locationWiseListByInwardId(inwardIdList);
-		List<InwardEntryResponseDto> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponse(inw, materialService)).collect(Collectors.toList());
+		List<InwardEntryResponseDto> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponse(inw, materialService, userMap)).collect(Collectors.toList());
 		response.put("content", inwardList);
 		response.put("currentPage", packetsList1.getNumber());
 		response.put("totalItems", packetsList1.getTotalElements());
@@ -385,11 +373,11 @@ public class InwardEntryController {
 		} else {
 			packetsList = inwdEntrySvc.wipListNewQuery(inwardIdList);
 		}
+		Map<Integer, String> userMap = userInfoService.getAllActiveUserNameMap();
 
 		Map<Integer, WIPListResponseDTO> inwardMap = new LinkedHashMap<>();
 		List<WIPChildListResponseDTO> childList = new ArrayList<WIPChildListResponseDTO>();
 		for (Object[] result : packetsList) {
-
 			WIPChildListResponseDTO child = new WIPChildListResponseDTO();
 			WIPListResponseDTO parent = new WIPListResponseDTO();
 			parent.setInwardEntryId(result[1] != null ? (Integer) result[1] : null);
@@ -407,8 +395,10 @@ public class InwardEntryController {
 			parent.setFWidth(result[13] != null ? (Float) result[13] : null);
 			parent.setFpresent(result[14] != null ? (Float) result[14] : null);
 			parent.setGrossWeight(result[15] != null ? (Float) result[15] : null);
-			child.setInstructionId(result[0] != null ? (Integer) result[0] : null);
 			
+			parent.setCreatedByName(userMap.get(result[32] != null ? (Integer) result[32] : 0));
+			
+			child.setInstructionId(result[0] != null ? (Integer) result[0] : null);
 			child.setActualLength(result[16] != null ? (Float) result[16] : null);
 			child.setActualNoOfPieces(result[17] != null ? (Integer) result[17] : null);
 			child.setActualWeight(result[18] != null ? (Float) result[18] : null);
@@ -454,7 +444,8 @@ public class InwardEntryController {
 
 		Map<String, Object> response = new HashMap<>();
 		Page<InwardEntry> pageResult = inwdEntrySvc.findAllWIPlistWithPagination(pageNo, pageSize, searchText, partyId);
-		List<Object> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponse(inw, materialService)).collect(Collectors.toList());
+		Map<Integer, String> userMap = userInfoService.getAllActiveUserNameMap();
+		List<Object> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponse(inw, materialService, userMap)).collect(Collectors.toList());
 		response.put("content", inwardList);
 		response.put("currentPage", pageResult.getNumber());
 		response.put("totalItems", pageResult.getTotalElements());
@@ -474,25 +465,13 @@ public class InwardEntryController {
 		
 		Map<String, Object> response = new HashMap<>();
 		Page<InwardEntry> pageResult = inwdEntrySvc.partywiselist(searchListPageRequest);
-		List<Object> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponse(inw, materialService)).collect(Collectors.toList());
+		Map<Integer, String> userMap = userInfoService.getAllActiveUserNameMap();
+		List<Object> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponse(inw, materialService, userMap)).collect(Collectors.toList());
 		response.put("content", inwardList);
 		response.put("currentPage", pageResult.getNumber());
 		response.put("totalItems", pageResult.getTotalElements());
 		response.put("totalPages", pageResult.getTotalPages());
 		return new ResponseEntity<Object>(response, HttpStatus.OK);
-	}
-	
-	@GetMapping({ "/listold" })
-	public ResponseEntity<Object> listold() {
-		try {
-			
-			List<InwardEntryResponseDto> inwardEntries = inwdEntrySvc.findAllInwards();
-			return new ResponseEntity<Object>(inwardEntries, HttpStatus.OK);
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-		}
 	}
 
 	@GetMapping({ "/pwr/list" })

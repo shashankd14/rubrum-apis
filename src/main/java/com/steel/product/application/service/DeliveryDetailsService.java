@@ -12,6 +12,7 @@ import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.entity.InwardEntry;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.data.domain.Page;
 
@@ -49,6 +50,6 @@ public interface DeliveryDetailsService {
 
 	public Page<Object[]> listAllDeliveryList(int pageNo, int pageSize, String searchText, String partyId);
 
-	List<DeliveryPacketsDto> getDeliveryDetails(List<Integer> deliveryIdList);
+	List<DeliveryPacketsDto> getDeliveryDetails(List<Integer> deliveryIdList, Map<Integer, String> userMap);
 
 }

@@ -27,4 +27,6 @@ public class EndUserTagWisePacketsDTO {
 
 	private String packetStatus;
 
+	private String createdBy;
+
 }

@@ -149,6 +149,9 @@ public class Instruction {
 	@Column(name="finished_date")
     private Date finishedDate;
 
+	@Column(name="finished_by")
+    private Integer finishedBy;
+
     @Column(name = "isdeleted", columnDefinition = "BIT")
     private Boolean isDeleted;
 

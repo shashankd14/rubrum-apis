@@ -2,7 +2,11 @@ package com.steel.product.application.oauth.service;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
@@ -89,6 +93,11 @@ public class UserInfoService
         return userDetailsRepository.findAllByEnabled( ( short ) 1 );
     }
 
+	public Map<Integer, String> getAllActiveUserNameMap() {
+		return userDetailsRepository.findActiveUserMap((short) 1).stream().collect(Collectors.toMap(
+				r -> (Integer) r.get("userId"), r -> (String) r.get("userName"), (a, b) -> a, LinkedHashMap::new));
+	}
+	
     public AdminUserEntity getUserInfoById( Integer id )
     {
         return userDetailsRepository.findByUserId( id );

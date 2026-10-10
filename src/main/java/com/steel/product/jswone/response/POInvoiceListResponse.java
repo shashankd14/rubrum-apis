@@ -27,6 +27,8 @@ public class POInvoiceListResponse {
 	private String locationName;
 
 	private String poNumber;
+
+	private String createdByName;
 	
 	private List<POInvoiceListChildResponse> coilList = new ArrayList<>();
 

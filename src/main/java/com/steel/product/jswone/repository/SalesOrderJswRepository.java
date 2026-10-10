@@ -384,7 +384,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " where so.is_deleted = 0 and alloca.inward_entry_id = :inwardEntryId order by so.so_id desc", nativeQuery = true)
 	List<Object[]> coilAllocationDetails(@Param("inwardEntryId") int inwardEntryId);
 
-	@Query(value = "select so.so_id,so.refno so_number,material_name,'',so.total_soqty, so.cp_status,"
+	@Query(value = "select so.so_id,so.refno so_number,material_name,CAST(NULL AS CHAR) as cutno,so.total_soqty, so.cp_status,"
 			+ " so_child.so_child_id, DATE_FORMAT(socreatedate, '%d-%m-%Y'), so_child.mm_id, inward.inwardentryid, so_child.soqty, so_child.allocated_soqty, "
 			+ " so_child.allocated_stts,so_child.item_so_status,mm.mm_description, alloca.so_allocation_id, alloca.allocated_soqty alloqty, "
 			+ " coilnumber, "
