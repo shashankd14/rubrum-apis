@@ -183,26 +183,16 @@ public class AWSS3ServiceImpl implements AWSS3Service {
         return modifiedFileName;
     }
     public String persistTradingFiles(String applicationJarPath, String itemCode, MultipartFile file) throws IOException {
-        String path = applicationJarPath + File.separator + itemCode;
         String modifiedFileName = itemCode + "_" + file.getOriginalFilename().replaceAll("[^a-zA-Z0-9\\.\\-]", "_");
+        PutObjectRequest putRequest = PutObjectRequest.builder()
+                .bucket(tradingBucket)
+                .key(modifiedFileName)
+                .build();
 
-        File dir = new File(path);
-        if (!dir.exists()) dir.mkdirs();
-
-        File jsonFile = new File(path + File.separator + modifiedFileName);
-
-        try (InputStream inputStream = file.getInputStream();
-             FileOutputStream outStream = new FileOutputStream(jsonFile)) {
-
-            byte[] buffer = new byte[1024]; // 1KB buffer
-            int bytesRead;
-            while ((bytesRead = inputStream.read(buffer)) != -1) {
-                outStream.write(buffer, 0, bytesRead);
-            }
+        // Seller images do not need a local staging directory.
+        try (InputStream inputStream = file.getInputStream(); S3Client client = s3Client()) {
+            client.putObject(putRequest, RequestBody.fromInputStream(inputStream, file.getSize()));
         }
-
-        // Upload to S3 using SDK v2 method
-        uploadPDFFileToS3Bucket(tradingBucket, jsonFile, modifiedFileName);
 
         return modifiedFileName;
     }

@@ -174,9 +174,11 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 
 		if (searchListPageRequest.getSearchText() != null && searchListPageRequest.getSearchText().length() > 0) {
 			Page<MaterialMasterEntity> pageResult = materialMasterRepository.findAllWithSearchText(searchListPageRequest.getSearchText(), pageable);
+			pageResult.forEach(this::populateMaterialImageUrls);
 			return pageResult;
 		} else {
 			Page<MaterialMasterEntity> pageResult = materialMasterRepository.findAll(pageable);
+			pageResult.forEach(this::populateMaterialImageUrls);
 			return pageResult;
 		}
 	}
@@ -187,14 +189,18 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 		MaterialMasterEntity materialMasterEntity = null;
 		if (kk.isPresent()) {
 			materialMasterEntity = kk.get();
-			if (materialMasterEntity.getItemImage() != null && materialMasterEntity.getItemImage().length() > 0) {
-				materialMasterEntity.setItemImagePresignedURL(awsS3Service.generatePresignedUrlForTrading(materialMasterEntity.getItemImage()));
-			}
-			if (materialMasterEntity.getCrossSectionalImage() != null && materialMasterEntity.getCrossSectionalImage().length() > 0) {
-				materialMasterEntity.setCrossSectionalImagePresignedURL(awsS3Service.generatePresignedUrlForTrading(materialMasterEntity.getCrossSectionalImage()));
-			}
+			populateMaterialImageUrls(materialMasterEntity);
 		}
 		return materialMasterEntity;
+	}
+
+	private void populateMaterialImageUrls(MaterialMasterEntity material) {
+		if (material.getItemImage() != null && !material.getItemImage().isEmpty()) {
+			material.setItemImagePresignedURL(awsS3Service.generatePresignedUrlForTrading(material.getItemImage()));
+		}
+		if (material.getCrossSectionalImage() != null && !material.getCrossSectionalImage().isEmpty()) {
+			material.setCrossSectionalImagePresignedURL(awsS3Service.generatePresignedUrlForTrading(material.getCrossSectionalImage()));
+		}
 	}
 
 	@Override
