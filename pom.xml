@@ -10,7 +10,7 @@
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.steel.product</groupId>
-	<artifactId>rubrum</artifactId>
+	<artifactId>trading</artifactId>
 	<version>0.0.1</version>
 	<name>application</name>
 	<description>Service for Rubrum Steel Application</description>
