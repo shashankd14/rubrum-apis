@@ -435,6 +435,7 @@ public class SalesOrderJswController {
 	public ResponseEntity<Object> soBulkApprove(@RequestBody SalesOrderBulkRequest request) {
 		return salesOrderService.bulkUpdate(request);
 	}
+	
 	@PostMapping("/pdf")
 	public ResponseEntity<PdfResponseDto> downloadSOPDF(@RequestBody ListPageSearchRequest request) throws DocumentException {
 
@@ -462,6 +463,30 @@ public class SalesOrderJswController {
 	            log.info("PDF deleted: " + deleted + " | path: " + pdfFile.getAbsolutePath());
 	        }
 	    }
+	}
+
+	/**
+	 * Generates one PDF per processing-center party for the SO and returns all of them
+	 * as base64 in a single response. Same flow/queries as /email/pdf.
+	 *
+	 * { "soId": 123 }                          -> next part (A, B, ...) for un-generated allocations
+	 * { "soId": 123, "pdfGenerationPart": "A" } -> re-download an existing part
+	 */
+	@PostMapping(value = "/download/pdf", produces = "application/json")
+	public ResponseEntity<Object> downloadPartyWisePdfs(@RequestBody ListPageSearchRequest request) {
+		return sopdfService.downloadPartyWisePdfs(request);
+	}
+
+	/**
+	 * Generates one PDF per processing-center party for the SO and emails it.
+	 * Party email1 -> To, email2 -> CC.
+	 *
+	 * { "soId": 123 }                          -> next part (A, B, ...) for un-sent allocations
+	 * { "soId": 123, "pdfGenerationPart": "A" } -> re-send an existing part
+	 */
+	@PostMapping(value = "/email/pdf", produces = "application/json")
+	public ResponseEntity<Object> emailSOPDF(@RequestBody ListPageSearchRequest request) {
+		return sopdfService.emailPdfToParties(request);
 	}
 
 	@PostMapping(value = "/coil/allocationdetails", produces = "application/json")

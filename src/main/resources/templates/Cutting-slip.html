@@ -189,7 +189,7 @@
                         <th class="m_DesTable">No Of cuts</th>
                         <th class="m_DesTable">Weight</th>
                         <th class="m_DesTable">SO No</th>
-                        <th class="m_DesTable">End User Tags</th>
+                        <th class="m_DesTable">Special Delivery Inst</th>
                     </tr>
                     <tr class="m_tp" th:each="ins: ${list}">
                         <td class="m_DesTable" th:text="${ins?.instructionId}"></td> 
@@ -199,7 +199,7 @@
                         <td class="m_DesTable" th:text="${ins?.plannedNoOfPieces}"></td>
                         <td class="m_DesTable" th:text="${ins?.plannedWeight + ' x ' + ins.countOfWeight}"></td>
                         <td class="m_DesTable" th:text="${ins?.soNo}"></td>
-                        <td class="m_DesTable" th:text="${ins?.endUserTagsEntity?.tagName}"></td>
+                        <td class="m_DesTable" th:text="${ins?.sdi}"></td>
                     </tr>
                     </tbody>
                 </table>

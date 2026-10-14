@@ -127,7 +127,7 @@ public class InstructionMapperImpl implements InstructionMapper {
     }
 
     @Override
-    public InstructionResponsePdfDto toResponsePdfDto(Instruction instruction) {
+    public InstructionResponsePdfDto toResponsePdfDto(Instruction instruction, String sdi) {
         if ( instruction == null ) {
             return null;
         }
@@ -148,6 +148,8 @@ public class InstructionMapperImpl implements InstructionMapper {
         instructionResponsePdfDto.setRemarks( instruction.getRemarks() );
         instructionResponsePdfDto.setPacketClassification( instruction.getPacketClassification() );
         instructionResponsePdfDto.setEndUserTagsEntity( instruction.getEndUserTagsEntity());
+        instructionResponsePdfDto.setSdi(sdi);
+        instructionResponsePdfDto.setSoNo( instruction.getSono());
         instructionResponsePdfDto.setDeliveryDetails( deliveryDetailsToDeliveryResponseDto( instruction.getDeliveryDetails() ) );
 
         return instructionResponsePdfDto;
@@ -226,4 +228,6 @@ public class InstructionMapperImpl implements InstructionMapper {
 
         return deliveryResponseDto;
     }
+ 
+
 }

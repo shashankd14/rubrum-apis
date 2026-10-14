@@ -19,6 +19,7 @@ import javax.persistence.Table;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.Transient;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.steel.product.application.dto.instruction.InstructionResponseDto;
@@ -163,7 +164,7 @@ public class Instruction {
 
     @Column(name = "mmid")
     private String mmid;
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "part_Details_id")
     private PartDetails partDetails;
@@ -220,7 +221,7 @@ public class Instruction {
 		return instructionResponseDto;
     }
 
-	public static InstructionResponsePdfDto valueOfInstructionPdf(Instruction instruction, InwardEntry inwardEntry) {
+	public static InstructionResponsePdfDto valueOfInstructionPdf(Instruction instruction, InwardEntry inwardEntry, String sdi) {
 		
 		InstructionResponsePdfDto instructionResponsePdfDto = new InstructionResponsePdfDto();
 		instructionResponsePdfDto.setPacketClassification(instruction.getPacketClassification() != null ? instruction.getPacketClassification() : null);
@@ -281,6 +282,7 @@ public class Instruction {
 		instructionResponsePdfDto.setPackingRate(packingPrice);
 		instructionResponsePdfDto.setTotalPrice( totalPrice );
 		instructionResponsePdfDto.setSoNo(instruction.getSono());
+		instructionResponsePdfDto.setSdi(sdi);
 		Float actualWeight = (instruction.getProcess().getProcessId() == 7 ? instruction.getPlannedWeight(): (instruction.getActualWeight() == null ? instruction.getPlannedWeight(): instruction.getActualWeight()  ) );
 		//if (packingRateMain != null && packingRateMain.compareTo(BigDecimal.ZERO) > 0 && actualWeight > 0) {
 			//float kk = packingRateMain.floatValue() * (actualWeight/1000);

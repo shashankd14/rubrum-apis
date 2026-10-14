@@ -1,6 +1,7 @@
 package com.steel.product.jswone.repository;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,27 +25,33 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " where so.is_deleted = 0 and so_child.is_deleted = 0 and so_child.so_id = so.so_id "
 			+ " and (case when :warehouseFlag=true then so_child.wearhouse_id in :warehouseList else 1=1 end ) "
 			+ " and (case when :zohoStatusFlag=true then so.zoho_status in :zohoStatus else 1=1 end ) "
-			+ " and case when :soId is not null and LENGTH(:soId) >0 then so.so_id = :soId else so.so_id end " 
-		  	+ " and case when :status is not null and LENGTH(:status) > 0 then so.so_status = :status else so.so_status  = so.so_status end "  
-			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (so_child.material_name like %:searchText% or so_child.mm_id like %:searchText% or so.so_number like %:searchText% or so.refno like %:searchText%) else 1=1 end " 
+			+ " and (case when :statusFlag=true then so.so_status in :status else 1=1 end ) "
+			+ " and (:soId is null or so.so_id = :soId) "
+			+ " and (:fromDate is null or so.socreatedate >= :fromDate) "
+			+ " and (:toDate is null or so.socreatedate < DATE_ADD(:toDate, INTERVAL 1 DAY)) "
+			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (so_child.material_name like %:searchText% or so_child.mm_id like %:searchText% or so.so_number like %:searchText% or so.refno like %:searchText%) else 1=1 end "
 			+ " order by so.so_id desc",
-		countQuery = "SELECT count(distinct so.so_id ) " + 
-			"  FROM jsw_sales_order so, jsw_sales_order_child so_child" + 
-		  	"  where so.is_deleted = 0 and so_child.is_deleted = 0 and so_child.so_id = so.so_id" + 
-			"  and (case when :warehouseFlag=true then so_child.wearhouse_id in :warehouseList else 1=1 end ) "+ 
-			"  and (case when :zohoStatusFlag=true then so.zoho_status in :zohoStatus else 1=1 end ) "+ 
-		  	"  and case when :soId is not null and LENGTH(:soId) >0 then so.so_id = :soId else so.so_id end " +
-		  	"  and case when :status is not null and LENGTH(:status) > 0 then so.so_status in :status else 1=1 end " + 
-			"  and case when :searchText is not null and LENGTH(:searchText) >0 then (so_child.material_name like %:searchText% or so_child.mm_id like %:searchText% or so.so_number like %:searchText% or so.refno like %:searchText%) else 1=1 end " +
-		  	"  order by so.so_id desc", 
+		countQuery = "SELECT count(distinct so.so_id) "
+			+ " FROM jsw_sales_order so, jsw_sales_order_child so_child "
+			+ " where so.is_deleted = 0 and so_child.is_deleted = 0 and so_child.so_id = so.so_id "
+			+ " and (case when :warehouseFlag=true then so_child.wearhouse_id in :warehouseList else 1=1 end ) "
+			+ " and (case when :zohoStatusFlag=true then so.zoho_status in :zohoStatus else 1=1 end ) "
+			+ " and (case when :statusFlag=true then so.so_status in :status else 1=1 end ) "
+			+ " and (:soId is null or so.so_id = :soId) "
+			+ " and (:fromDate is null or so.socreatedate >= :fromDate) "
+			+ " and (:toDate is null or so.socreatedate < DATE_ADD(:toDate, INTERVAL 1 DAY)) "
+			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (so_child.material_name like %:searchText% or so_child.mm_id like %:searchText% or so.so_number like %:searchText% or so.refno like %:searchText%) else 1=1 end ",
 		nativeQuery = true)
 	Page<Object[]> listAllSOIDs(@Param("searchText") String searchText,
 			@Param("soId") Integer soId,
-			@Param("status") List<String> status, 
-			@Param("zohoStatusFlag") boolean zohoStatusFlag, 
+			@Param("statusFlag") boolean statusFlag,
+			@Param("status") List<String> status,
+			@Param("zohoStatusFlag") boolean zohoStatusFlag,
 			@Param("zohoStatus") List<String> zohoStatus,
-			@Param("warehouseFlag") boolean warehouseFlag, 
+			@Param("warehouseFlag") boolean warehouseFlag,
 			@Param("warehouseList") List<String> warehouseList,
+			@Param("fromDate") String fromDate,
+			@Param("toDate") String toDate,
 			Pageable pageable);
 	
 	@Query(value = "SELECT so.so_id, so.so_number, so.socreatedate, so.deliverymethod, "
@@ -398,7 +405,8 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " (SELECT grade_name FROM jsw_grade_master grade, jsw_material_master mat where grade.grade_id=mat.grade_id and mat.mm_id=inward.mm_id limit 1) as  materialgrade,"
 			+ " (SELECT product_name FROM jsw_product_master a, jsw_material_master mat where a.product_id=mat.producttype_id and mat.mm_id=inward.mm_id limit 1) as  materialdesc,  "
 			+ " (select jbm.branch_name from jsw_branch_master jbm where jbm.branch_id =so.branch_id) as branch_name,"
-			+ " (select GROUP_CONCAT(distinct aa.pdf_generation_part) from jsw_sales_order_allocation aa where aa.so_id = :soId)  as parts"
+			+ " (select GROUP_CONCAT(distinct aa.pdf_generation_part) from jsw_sales_order_allocation aa where aa.so_id = :soId)  as parts,"
+			+ " wm.party_id as processing_party_id"
 			+ " FROM jsw_sales_order so "
 			+ " left OUTER JOIN jsw_sales_order_child so_child ON so_child.so_id = so.so_id and so_child.is_deleted = 0 "
 			+ " left outer JOIN jsw_sales_order_allocation alloca ON so_child.so_child_id = alloca.so_child_id"
@@ -413,6 +421,43 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ " and alloca.so_id = :soId and so.is_deleted = 0 "
 			+ " order by so_child.so_child_id asc ", nativeQuery = true)
 	List<Object[]> soDetailsBySoId(@Param("soId") Integer soId, @Param("pdfGenerationPart") String pdfGenerationPart);
+
+	@Query(value = "select so.so_id,so.refno so_number,material_name,CAST(NULL AS CHAR) as cutno,so.total_soqty, so.cp_status,"
+			+ " so_child.so_child_id, DATE_FORMAT(socreatedate, '%d-%m-%Y'), so_child.mm_id, inward.inwardentryid, so_child.soqty, so_child.allocated_soqty, "
+			+ " so_child.allocated_stts,so_child.item_so_status,mm.mm_description, alloca.so_allocation_id, alloca.allocated_soqty alloqty, "
+			+ " coilnumber, "
+			+ " customerbatchid, "
+			+ " (select ifnull(actualnoofpieces, plannednoofpieces) from product_instruction ins where ins.instructionid = alloca.instruction_id) noofpieces, "
+			+ " 'Loose Bundle' packing, "
+			+ " (SELECT partyname FROM product_tblpartydetails where npartyid= wm.party_id) partyname,"
+			+ " (select statusname from product_status stts where stts.statusid =inward.vstatus) stts, "
+			+ " inward.fwidth, ware_house_name, "
+			+ " inward.fthickness , "
+			+ " (SELECT grade_name FROM jsw_grade_master grade, jsw_material_master mat where grade.grade_id=mat.grade_id and mat.mm_id=inward.mm_id limit 1) as  materialgrade,"
+			+ " (SELECT product_name FROM jsw_product_master a, jsw_material_master mat where a.product_id=mat.producttype_id and mat.mm_id=inward.mm_id limit 1) as  materialdesc,  "
+			+ " (select jbm.branch_name from jsw_branch_master jbm where jbm.branch_id =so.branch_id) as branch_name,"
+			+ " (select GROUP_CONCAT(distinct aa.pdf_generation_part) from jsw_sales_order_allocation aa where aa.so_id = :soId)  as parts,"
+			+ " wm.party_id as processing_party_id"
+			+ " FROM jsw_sales_order so "
+			+ " left OUTER JOIN jsw_sales_order_child so_child ON so_child.so_id = so.so_id and so_child.is_deleted = 0 "
+			+ " left outer JOIN jsw_sales_order_allocation alloca ON so_child.so_child_id = alloca.so_child_id"
+			+ " left outer JOIN product_tblinwardentry inward ON inward.inwardentryid = alloca.inward_entry_id"
+			+ " LEFT OUTER JOIN jsw_material_master mm ON mm.mm_id = so_child.mm_id"
+			+ " left OUTER join jsw_warehouse_master wm on wm.ware_house_id = so_child.wearhouse_id "
+			+ " where so_child.so_id = so.so_id and so_child.is_deleted = 0 "
+			+ " and so_child.so_child_id = alloca.so_child_id"
+			+ " and inward.inwardentryid = alloca.inward_entry_id and so.so_id = alloca.so_id "
+			+ " and mm.mm_id = so_child.mm_id and so_child.so_id = so.so_id "
+			+ " and alloca.so_id = :soId and so.is_deleted = 0 "
+			+ " order by so_child.so_child_id asc ", nativeQuery = true)
+	List<Object[]> soDetailsBySoIdEmail(@Param("soId") Integer soId);
+
+	/**
+	 * Party contact lookup for SO PDF emails.
+	 * Columns: [0] npartyid, [1] partyname, [2] email1, [3] email2
+	 */
+	@Query(value = "select p.npartyid, p.partyname, p.email1, p.email2 from product_tblpartydetails p where p.npartyid in :partyIds", nativeQuery = true)
+	List<Object[]> findPartyEmails(@Param("partyIds") Collection<Integer> partyIds);
 
 	@Modifying
 	@Transactional

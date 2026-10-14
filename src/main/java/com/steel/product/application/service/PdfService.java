@@ -62,13 +62,13 @@ public class PdfService {
 	}
 
     public File generateInwardPdf(PdfDto pdfDto) throws IOException, org.dom4j.DocumentException, DocumentException {
-        Context context = getContext(pdfDto);
+        Context context = getInwardContext(pdfDto);
         String html = loadAndFillTemplate(context, pdfDto.getProcessId());
         return renderPdfInstruction(html, "inward", ""+pdfDto.getInwardId(), "INWARD_PDF");
     }
 
     public File generatePlanPdf(PartDto partDto) throws IOException, org.dom4j.DocumentException, DocumentException {
-        Context context = getContext(partDto);
+        Context context = getPlanContext(partDto);
         InwardEntryPdfDto inwardEntryPdfDto = (InwardEntryPdfDto)context.getVariable("inward");
         String html = loadAndFillTemplate(context,Integer.parseInt(inwardEntryPdfDto.getVProcess()));
         return renderPdfInstruction(html, "inward", partDto.getPartDetailsId(), "PLAN_PDF");
@@ -215,7 +215,7 @@ public class PdfService {
         return file;
     }
 
-    private Context getContext(PdfDto pdfDto) {
+    private Context getInwardContext(PdfDto pdfDto) {
         Context context = new Context();
         Integer slitAndCutProcessId = 3;
         InwardEntry inwardEntry;
@@ -228,11 +228,11 @@ public class PdfService {
             inwardEntry = instructions.get(0).getInwardId();
             instructionsCut = instructions.stream()
                     .filter(ins -> ins.getProcess().getProcessId() == 3)
-                    .map(ins -> Instruction.valueOfInstructionPdf(ins, null))
+                    .map(ins -> Instruction.valueOfInstructionPdf(ins, null,null))
                     .collect(Collectors.toList());
             instructionsSlit = instructions.stream()
                     .filter(ins -> ins.getProcess().getProcessId() == 2)
-                    .map(ins -> Instruction.valueOfInstructionPdf(ins, null))
+                    .map(ins -> Instruction.valueOfInstructionPdf(ins, null, null))
                     .collect(Collectors.toList());
             instructionResponsePdfDtos = null;
             inwardEntryPdfDto = InwardEntry.valueOf(inwardEntry, instructionsCut, instructionsSlit);
@@ -240,7 +240,7 @@ public class PdfService {
             inwardEntry = inwardEntryService.getByEntryId(pdfDto.getInwardId());
             instructionResponsePdfDtos = inwardEntry.getInstructions()
                     .stream().filter(ins -> ins.getProcess().getProcessId() == pdfDto.getProcessId())
-                    .map(i -> Instruction.valueOfInstructionPdf(i, null))
+                    .map(i -> Instruction.valueOfInstructionPdf(i, null, null ))
                     .collect(Collectors.toList());
             inwardEntryPdfDto = InwardEntry.valueOf(inwardEntry, instructionResponsePdfDtos);
     		MaterialResponseDto materialGradeDto = materialMasterJswService.getGradeProductName(inwardEntry.getMmId());
@@ -258,7 +258,7 @@ public class PdfService {
         return context;
     }
 
-    private Context getContext(PartDto partDto) {
+    private Context getPlanContext(PartDto partDto) {
         Context context = new Context();
         InwardEntryPdfDto inwardEntryPdfDto = instructionService.findQRCodeInwardJoinFetchInstructionsAndPartDetails(partDto.getPartDetailsId(), partDto.getGroupIds());
         context.setVariable("inward", inwardEntryPdfDto);

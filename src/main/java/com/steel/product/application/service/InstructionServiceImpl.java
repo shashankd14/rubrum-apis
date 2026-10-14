@@ -750,8 +750,9 @@ public class InstructionServiceImpl implements InstructionService {
 				}
             }
             Long count = (Long) obj[2];
+            String sdi = (obj[3] != null ? obj[3].toString() : null);
             PartDetailsPdfResponse partDetailsPdfResponse = partDetailsMapper.toPartDetailsPdfResponse(partDetails);
-            InstructionResponsePdfDto instructionResponsePdfDto = instructionMapper.toResponsePdfDto(instruction);
+            InstructionResponsePdfDto instructionResponsePdfDto = instructionMapper.toResponsePdfDto(instruction, sdi);
             instructionResponsePdfDto.setCountOfWeight(count);
             cutPartDetailsId = partDetailsPdfResponse.getPartDetailsId();//added for new cuts created from existing slits
             processId = partDetailsId == null ? cutProcessId : instruction.getProcess().getProcessId();
@@ -815,7 +816,7 @@ public class InstructionServiceImpl implements InstructionService {
             processedDate=  partDetails.getCreatedOn() ;
             plannedYieldLossRatio = partDetails.getPlannedYieldLossRatio();
             Instruction instruction = (Instruction) obj[1];
-            instructions.add(Instruction.valueOfInstructionPdf(instruction, null));
+            instructions.add(Instruction.valueOfInstructionPdf(instruction, null, null));
             if (inwardId == null) {
                 try {
 					inwardId = instruction.getInwardId().getInwardEntryId();
@@ -824,8 +825,9 @@ public class InstructionServiceImpl implements InstructionService {
 				}
             }
             Long count = (Long) obj[2];
+            String sdi = (obj[3] != null ? obj[3].toString() : null);
             PartDetailsPdfResponse partDetailsPdfResponse = partDetailsMapper.toPartDetailsPdfResponse(partDetails);
-            InstructionResponsePdfDto instructionResponsePdfDto = instructionMapper.toResponsePdfDto(instruction);
+            InstructionResponsePdfDto instructionResponsePdfDto = instructionMapper.toResponsePdfDto(instruction, sdi);
             instructionResponsePdfDto.setCountOfWeight(count);
             cutPartDetailsId = partDetailsPdfResponse.getPartDetailsId();//added for new cuts created from existing slits
             processId = partDetailsId == null ? cutProcessId : instruction.getProcess().getProcessId();
@@ -1471,10 +1473,12 @@ public class InstructionServiceImpl implements InstructionService {
 	}
 
 	@Override
+	@Transactional
 	public void updateS3PlanPDF(String partDetailsId, String url) {
 		instructionRepository.updateS3PlanPDF(partDetailsId, url);
 	}
 	@Override
+	@Transactional
 	public void updateS3PlanLabelPDF(String partDetailsId, String url) {
 		instructionRepository.updateS3PlanLabelPDF(partDetailsId, url);
 	}

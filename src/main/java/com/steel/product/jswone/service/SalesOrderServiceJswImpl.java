@@ -248,9 +248,22 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 				zohoStatusList.add("void");
 			}
 		}
+		boolean statusFlag = searchRequest.getStatus() != null && !searchRequest.getStatus().isEmpty();
+		List<String> statusList = statusFlag ? searchRequest.getStatus() : java.util.Collections.singletonList("NA");
+		List<String> warehouseList = warehouseFlag ? searchRequest.getWarehouseList() : java.util.Collections.singletonList("NA");
+		if (!zohoStatusFlag || zohoStatusList.isEmpty()) {
+			zohoStatusFlag = false;
+			zohoStatusList = java.util.Collections.singletonList("NA");
+		}
+
+		// socreatedate filter (yyyy-MM-dd), both optional
+		SimpleDateFormat ymd = new SimpleDateFormat("yyyy-MM-dd");
+		String fromDate = searchRequest.getFromDate() != null ? ymd.format(searchRequest.getFromDate()) : null;
+		String toDate = searchRequest.getToDate() != null ? ymd.format(searchRequest.getToDate()) : null;
+
 		Page<Object[]> packetsList = salesOrderRepository.listAllSOIDs(searchRequest.getSearchText(),
-				searchRequest.getSoId(), searchRequest.getStatus(), zohoStatusFlag, zohoStatusList, warehouseFlag,
-				searchRequest.getWarehouseList(), pageable);
+				searchRequest.getSoId(), statusFlag, statusList, zohoStatusFlag, zohoStatusList, warehouseFlag,
+				warehouseList, fromDate, toDate, pageable);
 		return packetsList;
 	}
 

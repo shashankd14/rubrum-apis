@@ -35,5 +35,5 @@ public interface InstructionMapper {
     @Mapping(target = "process", source = "instruction.process")
     @Mapping(source = "instruction.inwardId.inwardEntryId", target = "inwardEntryId")
     @Mapping(target = "countOfWeight", ignore = true)
-    InstructionResponsePdfDto toResponsePdfDto(Instruction instruction);
+    InstructionResponsePdfDto toResponsePdfDto(Instruction instruction, String sdi);
 }

@@ -41,7 +41,7 @@ public class DeliveryChallanPdfDto {
             this.inwardPdfDtos = new ArrayList<>();
         }
         this.inwardPdfDtos = inwardEntries.stream().map(inw -> InwardEntry.valueOf(inw, inw.getInstructions()
-                .stream().map(ins -> Instruction.valueOfInstructionPdf(ins, inw)).collect(Collectors.toList()), materialMasterJswService)).collect(Collectors.toList());
+                .stream().map(ins -> Instruction.valueOfInstructionPdf(ins, inw, null)).collect(Collectors.toList()), materialMasterJswService)).collect(Collectors.toList());
 
         this.totalDeliveryWeight = inwardPdfDtos.stream().flatMap(inw -> inw.getInstructions().stream())
                 .reduce(0f, (sum, ins) -> sum + (ins.getProcess().getProcessId() == 7 ? ins.getPlannedWeight(): (ins.getActualWeight() == null ? ins.getPlannedWeight():  ins.getActualWeight()) ) , Float::sum);

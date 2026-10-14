@@ -61,8 +61,10 @@ public class InstructionResponsePdfDto {
     private String totalPrice;
     
     private String endUserTagName;
-    
+
     private String soNo;
+
+    private String sdi;
     
 	private Date  instructionDate;
 

@@ -1,7 +1,9 @@
 package com.steel.product.jswone.controller;
 
 import com.steel.product.jswone.request.JSWReportRequest;
+import com.steel.product.jswone.service.JSWKpiService;
 import com.steel.product.jswone.service.JSWReportService;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -10,17 +12,21 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 @RestController
 public class JSWReportController {
 
 	private final JSWReportService jSWReportService;
+	private final JSWKpiService jSWKpiService;
 
-	public JSWReportController(JSWReportService jSWReportService) {
+	public JSWReportController(JSWReportService jSWReportService, JSWKpiService jSWKpiService) {
 		this.jSWReportService = jSWReportService;
+		this.jSWKpiService = jSWKpiService;
 	}
 
 	/**
-	 * POST /reports/download   (old path /reports/packetlevel_audit still works)
+	 * POST /reports/download
 	 *
 	 * Binary attachment. Preferable for a plain browser download since it avoids
 	 * the ~33% base64 overhead entirely.
@@ -50,7 +56,12 @@ public class JSWReportController {
 		headers.setCacheControl("no-store");
 		return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
 	}
-	
-	
-	
+
+	@PostMapping("/reports/kpi")
+	public ResponseEntity<Map<String, Object>> kpis(@RequestBody(required = false) JSWReportRequest request) {
+		Map<String, Object> body = jSWKpiService.getKpis(request != null ? request : new JSWReportRequest());
+		return ResponseEntity.ok()
+				.cacheControl(CacheControl.noStore())
+				.body(body);
+	}
 }
