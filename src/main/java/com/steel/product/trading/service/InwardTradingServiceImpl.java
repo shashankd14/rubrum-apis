@@ -28,7 +28,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Map.Entry;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +44,9 @@ import org.springframework.transaction.interceptor.TransactionAspectSupport;
 @Service
 @Log4j2
 public class InwardTradingServiceImpl implements InwardTradingService {
+
+	@Autowired
+	InwardAttachmentService attachmentService;
 
 	@Autowired
 	InwardTradingRepository inwardTradingRepository;
@@ -73,6 +75,9 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 			InwardTradingEntity inwardTradingEntity = new InwardTradingEntity();
 			BeanUtils.copyProperties(request, inwardTradingEntity);
 			applyPurpose(request, inwardTradingEntity);
+			validateQualityCheck(request);
+			inwardTradingEntity.setQcCertificatesJson(attachmentService.normalize(request.getQcCertificatesJson()));
+			inwardTradingEntity.setDocumentsJson(attachmentService.normalize(request.getDocumentsJson()));
 			inwardTradingEntity.setIsDeleted( false);
 			if (inwardTradingEntity.getStatus() == null || inwardTradingEntity.getStatus().trim().isEmpty()) {
 				inwardTradingEntity.setStatus("DRAFT");
@@ -127,6 +132,7 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 					Integer createdBy = childEntity.getCreatedBy();
 					Date createdOn = childEntity.getCreatedOn();
 					BeanUtils.copyProperties(childReq, childEntity);
+					childEntity.setImagesJson(attachmentService.normalize(childReq.getImagesJson()));
 					childEntity.setIsDeleted(false);
 					childEntity.setInwardId(inwardTradingEntity);
 					childEntity.setUpdatedBy(request.getUserId());
@@ -161,6 +167,7 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 				for (InwardTradingItemRequest childReq : request.getItemsList()) {
 					InwardTradingChildEntity childEntity = new InwardTradingChildEntity();
 					BeanUtils.copyProperties(childReq, childEntity);
+					childEntity.setImagesJson(attachmentService.normalize(childReq.getImagesJson()));
 					childEntity.setIsDeleted(false);
 					childEntity.setInwardId(inwardTradingEntity);
 					childEntity.setCreatedBy(request.getUserId());
@@ -206,7 +213,7 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 		Map<String, Object> response = new HashMap<>();
 		Pageable pageable = PageRequest.of((searchPageRequest.getPageNo() - 1), searchPageRequest.getPageSize());
 		
-		Page<Object[]> pageResult = inwardTradingRepository.findAllInwardsWithSearchText(searchPageRequest.getInwardId(), searchPageRequest.getVendorId(), searchPageRequest.getSearchText(), searchPageRequest.getStatus(), pageable);
+		Page<Object[]> pageResult = inwardTradingRepository.findAllInwardsWithSearchText(searchPageRequest.getInwardId(), searchPageRequest.getVendorId(), searchPageRequest.getSearchText(), searchPageRequest.getStatus(), searchPageRequest.getSortBy() == null ? "inward_desc" : searchPageRequest.getSortBy(), pageable);
 		List<Integer> inwardIdsList = new ArrayList<>();
 		for (Object[] result : pageResult) {
 			inwardIdsList.add(result[0] != null ? (Integer) result[0] : null);
@@ -219,6 +226,7 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 			return response;
 		}
 
+		Map<String, String> signedAttachments = new HashMap<>();
 		Map<Integer, List<InwardTradingChildResponse>> map = new LinkedHashMap<>();
 		Map<Integer, InwardTradingResponse> inwardMap = new LinkedHashMap<>();
 		List<InwardTradingResponse> responseList = new ArrayList<>();
@@ -258,10 +266,10 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 			childDTO.setItemchildId(result[27] != null ? (Integer) result[27] : null);
 			childDTO.setItemId(result[28] != null ? (Integer) result[28] : null);
 			childDTO.setUnit(result[29] != null ? (String) result[29] : null);
-			childDTO.setUnitVolume(result[30] != null ? (Integer) result[30] : null);
+			childDTO.setUnitVolume(result[30] != null ? new BigDecimal(result[30].toString()) : null);
 			childDTO.setNetWeight(result[31] != null ? (BigDecimal) result[31] : null);
 			childDTO.setRate(result[32] != null ? (BigDecimal) result[32] : null);
-			childDTO.setVolume(result[33] != null ? (Integer) result[33] : null);
+			childDTO.setVolume(result[33] != null ? new BigDecimal(result[33].toString()) : null);
 			childDTO.setActualNoofPieces(result[34] != null ? (Integer) result[34] : null);
 			childDTO.setTheoreticalWeight(result[35] != null ? (BigDecimal) result[35] : null);
 			childDTO.setWeightVariance(result[36] != null ? (BigDecimal) result[36] : null);
@@ -278,6 +286,30 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 			dto.setLocationName(result[47] != null ? (String) result[47] : null);
 			dto.setCreatedOn(result[48] != null ? (Date) result[48] : null);
 			dto.setPurposeId(result[49] != null ? ((Number) result[49]).intValue() : null);
+			dto.setPoNumber(result[50] != null ? (String) result[50] : null);
+			dto.setInvoiceValue(result[51] != null ? (BigDecimal) result[51] : null);
+			dto.setReceivedDate(result[52] != null ? (Date) result[52] : null);
+			dto.setDocumentsJson(signedAttachments.computeIfAbsent((String) result[53], attachmentService::withUrls));
+			childDTO.setHeatNo(result[54] != null ? (String) result[54] : null);
+			childDTO.setBundleNumbers(result[55] != null ? (String) result[55] : null);
+			childDTO.setRemark(result[56] != null ? (String) result[56] : null);
+			childDTO.setTechnicalSpecs(result[58] != null ? (String) result[58] : null);
+			childDTO.setAdditionalParams(result[59] != null ? (String) result[59] : null);
+			childDTO.setMaterialGrade(result[60] != null ? (String) result[60] : null);
+			childDTO.setBrandName(result[61] != null ? (String) result[61] : null);
+			childDTO.setItemCode(result[62] != null ? (String) result[62] : null);
+			childDTO.setCategoryName(result[63] != null ? (String) result[63] : null);
+			childDTO.setSubCategoryName(result[64] != null ? (String) result[64] : null);
+			childDTO.setManufacturerName(result[65] != null ? (String) result[65] : null);
+			childDTO.setUnitWeights(result[66] != null ? (String) result[66] : null);
+			dto.setQcCertificateNo(result[67] != null ? (String) result[67] : null);
+			dto.setQcStatus(result[68] != null ? (String) result[68] : null);
+			dto.setQcYieldStrength(result[69] != null ? (BigDecimal) result[69] : null);
+			dto.setQcTensileStrength(result[70] != null ? (BigDecimal) result[70] : null);
+			dto.setQcElongation(result[71] != null ? (BigDecimal) result[71] : null);
+			dto.setQcRemark(result[72] != null ? (String) result[72] : null);
+			dto.setQcCertificatesJson(signedAttachments.computeIfAbsent((String) result[73], attachmentService::withUrls));
+			childDTO.setImagesJson(signedAttachments.computeIfAbsent((String) result[57], attachmentService::withUrls));
 
 			if (map.get(dto.getInwardId()) != null) {
 				List<InwardTradingChildResponse> dummyList = map.get(dto.getInwardId());
@@ -290,10 +322,13 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 			}
 			inwardMap.put(dto.getInwardId(), dto);
 		}
-		for (Entry<Integer, List<InwardTradingChildResponse>> entry : map.entrySet()) {
-			InwardTradingResponse dummyEntity = inwardMap.get(entry.getKey());
-			dummyEntity.setItemsList(entry.getValue());
-			responseList.add(dummyEntity);
+		// Keep the requested page order after loading its material rows.
+		for (Integer inwardId : inwardIdsList) {
+			InwardTradingResponse inward = inwardMap.get(inwardId);
+			if (inward != null) {
+				inward.setItemsList(map.get(inwardId));
+				responseList.add(inward);
+			}
 		}
 
 		response.put("content", responseList);
@@ -321,6 +356,20 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		return response;
+	}
+
+
+	private void validateQualityCheck(InwardTradingRequest request) {
+		if (request.getQcStatus() != null && !java.util.Arrays.asList("Pass", "Conditional", "Hold").contains(request.getQcStatus())) {
+			throw new IllegalArgumentException("Choose a valid QC status.");
+		}
+		BigDecimal[] measurements = { request.getQcYieldStrength(), request.getQcTensileStrength(), request.getQcElongation() };
+		for (BigDecimal measurement : measurements) {
+			if (measurement != null && measurement.signum() < 0) throw new IllegalArgumentException("Quality measurements cannot be negative.");
+		}
+		if (request.getQcElongation() != null && request.getQcElongation().compareTo(new BigDecimal("100")) > 0) throw new IllegalArgumentException("Elongation cannot exceed 100%.");
+		if (request.getQcCertificateNo() != null && request.getQcCertificateNo().length() > 100) throw new IllegalArgumentException("Certificate number is too long.");
+		if (request.getQcRemark() != null && request.getQcRemark().length() > 4000) throw new IllegalArgumentException("Quality remarks are too long.");
 	}
 
 	private Boolean toBoolean(Object value) {

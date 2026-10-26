@@ -8,6 +8,21 @@ import lombok.Data;
 @Data
 public class InwardTradingResponse {
 
+	private String qcCertificateNo;
+
+	private String qcStatus;
+
+	private BigDecimal qcYieldStrength;
+
+	private BigDecimal qcTensileStrength;
+
+	private BigDecimal qcElongation;
+
+	private String qcRemark;
+
+	private String qcCertificatesJson;
+
+
 	private Integer inwardId;
 
 	private String inwardNo;
@@ -31,6 +46,8 @@ public class InwardTradingResponse {
 	private String transporterPhoneNo;
 
 	private String vendorBatchNo;
+
+	private String poNumber;
 
 	private Integer locationId;
 
@@ -83,5 +100,11 @@ public class InwardTradingResponse {
 	private Date createdOn;
 
 	private List<InwardTradingChildResponse> itemsList;
+
+	private BigDecimal invoiceValue;
+
+	private Date receivedDate;
+
+	private String documentsJson;
 
 }

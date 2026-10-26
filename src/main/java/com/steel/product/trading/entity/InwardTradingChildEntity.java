@@ -16,6 +16,18 @@ import java.util.Date;
 @Data
 public class InwardTradingChildEntity {
 
+	@Column(name = "heat_no", columnDefinition = "VARCHAR(100)")
+	private String heatNo;
+
+	@Column(name = "bundle_numbers", columnDefinition = "VARCHAR(1000)")
+	private String bundleNumbers;
+
+	@Column(name = "remark", columnDefinition = "TEXT")
+	private String remark;
+
+	@Column(name = "images_json", columnDefinition = "LONGTEXT")
+	private String imagesJson;
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "itemchild_id")
@@ -35,7 +47,7 @@ public class InwardTradingChildEntity {
 	private String unit;
 
 	@Column(name = "unit_volume")
-	private Integer unitVolume;
+	private BigDecimal unitVolume;
 
 	@Column(name = "net_weight")
 	private BigDecimal netWeight;
@@ -44,7 +56,7 @@ public class InwardTradingChildEntity {
 	private BigDecimal rate;
 
 	@Column(name = "volume")
-	private Integer volume;
+	private BigDecimal volume;
 
 	@Column(name = "actual_noof_pieces")
 	private Integer actualNoofPieces;

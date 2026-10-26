@@ -14,6 +14,8 @@ public class InwardSearchRequest implements Serializable {
 
 	private String status;
 
+	private String sortBy;
+
 	private String searchText;
 
 	private Integer pageNo;

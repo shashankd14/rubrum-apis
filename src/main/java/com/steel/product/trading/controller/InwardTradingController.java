@@ -9,6 +9,12 @@ import com.steel.product.trading.service.InwardTradingService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.Map;
+import java.util.List;
+import com.steel.product.trading.dto.InwardTradingResponse;
+import com.steel.product.trading.service.InwardMrnPdf;
+import org.springframework.http.MediaType;
+import org.springframework.http.ContentDisposition;
+import org.springframework.web.server.ResponseStatusException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,6 +28,18 @@ public class InwardTradingController {
 
 	@Autowired
 	private InwardTradingService inwardTradingService;
+
+    @GetMapping(value = "/inward/{id}/mrn", produces = "application/pdf")
+    public ResponseEntity<byte[]> mrn(@PathVariable Integer id) throws com.itextpdf.text.DocumentException {
+        InwardSearchRequest request = new InwardSearchRequest();
+        request.setInwardId(id); request.setPageNo(1); request.setPageSize(1); request.setSearchText("");
+        Object records = inwardTradingService.getInwardList(request).get("content");
+        if (!(records instanceof List) || ((List<?>) records).isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Inward record not found");
+        InwardTradingResponse receipt = (InwardTradingResponse) ((List<?>) records).get(0);
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_PDF)
+            .header("Content-Disposition", ContentDisposition.builder("inline").filename("MRN-" + receipt.getInwardId() + ".pdf").build().toString())
+            .body(InwardMrnPdf.render(receipt));
+    }
 
 	@PostMapping(value = "/inward/save", produces = "application/json")
 	public ResponseEntity<Object> save(@RequestBody InwardTradingRequest inwardTradingRequest) {

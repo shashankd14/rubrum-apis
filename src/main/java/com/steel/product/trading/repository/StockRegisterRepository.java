@@ -18,13 +18,14 @@ public class StockRegisterRepository {
         this.jdbc = jdbc;
     }
 
-    // Inward net_weight and rate are KG and INR/KG, independently of the unit-volume field.
+    // Normalize the receipt value to INR/MT for every inward billing unit; retain legacy rate fallback.
     private static final String RECEIPTS =
         "SELECT CONCAT('INW-', i.itemchild_id) id, i.item_id, m.item_name name, m.item_code code, " +
         "COALESCE(h.vendor_batch_no, '') heat, m.manufacturer_name manufacturer, c.category_name category, " +
         "h.location_id, l.location_name location, h.created_on entry_date, h.vehicle_no vehicle, " +
         "COALESCE(i.net_weight, 0) / 1000.0 incoming, COALESCE(i.actual_noof_pieces, 0) pieces, " +
-        "COALESCE(i.rate, 0) * 1000 rate " +
+        "CASE WHEN COALESCE(i.volume, 0) > 0 AND COALESCE(i.net_weight, 0) > 0 " +
+        "THEN i.volume * 1000.0 / i.net_weight ELSE COALESCE(i.rate, 0) * 1000 END rate " +
         "FROM trading_inward_items i JOIN trading_inward h ON h.inward_id = i.inwardid " +
         "LEFT JOIN trading_material_master m ON m.item_id = i.item_id " +
         "LEFT JOIN trading_category_master c ON c.category_id = m.category_id " +

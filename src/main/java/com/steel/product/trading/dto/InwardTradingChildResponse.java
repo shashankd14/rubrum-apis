@@ -17,13 +17,13 @@ public class InwardTradingChildResponse {
 
 	private String unit;
 
-	private Integer unitVolume;
+	private BigDecimal unitVolume;
 
 	private BigDecimal netWeight;
 
 	private BigDecimal rate;
 
-	private Integer volume;
+	private BigDecimal volume;
 
 	private Integer actualNoofPieces;
 
@@ -32,5 +32,31 @@ public class InwardTradingChildResponse {
 	private BigDecimal weightVariance;
 
 	private Integer theoreticalNoofPieces;
+
+	private String heatNo;
+
+	private String bundleNumbers;
+
+	private String remark;
+
+	private String imagesJson;
+
+	private String technicalSpecs;
+
+	private String additionalParams;
+
+	private String materialGrade;
+
+	private String brandName;
+
+	private String itemCode;
+
+	private String categoryName;
+
+	private String subCategoryName;
+
+	private String manufacturerName;
+
+	private String unitWeights;
 
 }

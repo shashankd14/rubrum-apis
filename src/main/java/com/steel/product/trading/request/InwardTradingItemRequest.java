@@ -18,13 +18,13 @@ public class InwardTradingItemRequest {
 
 	private String unit;
 
-	private Integer unitVolume;
+	private BigDecimal unitVolume;
 
 	private BigDecimal netWeight;
 
 	private BigDecimal rate;
 
-	private Integer volume;
+	private BigDecimal volume;
 
 	private Integer actualNoofPieces;
 
@@ -33,5 +33,13 @@ public class InwardTradingItemRequest {
 	private BigDecimal weightVariance;
 
 	private Integer theoreticalNoofPieces;
+
+	private String heatNo;
+
+	private String bundleNumbers;
+
+	private String remark;
+
+	private String imagesJson;
 
 }

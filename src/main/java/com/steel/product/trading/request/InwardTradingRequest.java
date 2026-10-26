@@ -10,6 +10,21 @@ import lombok.Setter;
 @Setter
 public class InwardTradingRequest extends BaseRequest {
 
+	private String qcCertificateNo;
+
+	private String qcStatus;
+
+	private BigDecimal qcYieldStrength;
+
+	private BigDecimal qcTensileStrength;
+
+	private BigDecimal qcElongation;
+
+	private String qcRemark;
+
+	private String qcCertificatesJson;
+
+
 	private Integer inwardId;
 
 	private String inwardNo;
@@ -31,6 +46,8 @@ public class InwardTradingRequest extends BaseRequest {
 	private List<InwardTradingItemRequest> itemsList;
 
 	private String vendorBatchNo;
+
+	private String poNumber;
 
 	private Integer locationId;
 
@@ -66,16 +83,22 @@ public class InwardTradingRequest extends BaseRequest {
 
 	private BigDecimal igst;
 
-	private Integer totalInwardVolume;
+	private BigDecimal totalInwardVolume;
 
 	private BigDecimal totalWeight;
 
-	private Integer totalVolume;
+	private BigDecimal totalVolume;
 
 	private String reconciliationRemark;
 
 	private Boolean deductFreight;
 
 	private Boolean raiseDebitNote;
+
+	private BigDecimal invoiceValue;
+
+	private Date receivedDate;
+
+	private String documentsJson;
 
 }

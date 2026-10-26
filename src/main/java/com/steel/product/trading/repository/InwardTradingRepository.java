@@ -15,26 +15,26 @@ import com.steel.product.trading.entity.InwardTradingEntity;
 
 @Repository
 public interface InwardTradingRepository extends JpaRepository<InwardTradingEntity, Integer> {
-	
+
 	@Query(value = "SELECT inward.inward_id, inward.consignment_id"
 			+ " FROM trading_inward inward, trading_vendor_master vendor \r\n"
-			+ " where inward.is_deleted = 0"
-			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (vendor.vendor_name like %:searchText% or inward.consignment_id like %:searchText% or inward.document_type like %:searchText% or inward.consignment_id like %:searchText%) else 1=1 end " 
+			+ " where inward.is_deleted = 0 and :sortBy is not null"
+			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (vendor.vendor_name like %:searchText% or inward.inward_no like %:searchText% or inward.po_number like %:searchText% or inward.consignment_id like %:searchText% or inward.document_type like %:searchText% or inward.consignment_id like %:searchText%) else 1=1 end "
 			+ " and case when :status is not null and LENGTH(:status) > 0 then upper(inward.status) = upper(:status) else 1=1 end "
 			+ " and inward.vendor_id = ifnull(:vendorId, inward.vendor_id) \r\n"
 			+ " and inward.inward_id = ifnull(:inwardId, inward.inward_id) \r\n"
-			+ " and inward.vendor_id=vendor.vendor_id order by inward.inward_id desc ",
+			+ " and inward.vendor_id=vendor.vendor_id order by CASE WHEN :sortBy = 'inward_asc' THEN inward.inward_no END ASC, CASE WHEN :sortBy = 'inward_desc' THEN inward.inward_no END DESC, CASE WHEN :sortBy = 'party_asc' THEN vendor.vendor_name END ASC, CASE WHEN :sortBy = 'party_desc' THEN vendor.vendor_name END DESC, CASE WHEN :sortBy = 'date_asc' THEN COALESCE(inward.received_date, inward.created_on) END ASC, CASE WHEN :sortBy = 'date_desc' THEN COALESCE(inward.received_date, inward.created_on) END DESC, CASE WHEN :sortBy = 'weight_asc' THEN inward.total_weight END ASC, CASE WHEN :sortBy = 'weight_desc' THEN inward.total_weight END DESC, CASE WHEN :sortBy = 'status_asc' THEN inward.status END ASC, CASE WHEN :sortBy = 'status_desc' THEN inward.status END DESC, inward.inward_id desc ",
 	countQuery = "SELECT count(inward.inward_id) "
 			+ " FROM trading_inward inward, trading_vendor_master vendor \r\n"
-			+ " where inward.is_deleted = 0" 
-			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (vendor.vendor_name like %:searchText% or inward.consignment_id like %:searchText% or inward.document_type like %:searchText% or inward.consignment_id like %:searchText%) else 1=1 end " 
+			+ " where inward.is_deleted = 0 and :sortBy is not null"
+			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (vendor.vendor_name like %:searchText% or inward.inward_no like %:searchText% or inward.po_number like %:searchText% or inward.consignment_id like %:searchText% or inward.document_type like %:searchText% or inward.consignment_id like %:searchText%) else 1=1 end "
 			+ " and case when :status is not null and LENGTH(:status) > 0 then upper(inward.status) = upper(:status) else 1=1 end "
 			+ " and inward.vendor_id = ifnull(:vendorId, inward.vendor_id) \r\n"
 			+ " and inward.inward_id = ifnull(:inwardId, inward.inward_id) \r\n"
 			+ " and inward.vendor_id=vendor.vendor_id",
 	nativeQuery = true)
-	Page<Object[]> findAllInwardsWithSearchText(@Param("inwardId") Integer inwardId, @Param("vendorId") Integer vendorId, @Param("searchText") String searchText, @Param("status") String status, Pageable pageable);
-	
+	Page<Object[]> findAllInwardsWithSearchText(@Param("inwardId") Integer inwardId, @Param("vendorId") Integer vendorId, @Param("searchText") String searchText, @Param("status") String status, @Param("sortBy") String sortBy, Pageable pageable);
+
 	@Query(value = "SELECT inward.inward_id, vendor_name, COALESCE(purpose.purpose_name, inward.purpose_type), inward.vendor_id, inward.transporter_name, inward.transporter_phone_no, "
 			+ " inward.vendor_batch_no, inward.consignment_id, inward.location_id, inward.vehicle_no, inward.document_no, inward.document_type,"
 			+ " inward.document_date, inward.eway_bill_no, inward.eway_bill_date, inward.value_of_goods, inward.extra_charges_option,"
@@ -46,12 +46,16 @@ public interface InwardTradingRepository extends JpaRepository<InwardTradingEnti
 			+ " child.inward_item_id, inward.inward_no, inward.status, inward.currency_code, inward.reconciliation_remark,"
 			+ " inward.deduct_freight, inward.raise_debit_note, vendor.vendor_nickname,"
 			+ " (select loc.location_name from trading_location_master loc where loc.location_id = inward.location_id) as location_name,"
-			+ " inward.created_on, inward.purpose_id"
+			+ " inward.created_on, inward.purpose_id, inward.po_number, inward.invoice_value, inward.received_date, inward.documents_json,"
+			+ " child.heat_no, child.bundle_numbers, child.remark, child.images_json, mat.technical_specs, mat.additional_params, mat.item_grade, mat.brand_name, mat.item_code, cat.category_name, subcat.subcategory_name, mat.manufacturer_name, mat.unit_weights, inward.qc_certificate_no, inward.qc_status, inward.qc_yield_strength, inward.qc_tensile_strength, inward.qc_elongation, inward.qc_remark, inward.qc_certificates_json"
 			+ " FROM trading_inward inward"
 			+ " INNER JOIN trading_vendor_master vendor ON inward.vendor_id=vendor.vendor_id"
 			+ " INNER JOIN trading_inward_items child ON inward.inward_id=child.inwardid"
+			+ " LEFT JOIN trading_material_master mat ON child.item_id = mat.item_id"
+			+ " LEFT JOIN trading_category_master cat ON mat.category_id = cat.category_id"
+			+ " LEFT JOIN trading_subcategory_master subcat ON mat.subcategory_id = subcat.subcategory_id"
 			+ " LEFT JOIN trading_inward_purpose_master purpose ON inward.purpose_id=purpose.purpose_id \r\n"
-			+ " where inward.is_deleted = 0 and child.is_deleted = 0 " 
+			+ " where inward.is_deleted = 0 and child.is_deleted = 0 "
 			+ " and inward.inward_id in :inwardIds \r\n"
 			+ " order by inward.inward_id desc ",
 	nativeQuery = true)

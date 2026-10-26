@@ -16,6 +16,63 @@ import java.util.Set;
 @Table(name = "trading_inward")
 public class InwardTradingEntity {
 
+	@Column(name = "qc_certificate_no", columnDefinition = "VARCHAR(100)")
+	private String qcCertificateNo;
+	public String getQcCertificateNo() { return qcCertificateNo; }
+	public void setQcCertificateNo(String value) { this.qcCertificateNo = value; }
+
+	@Column(name = "qc_status", columnDefinition = "VARCHAR(20)")
+	private String qcStatus;
+	public String getQcStatus() { return qcStatus; }
+	public void setQcStatus(String value) { this.qcStatus = value; }
+
+	@Column(name = "qc_yield_strength", columnDefinition = "DECIMAL(19,6)")
+	private BigDecimal qcYieldStrength;
+	public BigDecimal getQcYieldStrength() { return qcYieldStrength; }
+	public void setQcYieldStrength(BigDecimal value) { this.qcYieldStrength = value; }
+
+	@Column(name = "qc_tensile_strength", columnDefinition = "DECIMAL(19,6)")
+	private BigDecimal qcTensileStrength;
+	public BigDecimal getQcTensileStrength() { return qcTensileStrength; }
+	public void setQcTensileStrength(BigDecimal value) { this.qcTensileStrength = value; }
+
+	@Column(name = "qc_elongation", columnDefinition = "DECIMAL(9,6)")
+	private BigDecimal qcElongation;
+	public BigDecimal getQcElongation() { return qcElongation; }
+	public void setQcElongation(BigDecimal value) { this.qcElongation = value; }
+
+	@Column(name = "qc_remark", columnDefinition = "TEXT")
+	private String qcRemark;
+	public String getQcRemark() { return qcRemark; }
+	public void setQcRemark(String value) { this.qcRemark = value; }
+
+	@Column(name = "qc_certificates_json", columnDefinition = "LONGTEXT")
+	private String qcCertificatesJson;
+	public String getQcCertificatesJson() { return qcCertificatesJson; }
+	public void setQcCertificatesJson(String value) { this.qcCertificatesJson = value; }
+
+
+	@Column(name = "invoice_value", columnDefinition = "DECIMAL(19,2)")
+	private BigDecimal invoiceValue;
+
+	public BigDecimal getInvoiceValue() { return invoiceValue; }
+
+	public void setInvoiceValue(BigDecimal invoiceValue) { this.invoiceValue = invoiceValue; }
+
+	@Column(name = "received_date", columnDefinition = "DATETIME")
+	private Date receivedDate;
+
+	public Date getReceivedDate() { return receivedDate; }
+
+	public void setReceivedDate(Date receivedDate) { this.receivedDate = receivedDate; }
+
+	@Column(name = "documents_json", columnDefinition = "LONGTEXT")
+	private String documentsJson;
+
+	public String getDocumentsJson() { return documentsJson; }
+
+	public void setDocumentsJson(String documentsJson) { this.documentsJson = documentsJson; }
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "inward_id")
@@ -48,6 +105,9 @@ public class InwardTradingEntity {
 	@OneToMany(mappedBy = "inwardId", cascade = {CascadeType.PERSIST,CascadeType.MERGE},orphanRemoval = true)
 	private Set<InwardTradingChildEntity> itemsList;
 	
+	@Column(name = "po_number", length = 100)
+	private String poNumber;
+
 	@Column(name = "vendor_batch_no")
 	private String vendorBatchNo;
 
@@ -103,13 +163,13 @@ public class InwardTradingEntity {
 	private BigDecimal igst;
 
 	@Column(name = "total_inward_volume")
-	private Integer totalInwardVolume;
+	private BigDecimal totalInwardVolume;
 
 	@Column(name = "total_weight")
 	private BigDecimal totalWeight;
 
 	@Column(name = "total_volume")
-	private Integer totalVolume;
+	private BigDecimal totalVolume;
 
 	@Column(name = "reconciliation_remark")
 	private String reconciliationRemark;
@@ -215,6 +275,14 @@ public class InwardTradingEntity {
 
 	public void setItemsList(Set<InwardTradingChildEntity> itemsList) {
 		this.itemsList = itemsList;
+	}
+
+	public String getPoNumber() {
+		return poNumber;
+	}
+
+	public void setPoNumber(String poNumber) {
+		this.poNumber = poNumber;
 	}
 
 	public String getVendorBatchNo() {
@@ -369,11 +437,11 @@ public class InwardTradingEntity {
 		this.igst = igst;
 	}
 
-	public Integer getTotalInwardVolume() {
+	public BigDecimal getTotalInwardVolume() {
 		return totalInwardVolume;
 	}
 
-	public void setTotalInwardVolume(Integer totalInwardVolume) {
+	public void setTotalInwardVolume(BigDecimal totalInwardVolume) {
 		this.totalInwardVolume = totalInwardVolume;
 	}
 
@@ -385,11 +453,11 @@ public class InwardTradingEntity {
 		this.totalWeight = totalWeight;
 	}
 
-	public Integer getTotalVolume() {
+	public BigDecimal getTotalVolume() {
 		return totalVolume;
 	}
 
-	public void setTotalVolume(Integer totalVolume) {
+	public void setTotalVolume(BigDecimal totalVolume) {
 		this.totalVolume = totalVolume;
 	}
 
