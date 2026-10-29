@@ -194,7 +194,7 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
 	
 	@Query(value = " select sono, dt, vehicleno, mmid, round((sum(actualweight) / 1000),3) , wearhouse_id, branch_id, round((additional_weight / 1000),3), zbooks_so, pdf_s3_url from ( "
 			+ "  SELECT ins.sono, DATE_FORMAT(dc.createdon, '%Y-%m-%d') dt,vehicleno , ins.mmid, sum(ins.actualweight) actualweight,"
-			+ " (select wearhouse_id from jsw_sales_order so, jsw_sales_order_child child where so.so_id=child.so_id and child.mm_id = ins.mmid and so.refno = ins.sono limit 1) wearhouse_id , "
+			+ " (select wh.ware_house_id from product_tblinwardentry inww, jsw_warehouse_master wh where wh.party_id = inww.npartyid and inww.inwardentryid=ins.inwardid limit 1) wearhouse_id , "
 			+ " (select zbooks_so from jsw_sales_order so, jsw_sales_order_child child where so.so_id=child.so_id and child.mm_id = ins.mmid and so.refno = ins.sono limit 1) zbooks_so , "
 			+ " (select so.branch_id from jsw_sales_order so, jsw_sales_order_child child, jsw_warehouse_master wh where so.so_id=child.so_id and wh.ware_house_id=child.wearhouse_id and child.mm_id = ins.mmid and so.refno = ins.sono limit 1) branch_id, "
 			+ " sum(additional_weight) additional_weight, pdf_s3_url "

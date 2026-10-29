@@ -241,8 +241,8 @@ public class SalesOrderJswController {
 			resp.setBrand(result[16] != null ? (String) result[16] : "");
 			resp.setWarehouseId(result[17] != null ? (String) result[17] : "");
 			resp.setClassificationTag( result[18] != null ? (String) result[18] : "");
-	        resp.setCoilage(coilage);
-	        if (coilage != null) {
+	        if (coilage != null && coilage >0 ) {
+		        resp.setCoilage(coilage);
 	        	coilAgeSet.add(coilage);  
 	        }
 	        list.add(resp);
@@ -267,13 +267,13 @@ public class SalesOrderJswController {
 				resp.setNoofPieces(result[11] != null ? ((Number) result[11]).intValue() : 0);
 				resp.setFWidth(result[12] != null ? (float) result[12] : null);
 				Integer coilage = result[13] != null ? Integer.parseInt(result[13].toString()) : null;
-				resp.setCoilage(coilage);
 				resp.setAllocatedQty(result[14] != null ? BigDecimal.valueOf(((Number) result[14]).doubleValue()) : null);
 				resp.setGrade(result[15] != null ? (String) result[15] : "");
 				resp.setBrand(result[16] != null ? (String) result[16] : "");
 				resp.setWarehouseId(result[17] != null ? (String) result[17] : "");
 				resp.setClassificationTag( result[18] != null ? (String) result[18] : "");
 				if (coilage != null) {
+					resp.setCoilage(coilage);
 					coilAgeSet.add(coilage);
 				}
 				list.add(resp);

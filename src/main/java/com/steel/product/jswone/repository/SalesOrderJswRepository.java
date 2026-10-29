@@ -132,7 +132,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			@Param("warehouseFlag") boolean warehouseFlag,
 			@Param("warehouseList") List<String> warehouseList);
 
-	@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, mm_id, materialdesc, materialgrade,fthickness, flength, (fweight-allocated_soqty), partyname,"
+	@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, mm_id, materialdesc, materialgrade,fthickness, flength, fweight, partyname,"
 			+ " noofpieces, fWidth,coilage,allocated_soqty,grade, brand, ware_house_id, classificationtag  "
 			+ " from ( SELECT parent.inwardentryid inwardid,  coilnumber, customerbatchid, parent.mm_id,"
 			+ " (SELECT product_name FROM jsw_product_master a, jsw_material_master mat where a.product_id=mat.producttype_id and mat.mm_id=parent.mm_id limit 1) as  materialdesc,"
@@ -161,7 +161,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ "	and case when :subGradeListFlag=true then mat.subgrade_id in :subGradeList else mat.brand_id = :brandId end  "
 			+ "	and case when :gradeListFlag=true then mat.grade_id in :gradeList else 1=1 end "
 			+ " and mat.thickness= :thickness "
-			+ " AND coalesce(child.actualwidth, child.plannedwidth) = :width "
+			+ " AND COALESCE(NULLIF(child.actualwidth, 0), child.plannedwidth) = :width "
 			+ " and coalesce(child.actuallength, child.plannedlength) = :length) a "
 			+ " where (fweight-allocated_soqty)>0 and CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END"
 			+ " and case when :warehouseListFlag=true then ware_house_id in :warehouseList else 1=1 end "
@@ -186,7 +186,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			+ "	and case when :subGradeListFlag=true then mat.subgrade_id in :subGradeList else mat.brand_id = :brandId end  "
 			+ "	and case when :gradeListFlag=true then mat.grade_id in :gradeList else 1=1 end "
 			+ " and mat.thickness= :thickness "
-			+ " AND coalesce(child.actualwidth, child.plannedwidth) = :width "
+			+ " AND COALESCE(NULLIF(child.actualwidth, 0), child.plannedwidth) = :width "
 			+ " and coalesce(child.actuallength, child.plannedlength) = :length) a "
 			+ " where (fweight-allocated_soqty)>0 and CASE WHEN siltcutcnt >0 THEN 1=2 ELSE 1=1 END"
 			+ " and case when :warehouseListFlag=true then ware_house_id in :warehouseList else 1=1 end "
@@ -212,7 +212,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			Pageable pageable);
 	
 	@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, mm_id, materialdesc, materialgrade, fthickness, flength, "
-			+ " (fweight-allocated_soqty), partyname,0 noofpieces,fWidth,coilage,allocated_soqty,grade, brand, ware_house_id, '' as classificationtag "
+			+ " fweight, partyname,0 noofpieces,fWidth,coilage,allocated_soqty,grade, brand, ware_house_id, '' as classificationtag "
 			+ " from ( "
 			+ " SELECT parent.inwardentryid inwardid,  coilnumber, customerbatchid, parent.mm_id, " 
 			+ " (SELECT product_name FROM jsw_product_master a, jsw_material_master mat where a.product_id=mat.producttype_id and mat.mm_id=parent.mm_id limit 1) as  materialdesc, " 
@@ -281,7 +281,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 				Pageable pageable);
 
 		@Query(value = "select packet_id, inwardid, coilnumber, customerbatchid, mm_id, materialdesc, materialgrade, fthickness, flength, "
-				+ " (fweight-allocated_soqty), partyname,0 noofpieces,fWidth,coilage,allocated_soqty,grade, brand,ware_house_id, '' as classificationtag  "
+				+ " fweight, partyname,0 noofpieces,fWidth,coilage,allocated_soqty,grade, brand,ware_house_id, '' as classificationtag  "
 				+ " from ( "
 				+ " SELECT parent.inwardentryid inwardid,  coilnumber, customerbatchid, parent.mm_id, " 
 				+ " (SELECT product_name FROM jsw_product_master a, jsw_material_master mat where a.product_id=mat.producttype_id and mat.mm_id=parent.mm_id limit 1) as  materialdesc, " 

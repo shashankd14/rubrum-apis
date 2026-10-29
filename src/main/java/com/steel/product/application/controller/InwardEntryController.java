@@ -511,6 +511,19 @@ public class InwardEntryController {
 			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+	
+	@PostMapping({ "/getByCoilNo" })
+	public ResponseEntity<Object> getById(@RequestBody InwardDto req) {
+		try {
+			InwardEntry entry = this.inwdEntrySvc.getByCoilNumber(req.getCoilNumber());
+			if (entry == null)
+				throw new RuntimeException("Entry coilNumber id not found - " + req.getCoilNumber());
+			return new ResponseEntity<Object>(InwardEntry.valueOfResponse(entry), HttpStatus.OK);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity<Object>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
 	@GetMapping({ "/getByPartyId/{partyId}" })
 	public ResponseEntity<Object> getInwardEntriesByPartyId(@PathVariable int partyId) {
