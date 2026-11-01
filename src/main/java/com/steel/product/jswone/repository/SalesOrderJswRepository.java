@@ -547,5 +547,7 @@ public interface SalesOrderJswRepository extends JpaRepository<SalesOrderJswEnti
 			" and mm.mm_id =chld.mm_id and mm.form_id=21 "+ 
 			" and allo.inward_entry_id=:inwardId", nativeQuery = true)
 	List<Object[]> fetchMappedSheetSONo(@Param("inwardId") int inwardId);
+
+	List<SalesOrderJswEntity> findByRefno(String refno);
 	
 }

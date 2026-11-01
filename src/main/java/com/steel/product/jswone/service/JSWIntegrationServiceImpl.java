@@ -1278,6 +1278,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			}
 
 		} catch (Exception e) {
+			e.printStackTrace();
 			String msg = e.getMessage() != null ? e.getMessage() : "";
 			audit.setDestinationResponse(msg);
 
@@ -1326,19 +1327,22 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 		String itemWarehouseName = null;
 
 		for (Object[] result : poDetails) {
-			req.setCustomer_id(result[0] != null ? result[0].toString() : null);
-			req.setSalesorder_id(result[1] != null ? result[1].toString() : null);
+			req.setCustomer_id("");
+			req.setSalesorder_id(result[0] != null ? result[0].toString() : null);
 
 			WarehouseReassignmentLineItemsDto lineitem = new WarehouseReassignmentLineItemsDto();
-			lineitem.setItem_id(result[2] != null ? result[2].toString() : null);
-			lineitem.setQuantity(result[3] == null ? null : new BigDecimal(String.valueOf(result[3])));
-			lineitem.setWarehouse_id(result[4] != null ? result[4].toString() : null);
-			lineitem.setWarehouse_name(result[5] != null ? result[5].toString() : null);
-			totalQty = (result[6] == null ? null : new BigDecimal(String.valueOf(result[6])));
-			itemWarehouseId = (result[7] != null ? result[7].toString() : null);
-			itemWarehouseName = (result[8] != null ? result[8].toString() : null);
-			totalAllocatedQty = totalAllocatedQty.add(lineitem.getQuantity());
+			lineitem.setItem_id(result[1] != null ? result[1].toString() : null);
+			lineitem.setQuantity(result[2] == null ? null : new BigDecimal(String.valueOf(result[2])));
+			lineitem.setWarehouse_id(result[3] != null ? result[3].toString() : null);
+			lineitem.setWarehouse_name(result[4] != null ? result[4].toString() : null);
+			totalQty = (result[5] == null ? null : new BigDecimal(String.valueOf(result[5])));
+			itemWarehouseId = (result[6] != null ? result[6].toString() : null);
+			itemWarehouseName = (result[7] != null ? result[7].toString() : null);
 			lastItemId = lineitem.getItem_id();
+			if (lineitem.getQuantity() == null) {
+				continue;
+			}
+			totalAllocatedQty = totalAllocatedQty.add(lineitem.getQuantity());
 			lineItems.add(lineitem);
 		}
 

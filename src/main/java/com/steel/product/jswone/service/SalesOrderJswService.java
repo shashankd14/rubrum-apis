@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 
 import com.steel.product.application.dto.inward.SearchListPageRequest;
 import com.steel.product.application.dto.quality.ListPageSearchRequest;
+import com.steel.product.jswone.entity.SalesOrderJswEntity;
 import com.steel.product.jswone.request.CPSplitRequest;
 import com.steel.product.jswone.request.SalesOrderBulkRequest;
 import com.steel.product.jswone.request.SalesOrderChildRequest;
@@ -47,5 +48,7 @@ public interface SalesOrderJswService {
 	SalesOrderSheetResponse fetchMappedSheetSONo(int inwardId);
 
 	Page<Object[]> findInventory(ListPageSearchRequest request);
+
+	SalesOrderJswEntity findByRefno(String refno);
 
 }

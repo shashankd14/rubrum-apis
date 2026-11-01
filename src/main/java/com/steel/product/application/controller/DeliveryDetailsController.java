@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.steel.product.application.dto.delivery.DeliveryDto;
+import com.steel.product.application.dto.delivery.DeliveryItemDetails;
 import com.steel.product.application.dto.delivery.DeliveryPacketsDto;
 import com.steel.product.application.dto.delivery.ValidatePriceMappingDTO;
 import com.steel.product.application.dto.instruction.InstructionResponseDto;
@@ -34,8 +35,11 @@ import com.steel.product.application.oauth.service.UserInfoService;
 import com.steel.product.application.service.DeliveryDetailsService;
 //import com.steel.product.application.service.SalesOrderService;
 import com.steel.product.application.util.CommonUtil;
+import com.steel.product.jswone.entity.SalesOrderJswEntity;
 import com.steel.product.jswone.service.JSWIntegrationService;
 import com.steel.product.jswone.service.MaterialMasterJswService;
+import com.steel.product.jswone.service.SalesOrderJswHelperService;
+import com.steel.product.jswone.service.SalesOrderJswService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.log4j.Log4j2;
@@ -61,7 +65,13 @@ public class DeliveryDetailsController {
 	
 	@Autowired
 	private UserInfoService userInfoService;
-
+	
+	@Autowired
+	private SalesOrderJswHelperService soHelperService;
+	
+	@Autowired
+	private SalesOrderJswService salesOrderJswService;
+	
 	@GetMapping("/list/{pageNo}/{pageSize}")
 	public ResponseEntity<Object> findAllDeliveryList(@PathVariable int pageNo, @PathVariable int pageSize,
 			@RequestParam(required = false, name = "searchText") String searchText,
@@ -208,6 +218,16 @@ public class DeliveryDetailsController {
 			}
 			DeliveryDetails deliveryDetails = deliveryDetailsService.save(deliveryDto, userId);
 
+			for (DeliveryItemDetails instructionslist : deliveryDto.getDeliveryItemDetails()) {
+				if (instructionslist.getSoNumber() != null && instructionslist.getSoNumber().length() > 0 && instructionslist.getMmid() != null && instructionslist.getMmid().length() > 0) {
+					SalesOrderJswEntity dto = salesOrderJswService.findByRefno(instructionslist.getSoNumber());
+					if (dto != null && dto.getSoId() > 0) {
+						soHelperService.updateCPStatus(dto.getSoId());
+						soHelperService.updateSOStatus(dto.getSoId());
+					}
+				}
+			}
+			
 			if (deliveryDetails != null && deliveryDetails.getDeliveryId() > 0 && "Sales Order".equals((deliveryDetails.getDeliveryType()))) {
 				DeliveryDto dto = new DeliveryDto();
 				dto.setDeliveryId(deliveryDetails.getDeliveryId());

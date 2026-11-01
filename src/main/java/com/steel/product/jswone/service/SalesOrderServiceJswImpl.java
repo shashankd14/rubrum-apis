@@ -1081,6 +1081,13 @@ public class SalesOrderServiceJswImpl implements SalesOrderJswService {
 		return packetsList;
 	}
 
+
+	@Override
+	public SalesOrderJswEntity findByRefno(String refno) {
+		List<SalesOrderJswEntity> soList = salesOrderRepository.findByRefno(refno);
+		return soList.get(0);
+	}
+
 	@Override
 	public SalesOrderSheetResponse fetchMappedSheetSONo(int inwardId) {
 		SalesOrderSheetResponse kk = null;
