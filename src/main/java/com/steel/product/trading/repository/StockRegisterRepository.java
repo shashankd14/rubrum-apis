@@ -122,6 +122,34 @@ public class StockRegisterRepository {
         return response;
     }
 
+    /**
+     * Available stock in KG per material = In − Out.
+     * In: register balance (COMPLETED inwards + opening stock ± corrections); opening-stock lots have no
+     * item_id, so they are matched by item code.
+     * Out: quantity on issued delivery challans. Dispatch is not linked to a lot (lots stay "allocation
+     * pending" and cannot be corrected), so it is deducted here at item level without double counting.
+     */
+    public Map<Integer, java.math.BigDecimal> availableKgByItem(Collection<Integer> itemIds) {
+        Map<Integer, java.math.BigDecimal> available = new HashMap<>();
+        if (itemIds == null || itemIds.isEmpty()) return available;
+        jdbc.query("SELECT m.item_id, " +
+            "COALESCE((SELECT SUM(s.balance) * 1000 FROM (" + REGISTER + ") s " +
+            "  WHERE s.item_id = m.item_id OR (s.item_id IS NULL AND s.code = m.item_code)), 0) " +
+            "- COALESCE((SELECT SUM(CASE WHEN UPPER(e.unit1) IN ('MT', 'TON', 'TONS', 'TONNE') THEN e.qty1 * 1000 ELSE e.qty1 END) " +
+            "  FROM trading_eqp_items e JOIN trading_eqp q ON q.enquiry_id = e.enquiryid " +
+            "  WHERE e.item_id = m.item_id AND UPPER(e.status) = 'DC' " +
+            "  AND COALESCE(e.is_deleted, 0) = 0 AND COALESCE(q.is_deleted, 0) = 0 " +
+            "  AND EXISTS (SELECT 1 FROM trading_delivery_chalan d WHERE d.enquiryid = q.enquiry_id AND COALESCE(d.is_deleted, 0) = 0)), 0) available_kg " +
+            "FROM trading_material_master m WHERE m.item_id IN (:itemIds) " +
+            "AND (EXISTS (SELECT 1 FROM trading_inward_items ii WHERE ii.item_id = m.item_id) " +
+            "  OR EXISTS (SELECT 1 FROM trading_opening_stock o WHERE o.material_code = m.item_code))",
+            new MapSqlParameterSource("itemIds", itemIds), rs -> {
+                java.math.BigDecimal kg = rs.getBigDecimal("available_kg");
+                if (kg != null) available.put(rs.getInt("item_id"), kg.setScale(3, java.math.RoundingMode.HALF_UP));
+            });
+        return available;
+    }
+
     public List<Map<String, Object>> locations() {
         return jdbc.query("SELECT location_id, location_name FROM trading_location_master " +
             "WHERE COALESCE(is_deleted, 0) = 0 ORDER BY location_name, location_id", (rs, i) -> {

@@ -42,4 +42,10 @@ public class EQPChildResponse {
 	
 	private String status;
 
+	/** Weighted average landed cost per KG from inward costing (item value + share of additional charges, excl. GST). */
+	private BigDecimal averageCost;
+
+	/** Active KG_PER_PC unit weight from material master. */
+	private BigDecimal unitWeightKg;
+
 }

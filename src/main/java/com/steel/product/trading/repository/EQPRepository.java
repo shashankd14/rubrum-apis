@@ -23,7 +23,7 @@ public interface EQPRepository extends JpaRepository<EQPEntity, Integer> {
 			+ " where inward.is_deleted = 0"
 			+ " and (:dispatchOnly = false or inward.current_status in ('DO','DC') or inward.proforma_status = 'PENDING_DO') "
 			+ " and inward.current_status = ifnull(:status, inward.current_status) "
-			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (customer.customer_name like %:searchText% or inward.enq_enquiry_from like %:searchText%) else 1=1 end " 
+			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (customer.customer_name like %:searchText% or customer.customer_nickname like %:searchText% or inward.enq_enquiry_from like %:searchText%) else 1=1 end " 
 			+ " and inward.enq_customer_id = ifnull(:customerId, inward.enq_customer_id) \r\n"
 			+ " and inward.enquiry_id = ifnull(:enquiryId, inward.enquiry_id) \r\n"
 			+ " and inward.enq_customer_id=customer.customer_id order by inward.enquiry_id desc ",
@@ -32,7 +32,7 @@ public interface EQPRepository extends JpaRepository<EQPEntity, Integer> {
 			+ " where inward.is_deleted = 0" 
 			+ " and (:dispatchOnly = false or inward.current_status in ('DO','DC') or inward.proforma_status = 'PENDING_DO') "
 			+ " and inward.current_status = ifnull(:status, inward.current_status) "
-			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (customer.customer_name like %:searchText% or inward.enq_enquiry_from like %:searchText%) else 1=1 end " 
+			+ " and case when :searchText is not null and LENGTH(:searchText) >0 then (customer.customer_name like %:searchText% or customer.customer_nickname like %:searchText% or inward.enq_enquiry_from like %:searchText%) else 1=1 end " 
 			+ " and inward.enq_customer_id = ifnull(:customerId, inward.enq_customer_id) \r\n"
 			+ " and inward.enquiry_id = ifnull(:enquiryId, inward.enquiry_id) \r\n"
 			+ " and inward.enq_customer_id=customer.customer_id",
@@ -40,10 +40,10 @@ public interface EQPRepository extends JpaRepository<EQPEntity, Integer> {
 	Page<Object[]> findAllInwardsWithSearchText(@Param("enquiryId") Integer enquiryId, @Param("status") String status, 
 			@Param("customerId") Integer customerId, @Param("searchText") String searchText, @Param("dispatchOnly") boolean dispatchOnly, Pageable pageable);
 	
-	@Query(value = "SELECT inward.enquiry_id, inward.enq_customer_id, customer.customer_name, inward.enq_enquiry_from, DATE_FORMAT(inward.enq_enquiry_date, '%d-%m-%y') enqenquirydate, "
+	@Query(value = "SELECT inward.enquiry_id, inward.enq_customer_id, COALESCE(NULLIF(customer.customer_name, ''), customer.customer_nickname), inward.enq_enquiry_from, DATE_FORMAT(inward.enq_enquiry_date, '%d-%m-%y') enqenquirydate, "
 			+ " inward.enq_qty, inward.enq_value, inward.quote_enquiry_from,  "
 			+ " DATE_FORMAT(inward.quote_enquiry_date, '%d-%m-%y') , inward.quote_qty, inward.quote_value, inward.current_status,  "
-			+ " (select cust.customer_name from trading_customer_master cust where cust.customer_id =  inward.quote_customer_id) as quoteCustomer_name, "
+			+ " (select COALESCE(NULLIF(cust.customer_name, ''), cust.customer_nickname) from trading_customer_master cust where cust.customer_id =  inward.quote_customer_id) as quoteCustomer_name, "
 			+ " child.enquiry_child_id, child.item_id, child.item_specs, child.make, child.alt_make, child.qty1,child.unit1,"
 			+ " child.qty2, child.unit2, child.estimate_delivery_date, child.remarks itemremarks, child.status chldstts, child.location_id,  "
 			+ " (select item_name from trading_material_master mat where mat.item_id =  child.item_id) as itemName,"
@@ -68,6 +68,27 @@ public interface EQPRepository extends JpaRepository<EQPEntity, Integer> {
 			+ " order by inward.enquiry_id desc ",
 	nativeQuery = true)
 	List<Object[]> findAllInwardsWiseData(@Param("enquiryIds") List<Integer> enquiryIds, @Param("status") String status);
+
+	/**
+	 * Weighted average landed cost per KG per item across COMPLETED inwards (same basis as the stock register).
+	 * Additional charges (freight, insurance, loading, weighment) are allocated to items in proportion to item value; GST excluded.
+	 */
+	@Query(value = "SELECT child.item_id, "
+			+ " SUM(COALESCE(child.volume, 0) * (1 + COALESCE((COALESCE(inward.freight_charges, 0) + COALESCE(inward.insurance_amount, 0) "
+			+ "   + COALESCE(inward.loading_charges, 0) + COALESCE(inward.weightmen_charges, 0)) / NULLIF(inward.total_volume, 0), 0))) "
+			+ "   / NULLIF(SUM(child.net_weight), 0) "
+			+ " FROM trading_inward_items child "
+			+ " INNER JOIN trading_inward inward ON inward.inward_id = child.inwardid "
+			+ " WHERE inward.is_deleted = 0 AND child.is_deleted = 0 AND UPPER(inward.status) = 'COMPLETED' "
+			+ " AND child.net_weight > 0 AND child.item_id IN :itemIds "
+			+ " GROUP BY child.item_id",
+	nativeQuery = true)
+	List<Object[]> findAverageLandedCostPerKg(@Param("itemIds") List<Integer> itemIds);
+
+	@Query(value = "SELECT mat.item_id, mat.unit_weights, mat.additional_params, mat.per_pc "
+			+ " FROM trading_material_master mat WHERE mat.item_id IN :itemIds",
+	nativeQuery = true)
+	List<Object[]> findMaterialUnitWeights(@Param("itemIds") List<Integer> itemIds);
 
 	@Modifying
 	@Transactional

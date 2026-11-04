@@ -14,8 +14,14 @@ import com.steel.product.trading.request.EQPSearchRequest;
 
 import lombok.extern.log4j.Log4j2;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -47,6 +53,80 @@ public class EQPServiceImpl implements EQPService {
 
 	@Autowired
 	QuoteRevisionService quoteRevisionService;
+
+	@Autowired
+	ItemCostingService itemCostingService;
+
+	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+	/** Adds inward-costing average cost per KG and master KG_PER_PC weight to every enquiry item. */
+	private void enrichItemCosting(Collection<List<EQPChildResponse>> itemLists) {
+		Set<Integer> itemIds = new HashSet<>();
+		itemLists.forEach(items -> items.forEach(item -> {
+			if (item.getItemId() != null) itemIds.add(item.getItemId());
+		}));
+		if (itemIds.isEmpty()) return;
+		List<Integer> ids = new ArrayList<>(itemIds);
+		Map<Integer, BigDecimal> averageCosts = itemCostingService.averageCostPerKg(ids);
+		Map<Integer, BigDecimal> unitWeights = new HashMap<>();
+		try {
+			for (Object[] row : eqpRepository.findMaterialUnitWeights(ids)) {
+				if (row[0] == null) continue;
+				BigDecimal weight = kgPerPiece(row[1], row[2], row[3]);
+				if (weight != null) unitWeights.put(((Number) row[0]).intValue(), weight);
+			}
+		} catch (Exception e) {
+			log.error("Unable to load unit weights for enquiry items", e);
+		}
+		itemLists.forEach(items -> items.forEach(item -> {
+			item.setAverageCost(averageCosts.get(item.getItemId()));
+			item.setUnitWeightKg(unitWeights.get(item.getItemId()));
+		}));
+	}
+
+	private static BigDecimal kgPerPiece(Object unitWeightsJson, Object additionalParamsJson, Object perPc) {
+		BigDecimal fromUnitWeights = activeKgPerPc(readJson(unitWeightsJson));
+		if (fromUnitWeights != null) return fromUnitWeights;
+		JsonNode additional = readJson(additionalParamsJson);
+		BigDecimal fromAdditional = additional == null ? null : activeKgPerPc(additional.get("unitWeights"));
+		if (fromAdditional != null) return fromAdditional;
+		BigDecimal legacy = toBigDecimal(perPc);
+		return legacy != null && legacy.signum() > 0 ? legacy : null;
+	}
+
+	private static BigDecimal activeKgPerPc(JsonNode weights) {
+		if (weights == null || !weights.isArray()) return null;
+		for (JsonNode entry : weights) {
+			if (!"KG_PER_PC".equals(entry.path("basis").asText())) continue;
+			if (entry.has("active") && !entry.get("active").asBoolean(true)) continue;
+			BigDecimal value = toBigDecimal(entry.path("value").asText(null));
+			if (value != null && value.signum() > 0) return value;
+		}
+		return null;
+	}
+
+	private static JsonNode readJson(Object value) {
+		if (value == null) return null;
+		String text = value instanceof byte[] ? new String((byte[]) value, StandardCharsets.UTF_8) : value.toString();
+		if (text.trim().isEmpty()) return null;
+		try {
+			JsonNode node = OBJECT_MAPPER.readTree(text);
+			// Some rows store the JSON array as an escaped string.
+			return node != null && node.isTextual() ? OBJECT_MAPPER.readTree(node.asText()) : node;
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	private static BigDecimal toBigDecimal(Object value) {
+		if (value == null) return null;
+		if (value instanceof BigDecimal) return (BigDecimal) value;
+		try {
+			return new BigDecimal(value.toString().trim());
+		} catch (NumberFormatException e) {
+			return null;
+		}
+	}
 
 	@Override
 	public ResponseEntity<Object> save(EQPRequest request) {
@@ -245,6 +325,7 @@ public class EQPServiceImpl implements EQPService {
 			dummyEntity.setItemsList(entry.getValue());
 			responseList.add(dummyEntity);
 		}
+		enrichItemCosting(map.values());
 
 		response.put("content", responseList);
 		response.put("currentPage", pageResult.getNumber());

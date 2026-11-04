@@ -112,4 +112,12 @@ public class MaterialMasterEntity {
 	@Transient
 	private String crossSectionalImagePresignedURL;
 
+	/** Weighted average landed cost per KG from inward costing; populated for list responses only. */
+	@Transient
+	private BigDecimal averageCost;
+
+	/** Available stock in KG from the stock register; populated for list responses only. */
+	@Transient
+	private BigDecimal availableQtyKg;
+
 }

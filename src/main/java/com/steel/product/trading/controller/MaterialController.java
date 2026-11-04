@@ -22,6 +22,7 @@ import com.steel.product.trading.request.ManufacturerRequest;
 import com.steel.product.trading.request.MaterialMasterRequest;
 import com.steel.product.trading.request.SearchRequest;
 import com.steel.product.trading.request.SubCategoryRequest;
+import com.steel.product.trading.service.ItemCostingService;
 import com.steel.product.trading.service.MaterialMasterService;
 import com.steel.product.trading.service.SellerMasterExcelImportService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -51,6 +52,9 @@ public class MaterialController {
 
 	@Autowired
 	private SellerMasterExcelImportService sellerMasterExcelImportService;
+
+	@Autowired
+	private ItemCostingService itemCostingService;
 
 	@PostMapping(value = "/material/master/import", consumes = "multipart/form-data", produces = "application/json")
 	public ResponseEntity<Object> importSellerMasters(@RequestParam("file") MultipartFile file,
@@ -181,10 +185,24 @@ public class MaterialController {
 
 		if (searchPageRequest.getId() != null && searchPageRequest.getId() > 0) {
 			MaterialMasterEntity resp = materialMasterService.findByItemId(searchPageRequest.getId());
+			if (resp != null) {
+				List<Integer> ids = Collections.singletonList(resp.getItemId());
+				resp.setAverageCost(itemCostingService.averageCostPerKg(ids).get(resp.getItemId()));
+				resp.setAvailableQtyKg(itemCostingService.availableKg(ids).get(resp.getItemId()));
+			}
 			return new ResponseEntity<Object>(resp, HttpStatus.OK);
 		} else {
 			Page<MaterialMasterEntity> pageResult = materialMasterService.getMaterialList(searchPageRequest);
-			response.put("content", pageResult.toList());
+			List<MaterialMasterEntity> materials = pageResult.toList();
+			List<Integer> ids = materials.stream().map(MaterialMasterEntity::getItemId).collect(Collectors.toList());
+			Map<Integer, BigDecimal> averageCosts = itemCostingService.averageCostPerKg(ids);
+			Map<Integer, BigDecimal> availableKg = itemCostingService.availableKg(ids);
+			// Transient fields only; nothing here is persisted.
+			materials.forEach(material -> {
+				material.setAverageCost(averageCosts.get(material.getItemId()));
+				material.setAvailableQtyKg(availableKg.get(material.getItemId()));
+			});
+			response.put("content", materials);
 			response.put("currentPage", pageResult.getNumber());
 			response.put("totalItems", pageResult.getTotalElements());
 			response.put("totalPages", pageResult.getTotalPages());
