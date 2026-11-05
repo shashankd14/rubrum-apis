@@ -79,6 +79,15 @@ public class InwardDto {
 
 	private MultipartFile invoiceCopy;
 	
+	private String inwardType;
+
+	private int packetClassificationId;
+
+	private int endUserTagId;
+
+	private Integer noofpieces;
+
+	
 	public int getInwardId() {
 		return this.inwardId;
 	}
@@ -366,6 +375,38 @@ public class InwardDto {
 
 	public void setManualPoFlag(String manualPoFlag) {
 		this.manualPoFlag = manualPoFlag;
+	}
+
+	public String getInwardType() {
+		return inwardType;
+	}
+
+	public void setInwardType(String inwardType) {
+		this.inwardType = inwardType;
+	}
+
+	public int getPacketClassificationId() {
+		return packetClassificationId;
+	}
+
+	public void setPacketClassificationId(int packetClassificationId) {
+		this.packetClassificationId = packetClassificationId;
+	}
+
+	public int getEndUserTagId() {
+		return endUserTagId;
+	}
+
+	public void setEndUserTagId(int endUserTagId) {
+		this.endUserTagId = endUserTagId;
+	}
+
+	public Integer getNoofpieces() {
+		return noofpieces;
+	}
+
+	public void setNoofpieces(Integer noofpieces) {
+		this.noofpieces = noofpieces;
 	}
 	
 	

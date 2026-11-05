@@ -62,6 +62,10 @@ public class InwardEntryController {
 	private MaterialMasterJswService materialService;
 	
 	private UserInfoService userInfoService;
+	
+	private PacketClassificationService packetClassificationService;
+
+	private EndUserTagsService endUserTagsService;
 
 	private Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 
@@ -70,7 +74,8 @@ public class InwardEntryController {
 			StatusService statusService, MaterialDescriptionService matDescService,
 			MaterialGradeService matGradeService, UserService userSerive, AWSS3Service awsS3Service,
 			InwardDocService inwardDocService, CommonUtil commonUtil, MaterialMasterJswService materialService,
-			UserInfoService userInfoService) {
+			UserInfoService userInfoService, PacketClassificationService packetClassificationService,
+			EndUserTagsService endUserTagsService) {
 		this.inwdEntrySvc = inwdEntrySvc;
 		this.partyDetailsService = partyDetailsService;
 		this.statusService = statusService;
@@ -81,6 +86,9 @@ public class InwardEntryController {
 		this.commonUtil = commonUtil;
 		this.materialService = materialService;
 		this.userInfoService = userInfoService;
+		this.packetClassificationService = packetClassificationService;
+		this.endUserTagsService = endUserTagsService;
+
 	}
 
 	@PostMapping("/addNew")
@@ -108,6 +116,19 @@ public class InwardEntryController {
 				log.error("Invalid Party Id ");
 				return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please select valid Location \"}", new HttpHeaders(), HttpStatus.BAD_REQUEST);
 			}
+			
+			if (inward != null && inward.getPacketClassificationId() > 0) {
+				log.info("inwarddto.getPacketClassificationId() == " + inward.getPacketClassificationId());
+				inwardEntry.setPacketClassification(this.packetClassificationService.getPacketClassificationById(inward.getPacketClassificationId()));
+			}
+
+			if (inward != null && inward.getEndUserTagId() > 0) {
+				log.info("inwarddto.getEndUserTagId() == " + inward.getEndUserTagId());
+				inwardEntry.setEndUserTagsEntity(this.endUserTagsService.getEndUserTagsById(inward.getEndUserTagId()));
+			}
+			inwardEntry.setNoofpieces( inward.getNoofpieces());
+			inwardEntry.setInwardType(inward.getInwardType());
+
 			inwardEntry.setCoilNumber(inward.getCoilNumber());
 			inwardEntry.setBatchNumber(inward.getBatchNumber());
 			inwardEntry.setdReceivedDate(Timestamp.valueOf(inward.getInwardDate()));
@@ -136,8 +157,6 @@ public class InwardEntryController {
 			inwardEntry.setAvailableLength(inward.getLength());
 			inwardEntry.setfQuantity(inward.getPresentWeight());
 			inwardEntry.setGrossWeight(inward.getGrossWeight());
-
-			// inwardEntry.setStatus(this.statusService.getStatusById(inward.getStatusId()));
 			inwardEntry.setStatus(this.statusService.getStatusById(1));
 
 			inwardEntry.setvProcess(inward.getProcess());
@@ -211,6 +230,17 @@ public class InwardEntryController {
 			inwardEntry.setvLorryNo(inward.getVehicleNumber());
 			inwardEntry.setvInvoiceNo(inward.getInvoiceNumber());
 			inwardEntry.setdInvoiceDate(Timestamp.valueOf(inward.getInvoiceDate()));
+			if (inward != null && inward.getPacketClassificationId() > 0) {
+				log.info("inwarddto.getPacketClassificationId() == " + inward.getPacketClassificationId());
+				inwardEntry.setPacketClassification(this.packetClassificationService.getPacketClassificationById(inward.getPacketClassificationId()));
+			}
+
+			if (inward != null && inward.getEndUserTagId() > 0) {
+				log.info("inwarddto.getEndUserTagId() == " + inward.getEndUserTagId());
+				inwardEntry.setEndUserTagsEntity(this.endUserTagsService.getEndUserTagsById(inward.getEndUserTagId()));
+			}
+			inwardEntry.setNoofpieces( inward.getNoofpieces());
+			inwardEntry.setInwardType( inward.getInwardType() );
 
 			inwardEntry.setCustomerCoilId(inward.getCustomerCoilId());
 			inwardEntry.setCustomerBatchId(inward.getCustomerBatchId());

@@ -202,6 +202,14 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
 			+ " WHERE ins.deliveryid=dc.deliveryid and dc.deliveryid = :dcId group by mmid  ) a "
 			+ " where 1=1 group by sono, dt, vehicleno, mmid, wearhouse_id, branch_id, zbooks_so ", nativeQuery = true)
 	public List<Object[]> prepareInvAdjustmentRequest(Integer dcId);
+
+	@Query(value = "SELECT count(*) FROM product_instruction WHERE fg_reference_id = :fgReferenceId", nativeQuery = true)
+	public long countByFgReferenceId(@Param("fgReferenceId") String fgReferenceId);
+
+	@Modifying
+	@Transactional
+	@Query(value = "UPDATE product_instruction SET fg_inv_stts = :fgInvStts WHERE fg_reference_id = :fgReferenceId", nativeQuery = true)
+	public int updateFgInvStatus(@Param("fgReferenceId") String fgReferenceId, @Param("fgInvStts") String fgInvStts);
 	
 	@Query(value = " select round((actualweight / 1000),3), inwmmid,coilnumber, batch_id, round((additional_weight / 1000),3) from ( "
 			+ " SELECT ins.mmid, ins.actualweight, "

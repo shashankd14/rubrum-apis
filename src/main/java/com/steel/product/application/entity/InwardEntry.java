@@ -1,5 +1,6 @@
 package com.steel.product.application.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.steel.product.application.dto.inward.InwardEntryResponseDto;
 import com.steel.product.application.dto.material.MaterialResponseDto;
 import com.steel.product.application.dto.pdf.InstructionResponsePdfDto;
@@ -88,6 +89,25 @@ public class InwardEntry {
 	@JoinColumn(name = "materialgradeid")
 	private MaterialGrade materialGrade;
 
+	@JsonManagedReference
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "enduser_tag_id")
+	private EndUserTagsEntity endUserTagsEntity;
+
+	@JsonManagedReference
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "packet_classification_id")
+	private PacketClassification packetClassification;
+
+	@Column(name = "noofpieces")
+	private Integer noofpieces;
+	
+	@Column(name = "coil_seq")
+	private int coilSeq;
+
+    @Column(name = "delivery_id")
+    private Integer deliveryId;
+    
 	@Column(name = "fwidth")
 	private float fWidth;
 
@@ -207,6 +227,9 @@ public class InwardEntry {
 	
 	@Column(name = "allocated_mmid")
 	private String allocatedMmid;
+
+	@Column(name = "inward_type")
+	private String inwardType;
 
 	public void addInstruction(Instruction instruction){
 		if(this.instructions == null){
@@ -1150,6 +1173,62 @@ public class InwardEntry {
 
 	public void setAllocatedMmid(String allocatedMmid) {
 		this.allocatedMmid = allocatedMmid;
+	}
+
+	public String getBatchId() {
+		return batchId;
+	}
+
+	public void setBatchId(String batchId) {
+		this.batchId = batchId;
+	}
+
+	public String getInwardType() {
+		return inwardType;
+	}
+
+	public void setInwardType(String inwardType) {
+		this.inwardType = inwardType;
+	}
+
+	public EndUserTagsEntity getEndUserTagsEntity() {
+		return endUserTagsEntity;
+	}
+
+	public void setEndUserTagsEntity(EndUserTagsEntity endUserTagsEntity) {
+		this.endUserTagsEntity = endUserTagsEntity;
+	}
+
+	public PacketClassification getPacketClassification() {
+		return packetClassification;
+	}
+
+	public void setPacketClassification(PacketClassification packetClassification) {
+		this.packetClassification = packetClassification;
+	}
+
+	public Integer getNoofpieces() {
+		return noofpieces;
+	}
+
+	public void setNoofpieces(Integer noofpieces) {
+		this.noofpieces = noofpieces;
+	}
+
+	public int getCoilSeq() {
+		return coilSeq;
+	}
+
+	public void setCoilSeq(int coilSeq) {
+		this.coilSeq = coilSeq;
+	}
+
+	public Integer getDeliveryId() {
+		return deliveryId;
+	}
+
+	public void setDeliveryId(Integer deliveryId) {
+		this.deliveryId = deliveryId;
 	}
 	
 	

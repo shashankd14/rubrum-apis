@@ -82,5 +82,9 @@ public interface InwardEntryService {
 
 	Page<Object[]> listWIPInwards(SearchListPageRequest searchListPageRequest);
 
+	void updateStockTrasferSeq(Integer inwardId, Integer coilseq);
+
+	List<InwardEntry> findInwardByDeliveryId(Integer id);
+
 
 }

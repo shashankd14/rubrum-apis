@@ -43,5 +43,12 @@ public interface JSWIntegrationService {
 
 	InventoryAdjustmentResponse warehouseReassignment(SalesOrderListDTO request);
 
-	ResponseEntity<Object> inventoryAdjustmentStatusUpdate(InventoryAdjustmentStatusUpdate request); 
+	ResponseEntity<Object> inventoryAdjustmentStatusUpdate(InventoryAdjustmentStatusUpdate request);
+
+	/**
+	 * FG (cut-to-length) inventory adjustment for packets just moved WIP -> FG.
+	 * One call = one cut = one fgReferenceId. Needs no delivery/DC id - only the coil (inwardId)
+	 * and the packets (instructionIds) that were just finished.
+	 */
+	InventoryAdjustmentResponse inventoryAdjustmentFG(Integer inwardId, List<Integer> instructionIds);
 }

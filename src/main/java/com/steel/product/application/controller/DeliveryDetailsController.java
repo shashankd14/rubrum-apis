@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,13 +27,19 @@ import com.steel.product.application.dto.delivery.DeliveryItemDetails;
 import com.steel.product.application.dto.delivery.DeliveryPacketsDto;
 import com.steel.product.application.dto.delivery.ValidatePriceMappingDTO;
 import com.steel.product.application.dto.instruction.InstructionResponseDto;
+import com.steel.product.application.dto.pdf.PdfDto;
 import com.steel.product.application.dto.pricemaster.PriceCalculateResponseDTO;
 import com.steel.product.application.entity.DeliveryDetails;
 import com.steel.product.application.entity.Instruction;
+import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.entity.Process;
 import com.steel.product.application.entity.Status;
 import com.steel.product.application.oauth.service.UserInfoService;
 import com.steel.product.application.service.DeliveryDetailsService;
+import com.steel.product.application.service.InwardEntryService;
+import com.steel.product.application.service.PartyDetailsService;
+import com.steel.product.application.service.PdfService;
+import com.steel.product.application.service.StatusService;
 //import com.steel.product.application.service.SalesOrderService;
 import com.steel.product.application.util.CommonUtil;
 import com.steel.product.jswone.entity.SalesOrderJswEntity;
@@ -71,6 +78,18 @@ public class DeliveryDetailsController {
 	
 	@Autowired
 	private SalesOrderJswService salesOrderJswService;
+
+    @Autowired
+    private PdfService pdfService;
+
+    @Autowired
+	private PartyDetailsService partyDetailsService;
+    
+    @Autowired
+    private StatusService statusService;
+
+    @Autowired
+    private InwardEntryService inwdEntrySvc;
 	
 	@GetMapping("/list/{pageNo}/{pageSize}")
 	public ResponseEntity<Object> findAllDeliveryList(@PathVariable int pageNo, @PathVariable int pageSize,
@@ -233,6 +252,10 @@ public class DeliveryDetailsController {
 				dto.setDeliveryId(deliveryDetails.getDeliveryId());
 				service.inventoryAdjustment(dto);
 			}
+
+			if ("Stock Transfer".equals((deliveryDto.getDeliveryType())) && deliveryDetails != null && deliveryDetails.getDeliveryId() > 0) {
+				createInwardEntriesForStockTransfer(deliveryDetails, userId, deliveryDto.getLocationId());
+			}
 			result = new ResponseEntity<>("Delivery details saved successfully!", HttpStatus.OK);
 		} catch (Exception e) {
 			result = new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -240,6 +263,115 @@ public class DeliveryDetailsController {
 		return result;
 	}
 
+    /**
+     * For a "Stock Transfer" delivery, each Instruction attached to the delivery represents
+     * a piece of material leaving stock. This creates a corresponding new InwardEntry for each
+     * one, so the transferred material shows up as fresh inward stock.
+     *
+     * NOTE: deliveryDetails.getInstructions() is FetchType.LAZY. If this method is called after
+     * the session/transaction that produced deliveryDetails has already closed, this will throw
+     * LazyInitializationException. Safer long-term: call this from within
+     * DeliveryDetailsService.save(...) itself (same transaction), or have that service return
+     * the instructions eagerly.
+     *
+     * TODO: Neither DeliveryDto nor DeliveryDetails carries a destination location for the
+     * transfer - this currently reuses the source InwardEntry's location as a placeholder.
+     * TODO: swap inwardEntryService for whatever the actual injected service/repository bean is.
+     */
+    private void createInwardEntriesForStockTransfer(DeliveryDetails deliveryDetails, int userId, int locationId) {
+        Set<Instruction> transferredInstructions = deliveryDetails.getInstructions();
+        if (transferredInstructions == null) {
+            return;
+        }
+
+        int counter = 0;
+        for (Instruction instruction : transferredInstructions) {
+
+            try {
+				// Each instruction traces back to the InwardEntry it was originally cut from -
+				// that's where the material identity (party, material, grade, etc.) comes from.
+				InwardEntry sourceInwardEntry = instruction.getInwardId();
+				if (sourceInwardEntry == null) {
+				    continue;
+				}
+
+				InwardEntry newInwardEntry = new InwardEntry();
+				// Carry over material identity from the original inward entry
+				try {
+					newInwardEntry.setParty(this.partyDetailsService.getPartyById(locationId));
+				} catch (Exception e) {
+					newInwardEntry.setParty(sourceInwardEntry.getParty());
+				}
+				newInwardEntry.setMaterial(sourceInwardEntry.getMaterial());
+				newInwardEntry.setMaterialGrade(sourceInwardEntry.getMaterialGrade());
+				newInwardEntry.setPacketClassification(instruction.getPacketClassification());
+				newInwardEntry.setEndUserTagsEntity(instruction.getEndUserTagsEntity());
+				if (counter == 0) {
+					counter = sourceInwardEntry.getCoilSeq() + 1;
+				} else {
+					counter++;
+				}
+				newInwardEntry.setCoilNumber(sourceInwardEntry.getCoilNumber() + "-ST_" + counter);
+				newInwardEntry.setBatchNumber(sourceInwardEntry.getBatchNumber());
+				newInwardEntry.setParentCoilNumber(sourceInwardEntry.getCoilNumber());
+				newInwardEntry.setCoilSeq(0);
+
+				// Transferred quantity = what was actually processed on this instruction,
+				// falling back to the planned amount if actuals aren't recorded yet
+				Float width = instruction.getActualWidth() != null ? instruction.getActualWidth() : instruction.getPlannedWidth();
+				Float length = instruction.getActualLength() != null ? instruction.getActualLength() : instruction.getPlannedLength();
+				Float weight = instruction.getActualWeight() != null ? instruction.getActualWeight() : instruction.getPlannedWeight();
+				int pieces = instruction.getActualNoOfPieces() != null ? instruction.getActualNoOfPieces() : (instruction.getPlannedNoOfPieces() != null ? instruction.getPlannedNoOfPieces() : 0);
+				
+				newInwardEntry.setfWidth(width != null ? width : 0f);
+				newInwardEntry.setfLength(length != null ? length : 0f);
+				newInwardEntry.setfQuantity(weight != null ? weight : 0f);
+				newInwardEntry.setGrossWeight(weight != null ? weight : 0f);
+				newInwardEntry.setNoofpieces(pieces);
+				newInwardEntry.setStatus(this.statusService.getStatusById(1));
+				// New stock arriving = fully available stock
+				newInwardEntry.setInStockWeight(weight);
+				newInwardEntry.setAvailableLength(length);
+				newInwardEntry.setValueOfGoods(sourceInwardEntry.getValueOfGoods());
+				newInwardEntry.setTdcNo(sourceInwardEntry.getTdcNo());
+				newInwardEntry.setTestCertificateNumber(sourceInwardEntry.getTestCertificateNumber());
+				newInwardEntry.setTestCertificateFileUrl(sourceInwardEntry.getTestCertificateFileUrl());
+				newInwardEntry.setPurposeType(sourceInwardEntry.getPurposeType());
+				newInwardEntry.setIsDeleted(Boolean.valueOf(false));
+				newInwardEntry.setFpresent(weight);
+				newInwardEntry.setfThickness(sourceInwardEntry.getfThickness());
+				newInwardEntry.setdReceivedDate(sourceInwardEntry.getdReceivedDate());
+				newInwardEntry.setdInvoiceDate(sourceInwardEntry.getdInvoiceDate());
+				newInwardEntry.setvLorryNo(sourceInwardEntry.getvLorryNo());
+				newInwardEntry.setCustomerInvoiceNo(sourceInwardEntry.getCustomerInvoiceNo());
+				newInwardEntry.setvInvoiceNo(sourceInwardEntry.getvInvoiceNo());
+				newInwardEntry.setCustomerCoilId(sourceInwardEntry.getCustomerCoilId());
+				newInwardEntry.setCustomerBatchId(sourceInwardEntry.getCustomerBatchId());
+				newInwardEntry.setDeliveryId(deliveryDetails.getDeliveryId());
+				if ("Sheet".equals(sourceInwardEntry.getInwardType())) {
+					newInwardEntry.setInwardType("Sheet");
+				} else {
+					newInwardEntry.setInwardType("Coil");
+					if (instruction.getProcess().getProcessId() < 7) {
+						newInwardEntry.setInwardType("Sheet");
+					}
+				}
+				newInwardEntry.setRemarks("Auto-created from Stock Transfer Delivery ID: " + deliveryDetails.getDeliveryId());
+				newInwardEntry.setCreatedBy(userId);
+				newInwardEntry = inwdEntrySvc.saveEntry(newInwardEntry);
+				inwdEntrySvc.updateStockTrasferSeq(sourceInwardEntry.getInwardEntryId(), counter);
+
+				// inward PDF generation part and inward QR Code generation part	
+				PdfDto pdfDto =new PdfDto();
+				pdfDto.setInwardId(newInwardEntry.getInwardEntryId());
+				pdfService.generateInwardPdf(pdfDto);
+			} catch (Exception e) {
+				//e.printStackTrace();
+				log.info("Error while creating inward {} ", e.getMessage());
+			}
+        }
+    }
+    
     @DeleteMapping("/deleteById/{deliveryId}")
 	public ResponseEntity<Object> deleteById(@PathVariable("deliveryId") Integer id) {
 		try {

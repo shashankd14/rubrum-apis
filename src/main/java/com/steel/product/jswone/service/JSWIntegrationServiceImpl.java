@@ -2,7 +2,10 @@ package com.steel.product.jswone.service;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -46,6 +49,8 @@ import com.steel.product.application.dto.quality.ListPageSearchRequest;
 import com.steel.product.application.dto.salesorder.InventoryAdjustmentStatusUpdate;
 import com.steel.product.application.dto.salesorder.SalesOrderListDTO;
 import com.steel.product.application.entity.DeliveryDetails;
+import com.steel.product.application.entity.Instruction;
+import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.service.AWSS3Service;
 import com.steel.product.application.util.CommonUtil;
 import com.steel.product.jswone.entity.JswoneAuditTrailEntity;
@@ -69,6 +74,7 @@ import com.steel.product.jswone.request.MaterialMasterFileDataDTO;
 import com.steel.product.jswone.request.POSOIntegrationRequest;
 import com.steel.product.jswone.response.DC_InventoryAdjustmentLineItem;
 import com.steel.product.jswone.response.DC_InventoryAdjustmentMainRequest;
+import com.steel.product.jswone.response.FG_InventoryAdjustmentMainRequest;
 import com.steel.product.jswone.response.FromSku;
 import com.steel.product.jswone.response.InventoryAdjustmentBatch;
 import com.steel.product.jswone.response.InventoryAdjustmentResponse;
@@ -1098,26 +1104,37 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 				
 			}
 		} catch (Exception e) {
-            audit.setDestinationResponse( e.getMessage());
-			if (e.getMessage().contains("404")) {
+			log.error("DC inventory adjustment failed for delivery " + request.getDeliveryId(), e);
+			String errMsg = e.getMessage() != null ? e.getMessage() : e.toString();
+            audit.setDestinationResponse(errMsg);
+			// default for errors that match none of the codes below (connection refused, NPE while building, ...)
+			response.setCode("FAIL");
+			response.setMessage("Inventory adjustment not sent: " + errMsg);
+			if (errMsg.contains("404")) {
 				audit.setStatusCode("404");
 				response.setCode("1002");
 				response.setMessage("Resource does not exist.");
 			}
-			if (e.getMessage().contains("400")) {
+			if (errMsg.contains("400")) {
 				audit.setStatusCode("400");
 				response.setCode("4198");
 				response.setMessage("Invalid Params");
 			}
-			if (e.getMessage().contains("401")) {
+			if (errMsg.contains("401")) {
 				audit.setStatusCode("401");
 				response.setCode("57");
 				response.setMessage("You are not authorized to perform this operation");
 			}
-			if (e.getMessage().contains("500")) {
+			if (errMsg.contains("500")) {
 				audit.setStatusCode("400");
 				response.setCode("57");
 				response.setMessage("JSW Connector API Not Working, Please Contact JSW Admin Team ");
+			}
+			try {
+				// so the DC shows the failure instead of staying without any sync status
+				deliveryDetailsRepository.updateZohoSyncRemarks(request.getDeliveryId(), response.getMessage(), "FAIL", "");
+			} catch (Exception ex) {
+				log.error("Could not update sync remarks for delivery " + request.getDeliveryId(), ex);
 			}
  		}
 		try {
@@ -1202,6 +1219,193 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			lineItems.add(lineitem);
 		}
 		req.setLine_items(lineItems);
+		return req;
+	}
+
+	// ---------------------------------------------------------------------------------------------
+	// FG (cut-to-length) inventory adjustment
+	// ---------------------------------------------------------------------------------------------
+
+	/** Audit row holding the full FG request/response (po_id = fgReferenceId). */
+	private static final String FG_AUDIT_PROCESS = "INVENTORY_ADJUSTMENT_FG";
+
+	@Override
+	public InventoryAdjustmentResponse inventoryAdjustmentFG(Integer inwardId, List<Integer> instructionIds) {
+		List<Integer> ids = instructionIds == null ? new ArrayList<>(): instructionIds.stream().filter(Objects::nonNull).distinct().collect(Collectors.toList());
+		
+		// Packets of this coil only; within the finish transaction these are the just-updated entities.
+		List<Instruction> packets = instructionRepository.findAllById(ids).stream()
+				.filter(i -> inwardId == null || (i.getInwardId() != null && inwardId.equals(i.getInwardId().getInwardEntryId())))
+				.sorted(Comparator.comparing(Instruction::getInstructionId)).collect(Collectors.toList());
+		
+		log.info("FG inventory adjustment for inwardId " + inwardId + ", instructionIds " + ids);
+		if (packets.isEmpty()) {
+			InventoryAdjustmentResponse response = new InventoryAdjustmentResponse();
+			response.setCode("NO_PACKETS");
+			response.setMessage("No finished packets for FG inventory adjustment");
+			return response;
+		}
+		
+		return sendFgAdjustment(packets, buildFgReferenceId(packets));
+	}
+
+	/**
+	 * Unique per cut and stable for repeated requests: reuses the fgReferenceId already stored on the
+	 * packets, otherwise builds one from persisted data (finish date and the lowest packet id of the cut).
+	 */
+	private String buildFgReferenceId(List<Instruction> packets) {
+		Optional<String> existing = packets.stream().map(Instruction::getFgReferenceId)
+				.filter(ref -> ref != null && !ref.trim().isEmpty()).findFirst();
+		if (existing.isPresent()) {
+			return existing.get();
+		}
+		Instruction first = packets.get(0);
+		Date finished = first.getFinishedDate() != null ? first.getFinishedDate() : new Date();
+		return "CUT-" + new SimpleDateFormat("yyyyMMdd").format(finished) + "-"
+				+ String.format("%08d", first.getInstructionId());
+	}
+
+	private InventoryAdjustmentResponse sendFgAdjustment(List<Instruction> packets, String fgReferenceId) {
+		InventoryAdjustmentResponse response = new InventoryAdjustmentResponse();
+		JswoneAuditTrailEntity audit = new JswoneAuditTrailEntity();
+		audit.setProcessType(FG_AUDIT_PROCESS);
+		audit.setPoId(fgReferenceId);
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+		boolean success = false;
+		try {
+			FG_InventoryAdjustmentMainRequest fgRequest = prepareFgInvAdjustmentRequest(packets, fgReferenceId);
+			String body = objectMapper.writeValueAsString(fgRequest);
+			audit.setRequestObj(body);
+			if (fgRequest.getLine_items().isEmpty() || fgRequest.getWarehouseId() == null || fgRequest.getBranchID() == null) {
+				response.setCode("FG_INVALID");
+				response.setMessage("FG adjustment not sent: missing SKU or warehouse/branch mapping for the coil");
+				audit.setStatusCode("FG_INVALID");
+				audit.setDestinationResponse(response.getMessage());
+			} else {
+				Map<String, String> propertyMap = commonUtil.getAllProperties();
+				HttpHeaders headers = new HttpHeaders();
+				headers.set("Content-Type", "application/json");
+				headers.set(propertyMap.get("inventoryAdjustment_headerkey"), propertyMap.get("inventoryAdjustment_headervalue"));
+				String url = propertyMap.get("inventoryAdjustment_url");
+				audit.setRequestUrl(url);
+				log.info("url  is  == " + url + ", inventoryAdjustment FG - " + body);
+				ResponseEntity<String> res = new RestTemplate().exchange(url, HttpMethod.POST, new HttpEntity<>(body, headers), String.class);
+				log.info("FG response is == " + res);
+				audit.setStatusCode("" + res.getStatusCode());
+				if (res.getBody() != null) {
+					audit.setDestinationResponse(res.getBody());
+					response = mapper.readValue(res.getBody(), InventoryAdjustmentResponse.class);
+				}
+				success = response != null && "0".equals(response.getCode());
+			}
+		} catch (HttpClientErrorException | HttpServerErrorException ex) {
+			String error = ex.getResponseBodyAsString();
+			audit.setStatusCode("" + ex.getStatusCode().value());
+			audit.setDestinationResponse(error);
+			try {
+				JsonNode outer = mapper.readTree(error);
+				response.setCode(outer.path("code").asText());
+				response.setMessage(outer.path("message").asText());
+			} catch (Exception w) {
+				response.setCode("" + ex.getStatusCode().value());
+				response.setMessage(error);
+			}
+		} catch (Exception e) {
+			log.error("FG inventory adjustment " + fgReferenceId + " failed", e);
+			audit.setDestinationResponse(e.getMessage());
+			response.setCode("FG_ERROR");
+			response.setMessage("JSW Connector API Not Working, Please Contact JSW Admin Team ");
+		}
+		if (response == null) {
+			response = new InventoryAdjustmentResponse();
+			response.setCode("FG_ERROR");
+			response.setMessage("Empty response from WMS");
+		}
+		try {
+			audit.setSourceRespone(mapper.writeValueAsString(response));
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+		}
+		jswoneAuditTrailRepository.save(audit);
+		// Store the reference on every packet of the cut so the WMS callback can update them by
+		// fgReferenceId; fg_inv_stts is SENT/FAILED here and overwritten by the callback status.
+		String fgInvStts = success ? "SENT" : "FAILED";
+		packets.forEach(p -> {
+			p.setFgReferenceId(fgReferenceId);
+			p.setFgInvStts(fgInvStts);
+		});
+		instructionRepository.saveAll(packets);
+		log.info("FG inventory adjustment " + fgReferenceId + " " + fgInvStts + " for instructions "+ packets.stream().map(Instruction::getInstructionId).collect(Collectors.toList()));
+		return response;
+	}
+
+	/**
+	 * One line item per FG SKU (packet mmid); fromSkus are the coil SKU(s)/batch(es) consumed.
+	 * Weights are stored in KG and sent in MT (3 decimals), as in the DC flow.
+	 */
+	private FG_InventoryAdjustmentMainRequest prepareFgInvAdjustmentRequest(List<Instruction> packets,
+			String fgReferenceId) {
+		FG_InventoryAdjustmentMainRequest req = new FG_InventoryAdjustmentMainRequest();
+		req.setFgReferenceId(fgReferenceId);
+		req.setReason("Finished goods - cut to length");
+		req.setAdjustmentType("quantity");
+
+		Instruction first = packets.get(0);
+		Date finished = first.getFinishedDate() != null ? first.getFinishedDate() : new Date();
+		req.setDate(new SimpleDateFormat("yyyy-MM-dd").format(finished));
+
+		InwardEntry coil = first.getInwardId();
+		if (coil != null && coil.getParty() != null && coil.getParty().getnPartyId() != null) {
+			List<WarehouseMasterJswEntity> warehouses = warehouseMasterRepository
+					.findByPartyId(coil.getParty().getnPartyId());
+			if (!warehouses.isEmpty()) {
+				req.setWarehouseId(warehouses.get(0).getWareHouseId());
+				req.setBranchID(warehouses.get(0).getBranchId());
+			}
+		}
+
+		// toSku -> (coilSku|batch -> kg)
+		Map<String, Map<String, BigDecimal>> kgByToSku = new LinkedHashMap<>();
+		for (Instruction packet : packets) {
+			InwardEntry inward = packet.getInwardId();
+			if (packet.getMmid() == null || packet.getMmid().trim().isEmpty() || inward == null
+					|| inward.getMmId() == null || packet.getActualWeight() == null) {
+				log.info("FG adjustment " + fgReferenceId + ": skipping packet " + packet.getInstructionId()
+						+ " (missing FG SKU, coil SKU or actual weight)");
+				continue;
+			}
+			String fromKey = inward.getMmId() + "|" + (inward.getCoilNumber() != null ? inward.getCoilNumber() : "");
+			kgByToSku.computeIfAbsent(packet.getMmid().trim(), k -> new LinkedHashMap<>())
+					.merge(fromKey, BigDecimal.valueOf(packet.getActualWeight()), BigDecimal::add);
+		}
+
+		for (Map.Entry<String, Map<String, BigDecimal>> toEntry : kgByToSku.entrySet()) {
+			FG_InventoryAdjustmentMainRequest.LineItem lineItem = new FG_InventoryAdjustmentMainRequest.LineItem();
+			BigDecimal toTotalMt = BigDecimal.ZERO;
+			for (Map.Entry<String, BigDecimal> fromEntry : toEntry.getValue().entrySet()) {
+				String[] key = fromEntry.getKey().split("\\|", -1);
+				BigDecimal mt = fromEntry.getValue().divide(BigDecimal.valueOf(1000), 3, RoundingMode.HALF_UP);
+				toTotalMt = toTotalMt.add(mt);
+
+				FG_InventoryAdjustmentMainRequest.FromSku fromSku = new FG_InventoryAdjustmentMainRequest.FromSku();
+				fromSku.setSkuId(key[0]);
+				fromSku.setQuantity_adjusted(mt.negate());
+				fromSku.setUom("MT");
+				FG_InventoryAdjustmentMainRequest.Batch batch = new FG_InventoryAdjustmentMainRequest.Batch();
+				batch.setBatch_number(key[1].isEmpty() ? null : key[1]);
+				batch.setIn_quantity(mt);
+				fromSku.getBatches().add(batch);
+				lineItem.getFromSkus().add(fromSku);
+			}
+			ToSku toSku = new ToSku();
+			toSku.setSkuId(toEntry.getKey());
+			toSku.setQuantity_adjusted(toTotalMt);
+			toSku.setUom("MT");
+			lineItem.setToSku(toSku);
+			req.getLine_items().add(lineItem);
+		}
 		return req;
 	}
 
@@ -1378,6 +1582,11 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			String requestStr = objectMapper.writeValueAsString(request);
 			audit.setRequestObj(requestStr);
 
+			// FG callback: transactionType "FG", or an fgReferenceId without a DC number
+			if ("FG".equalsIgnoreCase(request.getTransactionType()) || (StringUtils.hasText(request.getFgReferenceId()))) {
+				return fgInventoryAdjustmentStatusUpdate(request, audit, headers);
+			}
+
 			// Validate DC Number
 			if (request.getDcNumber() <= 0) {
 				errorList.add("DC Number should be greater than 0");
@@ -1428,14 +1637,60 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			jswoneAuditTrailRepository.save(audit);
 			return ResponseEntity.status(HttpStatus.OK).body(successResponse);
 		} catch (Exception e) {
+			// Validation errors return above; anything reaching here is a server-side failure (DB etc.),
+			// so log it and answer 500 so WMS knows to retry instead of treating it as a bad request.
+			log.error("Inventory adjustment status update failed for request " + audit.getRequestObj(), e);
+			Map<String, Object> errorResponse = new LinkedHashMap<>();
+			errorResponse.put("code", "500");
+			errorResponse.put("message", "Unable to update inventory adjustment status, please retry");
+			errorResponse.put("errorInfo", errorList);
+			audit.setStatusCode("500");
+			audit.setDestinationResponse(errorResponse + " : " + e);
+			try {
+				jswoneAuditTrailRepository.save(audit);
+			} catch (Exception ex) {
+				log.error("Could not save audit for inventory adjustment status update", ex);
+			}
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+		}
+	}
+
+	/** FG callback: sets fg_inv_stts on every packet sent under the given fgReferenceId. */
+	private ResponseEntity<Object> fgInventoryAdjustmentStatusUpdate(InventoryAdjustmentStatusUpdate request,
+			JswoneAuditTrailEntity audit, HttpHeaders headers) throws JsonProcessingException {
+		audit.setProcessType("FG_INVADJ_STTS_UPDATE");
+		audit.setPoId(request.getFgReferenceId());
+
+		List<String> errorList = new ArrayList<>();
+		if (!StringUtils.hasText(request.getFgReferenceId())) {
+			errorList.add("Please enter valid fgReferenceId");
+		} else if (instructionRepository.countByFgReferenceId(request.getFgReferenceId().trim()) == 0) {
+			errorList.add("No packets found for fgReferenceId " + request.getFgReferenceId());
+		}
+		if (!StringUtils.hasText(request.getZohoSyncStatus())) {
+			errorList.add("Please enter valid Status");
+		}
+
+		if (!errorList.isEmpty()) {
 			Map<String, Object> errorResponse = new LinkedHashMap<>();
 			errorResponse.put("code", "400");
 			errorResponse.put("message", "Invalid request parameters");
 			errorResponse.put("errorInfo", errorList);
-			audit.setDestinationResponse(errorResponse.toString());
+			audit.setDestinationResponse(objectMapper.writeValueAsString(errorResponse));
 			jswoneAuditTrailRepository.save(audit);
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+			return new ResponseEntity<Object>(errorResponse, headers, HttpStatus.BAD_REQUEST);
 		}
+
+		int updated = instructionRepository.updateFgInvStatus(request.getFgReferenceId().trim(),
+				request.getZohoSyncStatus().trim());
+
+		Map<String, Object> successResponse = new LinkedHashMap<>();
+		successResponse.put("code", "200");
+		successResponse.put("message", "FG Inventory Adjustment status updated successfully");
+		successResponse.put("packetsUpdated", updated);
+		audit.setDestinationResponse(objectMapper.writeValueAsString(successResponse));
+		jswoneAuditTrailRepository.save(audit);
+		return ResponseEntity.status(HttpStatus.OK).body(successResponse);
 	}
 
 }

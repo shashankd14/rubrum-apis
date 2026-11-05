@@ -21,6 +21,8 @@ public class DeliveryDto {
     
     private Integer laminationId;
 
+	private int locationId;
+
     private String deliveryType;
 
     public List<DeliveryItemDetails> getDeliveryItemDetails() {
@@ -93,6 +95,14 @@ public class DeliveryDto {
 
 	public void setDeliveryType(String deliveryType) {
 		this.deliveryType = deliveryType;
+	}
+
+	public int getLocationId() {
+		return locationId;
+	}
+
+	public void setLocationId(int locationId) {
+		this.locationId = locationId;
 	}
 
 

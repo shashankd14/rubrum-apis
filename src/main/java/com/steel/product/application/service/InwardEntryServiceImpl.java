@@ -724,14 +724,14 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 		}else if (searchListPageRequest.getSortColumn() != null && searchListPageRequest.getSortColumn().length() > 0
 				&& searchListPageRequest.getSortOrder() != null && searchListPageRequest.getSortOrder().length() > 0
 				&& "DESC".equalsIgnoreCase(searchListPageRequest.getSortOrder())) {
-			pageable = PageRequest.of((searchListPageRequest.getPageNo()-1), searchListPageRequest.getPageSize(), Sort.by(searchListPageRequest.getSortColumn()).descending());
+			pageable = PageRequest.of((searchListPageRequest.getPageNo()-1), searchListPageRequest.getPageSize(), Sort.by("allocation_date").descending().and(Sort.by("inwardentryid").descending()));
 		} else {
 			if(searchListPageRequest.getPageNo() == null ) {
 				searchListPageRequest.setPageNo(1);
 			}
-			pageable = PageRequest.of((searchListPageRequest.getPageNo()-1), searchListPageRequest.getPageSize(), Sort.by("inwardentryid").descending());
+			pageable = PageRequest.of((searchListPageRequest.getPageNo()-1), searchListPageRequest.getPageSize(), Sort.by("allocation_date").descending().and(Sort.by("inwardentryid").descending()));
 		}
-		
+
 		List<Integer> partyIds = new ArrayList<>();
 		boolean partyIdsFlag = false;
 		if (searchListPageRequest.getPartyId() != null && searchListPageRequest.getPartyId().length() > 0) {
@@ -756,7 +756,7 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 				}
 			}
 		}
-		
+
 		Page<Object[]> pageResult = inwdEntryRepo.listAllocatedCoils(
 				searchListPageRequest.getSearchText(),  
 				searchListPageRequest.getStatus(),
@@ -781,8 +781,14 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 		return pageResult;
 	}
 
-	
-	
-	
+	@Override
+	public void updateStockTrasferSeq(Integer inwardId, Integer coilseq) {
+		inwdEntryRepo.updateStockTrasferSeq(inwardId, coilseq);
+	}
+
+	@Override
+	public List<InwardEntry> findInwardByDeliveryId(Integer id) {
+		return inwdEntryRepo.findInwardByDeliveryId(id);
+	}
 	
 }
