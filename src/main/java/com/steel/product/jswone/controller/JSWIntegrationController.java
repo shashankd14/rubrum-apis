@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.steel.product.application.dto.delivery.DeliveryDto;
 import com.steel.product.application.dto.quality.ListPageSearchRequest;
+import com.steel.product.application.dto.salesorder.InventoryAdjustmentFGRequest;
 import com.steel.product.application.dto.salesorder.InventoryAdjustmentStatusUpdate;
 import com.steel.product.application.dto.salesorder.SalesOrderListDTO;
 import com.steel.product.jswone.request.MMIDReceiveMainRequest;
@@ -214,5 +215,13 @@ public class JSWIntegrationController {
 	public ResponseEntity<Object> inventoryAdjustmentStatusUpdate(@RequestBody InventoryAdjustmentStatusUpdate request) {
 		return service.inventoryAdjustmentStatusUpdate(request);
 	}
+
+	@PostMapping(value = "/xternal/invadjustmentFG", consumes = "application/json", produces = "application/json")
+	public ResponseEntity<Object> inventoryAdjustmentFG(@RequestBody InventoryAdjustmentFGRequest request) {
+		InventoryAdjustmentResponse response = service.inventoryAdjustmentFG(request.getInwardId(),
+				request.getInstructionIds());
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+	
 
 }

@@ -43,5 +43,7 @@ public interface JSWIntegrationService {
 
 	InventoryAdjustmentResponse warehouseReassignment(SalesOrderListDTO request);
 
-	ResponseEntity<Object> inventoryAdjustmentStatusUpdate(InventoryAdjustmentStatusUpdate request); 
+	ResponseEntity<Object> inventoryAdjustmentStatusUpdate(InventoryAdjustmentStatusUpdate request);
+
+	InventoryAdjustmentResponse inventoryAdjustmentFG(Integer inwardId, List<Integer> instructionIds);
 }

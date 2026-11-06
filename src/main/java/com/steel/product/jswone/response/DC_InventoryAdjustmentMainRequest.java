@@ -8,6 +8,9 @@ import lombok.Data;
 @Data
 public class DC_InventoryAdjustmentMainRequest {
 
+	public static final String TRANSACTION_TYPE_DC = "DC";
+
+	private String transactionType = TRANSACTION_TYPE_DC;
 	private String salesOrderNumber;
 	private String date;
 	private String reason;

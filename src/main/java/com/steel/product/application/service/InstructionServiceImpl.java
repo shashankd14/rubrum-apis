@@ -26,6 +26,7 @@ import com.steel.product.application.dao.DeliveryDetailsRepository;
 import com.steel.product.application.dao.InstructionRepository;
 import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.dao.PartDetailsRepository;
+import com.steel.product.application.dto.delivery.DeliveryDto;
 import com.steel.product.application.dto.instruction.CutInstructionDeleteRequest;
 import com.steel.product.application.dto.instruction.InstructionFinishDto;
 import com.steel.product.application.dto.instruction.InstructionRequestDto;
@@ -57,6 +58,7 @@ import com.steel.product.application.mapper.TotalLengthAndWeight;
 import com.steel.product.application.util.CommonUtil;
 import com.steel.product.jswone.entity.SalesOrderAllocationEntity;
 import com.steel.product.jswone.repository.SalesOrderAllocationJswRepository;
+import com.steel.product.jswone.service.JSWIntegrationService;
 import com.steel.product.jswone.service.MaterialMasterJswService;
 import com.steel.product.jswone.service.SalesOrderJswHelperService;
 
@@ -107,6 +109,7 @@ public class InstructionServiceImpl implements InstructionService {
 	
 	private AWSS3Service awsS3Service;
 
+	private JSWIntegrationService service;
 	
 	@Autowired
 	CommonUtil commonUtil;
@@ -128,7 +131,9 @@ public class InstructionServiceImpl implements InstructionService {
 			MaterialMasterJswService materialMasterJswService, 
 			SalesOrderAllocationJswRepository soAllocationRepository,
 			SalesOrderJswHelperService helperService,
-			AWSS3Service awsS3Service) {
+			AWSS3Service awsS3Service,
+			// @Lazy breaks the cycle InstructionService -> JSWIntegrationService -> MaterialUploadService -> PdfService -> InstructionService
+			@Lazy JSWIntegrationService service) {
 		this.instructionRepository = instructionRepository;
 		this.inwardEntryRepository = inwardEntryRepository;
 		this.deliveryDetailsRepository = deliveryDetailsRepository;
@@ -146,6 +151,7 @@ public class InstructionServiceImpl implements InstructionService {
 		this.soAllocationRepository = soAllocationRepository;
 		this.helperService = helperService;
 		this.awsS3Service = awsS3Service;
+		this.service = service;
 	}
 
 	@Override
@@ -444,6 +450,24 @@ public class InstructionServiceImpl implements InstructionService {
 		} 
         updateCoilStatus(savedInstruction.getInwardId().getInwardEntryId(), instructionFinishDto.getTaskType());
          
+
+		if ("WIPtoFG".equalsIgnoreCase(instructionFinishDto.getTaskType())) { // WIPtoFG
+			// Only packets that actually became FG (ready to deliver) in this finish = one cut.
+			// No DC exists yet at finish time - the FG call needs only the coil and the packet ids.
+			List<Integer> fgInstructionIds = updatedInstructionList.stream()
+					.filter(i -> i.getStatus() != null && i.getStatus().getStatusId() == readyToDeliverStatusId)
+					.map(Instruction::getInstructionId).collect(Collectors.toList());
+			Integer fgInwardId = inwardEntry != null ? inwardEntry.getInwardEntryId() : null;
+			if (!fgInstructionIds.isEmpty()) {
+				try {
+					//service.inventoryAdjustmentFG(fgInwardId, fgInstructionIds);
+				} catch (Exception e) {
+					// Never fail the finish; the failure is recorded and retried before the DC is sent.
+					log.error("FG inventory adjustment failed for inwardId " + fgInwardId + ", instructions ", fgInstructionIds, e);
+				}
+			}
+		}
+		
         return new ResponseEntity<Object>(updatedInstructionList.stream().map(i -> Instruction.valueOf(i)), HttpStatus.OK);
     }
 
@@ -489,10 +513,6 @@ public class InstructionServiceImpl implements InstructionService {
 			String classificationTag = (result[4] != null ? (String) result[4] : null);
 			int stts = (result[5] != null ? (Integer) result[5] : null);
 			totalPacketWeight=totalPacketWeight.add(weight);
-			//System.out.println("Hi weight == " + weight);
-			//System.out.println("Hi pt == " + pt);
-			//System.out.println("Hi classificationTag == " + classificationTag);
-			//System.out.println("Hi instructionId == " + instructionId);
 
 			if (weight.compareTo(pt) > 0 && stts == 3 ) {
 				if (!("WIP(CUT ENDS)".equals(classificationTag) || "WIP(EDGE TRIM)".equals(classificationTag))) {

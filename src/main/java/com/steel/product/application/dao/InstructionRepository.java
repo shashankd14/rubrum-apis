@@ -23,6 +23,47 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
 	public void updateInstructionWithDeliveryRemarks(@Param("instructionId") int instructionId,
 			@Param("deliveryId") int deliveryId, @Param("remarks") String remarks);
 
+    /**
+     * FG (cut-to-length) inventory adjustment header rows - same idea as {@link #prepareInvAdjustmentRequest}:
+     * one row per toSku (packet mmid, falling back to the coil mm_id), weights already in MT.
+     * Columns: 0 date (yyyy-MM-dd), 1 toSku mmid, 2 total weight (MT), 3 ware_house_id, 4 branch_id,
+     * 5 existing fg_reference_id, 6 lowest instructionid
+     */
+    @Query(value = "SELECT DATE_FORMAT(MIN(COALESCE(ins.finished_date, NOW())), '%Y-%m-%d') dt, "
+            + " COALESCE(NULLIF(TRIM(ins.mmid), ''), inw.mm_id) to_sku, "
+            + " ROUND(SUM(ins.actualweight) / 1000, 3) total_mt, "
+            + " (SELECT wh.ware_house_id FROM jsw_warehouse_master wh WHERE wh.party_id = inw.npartyid LIMIT 1) ware_house_id, "
+            + " (SELECT wh.branch_id FROM jsw_warehouse_master wh WHERE wh.party_id = inw.npartyid LIMIT 1) branch_id, "
+            + " MAX(ins.fg_reference_id) fg_reference_id, MIN(ins.instructionid) min_id "
+            + " FROM product_instruction ins "
+            + " JOIN product_tblinwardentry inw ON inw.inwardentryid = :inwardId "
+            + " WHERE ins.instructionid IN (:instructionIds) AND ins.actualweight IS NOT NULL "
+            + " GROUP BY COALESCE(NULLIF(TRIM(ins.mmid), ''), inw.mm_id), inw.npartyid "
+            + " ORDER BY MIN(ins.instructionid)", nativeQuery = true)
+    List<Object[]> prepareFgInvAdjustmentRequest(@Param("inwardId") Integer inwardId,
+            @Param("instructionIds") List<Integer> instructionIds);
+
+    /**
+     * FG fromSku rows for one toSku - same idea as {@link #prepareInvAdjustmentFrom}: the coil SKU/batch consumed.
+     * Columns: 0 weight (MT), 1 coil mm_id, 2 coilnumber, 3 batch_id
+     */
+    @Query(value = "SELECT ROUND(SUM(ins.actualweight) / 1000, 3) weight_mt, inw.mm_id, inw.coilnumber, inw.batch_id "
+            + " FROM product_instruction ins "
+            + " JOIN product_tblinwardentry inw ON inw.inwardentryid = :inwardId "
+            + " WHERE ins.instructionid IN (:instructionIds) AND ins.actualweight IS NOT NULL "
+            + " AND COALESCE(NULLIF(TRIM(ins.mmid), ''), inw.mm_id) = :mmid "
+            + " GROUP BY inw.mm_id, inw.coilnumber, inw.batch_id", nativeQuery = true)
+    List<Object[]> prepareFgInvAdjustmentFrom(@Param("inwardId") Integer inwardId,
+            @Param("instructionIds") List<Integer> instructionIds, @Param("mmid") String mmid);
+
+    /** Stores the FG reference + send status on the packets of a cut (like updateZohoSyncRemarks for a DC). */
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE product_instruction SET fg_reference_id = :fgReferenceId, fg_inv_stts = :fgInvStts "
+            + " WHERE instructionid IN (:instructionIds)", nativeQuery = true)
+    int updateFgReferenceAndStatus(@Param("instructionIds") List<Integer> instructionIds,
+            @Param("fgReferenceId") String fgReferenceId, @Param("fgInvStts") String fgInvStts);
+
     @Query(" from Instruction order by instructionId desc")
     public List<Instruction> getAll();
 
@@ -202,6 +243,14 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
 			+ " WHERE ins.deliveryid=dc.deliveryid and dc.deliveryid = :dcId group by mmid  ) a "
 			+ " where 1=1 group by sono, dt, vehicleno, mmid, wearhouse_id, branch_id, zbooks_so ", nativeQuery = true)
 	public List<Object[]> prepareInvAdjustmentRequest(Integer dcId);
+
+	@Query(value = "SELECT count(*) FROM product_instruction WHERE fg_reference_id = :fgReferenceId", nativeQuery = true)
+	public long countByFgReferenceId(@Param("fgReferenceId") String fgReferenceId);
+
+	@Modifying
+	@Transactional
+	@Query(value = "UPDATE product_instruction SET fg_inv_stts = :fgInvStts WHERE fg_reference_id = :fgReferenceId", nativeQuery = true)
+	public int updateFgInvStatus(@Param("fgReferenceId") String fgReferenceId, @Param("fgInvStts") String fgInvStts);
 	
 	@Query(value = " select round((actualweight / 1000),3), inwmmid,coilnumber, batch_id, round((additional_weight / 1000),3) from ( "
 			+ " SELECT ins.mmid, ins.actualweight, "

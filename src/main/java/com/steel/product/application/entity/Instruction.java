@@ -165,6 +165,14 @@ public class Instruction {
     @Column(name = "mmid")
     private String mmid;
 
+    /** fgReferenceId of the FG (cut-to-length) inventory adjustment this packet was sent in. */
+    @Column(name = "fg_reference_id")
+    private String fgReferenceId;
+
+    /** FG inventory-adjustment status: SENT / FAILED on send, then whatever WMS reports via the callback. */
+    @Column(name = "fg_inv_stts")
+    private String fgInvStts;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "part_Details_id")
     private PartDetails partDetails;

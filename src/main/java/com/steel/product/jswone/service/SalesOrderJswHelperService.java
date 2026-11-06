@@ -207,6 +207,18 @@ public class SalesOrderJswHelperService {
 			System.out.println("soItemStatusMap == "+ soItemStatusMap);
 			Map<Integer, String> finalSOStatusMap = resolveFinalSoStatus(soStatusMap, soItemStatusMap);
 
+			// The status query inner-joins allocations, so un-allocated lines are invisible to it.
+			// If any active line still has allocated_stts = PENDING (unallocated or partially
+			// allocated), the SO cannot be beyond PENDING_ALLOCATION.
+			if (finalSOStatusMap.containsKey(soIdValue)) {
+				boolean anyPending = childRepository.findBySoId_SoId(soIdValue).stream()
+						.filter(c -> !Boolean.TRUE.equals(c.getIsDeleted()))
+						.anyMatch(c -> "PENDING".equalsIgnoreCase(c.getAllocatedStts()));
+				if (anyPending) {
+					finalSOStatusMap.put(soIdValue, "PENDING_ALLOCATION");
+				}
+			}
+
 			for (Map.Entry<Integer, String> entry : finalSOStatusMap.entrySet()) {
 				Integer soId = entry.getKey();
 				String status = entry.getValue();

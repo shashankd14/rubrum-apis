@@ -556,5 +556,13 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 			@Param("scInwardIdFilter") String scInwardIdFilter,
 			@Param("batchNoFilter") String batchNoFilter,
 			Pageable pageable);
-	 
+
+	@Modifying
+	@Transactional
+	@Query("update InwardEntry set coilSeq=:coilseq where inwardEntryId= :inwardId ")
+	public void updateStockTrasferSeq(@Param("inwardId") Integer inwardId, @Param("coilseq") Integer coilseq);
+
+	@Query("select inw from InwardEntry inw where inw.deliveryId= :deliveryId ")
+	public List<InwardEntry> findInwardByDeliveryId(@Param("deliveryId") Integer deliveryId);
+	
 }
