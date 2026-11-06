@@ -2,7 +2,10 @@ package com.steel.product.jswone.service;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -46,6 +49,8 @@ import com.steel.product.application.dto.quality.ListPageSearchRequest;
 import com.steel.product.application.dto.salesorder.InventoryAdjustmentStatusUpdate;
 import com.steel.product.application.dto.salesorder.SalesOrderListDTO;
 import com.steel.product.application.entity.DeliveryDetails;
+import com.steel.product.application.entity.Instruction;
+import com.steel.product.application.entity.InwardEntry;
 import com.steel.product.application.service.AWSS3Service;
 import com.steel.product.application.util.CommonUtil;
 import com.steel.product.jswone.entity.JswoneAuditTrailEntity;
@@ -1218,7 +1223,11 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 	}
 
 	// ---------------------------------------------------------------------------------------------
+<<<<<<< HEAD
 	// FG (cut-to-length) inventory adjustment - same flow as inventoryAdjustment (DC)
+=======
+	// FG (cut-to-length) inventory adjustment
+>>>>>>> 47cee13ce1be546c35f96497a262c73beba7cfba
 	// ---------------------------------------------------------------------------------------------
 
 	/** Audit row holding the full FG request/response (po_id = fgReferenceId). */
@@ -1226,6 +1235,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 
 	@Override
 	public InventoryAdjustmentResponse inventoryAdjustmentFG(Integer inwardId, List<Integer> instructionIds) {
+<<<<<<< HEAD
 		InventoryAdjustmentResponse response = new InventoryAdjustmentResponse();
 		ResponseEntity<String> res = null;
 		JswoneAuditTrailEntity audit = new JswoneAuditTrailEntity();
@@ -1279,6 +1289,76 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 					response.setMessage("Empty response from WMS");
 				}
 				fgInvStts = "0".equals(response.getCode()) ? "SENT" : "FAILED";
+=======
+		List<Integer> ids = instructionIds == null ? new ArrayList<>(): instructionIds.stream().filter(Objects::nonNull).distinct().collect(Collectors.toList());
+		
+		// Packets of this coil only; within the finish transaction these are the just-updated entities.
+		List<Instruction> packets = instructionRepository.findAllById(ids).stream()
+				.filter(i -> inwardId == null || (i.getInwardId() != null && inwardId.equals(i.getInwardId().getInwardEntryId())))
+				.sorted(Comparator.comparing(Instruction::getInstructionId)).collect(Collectors.toList());
+		
+		log.info("FG inventory adjustment for inwardId " + inwardId + ", instructionIds " + ids);
+		if (packets.isEmpty()) {
+			InventoryAdjustmentResponse response = new InventoryAdjustmentResponse();
+			response.setCode("NO_PACKETS");
+			response.setMessage("No finished packets for FG inventory adjustment");
+			return response;
+		}
+		
+		return sendFgAdjustment(packets, buildFgReferenceId(packets));
+	}
+
+	/**
+	 * Unique per cut and stable for repeated requests: reuses the fgReferenceId already stored on the
+	 * packets, otherwise builds one from persisted data (finish date and the lowest packet id of the cut).
+	 */
+	private String buildFgReferenceId(List<Instruction> packets) {
+		Optional<String> existing = packets.stream().map(Instruction::getFgReferenceId)
+				.filter(ref -> ref != null && !ref.trim().isEmpty()).findFirst();
+		if (existing.isPresent()) {
+			return existing.get();
+		}
+		Instruction first = packets.get(0);
+		Date finished = first.getFinishedDate() != null ? first.getFinishedDate() : new Date();
+		return "CUT-" + new SimpleDateFormat("yyyyMMdd").format(finished) + "-"
+				+ String.format("%08d", first.getInstructionId());
+	}
+
+	private InventoryAdjustmentResponse sendFgAdjustment(List<Instruction> packets, String fgReferenceId) {
+		InventoryAdjustmentResponse response = new InventoryAdjustmentResponse();
+		JswoneAuditTrailEntity audit = new JswoneAuditTrailEntity();
+		audit.setProcessType(FG_AUDIT_PROCESS);
+		audit.setPoId(fgReferenceId);
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+		boolean success = false;
+		try {
+			FG_InventoryAdjustmentMainRequest fgRequest = prepareFgInvAdjustmentRequest(packets, fgReferenceId);
+			String body = objectMapper.writeValueAsString(fgRequest);
+			audit.setRequestObj(body);
+			if (fgRequest.getLine_items().isEmpty() || fgRequest.getWarehouseId() == null || fgRequest.getBranchID() == null) {
+				response.setCode("FG_INVALID");
+				response.setMessage("FG adjustment not sent: missing SKU or warehouse/branch mapping for the coil");
+				audit.setStatusCode("FG_INVALID");
+				audit.setDestinationResponse(response.getMessage());
+			} else {
+				Map<String, String> propertyMap = commonUtil.getAllProperties();
+				HttpHeaders headers = new HttpHeaders();
+				headers.set("Content-Type", "application/json");
+				headers.set(propertyMap.get("inventoryAdjustment_headerkey"), propertyMap.get("inventoryAdjustment_headervalue"));
+				String url = propertyMap.get("inventoryAdjustment_url");
+				audit.setRequestUrl(url);
+				log.info("url  is  == " + url + ", inventoryAdjustment FG - " + body);
+				ResponseEntity<String> res = new RestTemplate().exchange(url, HttpMethod.POST, new HttpEntity<>(body, headers), String.class);
+				log.info("FG response is == " + res);
+				audit.setStatusCode("" + res.getStatusCode());
+				if (res.getBody() != null) {
+					audit.setDestinationResponse(res.getBody());
+					response = mapper.readValue(res.getBody(), InventoryAdjustmentResponse.class);
+				}
+				success = response != null && "0".equals(response.getCode());
+>>>>>>> 47cee13ce1be546c35f96497a262c73beba7cfba
 			}
 		} catch (HttpClientErrorException | HttpServerErrorException ex) {
 			String error = ex.getResponseBodyAsString();
@@ -1294,6 +1374,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			}
 		} catch (Exception e) {
 			log.error("FG inventory adjustment " + fgReferenceId + " failed", e);
+<<<<<<< HEAD
 			String errMsg = e.getMessage() != null ? e.getMessage() : e.toString();
 			audit.setDestinationResponse(errMsg);
 			// default for errors that match none of the codes below (connection refused, NPE while building, ...)
@@ -1326,6 +1407,16 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			instructionRepository.updateFgReferenceAndStatus(ids, fgReferenceId, fgInvStts);
 		} catch (Exception ex) {
 			log.error("Could not update FG reference/status for instructions " + ids, ex);
+=======
+			audit.setDestinationResponse(e.getMessage());
+			response.setCode("FG_ERROR");
+			response.setMessage("JSW Connector API Not Working, Please Contact JSW Admin Team ");
+		}
+		if (response == null) {
+			response = new InventoryAdjustmentResponse();
+			response.setCode("FG_ERROR");
+			response.setMessage("Empty response from WMS");
+>>>>>>> 47cee13ce1be546c35f96497a262c73beba7cfba
 		}
 		try {
 			audit.setSourceRespone(mapper.writeValueAsString(response));
@@ -1333,6 +1424,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			e.printStackTrace();
 		}
 		jswoneAuditTrailRepository.save(audit);
+<<<<<<< HEAD
 		log.info("FG inventory adjustment " + fgReferenceId + " " + fgInvStts + " for instructions " + ids);
 		return response;
 	}
@@ -1413,6 +1505,84 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 				continue;
 			}
 			req.getLine_items().add(lineitem);
+=======
+		// Store the reference on every packet of the cut so the WMS callback can update them by
+		// fgReferenceId; fg_inv_stts is SENT/FAILED here and overwritten by the callback status.
+		String fgInvStts = success ? "SENT" : "FAILED";
+		packets.forEach(p -> {
+			p.setFgReferenceId(fgReferenceId);
+			p.setFgInvStts(fgInvStts);
+		});
+		instructionRepository.saveAll(packets);
+		log.info("FG inventory adjustment " + fgReferenceId + " " + fgInvStts + " for instructions "+ packets.stream().map(Instruction::getInstructionId).collect(Collectors.toList()));
+		return response;
+	}
+
+	/**
+	 * One line item per FG SKU (packet mmid); fromSkus are the coil SKU(s)/batch(es) consumed.
+	 * Weights are stored in KG and sent in MT (3 decimals), as in the DC flow.
+	 */
+	private FG_InventoryAdjustmentMainRequest prepareFgInvAdjustmentRequest(List<Instruction> packets,
+			String fgReferenceId) {
+		FG_InventoryAdjustmentMainRequest req = new FG_InventoryAdjustmentMainRequest();
+		req.setFgReferenceId(fgReferenceId);
+		req.setReason("Finished goods - cut to length");
+		req.setAdjustmentType("quantity");
+
+		Instruction first = packets.get(0);
+		Date finished = first.getFinishedDate() != null ? first.getFinishedDate() : new Date();
+		req.setDate(new SimpleDateFormat("yyyy-MM-dd").format(finished));
+
+		InwardEntry coil = first.getInwardId();
+		if (coil != null && coil.getParty() != null && coil.getParty().getnPartyId() != null) {
+			List<WarehouseMasterJswEntity> warehouses = warehouseMasterRepository
+					.findByPartyId(coil.getParty().getnPartyId());
+			if (!warehouses.isEmpty()) {
+				req.setWarehouseId(warehouses.get(0).getWareHouseId());
+				req.setBranchID(warehouses.get(0).getBranchId());
+			}
+		}
+
+		// toSku -> (coilSku|batch -> kg)
+		Map<String, Map<String, BigDecimal>> kgByToSku = new LinkedHashMap<>();
+		for (Instruction packet : packets) {
+			InwardEntry inward = packet.getInwardId();
+			if (packet.getMmid() == null || packet.getMmid().trim().isEmpty() || inward == null
+					|| inward.getMmId() == null || packet.getActualWeight() == null) {
+				log.info("FG adjustment " + fgReferenceId + ": skipping packet " + packet.getInstructionId()
+						+ " (missing FG SKU, coil SKU or actual weight)");
+				continue;
+			}
+			String fromKey = inward.getMmId() + "|" + (inward.getCoilNumber() != null ? inward.getCoilNumber() : "");
+			kgByToSku.computeIfAbsent(packet.getMmid().trim(), k -> new LinkedHashMap<>())
+					.merge(fromKey, BigDecimal.valueOf(packet.getActualWeight()), BigDecimal::add);
+		}
+
+		for (Map.Entry<String, Map<String, BigDecimal>> toEntry : kgByToSku.entrySet()) {
+			FG_InventoryAdjustmentMainRequest.LineItem lineItem = new FG_InventoryAdjustmentMainRequest.LineItem();
+			BigDecimal toTotalMt = BigDecimal.ZERO;
+			for (Map.Entry<String, BigDecimal> fromEntry : toEntry.getValue().entrySet()) {
+				String[] key = fromEntry.getKey().split("\\|", -1);
+				BigDecimal mt = fromEntry.getValue().divide(BigDecimal.valueOf(1000), 3, RoundingMode.HALF_UP);
+				toTotalMt = toTotalMt.add(mt);
+
+				FG_InventoryAdjustmentMainRequest.FromSku fromSku = new FG_InventoryAdjustmentMainRequest.FromSku();
+				fromSku.setSkuId(key[0]);
+				fromSku.setQuantity_adjusted(mt.negate());
+				fromSku.setUom("MT");
+				FG_InventoryAdjustmentMainRequest.Batch batch = new FG_InventoryAdjustmentMainRequest.Batch();
+				batch.setBatch_number(key[1].isEmpty() ? null : key[1]);
+				batch.setIn_quantity(mt);
+				fromSku.getBatches().add(batch);
+				lineItem.getFromSkus().add(fromSku);
+			}
+			ToSku toSku = new ToSku();
+			toSku.setSkuId(toEntry.getKey());
+			toSku.setQuantity_adjusted(toTotalMt);
+			toSku.setUom("MT");
+			lineItem.setToSku(toSku);
+			req.getLine_items().add(lineItem);
+>>>>>>> 47cee13ce1be546c35f96497a262c73beba7cfba
 		}
 		return req;
 	}
@@ -1591,8 +1761,12 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			audit.setRequestObj(requestStr);
 
 			// FG callback: transactionType "FG", or an fgReferenceId without a DC number
+<<<<<<< HEAD
 			if ("FG".equalsIgnoreCase(request.getTransactionType())
 					|| (StringUtils.hasText(request.getFgReferenceId()) && request.getDcNumber() <= 0)) {
+=======
+			if ("FG".equalsIgnoreCase(request.getTransactionType()) || (StringUtils.hasText(request.getFgReferenceId()))) {
+>>>>>>> 47cee13ce1be546c35f96497a262c73beba7cfba
 				return fgInventoryAdjustmentStatusUpdate(request, audit, headers);
 			}
 

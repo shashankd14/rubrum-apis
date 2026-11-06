@@ -13,6 +13,8 @@ import com.steel.product.jswone.entity.WarehouseMasterJswEntity;
 public interface WarehouseMasterRepository extends JpaRepository<WarehouseMasterJswEntity, Integer> {
 
 	List<WarehouseMasterJswEntity> findByWareHouseId(String wareHouseId);
+
+	List<WarehouseMasterJswEntity> findByPartyId(int partyId);
 	
 	@Query(value = "SELECT distinct wareh.party_id" 
 	        + " FROM jsw_branch_master branc,"
