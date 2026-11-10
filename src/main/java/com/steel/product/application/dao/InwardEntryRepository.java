@@ -422,7 +422,7 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 	public void unAllocatCP(@Param("inwardentryid") Integer inwardentryid);
 	
 	@Query(value = "select inwardentryid, coilnumber, coilage, fthickness, flength, fwidth, material, "
-			+ " gradename, subgradename,brandname, partyname,customerbatchid, mm_id, mm_description,refno_list from ("
+			+ " gradename, subgradename,brandname, partyname,customerbatchid, mm_id, mm_description,refno_list, allocation_date from ("
 			+ " select distinct inw.inwardentryid ,inw.coilnumber, DATEDIFF(curdate(), date_format(inw.dreceiveddate, '%Y-%m-%d')) coilage,"
 			+ " inw.fthickness, inw.fLength, inw.fWidth,party.partyname, customerbatchid,"
 			+ " (select product.product_name from jsw_product_master product where product.product_id=mat.producttype_id limit 1 ) as material, "
@@ -430,7 +430,8 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 			+ " (select subgrade.subgrade_name from jsw_subgrade_master subgrade where subgrade.subgrade_id=mat.subgrade_id limit 1) as subgradename, "
 			+ " (select brand.brand_name from jsw_brand_master brand where brand.brand_id=mat.brand_id limit 1) as brandname, "
 			+ " inw.mm_id, mat.mm_description, "
-			+ " (SELECT GROUP_CONCAT(DISTINCT so.refno SEPARATOR ', ') FROM jsw_sales_order_allocation allo JOIN jsw_sales_order so ON so.so_id = allo.so_id WHERE allo.inward_entry_id = inw.inwardentryid ) AS refno_list "
+			+ " (SELECT GROUP_CONCAT(DISTINCT so.refno SEPARATOR ', ') FROM jsw_sales_order_allocation allo JOIN jsw_sales_order so ON so.so_id = allo.so_id WHERE allo.inward_entry_id = inw.inwardentryid ) AS refno_list, "
+			+ " (SELECT MAX(allo2.allocation_date) FROM jsw_sales_order_allocation allo2 WHERE allo2.inward_entry_id = inw.inwardentryid ) AS allocation_date "
 			+ " from product_tblinwardentry inw, jsw_material_master mat, product_tblpartydetails party, "
 			+ " jsw_sales_order_allocation alloc, jsw_sales_order so "
 			+ " where inw.isdeleted=0 and mat.mm_id=inw.mm_id and inw.npartyid=party.npartyid "
