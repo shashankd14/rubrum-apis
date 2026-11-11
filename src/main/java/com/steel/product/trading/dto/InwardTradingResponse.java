@@ -78,6 +78,7 @@ public class InwardTradingResponse {
 	private BigDecimal loadingCharges;
 
 	private BigDecimal weightmenCharges;
+	private BigDecimal otherCharges;
 
 	private BigDecimal cgst;
 

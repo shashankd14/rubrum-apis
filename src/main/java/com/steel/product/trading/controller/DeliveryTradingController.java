@@ -47,6 +47,6 @@ public class DeliveryTradingController {
 
 	@PostMapping(value = "/dc/delete", produces = "application/json")
 	public ResponseEntity<Object> dcDelete(@RequestBody DeleteRequest deleteRequest) {
-		return deliveryTradingService.doDelete(deleteRequest);
+		return deliveryTradingService.dcDelete(deleteRequest);
 	}
 }

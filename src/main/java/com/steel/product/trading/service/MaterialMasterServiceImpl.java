@@ -1,5 +1,6 @@
 package com.steel.product.trading.service;
 
+import com.steel.product.trading.exception.TradingErrors;
 import com.steel.product.application.service.AWSS3Service;
 import com.steel.product.trading.entity.BrandEntity;
 import com.steel.product.trading.entity.CategoryEntity;
@@ -11,6 +12,7 @@ import com.steel.product.trading.repository.BrandRepository;
 import com.steel.product.trading.repository.CategoryRepository;
 import com.steel.product.trading.repository.ItemgradeRepository;
 import com.steel.product.trading.repository.ManufacturerRepository;
+import com.steel.product.trading.repository.MaterialDetailRepository;
 import com.steel.product.trading.repository.MaterialMasterRepository;
 import com.steel.product.trading.repository.SubCategoryRepository;
 import com.steel.product.trading.request.BrandRequest;
@@ -40,6 +42,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -69,13 +75,20 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 
 	@Value("${templateFilesPath}")
 	private String templateFilesPath;
+
+	@Autowired
+	private MaterialDetailRepository materialDetailRepository;
+
+	@Autowired
+	private ObjectMapper objectMapper;
 	
 	// Material Master Master APIs
 
 	@Override
+	@Transactional
 	public ResponseEntity<Object> save(MaterialMasterRequest materialMasterRequest, MultipartFile itemImage,
 			MultipartFile crossSectionalImage) {
-		log.info("In save page ");
+		log.debug("In save page ");
 
 		ResponseEntity<Object> response = null;
 		HttpHeaders header = new HttpHeaders();
@@ -114,11 +127,11 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 					
 					List<MaterialMasterEntity> testItemName = materialMasterRepository.findByItemName(materialMasterEntity.getItemName(), oldEntity.getItemId());
 					if(testItemName!=null && testItemName.size()>0) {
-						return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Item Name already used\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+						return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Item Name already used\"}", header, HttpStatus.CONFLICT);
 					}
 					List<MaterialMasterEntity> testItemCode = materialMasterRepository.findByItemCode(materialMasterEntity.getItemCode(), oldEntity.getItemId());
 					if(testItemCode!=null && testItemCode.size()>0) {
-						return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Item Code already used\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+						return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Item Code already used\"}", header, HttpStatus.CONFLICT);
 					}
 					materialMasterEntity.setUpdatedBy( materialMasterRequest.getUserId());
 					materialMasterEntity.setUpdatedOn(new Date());
@@ -133,16 +146,16 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 					materialMasterEntity.setIsDeleted(false);
 					message="Materal details updated successfully..! ";
 				} else {
-					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid data\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid data\"}", header, HttpStatus.BAD_REQUEST);
 				}
 			} else {
 				List<MaterialMasterEntity> testItemName = materialMasterRepository.findByItemName(materialMasterEntity.getItemName());
 				if(testItemName!=null && testItemName.size()>0) {
-					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Item Name already used\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Item Name already used\"}", header, HttpStatus.CONFLICT);
 				}
 				List<MaterialMasterEntity> testItemCode = materialMasterRepository.findByItemCode(materialMasterEntity.getItemCode());
 				if(testItemCode!=null && testItemCode.size()>0) {
-					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Item Code already used\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Item Code already used\"}", header, HttpStatus.CONFLICT);
 				}
 				materialMasterEntity.setCreatedBy(materialMasterRequest.getUserId());
 				materialMasterEntity.setCreatedOn(new Date());
@@ -158,27 +171,34 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 				materialMasterEntity.setCrossSectionalImage(fileUrl);
 			}
 			materialMasterRepository.save(materialMasterEntity);
+			JsonNode additional = readJson(materialMasterRequest.getAdditionalParams());
+			String technicalSpecs = materialMasterRequest.getTechnicalSpecs();
+			String unitWeights = materialMasterRequest.getUnitWeights();
+			if (technicalSpecs == null && additional != null && additional.has("technicalSpecs")) technicalSpecs = additional.get("technicalSpecs").toString();
+			if (unitWeights == null && additional != null && additional.has("unitWeights")) unitWeights = additional.get("unitWeights").toString();
+			materialDetailRepository.replace(materialMasterEntity.getItemId(), technicalSpecs, unitWeights, materialMasterRequest.getApplicableProcesses());
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \""+message+" \"}",	new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
-			e.printStackTrace();
-			log.info("error is ==" + e.getMessage());
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+			response = TradingErrors.failure("save the material", e);
 		}
 		return response;
 	}
 
 	@Override
 	public Page<MaterialMasterEntity> getMaterialList(SearchRequest searchListPageRequest) {
-		log.info("In getMaterialList page ");
+		log.debug("In getMaterialList page ");
 		Pageable pageable = PageRequest.of((searchListPageRequest.getPageNo() - 1), searchListPageRequest.getPageSize(), Sort.by("itemId").descending());
 
 		if (searchListPageRequest.getSearchText() != null && searchListPageRequest.getSearchText().length() > 0) {
 			Page<MaterialMasterEntity> pageResult = materialMasterRepository.findAllWithSearchText(searchListPageRequest.getSearchText(), pageable);
 			pageResult.forEach(this::populateMaterialImageUrls);
+			materialDetailRepository.populate(pageResult.getContent());
 			return pageResult;
 		} else {
 			Page<MaterialMasterEntity> pageResult = materialMasterRepository.findAll(pageable);
 			pageResult.forEach(this::populateMaterialImageUrls);
+			materialDetailRepository.populate(pageResult.getContent());
 			return pageResult;
 		}
 	}
@@ -190,8 +210,15 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 		if (kk.isPresent()) {
 			materialMasterEntity = kk.get();
 			populateMaterialImageUrls(materialMasterEntity);
+			materialDetailRepository.populate(Collections.singletonList(materialMasterEntity));
 		}
 		return materialMasterEntity;
+	}
+
+	private JsonNode readJson(String json) throws java.io.IOException {
+		if (json == null || json.trim().isEmpty()) return null;
+		JsonNode node = objectMapper.readTree(json);
+		return node != null && node.isTextual() ? objectMapper.readTree(node.asText()) : node;
 	}
 
 	private void populateMaterialImageUrls(MaterialMasterEntity material) {
@@ -205,7 +232,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 
 	@Override
 	public ResponseEntity<Object> materialDelete(DeleteRequest deleteRequest) {
-		log.info("In materialDelete page ");
+		log.debug("In materialDelete page ");
 		ResponseEntity<Object> response = null;
 		HttpHeaders header = new HttpHeaders();
 		header.set("Content-Type", "application/json");
@@ -214,7 +241,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 			materialMasterRepository.deleteData(deleteRequest.getIds(), deleteRequest.getUserId());
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Selected material has been deleted successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+			response = TradingErrors.failure("delete the selected materials", e);
 		}
 		return response;
 	}
@@ -223,7 +250,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 	
 	@Override
 	public ResponseEntity<Object> categorySave(CategoryRequest categoryRequest) {
-		log.info("In categorySave page ");
+		log.debug("In categorySave page ");
 		ResponseEntity<Object> response = null;
 		HttpHeaders header = new HttpHeaders();
 		header.set("Content-Type", "application/json");
@@ -243,7 +270,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 					
 					List<CategoryEntity> testItemName = categoryRepository.findByCategoryName(categoryEntity.getCategoryName(), oldEntity.getCategoryId());
 					if(testItemName!=null && testItemName.size()>0) {
-						return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Category Name already used\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+						return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Category Name already used\"}", header, HttpStatus.CONFLICT);
 					}
 					categoryEntity.setUpdatedBy( categoryRequest.getUserId());
 					categoryEntity.setUpdatedOn(new Date());
@@ -251,12 +278,12 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 					categoryEntity.setCreatedOn(oldEntity.getCreatedOn());
 					message="Category details updated successfully..! ";
 				} else {
-					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid data\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid data\"}", header, HttpStatus.BAD_REQUEST);
 				}
 			} else {
 				List<CategoryEntity> testItemName = categoryRepository.findByCategoryName(categoryEntity.getCategoryName());
 				if(testItemName!=null && testItemName.size()>0) {
-					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Category Name already used\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Category Name already used\"}", header, HttpStatus.CONFLICT);
 				}
 				categoryEntity.setCreatedBy(categoryRequest.getUserId());
 				categoryEntity.setCreatedOn(new Date());
@@ -264,16 +291,14 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 			categoryRepository.save(categoryEntity);
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \""+message+" \"}",	new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
-			e.printStackTrace();
-			log.info("error is ==" + e.getMessage());
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+			response = TradingErrors.failure("save the category", e);
 		}
 		return response;
 	}
 
 	@Override
 	public Page<CategoryEntity> getCategoryList(SearchRequest searchListPageRequest) {
-		log.info("In getCategoryList page ");
+		log.debug("In getCategoryList page ");
 		Pageable pageable = PageRequest.of((searchListPageRequest.getPageNo() - 1), searchListPageRequest.getPageSize(), Sort.by("categoryId").descending());
 
 		if (searchListPageRequest.getSearchText() != null && searchListPageRequest.getSearchText().length() > 0) {
@@ -295,7 +320,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 
 	@Override
 	public CategoryEntity findByCategoryId(Integer id) {
-		log.info("In findByCategoryId page ");
+		log.debug("In findByCategoryId page ");
 		Optional<CategoryEntity> kk = categoryRepository.findByCategoryIdAndIsDeleted(id, false);
 		CategoryEntity categoryEntity = null;
 		if (kk.isPresent()) {
@@ -306,7 +331,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 
 	@Override
 	public ResponseEntity<Object> categoryDelete(DeleteRequest deleteRequest) {
-		log.info("In categoryDelete page ");
+		log.debug("In categoryDelete page ");
 		ResponseEntity<Object> response = null;
 		HttpHeaders header = new HttpHeaders();
 		header.set("Content-Type", "application/json");
@@ -315,7 +340,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 			categoryRepository.deleteData(deleteRequest.getIds(), deleteRequest.getUserId());
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Selected category has been deleted successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+			response = TradingErrors.failure("delete the selected categories", e);
 		}
 		return response;
 	}
@@ -324,7 +349,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 
 	@Override
 	public ResponseEntity<Object> subcategorySave(SubCategoryRequest categoryRequest) {
-		log.info("In subcategorySave page ");
+		log.debug("In subcategorySave page ");
 		ResponseEntity<Object> response = null;
 		HttpHeaders header = new HttpHeaders();
 		header.set("Content-Type", "application/json");
@@ -344,7 +369,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 					
 					List<SubCategoryEntity> testItemName = subCategoryRepository.findBySubCategoryNameforUpdate(subcategoryEntity.getSubcategoryName(), subcategoryEntity.getCategoryId(), oldEntity.getSubcategoryId());
 					if(testItemName!=null && testItemName.size()>0) {
-						return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Sub-Category Name already used\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+						return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Sub-Category Name already used\"}", header, HttpStatus.CONFLICT);
 					}
 					subcategoryEntity.setUpdatedBy( categoryRequest.getUserId());
 					subcategoryEntity.setUpdatedOn(new Date());
@@ -352,12 +377,12 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 					subcategoryEntity.setCreatedOn(oldEntity.getCreatedOn());
 					message="Sub-Category details updated successfully..! ";
 				} else {
-					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid data\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid data\"}", header, HttpStatus.BAD_REQUEST);
 				}
 			} else {
 				List<SubCategoryEntity> testItemName = subCategoryRepository.findBySubCategoryNameforInsert(subcategoryEntity.getSubcategoryName(), subcategoryEntity.getCategoryId());
 				if(testItemName!=null && testItemName.size()>0) {
-					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Sub-Category Name already used\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Sub-Category Name already used\"}", header, HttpStatus.CONFLICT);
 				}
 				subcategoryEntity.setCreatedBy(categoryRequest.getUserId());
 				subcategoryEntity.setCreatedOn(new Date());
@@ -365,16 +390,14 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 			subCategoryRepository.save(subcategoryEntity);
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \""+message+" \"}",	new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
-			e.printStackTrace();
-			log.info("error is ==" + e.getMessage());
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+			response = TradingErrors.failure("save the sub-category", e);
 		}
 		return response;
 	}
 
 	@Override
 	public Page<Object[]> getSubCategoryList(SearchRequest searchListPageRequest) {
-		log.info("In getSubCategoryList page ");
+		log.debug("In getSubCategoryList page ");
 		Pageable pageable = PageRequest.of((searchListPageRequest.getPageNo() - 1), searchListPageRequest.getPageSize());
 		Page<Object[]> pageResult = subCategoryRepository.findAllWithSearchText(searchListPageRequest.getSearchText(), pageable);
 		return pageResult;
@@ -382,7 +405,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 
 	@Override
 	public SubCategoryEntity findBySubCategoryId(Integer id) {
-		log.info("In findBySubCategoryId page ");
+		log.debug("In findBySubCategoryId page ");
 		Optional<SubCategoryEntity> kk = subCategoryRepository.findBySubcategoryIdAndIsDeleted(id, false);
 		SubCategoryEntity categoryEntity = null;
 		if (kk.isPresent()) {
@@ -393,7 +416,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 
 	@Override
 	public ResponseEntity<Object> subcategoryDelete(DeleteRequest deleteRequest) {
-		log.info("In subcategoryDelete page ");
+		log.debug("In subcategoryDelete page ");
 		ResponseEntity<Object> response = null;
 		HttpHeaders header = new HttpHeaders();
 		header.set("Content-Type", "application/json");
@@ -402,7 +425,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 			subCategoryRepository.deleteData(deleteRequest.getIds(), deleteRequest.getUserId());
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Selected Sub-category has been deleted successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+			response = TradingErrors.failure("delete the selected sub-categories", e);
 		}
 		return response;
 	}
@@ -411,7 +434,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 	
 	@Override
 	public ResponseEntity<Object> manufacturerSave(ManufacturerRequest manufacturerRequest) {
-		log.info("In manufacturerSave page ");
+		log.debug("In manufacturerSave page ");
 		ResponseEntity<Object> response = null;
 		HttpHeaders header = new HttpHeaders();
 		header.set("Content-Type", "application/json");
@@ -430,7 +453,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 				if(oldEntity!=null && oldEntity.getManufacturerId()>0) {
 					List<ManufacturerEntity> testItemName = manufacturerRepository.findByManufacturerName(manufacturerEntity.getManufacturerName(), oldEntity.getManufacturerId());
 					if(testItemName!=null && testItemName.size()>0) {
-						return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Manufacturer Name already used\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+						return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Manufacturer Name already used\"}", header, HttpStatus.CONFLICT);
 					}
 					manufacturerEntity.setUpdatedBy( manufacturerRequest.getUserId());
 					manufacturerEntity.setUpdatedOn(new Date());
@@ -438,12 +461,12 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 					manufacturerEntity.setCreatedOn(oldEntity.getCreatedOn());
 					message="Manufacturer details updated successfully..! ";
 				} else {
-					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid data\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid data\"}", header, HttpStatus.BAD_REQUEST);
 				}
 			} else {
 				List<ManufacturerEntity> testItemName = manufacturerRepository.findByManufacturerName(manufacturerEntity.getManufacturerName());
 				if(testItemName!=null && testItemName.size()>0) {
-					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Manufacturer Name already used\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Manufacturer Name already used\"}", header, HttpStatus.CONFLICT);
 				}
 				manufacturerEntity.setCreatedBy(manufacturerRequest.getUserId());
 				manufacturerEntity.setCreatedOn(new Date());
@@ -451,16 +474,14 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 			manufacturerRepository.save(manufacturerEntity);
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \""+message+" \"}",	new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
-			e.printStackTrace();
-			log.info("error is ==" + e.getMessage());
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+			response = TradingErrors.failure("save the manufacturer", e);
 		}
 		return response;
 	}
 
 	@Override
 	public Page<ManufacturerEntity> getManufacturerList(SearchRequest searchListPageRequest) {
-		log.info("In getManufacturerList page ");
+		log.debug("In getManufacturerList page ");
 		Pageable pageable = PageRequest.of((searchListPageRequest.getPageNo() - 1), searchListPageRequest.getPageSize(), Sort.by("manufacturerId").descending());
 
 		if (searchListPageRequest.getSearchText() != null && searchListPageRequest.getSearchText().length() > 0) {
@@ -474,7 +495,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 
 	@Override
 	public ManufacturerEntity findByManufacturerId(Integer id) {
-		log.info("In findByManufacturerId page ");
+		log.debug("In findByManufacturerId page ");
 		Optional<ManufacturerEntity> kk = manufacturerRepository.findByManufacturerIdAndIsDeleted(id, false);
 		ManufacturerEntity categoryEntity = null;
 		if (kk.isPresent()) {
@@ -485,7 +506,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 
 	@Override
 	public ResponseEntity<Object> manufacturerDelete(DeleteRequest deleteRequest) {
-		log.info("In manufacturerDelete page ");
+		log.debug("In manufacturerDelete page ");
 		ResponseEntity<Object> response = null;
 		HttpHeaders header = new HttpHeaders();
 		header.set("Content-Type", "application/json");
@@ -494,7 +515,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 			manufacturerRepository.deleteData(deleteRequest.getIds(), deleteRequest.getUserId());
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Selected Manufacturer has been deleted successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+			response = TradingErrors.failure("delete the selected manufacturers", e);
 		}
 		return response;
 	}
@@ -503,7 +524,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 	
 	@Override
 	public ResponseEntity<Object> brandSave(BrandRequest brandRequest) {
-		log.info("In brandSave page ");
+		log.debug("In brandSave page ");
 		ResponseEntity<Object> response = null;
 		HttpHeaders header = new HttpHeaders();
 		header.set("Content-Type", "application/json");
@@ -522,7 +543,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 				if(oldEntity!=null && oldEntity.getBrandId()>0) {
 					List<BrandEntity> testItemName = brandRepository.findByBrandName(brandEntity.getBrandName(), oldEntity.getBrandId());
 					if(testItemName!=null && testItemName.size()>0) {
-						return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Brand Name already used\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+						return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Brand Name already used\"}", header, HttpStatus.CONFLICT);
 					}
 					brandEntity.setUpdatedBy( brandRequest.getUserId());
 					brandEntity.setUpdatedOn(new Date());
@@ -530,12 +551,12 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 					brandEntity.setCreatedOn(oldEntity.getCreatedOn());
 					message="Brand details updated successfully..! ";
 				} else {
-					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid data\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid data\"}", header, HttpStatus.BAD_REQUEST);
 				}
 			} else {
 				List<BrandEntity> testItemName = brandRepository.findByBrandName(brandEntity.getBrandName());
 				if(testItemName!=null && testItemName.size()>0) {
-					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Brand Name already used\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Brand Name already used\"}", header, HttpStatus.CONFLICT);
 				}
 				brandEntity.setCreatedBy(brandRequest.getUserId());
 				brandEntity.setCreatedOn(new Date());
@@ -543,16 +564,14 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 			brandRepository.save(brandEntity);
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \""+message+" \"}",	new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
-			e.printStackTrace();
-			log.info("error is ==" + e.getMessage());
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+			response = TradingErrors.failure("save the brand", e);
 		}
 		return response;
 	}
 
 	@Override
 	public Page<BrandEntity> getBrandList(SearchRequest searchListPageRequest) {
-		log.info("In getBrandList page ");
+		log.debug("In getBrandList page ");
 		Pageable pageable = PageRequest.of((searchListPageRequest.getPageNo() - 1), searchListPageRequest.getPageSize(), Sort.by("brandId").descending());
 
 		if (searchListPageRequest.getSearchText() != null && searchListPageRequest.getSearchText().length() > 0) {
@@ -566,7 +585,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 
 	@Override
 	public BrandEntity findByBrandId(Integer id) {
-		log.info("In findByBrandId page ");
+		log.debug("In findByBrandId page ");
 		Optional<BrandEntity> kk = brandRepository.findByBrandIdAndIsDeleted(id, false);
 		BrandEntity brandEntity = null;
 		if (kk.isPresent()) {
@@ -577,7 +596,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 
 	@Override
 	public ResponseEntity<Object> brandDelete(DeleteRequest deleteRequest) {
-		log.info("In brandDelete page ");
+		log.debug("In brandDelete page ");
 		ResponseEntity<Object> response = null;
 		HttpHeaders header = new HttpHeaders();
 		header.set("Content-Type", "application/json");
@@ -586,7 +605,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 			brandRepository.deleteData(deleteRequest.getIds(), deleteRequest.getUserId());
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Selected Brand has been deleted successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+			response = TradingErrors.failure("delete the selected brands", e);
 		}
 		return response;
 	}
@@ -597,7 +616,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 	
 	@Override
 	public ResponseEntity<Object> itemgradeSave(ItemgradeRequest itemgradeRequest) {
-		log.info("In itemgradeSave page ");
+		log.debug("In itemgradeSave page ");
 		ResponseEntity<Object> response = null;
 		HttpHeaders header = new HttpHeaders();
 		header.set("Content-Type", "application/json");
@@ -616,7 +635,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 				if(oldEntity!=null && oldEntity.getItemgradeId()>0) {
 					List<ItemgradeEntity> testItemName = itemgradeRepository.findByItemgradeName(itemgradeEntity.getItemgradeName(), oldEntity.getItemgradeId());
 					if(testItemName!=null && testItemName.size()>0) {
-						return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered ItemGrade already used\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+						return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered ItemGrade already used\"}", header, HttpStatus.CONFLICT);
 					}
 					itemgradeEntity.setUpdatedBy( itemgradeRequest.getUserId());
 					itemgradeEntity.setUpdatedOn(new Date());
@@ -624,12 +643,12 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 					itemgradeEntity.setCreatedOn(oldEntity.getCreatedOn());
 					message="ItemGrade details updated successfully..! ";
 				} else {
-					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid data\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid data\"}", header, HttpStatus.BAD_REQUEST);
 				}
 			} else {
 				List<ItemgradeEntity> testItemName = itemgradeRepository.findByItemgradeName(itemgradeEntity.getItemgradeName());
 				if(testItemName!=null && testItemName.size()>0) {
-					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered ItemGrade already used\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered ItemGrade already used\"}", header, HttpStatus.CONFLICT);
 				}
 				itemgradeEntity.setCreatedBy(itemgradeRequest.getUserId());
 				itemgradeEntity.setCreatedOn(new Date());
@@ -637,16 +656,14 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 			itemgradeRepository.save(itemgradeEntity);
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \""+message+" \"}",	new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
-			e.printStackTrace();
-			log.info("error is ==" + e.getMessage());
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+			response = TradingErrors.failure("save the item grade", e);
 		}
 		return response;
 	}
 
 	@Override
 	public Page<ItemgradeEntity> getItemgradeList(SearchRequest searchListPageRequest) {
-		log.info("In getItemgradeList page ");
+		log.debug("In getItemgradeList page ");
 		Pageable pageable = PageRequest.of((searchListPageRequest.getPageNo() - 1), searchListPageRequest.getPageSize(), Sort.by("itemgradeId").descending());
 
 		if (searchListPageRequest.getSearchText() != null && searchListPageRequest.getSearchText().length() > 0) {
@@ -660,7 +677,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 
 	@Override
 	public ItemgradeEntity findByItemgradeId(Integer id) {
-		log.info("In findByBrandId page ");
+		log.debug("In findByBrandId page ");
 		Optional<ItemgradeEntity> kk = itemgradeRepository.findByItemgradeIdAndIsDeleted(id, false);
 		ItemgradeEntity brandEntity = null;
 		if (kk.isPresent()) {
@@ -671,7 +688,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 
 	@Override
 	public ResponseEntity<Object> itemgradeDelete(DeleteRequest deleteRequest) {
-		log.info("In itemgradeDelete page ");
+		log.debug("In itemgradeDelete page ");
 		ResponseEntity<Object> response = null;
 		HttpHeaders header = new HttpHeaders();
 		header.set("Content-Type", "application/json");
@@ -680,7 +697,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 			itemgradeRepository.deleteData(deleteRequest.getIds(), deleteRequest.getUserId());
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Selected ItemGrade has been deleted successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+			response = TradingErrors.failure("delete the selected item grades", e);
 		}
 		return response;
 	}

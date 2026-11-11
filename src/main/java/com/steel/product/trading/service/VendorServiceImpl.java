@@ -1,5 +1,6 @@
 package com.steel.product.trading.service;
 
+import com.steel.product.trading.exception.TradingErrors;
 import com.steel.product.trading.entity.VendorEntity;
 import com.steel.product.trading.repository.VendorRepository;
 import com.steel.product.trading.request.DeleteRequest;
@@ -38,7 +39,7 @@ public class VendorServiceImpl implements VendorService {
 	@Override
 	@Transactional
 	public ResponseEntity<Object> save(VendorRequest vendorRequest) {
-		log.info("In vendorsave page ");
+		log.debug("In vendorsave page ");
 		ResponseEntity<Object> response = null;
 		HttpHeaders header = new HttpHeaders();
 		header.set("Content-Type", "application/json");
@@ -58,7 +59,7 @@ public class VendorServiceImpl implements VendorService {
 					
 					List<VendorEntity> testItemName = vendorRepository.findByVendorName( vendorEntity.getVendorName(), oldEntity.getVendorId());
 					if(testItemName!=null && testItemName.size()>0) {
-						return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Vendor Name already used\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+						return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Vendor Name already used\"}", header, HttpStatus.CONFLICT);
 					}
 					vendorEntity.setUpdatedBy( vendorRequest.getUserId());
 					vendorEntity.setUpdatedOn(new Date());
@@ -66,12 +67,12 @@ public class VendorServiceImpl implements VendorService {
 					vendorEntity.setCreatedOn(oldEntity.getCreatedOn());
 					message="Vendor details updated successfully..! ";
 				} else {
-					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid data\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid data\"}", header, HttpStatus.BAD_REQUEST);
 				}
 			} else {
 				List<VendorEntity> testItemName = vendorRepository.findByVendorName(vendorEntity.getVendorName());
 				if(testItemName!=null && testItemName.size()>0) {
-					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Vendor Name already used\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Vendor Name already used\"}", header, HttpStatus.CONFLICT);
 				}
 				vendorEntity.setCreatedBy(vendorRequest.getUserId());
 				vendorEntity.setCreatedOn(new Date());
@@ -86,15 +87,14 @@ public class VendorServiceImpl implements VendorService {
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \""+message+" \"}",	new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
 			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-			log.error("Unable to save vendor", e);
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+			response = TradingErrors.failure("save the vendor", e);
 		}
 		return response;
 	}
 
 	@Override
 	public Page<VendorEntity> getVendorList(SearchRequest searchListPageRequest) {
-		log.info("In getVendorList page ");
+		log.debug("In getVendorList page ");
 		Pageable pageable = PageRequest.of((searchListPageRequest.getPageNo() - 1), searchListPageRequest.getPageSize(), Sort.by("vendorId").descending());
 
 		if (searchListPageRequest.getSearchText() != null && searchListPageRequest.getSearchText().length() > 0) {
@@ -110,7 +110,7 @@ public class VendorServiceImpl implements VendorService {
 
 	@Override
 	public VendorEntity findByVendorId(Integer id) {
-		log.info("In findByVendorId page ");
+		log.debug("In findByVendorId page ");
 		Optional<VendorEntity> kk = vendorRepository.findByVendorIdAndIsDeleted(id, false);
 		VendorEntity categoryEntity = null;
 		if (kk.isPresent()) {
@@ -122,7 +122,7 @@ public class VendorServiceImpl implements VendorService {
 
 	@Override
 	public ResponseEntity<Object> vendorDelete(DeleteRequest deleteRequest) {
-		log.info("In vendorDelete page ");
+		log.debug("In vendorDelete page ");
 		ResponseEntity<Object> response = null;
 		HttpHeaders header = new HttpHeaders();
 		header.set("Content-Type", "application/json");
@@ -131,7 +131,7 @@ public class VendorServiceImpl implements VendorService {
 			vendorRepository.deleteData(deleteRequest.getIds(), deleteRequest.getUserId());
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Selected vendor has been deleted successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+			response = TradingErrors.failure("delete the selected vendors", e);
 		}
 		return response;
 	}

@@ -31,6 +31,11 @@ public class DispatchHandoffController {
         return handoff.push(request);
     }
 
+    @PostMapping("/dispatch/recall")
+    public Map<String, Object> recall(@RequestBody PushToDispatchRequest request) {
+        return handoff.recall(request);
+    }
+
     @PostMapping("/dispatch/documents")
     public Map<String, Object> documents(@RequestBody PushToDispatchRequest request) {
         if (request.getEnquiryId() == null)

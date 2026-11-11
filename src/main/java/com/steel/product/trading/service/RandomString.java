@@ -22,7 +22,6 @@ public class RandomString {
 			sb.setCharAt(i, sb.charAt(randomIndex));
 			sb.setCharAt(randomIndex, temp);
 		}
-		System.out.println("Random Alphanumeric Number: " + sb.toString());
 		return sb.toString();
 	}
 

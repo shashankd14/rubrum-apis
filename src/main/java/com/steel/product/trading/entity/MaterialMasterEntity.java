@@ -62,16 +62,16 @@ public class MaterialMasterEntity {
 	@Column(name = "can_be_processed", columnDefinition = "BIT")
 	private Boolean canBeProcessed;
 
-	@Column(name = "applicable_processes", columnDefinition = "JSON")
+	@Transient
 	private String applicableProcesses;
 
-	@Column(name = "additional_params")
+	@Transient
 	private String additionalParams;
 
-	@Column(name = "technical_specs", columnDefinition = "JSON")
+	@Transient
 	private String technicalSpecs;
 
-	@Column(name = "unit_weights", columnDefinition = "JSON")
+	@Transient
 	private String unitWeights;
 
 	@Column(name = "item_image")

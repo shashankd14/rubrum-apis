@@ -14,4 +14,6 @@ public interface DeliveryTradingService {
 
 	ResponseEntity<Object> dcSave(DeliveryChalanRequest eqpRequest);
 
+
+	ResponseEntity<Object> dcDelete(DeleteRequest deleteRequest);
 }

@@ -56,7 +56,11 @@ public final class InwardMrnPdf {
         detail(totals, "Freight (INR)", number(receipt.getFreightCharges())); detail(totals, "Loading (INR)", number(receipt.getLoadingCharges()));
         detail(totals, "Insurance (INR)", number(receipt.getInsuranceAmount())); detail(totals, "Weighment (INR)", number(receipt.getWeightmenCharges()));
         detail(totals, "CGST (INR)", number(receipt.getCgst())); detail(totals, "SGST (INR)", number(receipt.getSgst()));
-        detail(totals, "IGST (INR)", number(receipt.getIgst())); detail(totals, "Grand total (INR)", number(receipt.getTotalInwardVolume()));
+        detail(totals, "IGST (INR)", number(receipt.getIgst()));
+        detail(totals, "Invoice value (INR)", number(sum(receipt.getTotalVolume(), receipt.getFreightCharges(), receipt.getLoadingCharges(),
+                receipt.getInsuranceAmount(), receipt.getWeightmenCharges(), receipt.getCgst(), receipt.getSgst(), receipt.getIgst())));
+        detail(totals, "Other charges (INR)", number(receipt.getOtherCharges()));
+        detail(totals, "Actual cost (INR)", number(receipt.getTotalInwardVolume()));
         totals.setSpacingAfter(16); document.add(totals);
         section(document, "QUALITY CHECK");
         PdfPTable quality = new PdfPTable(2); quality.setWidthPercentage(100);
@@ -75,6 +79,11 @@ public final class InwardMrnPdf {
     private static Font font(float size, boolean bold, BaseColor color) { return new Font(Font.FontFamily.HELVETICA, size, bold ? Font.BOLD : Font.NORMAL, color); }
     private static String text(Object value) { return value == null || value.toString().trim().isEmpty() ? "-" : value.toString(); }
     private static String number(BigDecimal value) { return value == null ? "0" : value.stripTrailingZeros().toPlainString(); }
+    private static BigDecimal sum(BigDecimal... values) {
+        BigDecimal total = BigDecimal.ZERO;
+        for (BigDecimal value : values) if (value != null) total = total.add(value);
+        return total;
+    }
     private static String optionalNumber(BigDecimal value) { return value == null ? "-" : number(value); }
     private static String date(Date value) { return value == null ? "-" : new SimpleDateFormat("dd MMM yyyy").format(value); }
     private static void detail(PdfPTable table, String label, Object value) {

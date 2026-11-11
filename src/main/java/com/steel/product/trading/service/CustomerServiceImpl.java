@@ -1,5 +1,6 @@
 package com.steel.product.trading.service;
 
+import com.steel.product.trading.exception.TradingErrors;
 import com.steel.product.trading.entity.CustomerEntity;
 import com.steel.product.trading.repository.CustomerRepository;
 import com.steel.product.trading.request.DeleteRequest;
@@ -38,7 +39,7 @@ public class CustomerServiceImpl implements CustomerService {
 	@Override
 	@Transactional
 	public ResponseEntity<Object> save(CustomerRequest customerRequest) {
-		log.info("In CustomerSave page ");
+		log.debug("In CustomerSave page ");
 		ResponseEntity<Object> response = null;
 		HttpHeaders header = new HttpHeaders();
 		header.set("Content-Type", "application/json");
@@ -58,7 +59,7 @@ public class CustomerServiceImpl implements CustomerService {
 					
 					List<CustomerEntity> testItemName = customerRepository.findByCustomerName( customerEntity.getCustomerName(), oldEntity.getCustomerId());
 					if(testItemName!=null && testItemName.size()>0) {
-						return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Customer Name already used\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+						return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Customer Name already used\"}", header, HttpStatus.CONFLICT);
 					}
 					customerEntity.setUpdatedBy( customerRequest.getUserId());
 					customerEntity.setUpdatedOn(new Date());
@@ -66,12 +67,12 @@ public class CustomerServiceImpl implements CustomerService {
 					customerEntity.setCreatedOn(oldEntity.getCreatedOn());
 					message="Customer details updated successfully..! ";
 				} else {
-					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid data\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid data\"}", header, HttpStatus.BAD_REQUEST);
 				}
 			} else {
 				List<CustomerEntity> testItemName = customerRepository.findByCustomerName(customerEntity.getCustomerName());
 				if(testItemName!=null && testItemName.size()>0) {
-					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Customer Name already used\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Customer Name already used\"}", header, HttpStatus.CONFLICT);
 				}
 				customerEntity.setCreatedBy(customerRequest.getUserId());
 				customerEntity.setCreatedOn(new Date());
@@ -86,15 +87,14 @@ public class CustomerServiceImpl implements CustomerService {
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \""+message+" \"}",	new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
 			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-			log.error("Unable to save customer", e);
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+			response = TradingErrors.failure("save the customer", e);
 		}
 		return response;
 	}
 
 	@Override
 	public Page<CustomerEntity> getCustomerList(SearchRequest searchListPageRequest) {
-		log.info("In getCustomerList page ");
+		log.debug("In getCustomerList page ");
 		Pageable pageable = PageRequest.of((searchListPageRequest.getPageNo() - 1), searchListPageRequest.getPageSize(), Sort.by("customerId").descending());
 
 		if (searchListPageRequest.getSearchText() != null && searchListPageRequest.getSearchText().length() > 0) {
@@ -110,7 +110,7 @@ public class CustomerServiceImpl implements CustomerService {
 
 	@Override
 	public CustomerEntity findByCustomerId(Integer id) {
-		log.info("In findByCustomerId page ");
+		log.debug("In findByCustomerId page ");
 		Optional<CustomerEntity> kk = customerRepository.findByCustomerIdAndIsDeleted(id, false);
 		CustomerEntity categoryEntity = null;
 		if (kk.isPresent()) {
@@ -122,7 +122,7 @@ public class CustomerServiceImpl implements CustomerService {
 
 	@Override
 	public ResponseEntity<Object> customerDelete(DeleteRequest deleteRequest) {
-		log.info("In customerDelete page ");
+		log.debug("In customerDelete page ");
 		ResponseEntity<Object> response = null;
 		HttpHeaders header = new HttpHeaders();
 		header.set("Content-Type", "application/json");
@@ -131,7 +131,7 @@ public class CustomerServiceImpl implements CustomerService {
 			customerRepository.deleteData(deleteRequest.getIds(), deleteRequest.getUserId());
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Selected Customer has been deleted successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+			response = TradingErrors.failure("delete the selected customers", e);
 		}
 		return response;
 	}

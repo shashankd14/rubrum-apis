@@ -82,7 +82,7 @@ public class AuditLoggingAspect {
 					response != null && response.getStatus() == HttpStatus.OK.value() ? "SUCCESS" : "FAILED");
 			return value;
 		} catch (Throwable throwable) {
-			handleException(throwable, logEntity);
+			handleException(throwable, logEntity, pjp.getSignature().getDeclaringTypeName());
 			logEntity.setRespTime(LocalDateTime.now());
 			logEntity.setResponseStatus("FAILED");
 			throw throwable;
@@ -181,8 +181,8 @@ public class AuditLoggingAspect {
 		return uri.contains("swagger") || uri.contains("/v3/api-docs");
 	}
 
-	private void handleException(Throwable throwable, AuditReqRespTrackerEntity logEntity) {
-		log.error("Error during method execution", throwable);
+	private void handleException(Throwable throwable, AuditReqRespTrackerEntity logEntity, String controller) {
+		if (!controller.startsWith("com.steel.product.trading.")) log.error("Error during method execution", throwable);
 		logEntity.setRespObject(throwable.toString());
 	}
 

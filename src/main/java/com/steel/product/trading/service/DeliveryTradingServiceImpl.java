@@ -1,5 +1,6 @@
 package com.steel.product.trading.service;
 
+import com.steel.product.trading.exception.TradingErrors;
 import com.steel.product.trading.entity.DCEntity;
 import com.steel.product.trading.entity.DOEntity;
 import com.steel.product.trading.entity.EQPEntity;
@@ -14,6 +15,7 @@ import lombok.extern.log4j.Log4j2;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,7 +47,7 @@ public class DeliveryTradingServiceImpl implements DeliveryTradingService {
 	@Override
 	@Transactional
 	public ResponseEntity<Object> save(DeliveryOrderRequest request) {
-		log.info("In DeliveryTradingServiceImpl.save page ");
+		log.debug("In DeliveryTradingServiceImpl.save page ");
 		ResponseEntity<Object> response = null;
 		HttpHeaders header = new HttpHeaders();
 		header.set("Content-Type", "application/json");
@@ -57,7 +59,7 @@ public class DeliveryTradingServiceImpl implements DeliveryTradingService {
 			if (kk1.isPresent()) {
 				eqpEntity = kk1.get();
 			} else {
-				return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid enquiry data\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+				return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid enquiry data\"}", header, HttpStatus.BAD_REQUEST);
 			}
 			
 			DOEntity dummydoEntity = new DOEntity();
@@ -81,11 +83,11 @@ public class DeliveryTradingServiceImpl implements DeliveryTradingService {
 					doEntity.setEnquiryId(eqpEntity);
 					message = "Delivery Order details updated successfully..! ";
 				} else {
-					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid data\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid data\"}", header, HttpStatus.BAD_REQUEST);
 				}
 			} else {
 				if (eqpEntity.getCurrentStatus() == null || (!"PROFORMA".equals(eqpEntity.getCurrentStatus()) || !"PENDING_DO".equals(eqpEntity.getProformaStatus()))) {
-					return new ResponseEntity<>( "{\"status\": \"fail\", \"message\": \"Please enter valid enquiry data\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+					return new ResponseEntity<>( "{\"status\": \"fail\", \"message\": \"Please enter valid enquiry data\"}", header, HttpStatus.BAD_REQUEST);
 				}
 				doEntity.setCreatedBy(request.getUserId());
 				doEntity.setCreatedOn(new Date());
@@ -103,36 +105,63 @@ public class DeliveryTradingServiceImpl implements DeliveryTradingService {
 			childRepository.updateChildDOStatus(eqpEntity.getEnquiryId(), request.getUserId());
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"" + message + " \"}", new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
-			e.printStackTrace();
-			log.info("error is ==" + e.getMessage());
 			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+			response = TradingErrors.failure("save the delivery order", e);
 		}
 		return response;
 	}
 
+	private ResponseEntity<Object> invalidDispatchIds(DeleteRequest request, String stage, String label) {
+		if (request.getIds() == null || request.getIds().isEmpty()) {
+			return TradingErrors.body(HttpStatus.BAD_REQUEST, "Select a " + label + " to delete.", null);
+		}
+		List<EQPEntity> records = eqpRepository.findAllById(request.getIds());
+		if (records.size() != new HashSet<>(request.getIds()).size()
+				|| records.stream().anyMatch(r -> Boolean.TRUE.equals(r.getIsDeleted()) || !stage.equals(r.getCurrentStatus()))) {
+			String hint = "DO".equals(stage) ? " Delete its delivery challan first if one exists." : "";
+			return TradingErrors.body(HttpStatus.BAD_REQUEST, "Only an existing " + label + " can be deleted." + hint + " Refresh the list and try again.", null);
+		}
+		return null;
+	}
+
 	@Override
+	@Transactional
 	public ResponseEntity<Object> doDelete(DeleteRequest deleteRequest) {
-		log.info("In doDelete page ");
-		ResponseEntity<Object> response = null;
-		HttpHeaders header = new HttpHeaders();
-		header.set("Content-Type", "application/json");
+		log.debug("In doDelete page ");
 		try {
+			ResponseEntity<Object> invalid = invalidDispatchIds(deleteRequest, "DO", "delivery order");
+			if (invalid != null) return invalid;
 			doRepository.deleteDOMainData(deleteRequest.getIds(), deleteRequest.getUserId());
 			eqpRepository.deleteDOMainData(deleteRequest.getIds(), deleteRequest.getUserId());
 			childRepository.deleteDOChildData(deleteRequest.getIds(), deleteRequest.getUserId());
-			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Selected DO details has been deleted successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
+			return new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Delivery order deleted. The proforma is back in Pending Proformas.\"}", new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
-			e.printStackTrace();
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+			return TradingErrors.failure("delete the delivery order", e);
 		}
-		return response;
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntity<Object> dcDelete(DeleteRequest deleteRequest) {
+		log.debug("In dcDelete page ");
+		try {
+			ResponseEntity<Object> invalid = invalidDispatchIds(deleteRequest, "DC", "delivery challan");
+			if (invalid != null) return invalid;
+			dcRepository.deleteDCMainData(deleteRequest.getIds(), deleteRequest.getUserId());
+			eqpRepository.deleteDCMainData(deleteRequest.getIds(), deleteRequest.getUserId());
+			childRepository.deleteDCChildData(deleteRequest.getIds(), deleteRequest.getUserId());
+			return new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Delivery challan deleted. The order is back in Delivery Orders.\"}", new HttpHeaders(), HttpStatus.OK);
+		} catch (Exception e) {
+			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+			return TradingErrors.failure("delete the delivery challan", e);
+		}
 	}
 
 	@Override
 	@Transactional
 	public ResponseEntity<Object> dcSave(DeliveryChalanRequest request) {
-		log.info("In DeliveryTradingServiceImpl.dcSave page ");
+		log.debug("In DeliveryTradingServiceImpl.dcSave page ");
 		ResponseEntity<Object> response = null;
 		HttpHeaders header = new HttpHeaders();
 		header.set("Content-Type", "application/json");
@@ -144,7 +173,7 @@ public class DeliveryTradingServiceImpl implements DeliveryTradingService {
 			if (kk1.isPresent()) {
 				eqpEntity = kk1.get();
 			} else {
-				return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid enquiry data\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+				return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid enquiry data\"}", header, HttpStatus.BAD_REQUEST);
 			}
 			
 			DCEntity dummydoEntity = new DCEntity();
@@ -168,7 +197,7 @@ public class DeliveryTradingServiceImpl implements DeliveryTradingService {
 					doEntity.setEnquiryId(eqpEntity);
 					message = "Delivery Chalan details updated successfully..! ";
 				} else {
-					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid data\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid data\"}", header, HttpStatus.BAD_REQUEST);
 				}
 			} else {
 				if (!"DO".equals(eqpEntity.getCurrentStatus()) || !"APPROVED".equals(eqpEntity.getdOStatus())) {
@@ -185,10 +214,8 @@ public class DeliveryTradingServiceImpl implements DeliveryTradingService {
 			childRepository.updateChildDCStatus(eqpEntity.getEnquiryId(), request.getUserId());
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"" + message + " \"}", new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
-			e.printStackTrace();
-			log.info("error is ==" + e.getMessage());
 			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+			response = TradingErrors.failure("save the delivery challan", e);
 		}
 		return response;
 	}

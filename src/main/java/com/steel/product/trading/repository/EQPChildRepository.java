@@ -30,7 +30,7 @@ public interface EQPChildRepository extends JpaRepository<EQPChildEntity, Intege
 
 	@Modifying
 	@Transactional
-	@Query("update EQPChildEntity inward set inward.proformaCreatedBy=null, inward.proformaUpdatedBy=null, inward.proformaCreatedOn=null, inward.proformaUpdatedOn=null, inward.updatedBy=:userId, inward.updatedOn=CURRENT_TIMESTAMP where inward.enquiryId.enquiryId in :enquiryIds and inward.status='PROFORMA'")
+	@Query("update EQPChildEntity inward set inward.proformaCreatedBy=null, inward.proformaUpdatedBy=null, inward.proformaCreatedOn=null, inward.proformaUpdatedOn=null, inward.status='QUOTE', inward.updatedBy=:userId, inward.updatedOn=CURRENT_TIMESTAMP where inward.enquiryId.enquiryId in :enquiryIds and inward.status='PROFORMA'")
 	void deleteProformaChildData(@Param("enquiryIds") List<Integer> enquiryIds, @Param("userId") Integer userId);
 
 	@Modifying
@@ -40,7 +40,7 @@ public interface EQPChildRepository extends JpaRepository<EQPChildEntity, Intege
 	
 	@Modifying
 	@Transactional
-	@Query(value = "update trading_eqp_items childinward set childinward.status='PROFORMA', childinward.updated_by=:userId, childinward.updated_on=CURRENT_TIMESTAMP where childinward.enquiryid = :enquiryIds and childinward.status='DO'", nativeQuery = true)
+	@Query(value = "update trading_eqp_items childinward set childinward.status='PROFORMA', childinward.updated_by=:userId, childinward.updated_on=CURRENT_TIMESTAMP where childinward.enquiryid in :enquiryIds and childinward.status='DO'", nativeQuery = true)
 	void deleteDOChildData(@Param("enquiryIds") List<Integer> enquiryIds, @Param("userId") Integer userId);
 
 	@Modifying
@@ -50,7 +50,7 @@ public interface EQPChildRepository extends JpaRepository<EQPChildEntity, Intege
 
 	@Modifying
 	@Transactional
-	@Query(value = "update trading_eqp_items childinward set childinward.status='DO', childinward.updated_by=:userId, childinward.updated_on=CURRENT_TIMESTAMP where childinward.enquiryid = :enquiryIds and childinward.status='DC'", nativeQuery = true)
+	@Query(value = "update trading_eqp_items childinward set childinward.status='DO', childinward.updated_by=:userId, childinward.updated_on=CURRENT_TIMESTAMP where childinward.enquiryid in :enquiryIds and childinward.status='DC'", nativeQuery = true)
 	void deleteDCChildData(@Param("enquiryIds") List<Integer> enquiryIds, @Param("userId") Integer userId);
 
 }

@@ -1,5 +1,6 @@
 package com.steel.product.trading.service;
 
+import com.steel.product.trading.exception.TradingErrors;
 import com.steel.product.trading.dto.InwardTradingChildResponse;
 import com.steel.product.trading.dto.InwardTradingResponse;
 import com.steel.product.trading.entity.DocumentTypeStaticEntity;
@@ -21,6 +22,8 @@ import com.steel.product.trading.request.SeqGeneratorRequest;
 import lombok.extern.log4j.Log4j2;
 
 import java.math.BigDecimal;
+import com.steel.product.trading.repository.MaterialDetailRepository;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -49,6 +52,9 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 	InwardAttachmentService attachmentService;
 
 	@Autowired
+	MaterialDetailRepository materialDetailRepository;
+
+	@Autowired
 	InwardTradingRepository inwardTradingRepository;
 
 	@Autowired
@@ -66,7 +72,7 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 	@Override
 	@Transactional
 	public ResponseEntity<Object> save(InwardTradingRequest request) {
-		log.info("In InwardTradingService page ");
+		log.debug("In InwardTradingService page ");
 		ResponseEntity<Object> response = null;
 		HttpHeaders header = new HttpHeaders();
 		header.set("Content-Type", "application/json");
@@ -76,8 +82,11 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 			BeanUtils.copyProperties(request, inwardTradingEntity);
 			applyPurpose(request, inwardTradingEntity);
 			validateQualityCheck(request);
-			inwardTradingEntity.setQcCertificatesJson(attachmentService.normalize(request.getQcCertificatesJson()));
-			inwardTradingEntity.setDocumentsJson(attachmentService.normalize(request.getDocumentsJson()));
+			List<Map<String, Object>> qcCertificates = attachmentService.normalize(request.getQcCertificatesJson());
+			List<Map<String, Object>> documents = attachmentService.normalize(request.getDocumentsJson());
+			List<Map.Entry<InwardTradingChildEntity, List<Map<String, Object>>>> itemImages = new ArrayList<>();
+			inwardTradingEntity.setQcCertificatesJson(null);
+			inwardTradingEntity.setDocumentsJson(null);
 			inwardTradingEntity.setIsDeleted( false);
 			if (inwardTradingEntity.getStatus() == null || inwardTradingEntity.getStatus().trim().isEmpty()) {
 				inwardTradingEntity.setStatus("DRAFT");
@@ -119,7 +128,7 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 					inwardTradingEntity.setCreatedOn(oldEntity.getCreatedOn());
 					message="Inward details updated successfully..! ";
 				} else {
-					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid data\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid data\"}", header, HttpStatus.BAD_REQUEST);
 				}
 				
 				// INWARD UPDATE LOGIC 				
@@ -132,7 +141,8 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 					Integer createdBy = childEntity.getCreatedBy();
 					Date createdOn = childEntity.getCreatedOn();
 					BeanUtils.copyProperties(childReq, childEntity);
-					childEntity.setImagesJson(attachmentService.normalize(childReq.getImagesJson()));
+					itemImages.add(new AbstractMap.SimpleEntry<>(childEntity, attachmentService.normalize(childReq.getImagesJson())));
+					childEntity.setImagesJson(null);
 					childEntity.setIsDeleted(false);
 					childEntity.setInwardId(inwardTradingEntity);
 					childEntity.setUpdatedBy(request.getUserId());
@@ -167,7 +177,8 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 				for (InwardTradingItemRequest childReq : request.getItemsList()) {
 					InwardTradingChildEntity childEntity = new InwardTradingChildEntity();
 					BeanUtils.copyProperties(childReq, childEntity);
-					childEntity.setImagesJson(attachmentService.normalize(childReq.getImagesJson()));
+					itemImages.add(new AbstractMap.SimpleEntry<>(childEntity, attachmentService.normalize(childReq.getImagesJson())));
+					childEntity.setImagesJson(null);
 					childEntity.setIsDeleted(false);
 					childEntity.setInwardId(inwardTradingEntity);
 					childEntity.setCreatedBy(request.getUserId());
@@ -187,6 +198,11 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 				}
 				inwardTradingRepository.save(inwardTradingEntity);
 			}
+			attachmentService.replace(inwardTradingEntity.getInwardId(), null, InwardAttachmentService.DOCUMENT, documents);
+			attachmentService.replace(inwardTradingEntity.getInwardId(), null, InwardAttachmentService.QC_CERTIFICATE, qcCertificates);
+			for (Map.Entry<InwardTradingChildEntity, List<Map<String, Object>>> images : itemImages) {
+				attachmentService.replace(inwardTradingEntity.getInwardId(), images.getKey().getItemchildId(), InwardAttachmentService.ITEM_IMAGE, images.getValue());
+			}
 			Map<String, Object> responseBody = new HashMap<>();
 			responseBody.put("status", "success");
 			responseBody.put("message", message.trim());
@@ -195,21 +211,16 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 			responseBody.put("consignmentId", inwardTradingEntity.getConsignmentId());
 			responseBody.put("inwardStatus", inwardTradingEntity.getStatus());
 			response = new ResponseEntity<>(responseBody, new HttpHeaders(), HttpStatus.OK);
-		} catch (IllegalArgumentException e) {
-			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"" + e.getMessage() + "\"}", header, HttpStatus.BAD_REQUEST);
 		} catch (Exception e) {
 			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-			e.printStackTrace();
-			log.info("error is ==" + e.getMessage());
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+			response = TradingErrors.failure("save the inward entry", e);
 		}
 		return response;
 	}
 
 	@Override
 	public Map<String, Object> getInwardList(InwardSearchRequest searchPageRequest) {
-		log.info("In getInwardList page ");
+		log.debug("In getInwardList page ");
 		Map<String, Object> response = new HashMap<>();
 		Pageable pageable = PageRequest.of((searchPageRequest.getPageNo() - 1), searchPageRequest.getPageSize());
 		
@@ -226,7 +237,7 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 			return response;
 		}
 
-		Map<String, String> signedAttachments = new HashMap<>();
+		Map<String, String> attachments = attachmentService.loadWithUrls(inwardIdsList);
 		Map<Integer, List<InwardTradingChildResponse>> map = new LinkedHashMap<>();
 		Map<Integer, InwardTradingResponse> inwardMap = new LinkedHashMap<>();
 		List<InwardTradingResponse> responseList = new ArrayList<>();
@@ -289,27 +300,25 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 			dto.setPoNumber(result[50] != null ? (String) result[50] : null);
 			dto.setInvoiceValue(result[51] != null ? (BigDecimal) result[51] : null);
 			dto.setReceivedDate(result[52] != null ? (Date) result[52] : null);
-			dto.setDocumentsJson(signedAttachments.computeIfAbsent((String) result[53], attachmentService::withUrls));
+			dto.setDocumentsJson(attachments.getOrDefault(InwardAttachmentService.lookupKey(dto.getInwardId(), null, InwardAttachmentService.DOCUMENT), "[]"));
 			childDTO.setHeatNo(result[54] != null ? (String) result[54] : null);
 			childDTO.setBundleNumbers(result[55] != null ? (String) result[55] : null);
 			childDTO.setRemark(result[56] != null ? (String) result[56] : null);
-			childDTO.setTechnicalSpecs(result[58] != null ? (String) result[58] : null);
-			childDTO.setAdditionalParams(result[59] != null ? (String) result[59] : null);
 			childDTO.setMaterialGrade(result[60] != null ? (String) result[60] : null);
 			childDTO.setBrandName(result[61] != null ? (String) result[61] : null);
 			childDTO.setItemCode(result[62] != null ? (String) result[62] : null);
 			childDTO.setCategoryName(result[63] != null ? (String) result[63] : null);
 			childDTO.setSubCategoryName(result[64] != null ? (String) result[64] : null);
 			childDTO.setManufacturerName(result[65] != null ? (String) result[65] : null);
-			childDTO.setUnitWeights(result[66] != null ? (String) result[66] : null);
 			dto.setQcCertificateNo(result[67] != null ? (String) result[67] : null);
 			dto.setQcStatus(result[68] != null ? (String) result[68] : null);
 			dto.setQcYieldStrength(result[69] != null ? (BigDecimal) result[69] : null);
 			dto.setQcTensileStrength(result[70] != null ? (BigDecimal) result[70] : null);
 			dto.setQcElongation(result[71] != null ? (BigDecimal) result[71] : null);
 			dto.setQcRemark(result[72] != null ? (String) result[72] : null);
-			dto.setQcCertificatesJson(signedAttachments.computeIfAbsent((String) result[73], attachmentService::withUrls));
-			childDTO.setImagesJson(signedAttachments.computeIfAbsent((String) result[57], attachmentService::withUrls));
+			dto.setQcCertificatesJson(attachments.getOrDefault(InwardAttachmentService.lookupKey(dto.getInwardId(), null, InwardAttachmentService.QC_CERTIFICATE), "[]"));
+			dto.setOtherCharges(result[74] != null ? (BigDecimal) result[74] : null);
+			childDTO.setImagesJson(attachments.getOrDefault(InwardAttachmentService.lookupKey(dto.getInwardId(), childDTO.getItemchildId(), InwardAttachmentService.ITEM_IMAGE), "[]"));
 
 			if (map.get(dto.getInwardId()) != null) {
 				List<InwardTradingChildResponse> dummyList = map.get(dto.getInwardId());
@@ -322,6 +331,14 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 			}
 			inwardMap.put(dto.getInwardId(), dto);
 		}
+		List<Integer> materialIds = new ArrayList<>();
+		map.values().forEach(children -> children.forEach(child -> materialIds.add(child.getItemId())));
+		Map<Integer, MaterialDetailRepository.Details> materialDetails = materialDetailRepository.load(materialIds);
+		map.values().forEach(children -> children.forEach(child -> {
+			MaterialDetailRepository.Details details = materialDetails.get(child.getItemId());
+			child.setTechnicalSpecs(details == null ? "{}" : details.technicalSpecs.toString());
+			child.setUnitWeights(details == null ? "[]" : details.unitWeights.toString());
+		}));
 		// Keep the requested page order after loading its material rows.
 		for (Integer inwardId : inwardIdsList) {
 			InwardTradingResponse inward = inwardMap.get(inwardId);
@@ -342,7 +359,7 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 	@Override
 	@Transactional
 	public ResponseEntity<Object> inwardDelete(DeleteRequest deleteRequest) {
-		log.info("In inwardDelete page ");
+		log.debug("In inwardDelete page ");
 		ResponseEntity<Object> response = null;
 		HttpHeaders header = new HttpHeaders();
 		header.set("Content-Type", "application/json");
@@ -353,7 +370,7 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Selected Inward has been deleted successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
 			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+			response = TradingErrors.failure("delete the inward entry", e);
 		}
 		return response;
 	}
@@ -391,8 +408,7 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 			response = new ResponseEntity<>("{\"status\": \"success\", \"seqNo\": \"" + mainSeq + "\"}",
 					new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"seqNo\": \"\"}", header,
-					HttpStatus.INTERNAL_SERVER_ERROR);
+			response = TradingErrors.failure("generate the sequence number", e);
 		}
 		return response;
 	}
@@ -428,7 +444,7 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 			seqGeneratorRepository.updateSKUCodeSeq(seqGeneratorRequest.getFieldName());
 			response = new ResponseEntity<>( "{\"status\": \"success\", \"message\": \"updated successfully..!\"}",	new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"\"}", header,	HttpStatus.INTERNAL_SERVER_ERROR);
+			response = TradingErrors.failure("update the sequence number", e);
 		}
 		return response;
 	}

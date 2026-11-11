@@ -1,5 +1,6 @@
 package com.steel.product.trading.service;
 
+import com.steel.product.trading.exception.TradingErrors;
 import com.steel.product.trading.entity.LocationEntity;
 import com.steel.product.trading.repository.LocationRepository;
 import com.steel.product.trading.request.BaseRequest;
@@ -38,7 +39,7 @@ public class LocationServiceImpl implements LocationService {
 	@Override
 	@Transactional
 	public ResponseEntity<Object> save(LocationRequest vendorRequest) {
-		log.info("In location save page ");
+		log.debug("In location save page ");
 		ResponseEntity<Object> response = null;
 		HttpHeaders header = new HttpHeaders();
 		header.set("Content-Type", "application/json");
@@ -58,7 +59,7 @@ public class LocationServiceImpl implements LocationService {
 					
 					List<LocationEntity> testItemName = locationRepository.findByLocationName( locationEntity.getLocationName(), oldEntity.getLocationId());
 					if(testItemName!=null && testItemName.size()>0) {
-						return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Location Name already used.\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+						return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Location Name already used.\"}", header, HttpStatus.CONFLICT);
 					}
 					locationEntity.setUpdatedBy( vendorRequest.getUserId());
 					locationEntity.setUpdatedOn(new Date());
@@ -66,12 +67,12 @@ public class LocationServiceImpl implements LocationService {
 					locationEntity.setCreatedOn(oldEntity.getCreatedOn());
 					message="Location details updated successfully..! ";
 				} else {
-					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid data.\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid data.\"}", header, HttpStatus.BAD_REQUEST);
 				}
 			} else {
 				List<LocationEntity> testItemName = locationRepository.findByLocationName(locationEntity.getLocationName());
 				if(testItemName!=null && testItemName.size()>0) {
-					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Location Name already used\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Entered Location Name already used\"}", header, HttpStatus.CONFLICT);
 				}
 				locationEntity.setCreatedBy(vendorRequest.getUserId());
 				locationEntity.setCreatedOn(new Date());
@@ -83,15 +84,14 @@ public class LocationServiceImpl implements LocationService {
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \""+message+" \"}",	new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
 			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-			log.error("Unable to save location", e);
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+			response = TradingErrors.failure("save the location", e);
 		}
 		return response;
 	}
 
 	@Override
 	public Page<LocationEntity> getLocationList(SearchRequest searchListPageRequest) {
-		log.info("In getVendorList page ");
+		log.debug("In getVendorList page ");
 		Pageable pageable = PageRequest.of((searchListPageRequest.getPageNo() - 1), searchListPageRequest.getPageSize(), Sort.by("locationId").descending());
 
 		if (searchListPageRequest.getSearchText() != null && searchListPageRequest.getSearchText().length() > 0) {
@@ -107,7 +107,7 @@ public class LocationServiceImpl implements LocationService {
 
 	@Override
 	public LocationEntity findByLocationId(Integer id) {
-		log.info("In findByVendorId page ");
+		log.debug("In findByVendorId page ");
 		Optional<LocationEntity> kk = locationRepository.findByLocationIdAndIsDeleted(id, false);
 		LocationEntity categoryEntity = null;
 		if (kk.isPresent()) {
@@ -119,7 +119,7 @@ public class LocationServiceImpl implements LocationService {
 
 	@Override
 	public ResponseEntity<Object> locationDelete(DeleteRequest deleteRequest) {
-		log.info("In vendorDelete page ");
+		log.debug("In vendorDelete page ");
 		ResponseEntity<Object> response = null;
 		HttpHeaders header = new HttpHeaders();
 		header.set("Content-Type", "application/json");
@@ -128,7 +128,7 @@ public class LocationServiceImpl implements LocationService {
 			locationRepository.deleteData(deleteRequest.getIds(), deleteRequest.getUserId());
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Selected Location has been deleted successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+			response = TradingErrors.failure("delete the selected locations", e);
 		}
 		return response;
 	}

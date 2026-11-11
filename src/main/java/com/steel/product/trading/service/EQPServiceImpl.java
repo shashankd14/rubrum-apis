@@ -1,5 +1,6 @@
 package com.steel.product.trading.service;
 
+import com.steel.product.trading.exception.TradingErrors;
 import com.steel.product.trading.dto.EQPChildResponse;
 import com.steel.product.trading.dto.EQPResponse;
 import com.steel.product.trading.entity.EQPChildEntity;
@@ -7,6 +8,7 @@ import com.steel.product.trading.entity.EQPEntity;
 import com.steel.product.trading.entity.EQPTermsEntity;
 import com.steel.product.trading.repository.EQPChildRepository;
 import com.steel.product.trading.repository.EQPRepository;
+import com.steel.product.trading.repository.EQPTermsRepository;
 import com.steel.product.trading.request.DeleteRequest;
 import com.steel.product.trading.request.EQPChildRequest;
 import com.steel.product.trading.request.EQPRequest;
@@ -14,10 +16,7 @@ import com.steel.product.trading.request.EQPSearchRequest;
 
 import lombok.extern.log4j.Log4j2;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -57,7 +56,8 @@ public class EQPServiceImpl implements EQPService {
 	@Autowired
 	ItemCostingService itemCostingService;
 
-	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+	@Autowired
+	EQPTermsRepository termsRepository;
 
 	/** Adds inward-costing average cost per KG and master KG_PER_PC weight to every enquiry item. */
 	private void enrichItemCosting(Collection<List<EQPChildResponse>> itemLists) {
@@ -72,7 +72,7 @@ public class EQPServiceImpl implements EQPService {
 		try {
 			for (Object[] row : eqpRepository.findMaterialUnitWeights(ids)) {
 				if (row[0] == null) continue;
-				BigDecimal weight = kgPerPiece(row[1], row[2], row[3]);
+				BigDecimal weight = kgPerPiece(row[1], row[2]);
 				if (weight != null) unitWeights.put(((Number) row[0]).intValue(), weight);
 			}
 		} catch (Exception e) {
@@ -84,38 +84,11 @@ public class EQPServiceImpl implements EQPService {
 		}));
 	}
 
-	private static BigDecimal kgPerPiece(Object unitWeightsJson, Object additionalParamsJson, Object perPc) {
-		BigDecimal fromUnitWeights = activeKgPerPc(readJson(unitWeightsJson));
-		if (fromUnitWeights != null) return fromUnitWeights;
-		JsonNode additional = readJson(additionalParamsJson);
-		BigDecimal fromAdditional = additional == null ? null : activeKgPerPc(additional.get("unitWeights"));
-		if (fromAdditional != null) return fromAdditional;
+	private static BigDecimal kgPerPiece(Object unitWeight, Object perPc) {
+		BigDecimal fromUnitWeights = toBigDecimal(unitWeight);
+		if (fromUnitWeights != null && fromUnitWeights.signum() > 0) return fromUnitWeights;
 		BigDecimal legacy = toBigDecimal(perPc);
 		return legacy != null && legacy.signum() > 0 ? legacy : null;
-	}
-
-	private static BigDecimal activeKgPerPc(JsonNode weights) {
-		if (weights == null || !weights.isArray()) return null;
-		for (JsonNode entry : weights) {
-			if (!"KG_PER_PC".equals(entry.path("basis").asText())) continue;
-			if (entry.has("active") && !entry.get("active").asBoolean(true)) continue;
-			BigDecimal value = toBigDecimal(entry.path("value").asText(null));
-			if (value != null && value.signum() > 0) return value;
-		}
-		return null;
-	}
-
-	private static JsonNode readJson(Object value) {
-		if (value == null) return null;
-		String text = value instanceof byte[] ? new String((byte[]) value, StandardCharsets.UTF_8) : value.toString();
-		if (text.trim().isEmpty()) return null;
-		try {
-			JsonNode node = OBJECT_MAPPER.readTree(text);
-			// Some rows store the JSON array as an escaped string.
-			return node != null && node.isTextual() ? OBJECT_MAPPER.readTree(node.asText()) : node;
-		} catch (Exception e) {
-			return null;
-		}
 	}
 
 	private static BigDecimal toBigDecimal(Object value) {
@@ -130,7 +103,7 @@ public class EQPServiceImpl implements EQPService {
 
 	@Override
 	public ResponseEntity<Object> save(EQPRequest request) {
-		log.info("In EQPServiceImpl.save page ");
+		log.debug("In EQPServiceImpl.save page ");
 		ResponseEntity<Object> response = null;
 		HttpHeaders header = new HttpHeaders();
 		header.set("Content-Type", "application/json");
@@ -164,7 +137,7 @@ public class EQPServiceImpl implements EQPService {
 					eqpEntity.setCurrentStatus(request.getStatus());
 					message = "Enquiry Details updated successfully..! ";
 				} else {
-					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid enquiry data\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+					return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid enquiry data\"}", header, HttpStatus.BAD_REQUEST);
 				}
 
 				// ENQUIRY UPDATE LOGIC
@@ -190,13 +163,12 @@ public class EQPServiceImpl implements EQPService {
 					missedChildIds = new ArrayList<Integer>(oldChildIdsMap.values());
 				}
 				childRepository.saveAll(itemsList);
-				childRepository.deleteData(missedChildIds, request.getUserId());
+				if (!missedChildIds.isEmpty()) childRepository.deleteData(missedChildIds, request.getUserId());
 			} else {
 				eqpEntity.setQuoteCreatedBy(request.getUserId());
 				eqpEntity.setQuoteCreatedOn(new Date());
 				eqpEntity.setCurrentStatus(request.getStatus());
 				
-				System.out.println("request.getItemsList.size ==  " + request.getItemsList().size());
 				for (EQPChildRequest childReq : request.getItemsList()) {
 					EQPChildEntity childEntity = new EQPChildEntity();
 					BeanUtils.copyProperties(childReq, childEntity);
@@ -207,22 +179,19 @@ public class EQPServiceImpl implements EQPService {
 					childEntity.setStatus(request.getStatus());
 					eqpEntity.addItem(childEntity);
 				}
-				System.out.println("eqpEntity.getItemsList ==  " + eqpEntity.getItemsList().size());
 				eqpRepository.save(eqpEntity);
 			}
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \""+message
 					+" \", \"enquiryId\": "+eqpEntity.getEnquiryId()+"}", new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
-			e.printStackTrace();
-			log.info("error is ==" + e.getMessage());
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+			response = TradingErrors.failure("save the enquiry", e);
 		}
 		return response;
 	}
 
 	@Override
 	public Map<String, Object> getEQPList(EQPSearchRequest searchPageRequest) {
-		log.info("In getEQPList page ");
+		log.debug("In getEQPList page ");
 		Map<String, Object> response = new HashMap<>();
 		Pageable pageable = PageRequest.of((searchPageRequest.getPageNo() - 1), searchPageRequest.getPageSize());
 		
@@ -238,9 +207,7 @@ public class EQPServiceImpl implements EQPService {
 		List<Integer> inwardIdsList = new ArrayList<>();
 		for (Object[] result : pageResult) {
 			inwardIdsList.add(result[0] != null ? (Integer) result[0] : null);
-			System.out.println("result == "+result[0] != null ? (Integer) result[0] : null);
 		}
-		System.out.println("getEQPList == "+inwardIdsList.size());
 
 		Map<Integer, List<EQPChildResponse>> map = new LinkedHashMap<>();
 		Map<Integer, EQPResponse> inwardMap = new LinkedHashMap<>();
@@ -338,7 +305,7 @@ public class EQPServiceImpl implements EQPService {
 	@Override
 	@Transactional
 	public ResponseEntity<Object> quoteSave(EQPRequest request) {
-		log.info("In EQPServiceImpl.save page ");
+		log.debug("In EQPServiceImpl.save page ");
 		ResponseEntity<Object> response = null;
 		HttpHeaders header = new HttpHeaders();
 		header.set("Content-Type", "application/json");
@@ -351,7 +318,7 @@ public class EQPServiceImpl implements EQPService {
 				oldEntity = kk.get();
 				eqpEntity = kk.get();
 			} else {
-				return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid enquiry data\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+				return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid enquiry data\"}", header, HttpStatus.BAD_REQUEST);
 			}
 			boolean isQuoteUpdate = "QUOTE".equals(oldEntity.getCurrentStatus());
 			
@@ -463,16 +430,14 @@ public class EQPServiceImpl implements EQPService {
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \""+message+" \"}",	new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
 			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-			e.printStackTrace();
-			log.info("error is ==" + e.getMessage());
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+			response = TradingErrors.failure("save the quotation", e);
 		}
 		return response;
 	}
 	
 	@Override
 	public ResponseEntity<Object> enquiryDelete(DeleteRequest deleteRequest) {
-		log.info("In enquiryDelete page ");
+		log.debug("In enquiryDelete page ");
 		ResponseEntity<Object> response = null;
 		HttpHeaders header = new HttpHeaders();
 		header.set("Content-Type", "application/json");
@@ -482,15 +447,14 @@ public class EQPServiceImpl implements EQPService {
 			childRepository.deleteEnquiryChildData(deleteRequest.getIds(), deleteRequest.getUserId());
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Selected Enquiry details has been deleted successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
-			e.printStackTrace();
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+			response = TradingErrors.failure("delete the enquiry", e);
 		}
 		return response;
 	}
 	
 	@Override
 	public ResponseEntity<Object> quoteDelete(DeleteRequest deleteRequest) {
-		log.info("In quoteDelete page ");
+		log.debug("In quoteDelete page ");
 		ResponseEntity<Object> response = null;
 		HttpHeaders header = new HttpHeaders();
 		header.set("Content-Type", "application/json");
@@ -500,15 +464,15 @@ public class EQPServiceImpl implements EQPService {
 			childRepository.deleteQuoteChildData(deleteRequest.getIds(), deleteRequest.getUserId());
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Selected Quote details has been deleted successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
-			e.printStackTrace();
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+			response = TradingErrors.failure("delete the quotation", e);
 		}
 		return response;
 	}
 	
 	@Override
+	@Transactional
 	public ResponseEntity<Object> proformaSave(EQPRequest request) {
-		log.info("In EQPServiceImpl.save page ");
+		log.debug("In EQPServiceImpl.save page ");
 		ResponseEntity<Object> response = null;
 		HttpHeaders header = new HttpHeaders();
 		header.set("Content-Type", "application/json");
@@ -523,8 +487,12 @@ public class EQPServiceImpl implements EQPService {
 				oldEntity = kk.get();
 				eqpEntity = kk.get();
 			} else {
-				return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid data\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+				return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid data\"}", header, HttpStatus.BAD_REQUEST);
 			}
+			if ("DO".equals(oldEntity.getCurrentStatus()) || "DC".equals(oldEntity.getCurrentStatus())) {
+				return TradingErrors.body(HttpStatus.BAD_REQUEST, "A delivery order already exists for this proforma invoice. Delete the delivery order before editing it.", null);
+			}
+			boolean pendingDispatch = "PENDING_DO".equals(oldEntity.getProformaStatus());
 			
 			eqpEntity.setQuoteCustomerId(request.getQuoteCustomerId() );
 			eqpEntity.setQuoteEnquiryFrom(request.getQuoteEnquiryFrom() );
@@ -532,7 +500,7 @@ public class EQPServiceImpl implements EQPService {
 			eqpEntity.setQuoteQty(request.getQuoteQty() );
 			eqpEntity.setQuoteValue(request.getQuoteValue() );
 			eqpEntity.setIsDeleted( false);
-			eqpEntity.setProformaStatus( request.getStatus());
+			eqpEntity.setProformaStatus(pendingDispatch ? "PENDING_DO" : request.getStatus());
 
 			if (oldEntity.getEnquiryId() != null && oldEntity.getEnquiryId() > 0 && "PROFORMA".equals(oldEntity.getCurrentStatus())) {
 				for (EQPChildEntity childEntity : oldEntity.getItemsList()) {
@@ -582,7 +550,7 @@ public class EQPServiceImpl implements EQPService {
 					missedChildIds = new ArrayList<Integer>(oldChildIdsMap.values());
 				}
 				childRepository.saveAll(itemsList);
-				childRepository.deleteData(missedChildIds, request.getUserId());
+				if (!missedChildIds.isEmpty()) childRepository.deleteData(missedChildIds, request.getUserId());
 			} else {
 				eqpEntity.setProformaCreatedBy(request.getUserId());
 				eqpEntity.setProformaCreatedOn(new Date());
@@ -635,27 +603,36 @@ public class EQPServiceImpl implements EQPService {
 			}
 			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \""+message+" \"}",	new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
-			e.printStackTrace();
-			log.info("error is ==" + e.getMessage());
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+			response = TradingErrors.failure("save the proforma invoice", e);
 		}
 		return response;
 	}
 
 	@Override
+	@Transactional
 	public ResponseEntity<Object> proformaDelete(DeleteRequest deleteRequest) {
-		log.info("In proformaDelete page ");
+		log.debug("In proformaDelete page ");
 		ResponseEntity<Object> response = null;
-		HttpHeaders header = new HttpHeaders();
-		header.set("Content-Type", "application/json");
-		
 		try {
+			if (deleteRequest.getIds() == null || deleteRequest.getIds().isEmpty()) {
+				return TradingErrors.body(HttpStatus.BAD_REQUEST, "Select a proforma invoice to delete.", null);
+			}
+			List<EQPEntity> proformas = eqpRepository.findAllById(deleteRequest.getIds());
+			if (proformas.size() != new HashSet<>(deleteRequest.getIds()).size()
+					|| proformas.stream().anyMatch(p -> Boolean.TRUE.equals(p.getIsDeleted()) || !"PROFORMA".equals(p.getCurrentStatus()))) {
+				return TradingErrors.body(HttpStatus.BAD_REQUEST, "Only existing proforma invoices can be deleted. Refresh the list and try again.", null);
+			}
+			if (proformas.stream().anyMatch(p -> "PENDING_DO".equals(p.getProformaStatus()))) {
+				return TradingErrors.body(HttpStatus.BAD_REQUEST, "A proforma invoice that has been pushed to dispatch cannot be deleted.", null);
+			}
 			eqpRepository.deleteProformaMainData(deleteRequest.getIds(), deleteRequest.getUserId());
 			childRepository.deleteProformaChildData(deleteRequest.getIds(), deleteRequest.getUserId());
-			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Selected proforma details has been deleted successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
+			termsRepository.revertProformaTerms(deleteRequest.getIds());
+			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Proforma invoice deleted. The order is back in Quotations.\"}", new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
-			e.printStackTrace();
-			response = new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Error Occurred\"}", header, HttpStatus.INTERNAL_SERVER_ERROR);
+			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+			response = TradingErrors.failure("delete the proforma invoice", e);
 		}
 		return response;
 	}

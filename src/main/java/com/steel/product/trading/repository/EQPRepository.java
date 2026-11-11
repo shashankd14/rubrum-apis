@@ -69,23 +69,23 @@ public interface EQPRepository extends JpaRepository<EQPEntity, Integer> {
 	nativeQuery = true)
 	List<Object[]> findAllInwardsWiseData(@Param("enquiryIds") List<Integer> enquiryIds, @Param("status") String status);
 
-	/**
-	 * Weighted average landed cost per KG per item across COMPLETED inwards (same basis as the stock register).
-	 * Additional charges (freight, insurance, loading, weighment) are allocated to items in proportion to item value; GST excluded.
-	 */
 	@Query(value = "SELECT child.item_id, "
-			+ " SUM(COALESCE(child.volume, 0) * (1 + COALESCE((COALESCE(inward.freight_charges, 0) + COALESCE(inward.insurance_amount, 0) "
-			+ "   + COALESCE(inward.loading_charges, 0) + COALESCE(inward.weightmen_charges, 0)) / NULLIF(inward.total_volume, 0), 0))) "
-			+ "   / NULLIF(SUM(child.net_weight), 0) "
+			+ " COALESCE(child.volume, 0) * COALESCE(inward.total_inward_volume / NULLIF(inward.total_volume, 0), "
+			+ "   1 + COALESCE((COALESCE(inward.freight_charges, 0) + COALESCE(inward.insurance_amount, 0) + COALESCE(inward.loading_charges, 0) "
+			+ "   + COALESCE(inward.weightmen_charges, 0) + COALESCE(inward.other_charges, 0) + COALESCE(inward.cgst, 0) + COALESCE(inward.sgst, 0) "
+			+ "   + COALESCE(inward.igst, 0)) / NULLIF(inward.total_volume, 0), 0)), "
+			+ " child.net_weight "
 			+ " FROM trading_inward_items child "
 			+ " INNER JOIN trading_inward inward ON inward.inward_id = child.inwardid "
 			+ " WHERE inward.is_deleted = 0 AND child.is_deleted = 0 AND UPPER(inward.status) = 'COMPLETED' "
 			+ " AND child.net_weight > 0 AND child.item_id IN :itemIds "
-			+ " GROUP BY child.item_id",
+			+ " ORDER BY child.item_id, COALESCE(inward.received_date, inward.document_date, inward.created_on) DESC, "
+			+ " inward.inward_id DESC, child.itemchild_id DESC",
 	nativeQuery = true)
-	List<Object[]> findAverageLandedCostPerKg(@Param("itemIds") List<Integer> itemIds);
+	List<Object[]> findInwardCostLayersNewestFirst(@Param("itemIds") List<Integer> itemIds);
 
-	@Query(value = "SELECT mat.item_id, mat.unit_weights, mat.additional_params, mat.per_pc "
+	@Query(value = "SELECT mat.item_id, (SELECT w.weight_value FROM trading_material_unit_weight w WHERE w.item_id = mat.item_id "
+			+ " AND w.basis = 'KG_PER_PC' AND w.is_active = 1 AND w.weight_value > 0 ORDER BY w.sort_order LIMIT 1), mat.per_pc "
 			+ " FROM trading_material_master mat WHERE mat.item_id IN :itemIds",
 	nativeQuery = true)
 	List<Object[]> findMaterialUnitWeights(@Param("itemIds") List<Integer> itemIds);
@@ -102,7 +102,7 @@ public interface EQPRepository extends JpaRepository<EQPEntity, Integer> {
 
 	@Modifying
 	@Transactional
-	@Query("update EQPEntity inward set inward.proformaCreatedBy=null, inward.proformaUpdatedBy=null, inward.proformaCreatedOn=null, inward.proformaUpdatedOn=null, inward.updatedBy=:userId, inward.updatedOn=CURRENT_TIMESTAMP, status='QUOTE' where inward.enquiryId in :enquiryIds and inward.currentStatus='PROFORMA'")
+	@Query("update EQPEntity inward set inward.proformaCreatedBy=null, inward.proformaUpdatedBy=null, inward.proformaCreatedOn=null, inward.proformaUpdatedOn=null, inward.proformaStatus=null, inward.currentStatus='QUOTE', inward.updatedBy=:userId, inward.updatedOn=CURRENT_TIMESTAMP where inward.enquiryId in :enquiryIds and inward.currentStatus='PROFORMA'")
 	void deleteProformaMainData(@Param("enquiryIds") List<Integer> enquiryIds, @Param("userId") Integer userId);
 
 	@Modifying
@@ -112,7 +112,7 @@ public interface EQPRepository extends JpaRepository<EQPEntity, Integer> {
 
 	@Modifying
 	@Transactional
-	@Query("update EQPEntity inward set inward.updatedBy=:userId, inward.updatedOn=CURRENT_TIMESTAMP, currentStatus='PROFORMA' where inward.enquiryId in :enquiryIds and inward.currentStatus='DO'")
+	@Query("update EQPEntity inward set inward.updatedBy=:userId, inward.updatedOn=CURRENT_TIMESTAMP, inward.currentStatus='PROFORMA', inward.dOStatus=null, inward.proformaStatus='PENDING_DO' where inward.enquiryId in :enquiryIds and inward.currentStatus='DO'")
 	void deleteDOMainData(@Param("enquiryIds") List<Integer> enquiryIds, @Param("userId") Integer userId);
 
 	@Modifying
@@ -122,7 +122,7 @@ public interface EQPRepository extends JpaRepository<EQPEntity, Integer> {
 
 	@Modifying
 	@Transactional
-	@Query("update EQPEntity inward set inward.updatedBy=:userId, inward.updatedOn=CURRENT_TIMESTAMP, currentStatus='DO' where inward.enquiryId in :enquiryIds and inward.currentStatus='DC'")
+	@Query("update EQPEntity inward set inward.updatedBy=:userId, inward.updatedOn=CURRENT_TIMESTAMP, inward.currentStatus='DO', inward.dOStatus='APPROVED' where inward.enquiryId in :enquiryIds and inward.currentStatus='DC'")
 	void deleteDCMainData(@Param("enquiryIds") List<Integer> enquiryIds, @Param("userId") Integer userId);
 
 }

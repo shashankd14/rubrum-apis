@@ -76,6 +76,7 @@ public class InwardTradingRequest extends BaseRequest {
 	private BigDecimal loadingCharges;
 
 	private BigDecimal weightmenCharges;
+	private BigDecimal otherCharges;
 
 	private BigDecimal cgst;
 

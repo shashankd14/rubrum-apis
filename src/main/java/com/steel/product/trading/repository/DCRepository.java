@@ -15,7 +15,7 @@ public interface DCRepository extends JpaRepository<DCEntity, Integer> {
 	@Modifying
 	@Transactional
 	@Query(value = "update trading_delivery_chalan inward set inward.is_deleted = true, inward.updated_by=:userId, inward.updated_on=CURRENT_TIMESTAMP where inward.enquiryid in :enquiryIds", nativeQuery = true)
-	void deleteDOMainData(@Param("enquiryIds") List<Integer> enquiryIds, @Param("userId") Integer userId);
+	void deleteDCMainData(@Param("enquiryIds") List<Integer> enquiryIds, @Param("userId") Integer userId);
 
 	@Query("select inw from DCEntity inw where inw.enquiryId.enquiryId = :enquiryId")
 	public List<DCEntity> findAllEnqIds(@Param("enquiryId") Integer enquiryId);

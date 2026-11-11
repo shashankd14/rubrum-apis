@@ -60,6 +60,25 @@ public class DispatchHandoffService {
     }
 
     @Transactional
+    public Map<String, Object> recall(PushToDispatchRequest request) {
+        if (request.getEnquiryId() == null || request.getUserId() == null || request.getUserId() <= 0)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Enquiry and user are required.");
+        EQPEntity enquiry = enquiries.findForDispatchUpdate(request.getEnquiryId())
+            .filter(e -> !Boolean.TRUE.equals(e.getIsDeleted()))
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Proforma not found."));
+        if (!"PROFORMA".equals(enquiry.getCurrentStatus()) || !"PENDING_DO".equals(enquiry.getProformaStatus()))
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Only a pending proforma without a delivery order can be removed from dispatch.");
+        enquiry.setProformaStatus("PROFORMA");
+        enquiry.setProformaUpdatedBy(request.getUserId());
+        enquiry.setProformaUpdatedOn(new Date());
+        enquiries.save(enquiry);
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("status", "success");
+        result.put("message", "Proforma removed from dispatch. It is back in Sales > Proforma Invoice.");
+        return result;
+    }
+
+    @Transactional
     public Map<String, Object> approveLoading(PushToDispatchRequest request) {
         if (request.getEnquiryId() == null || request.getUserId() == null || request.getUserId() <= 0)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Enquiry and user are required.");

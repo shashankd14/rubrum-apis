@@ -153,6 +153,9 @@ public class InwardTradingEntity {
 	@Column(name = "weightmen_charges")
 	private BigDecimal weightmenCharges;
 
+	@Column(name = "other_charges")
+	private BigDecimal otherCharges;
+
 	@Column(name = "cgst")
 	private BigDecimal cgst;
 
@@ -411,6 +414,14 @@ public class InwardTradingEntity {
 
 	public void setWeightmenCharges(BigDecimal weightmenCharges) {
 		this.weightmenCharges = weightmenCharges;
+	}
+
+	public BigDecimal getOtherCharges() {
+		return otherCharges;
+	}
+
+	public void setOtherCharges(BigDecimal otherCharges) {
+		this.otherCharges = otherCharges;
 	}
 
 	public BigDecimal getCgst() {
