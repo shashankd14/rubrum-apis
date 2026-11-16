@@ -88,12 +88,6 @@ public class InwardEntry {
 	@JoinColumn(name = "enduser_tag_id")
 	private EndUserTagsEntity endUserTagsEntity;
 
-	@Column(name = "noofpieces")
-	private Integer noofpieces;
-	
-	@Column(name = "coil_seq")
-	private int coilSeq;
-
 	@Column(name = "fwidth")
 	private float fWidth;
 
@@ -178,6 +172,12 @@ public class InwardEntry {
     @Column(name = "delivery_id")
     private Integer deliveryId;
 
+	@Column(name = "noofpieces")
+	private Integer noofpieces;
+	
+	@Column(name = "coil_seq")
+	private int coilSeq;
+	
 	public void addInstruction(Instruction instruction){
 		if(this.instructions == null){
 			this.instructions = new LinkedHashSet<>();
