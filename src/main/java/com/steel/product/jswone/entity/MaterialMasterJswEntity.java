@@ -101,6 +101,9 @@ public class MaterialMasterJswEntity {
 	@Column(name = "filename")
 	private String filename;
 
+	@Column(name = "coil_number")
+	private String coilNumber;
+
 	@Column(name = "created_by")
 	private Integer createdBy;
 

@@ -46,4 +46,6 @@ public interface MaterialUploadService {
 
 	Integer setCoatingtypeMaster(String coatingtype, Integer producttypeId);
 
+	public ResponseEntity<Object> importFGData(MaterialUploadRequest request);
+
 }

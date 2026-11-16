@@ -69,6 +69,15 @@ public interface MaterialMasterJswRepository
 	List<MaterialMasterJswEntity> findByMmId(String mmid);
 
 	MaterialMasterJswEntity findFirstByMmId(String mmid);
+
+	MaterialMasterJswEntity findFirstByMmDescription(String mmDescription);
+
+	/** Max of each part of MM_IDs shaped 'NNNN-NNNNN-NNNNNNNN': [product code, grade code, running number]. */
+	@Query(value = "select max(cast(substring_index(mm_id, '-', 1) as unsigned)), "
+			+ " max(cast(substring_index(substring_index(mm_id, '-', 2), '-', -1) as unsigned)), "
+			+ " max(cast(substring_index(mm_id, '-', -1) as unsigned)) "
+			+ " from jsw_material_master where mm_id regexp '^[0-9]+-[0-9]+-[0-9]+$'", nativeQuery = true)
+	List<Object[]> findMaxMmIdParts();
 	
 	@Query(value = "select producttype_id, grade_id, subgrade_id, brand_id, material, gradename, subgradename,brandname from ("
 			+ " select distinct mat.producttype_id, mat.grade_id, mat.subgrade_id, mat.brand_id, "

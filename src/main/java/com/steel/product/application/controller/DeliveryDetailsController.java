@@ -352,7 +352,7 @@ public class DeliveryDetailsController {
 					newInwardEntry.setInwardType("Sheet");
 				} else {
 					newInwardEntry.setInwardType("Coil");
-					if (instruction.getProcess().getProcessId() < 7) {
+					if (instruction.getProcess().getProcessId() < 2) {
 						newInwardEntry.setInwardType("Sheet");
 					}
 				}

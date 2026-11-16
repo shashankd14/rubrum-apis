@@ -55,6 +55,18 @@ public class MaterialUploadController {
 		}
 	}
 	
+	@PostMapping(value = "/importfgdata", produces = "application/json")
+	@Operation
+	public ResponseEntity<Object> importFGddata(@RequestBody MaterialUploadRequest request)
+			throws Exception, FileNotFoundException {
+		log.info("******MaterialUploadController.uploadmmidData*****");
+		if (request.isFileData() || request.isMasterData() ) {
+			return materialUploadService.importFGData(request);
+		} else {
+			return new ResponseEntity<Object>("{\"status\": \"failed\", \"message\": \"Invalid Request to Uploaded a file.\"}", new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
 	@PostMapping(value = "/importinwarddata", produces = "application/json")
 	@Operation
 	public ResponseEntity<Object> importinwarddata(@RequestBody MaterialUploadRequest request)

@@ -26,7 +26,6 @@ import com.steel.product.application.dao.DeliveryDetailsRepository;
 import com.steel.product.application.dao.InstructionRepository;
 import com.steel.product.application.dao.InwardEntryRepository;
 import com.steel.product.application.dao.PartDetailsRepository;
-import com.steel.product.application.dto.delivery.DeliveryDto;
 import com.steel.product.application.dto.instruction.CutInstructionDeleteRequest;
 import com.steel.product.application.dto.instruction.InstructionFinishDto;
 import com.steel.product.application.dto.instruction.InstructionRequestDto;
@@ -663,15 +662,13 @@ public class InstructionServiceImpl implements InstructionService {
 			errors.add("we can't do FULL HANDLING since some of the children instructions were in WIP status");
 			throw new MockException("MSG-0007", errors);
         }
-
-        float denominator = inward.getfThickness() * (inward.getfWidth() / 1000f) * 7.85f;
-        float lengthUnprocessed = inward.getFpresent() / denominator;
-        log.info("calculated length of instruction " + lengthUnprocessed);
-
-        unprocessedInstruction.setPlannedLength(lengthUnprocessed);
+        //float denominator = inward.getfThickness() * (inward.getfWidth() / 1000f) * 7.85f;
+        //float lengthUnprocessed = inward.getFpresent() / denominator;
+        //log.info("calculated length of instruction " + lengthUnprocessed);
+        unprocessedInstruction.setPlannedLength(inward.getAvailableLength());
         unprocessedInstruction.setPlannedWidth(inward.getfWidth());
         unprocessedInstruction.setPlannedWeight(inward.getFpresent());
-        unprocessedInstruction.setActualLength(lengthUnprocessed);
+        unprocessedInstruction.setActualLength(inward.getAvailableLength());
         unprocessedInstruction.setActualWidth(inward.getfWidth());
         unprocessedInstruction.setActualWeight(inward.getFpresent());
         unprocessedInstruction.setProcess(handlingProcess);

@@ -15,4 +15,11 @@ public interface MaterialMasterFiledataRepository extends JpaRepository<Material
 
 	MaterialMasterFileDataEntity findFirstByMmId(String mmid);
 
+	/** Max of each part of MM_IDs shaped 'NNNN-NNNNN-NNNNNNNN': [product code, grade code, running number]. */
+	@Query(value = "select max(cast(substring_index(mm_id, '-', 1) as unsigned)), "
+			+ " max(cast(substring_index(substring_index(mm_id, '-', 2), '-', -1) as unsigned)), "
+			+ " max(cast(substring_index(mm_id, '-', -1) as unsigned)) "
+			+ " from jsw_material_file_data where mm_id regexp '^[0-9]+-[0-9]+-[0-9]+$'", nativeQuery = true)
+	List<Object[]> findMaxMmIdParts();
+
 }

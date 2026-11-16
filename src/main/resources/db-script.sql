@@ -285,3 +285,43 @@ ALTER TABLE aspen.product_tblinwardentry ADD COLUMN `available_length` FLOAT;
 			
 			
 			
+
+-- FG (finished goods) stock upload: raw file rows as uploaded + generated MM_ID (/material/importfgdata)
+CREATE TABLE IF NOT EXISTS jsw_fg_file_data (
+	fg_id              INT NOT NULL AUTO_INCREMENT,
+	coil_number        VARCHAR(50),
+	customer_batch_id  VARCHAR(50),
+	finishing_date     VARCHAR(30),
+	current_dt         VARCHAR(30),
+	coil_age           VARCHAR(20),
+	no_of_pieces       VARCHAR(20),
+	material_desc      VARCHAR(100),
+	material_grade     VARCHAR(100),
+	mother_coil_no     VARCHAR(50),
+	tdc_no             VARCHAR(50),
+	packet_id          VARCHAR(50),
+	thickness          VARCHAR(20),
+	actual_width       VARCHAR(20),
+	actual_length      VARCHAR(30),
+	actual_weight      VARCHAR(20),
+	classification_tag VARCHAR(50),
+	end_user_tag       VARCHAR(100),
+	form               VARCHAR(10),
+	mm_id              VARCHAR(50),
+	mm_description     VARCHAR(255),
+	row_no             INT,
+	upload_status      VARCHAR(10),
+	error_message      VARCHAR(500),
+	filename           VARCHAR(255),
+	created_by         INT,
+	created_on         DATETIME,
+	updated_on         DATETIME,
+	PRIMARY KEY (fg_id),
+	KEY idx_fg_coil_packet (coil_number, packet_id),
+	KEY idx_fg_mm_id (mm_id),
+	KEY idx_fg_mm_description (mm_description),
+	KEY idx_fg_product (material_desc, form, material_grade)
+);
+
+-- coil number of the FG row that created / last updated the MM_ID (/material/importfgdata)
+ALTER TABLE jsw_material_master ADD COLUMN coil_number VARCHAR(50);

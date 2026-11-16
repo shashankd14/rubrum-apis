@@ -10,14 +10,26 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.TimeZone;
 
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,6 +55,7 @@ import com.steel.product.application.service.StatusService;
 import com.steel.product.jswone.entity.BrandMasterJswEntity;
 import com.steel.product.jswone.entity.CategoryMasterJswEntity;
 import com.steel.product.jswone.entity.CoatingtypeMasterJswEntity;
+import com.steel.product.jswone.entity.FgFileDataEntity;
 import com.steel.product.jswone.entity.FormMasterJswEntity;
 import com.steel.product.jswone.entity.GradeMasterJswEntity;
 import com.steel.product.jswone.entity.InwardFileDataEntity;
@@ -57,6 +70,7 @@ import com.steel.product.jswone.entity.UomMasterJswEntity;
 import com.steel.product.jswone.repository.BrandMasterJswRepository;
 import com.steel.product.jswone.repository.CategoryMasterRepository;
 import com.steel.product.jswone.repository.CoatingtypeMasterJswRepository;
+import com.steel.product.jswone.repository.FgFileDataRepository;
 import com.steel.product.jswone.repository.FormMasterJswRepository;
 import com.steel.product.jswone.repository.GradeMasterJswRepository;
 import com.steel.product.jswone.repository.InwardFiledataRepository;
@@ -69,6 +83,7 @@ import com.steel.product.jswone.repository.SubCategoryJswRepository;
 import com.steel.product.jswone.repository.SubGradeJswRepository;
 import com.steel.product.jswone.repository.SurfacetypeMasterJswRepository;
 import com.steel.product.jswone.repository.UomMasterJswRepository;
+import com.steel.product.jswone.request.FGFileDataDTO;
 import com.steel.product.jswone.request.InwardFileDataDTO;
 import com.steel.product.jswone.request.MaterialMasterFileDataDTO;
 import com.steel.product.jswone.request.MaterialSearchPageRequest;
@@ -133,6 +148,9 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 
 	@Autowired
 	BrandMasterJswRepository brandRepository;
+
+	@Autowired
+	FgFileDataRepository fgFileDataRepository;
 
 	@Value("${fileUploadPath}")
 	private String fileUploadPath;
@@ -891,6 +909,473 @@ public class MaterialUploadServiceImpl implements MaterialUploadService {
 		}
 		List<Object[]> pageResult = materialMasterJswRepository.listAllLocationWiseInwards(statusId);
 		return pageResult;
+	}
+
+	/* ======================= FG (finished goods) upload ======================= */
+
+	/** Next free value of each MM_ID part for one upload; read from DB once, then incremented in memory. */
+	private static class FgMmIdSeq {
+		boolean loaded = false;
+		long grade;
+		long variant;
+		/** codes handed out in this upload: "producttype|form|grade" -> "9999-grade" */
+		Map<String, String> gradeCodes = new HashMap<>();
+	}
+
+	/**
+	 * Uploads the FG stock file (.xlsx / .xls / .csv).
+	 *  - every file row is saved as it is into jsw_fg_file_data (one row per coil / packet) with its MM_ID
+	 *  - each distinct material spec gets an MM_ID; when masterData = true it is also saved to jsw_material_master
+	 *
+	 * MM_ID formula (same layout as JSW master):  9999-<grade code>-<running number>
+	 *   e.g. 9999-25017-30014837
+	 *   prefix         = always 9999 (FG material)
+	 *   grade code     = code already used for the same MaterialDesc + Coil/Sheet + MaterialGrade, else MAX(2nd part) + 1
+	 *   running number = MAX(3rd part over all MM_IDs) + 1 (global sequence, also stored as variant_key)
+	 *   MAX is taken over jsw_material_master, jsw_material_file_data and jsw_fg_file_data.
+	 *
+	 * Material spec (stored as mm_description), e.g. "CR COIL IS513D AU03 Sheet 1.5x385x1250":
+	 *   MaterialDesc + MaterialGrade + TDC No + Coil/Sheet + thickness x width [x length]
+	 *   length is used only for sheets (No'of Pieces > 0); a coil's length differs coil to coil.
+	 *
+	 * Uniqueness:
+	 *   - rows with the same spec in the file share one MM_ID
+	 *   - a spec already in DB (same mm_description) re-uses its MM_ID
+	 *   - the running number is global, so every new MM_ID is unique; it is also skipped if that MM_ID exists
+	 *   - synchronized so two uploads at the same time cannot take the same number
+	 *   - a raw row with the same CoilNumber + Packet Id as an earlier upload is updated, not duplicated
+	 */
+	@Override
+	public synchronized ResponseEntity<Object> importFGData(MaterialUploadRequest request) {
+		log.info("******MaterialUploadService.importFGData*****");
+		try {
+			int totalRecordCount = 0;
+			int newMmIdCount = 0;
+			int existingMmIdCount = 0;
+			int rawInsertedCount = 0;
+			int rawUpdatedCount = 0;
+			int errorCount = 0;
+			List<String> errors = new ArrayList<>();
+			// spec description -> MM_ID (dedup within the file)
+			Map<String, String> specToMmId = new LinkedHashMap<>();
+			// next free MM_ID parts (resolved on first use)
+			FgMmIdSeq seq = new FgMmIdSeq();
+			// MM_IDs already written to jsw_material_master in this upload
+			Set<String> masterSavedMmIds = new HashSet<>();
+			// coils first seen in this upload (several packets of one coil in the same file are all saved)
+			Set<String> coilsInThisFile = new HashSet<>();
+			int skippedCount = 0;
+			Set<String> skippedCoils = new LinkedHashSet<>();
+			List<Map<String, Object>> coilDetails = new ArrayList<>();
+
+			if (request.isFileData()) {
+				String fullPath = inwardFileUploadPath + File.separator + request.getFileName();
+				log.info("fullPath == " + fullPath);
+				File file = new File(fullPath);
+				if (!file.exists()) {
+					return new ResponseEntity<>(
+							"{\"status\": \"fail\", \"message\": \"File "
+									+ (request.getFileName() == null ? "" : request.getFileName()) + " not found.\"}",
+							new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+				}
+
+				List<FGFileDataDTO> rows = fgFileDetails(fullPath);
+				totalRecordCount = rows.size();
+				log.info("FG rows count == " + rows.size());
+
+				int rowNo = 1;
+				for (FGFileDataDTO row : rows) {
+					rowNo++;
+
+					// coil already in jsw_fg_file_data from an earlier upload -> skip the row completely
+					String coilNumber = trimOrNull(row.getCoilNumber());
+					if (coilNumber != null && !coilsInThisFile.contains(coilNumber)
+							&& fgFileDataRepository.existsByCoilNumber(coilNumber)) {
+						skippedCount++;
+						skippedCoils.add(coilNumber);
+						continue;
+					}
+					if (coilNumber != null) {
+						coilsInThisFile.add(coilNumber);
+					}
+
+					String mmId = null;
+					String specDesc = null;
+					String error = null;
+					if (isBlank(row.getMaterialDesc()) || isBlank(row.getThickness())) {
+						error = "MaterialDesc / Thickness missing";
+					} else {
+						try {
+							specDesc = buildFgSpecDescription(row);
+							mmId = specToMmId.get(specDesc);
+							if (mmId == null) {
+								mmId = findExistingFgMmId(specDesc);
+								if (mmId == null) {
+									mmId = nextFgMmId(row, seq);
+									newMmIdCount++;
+								} else {
+									existingMmIdCount++;
+								}
+								specToMmId.put(specDesc, mmId);
+							}
+						} catch (Exception e) {
+							error = e.getMessage();
+							log.error("FG upload error at row " + rowNo, e);
+						}
+					}
+
+					// raw row, as it is in the file -> then immediately into jsw_material_master
+					try {
+						FgFileDataEntity raw = buildFgRawRow(row, rowNo, mmId, specDesc, error, file.getName(),
+								request.getUserId());
+						boolean updated = raw.getFgId() != null;
+						raw = fgFileDataRepository.save(raw);
+						if (updated) {
+							rawUpdatedCount++;
+						} else {
+							rawInsertedCount++;
+						}
+
+						// once per MM_ID within the file
+						if (error == null && mmId != null && masterSavedMmIds.add(mmId)) {
+							try {
+								saveFgMaterialMaster(row, mmId, specDesc, file.getName());
+							} catch (Exception e) {
+								masterSavedMmIds.remove(mmId);
+								error = "material master save failed: " + e.getMessage();
+								log.error("FG material master save error at row " + rowNo, e);
+								raw.setUploadStatus("ERROR");
+								raw.setErrorMessage(error.length() > 500 ? error.substring(0, 500) : error);
+								fgFileDataRepository.save(raw);
+							}
+						}
+					} catch (Exception e) {
+						error = (error == null ? "" : error + "; ") + "raw save failed: " + e.getMessage();
+						log.error("FG raw save error at row " + rowNo, e);
+					}
+
+					if (error != null) {
+						errorCount++;
+						errors.add("Row " + rowNo + " (" + nvl(row.getCoilNumber()) + "): " + error);
+					}
+					Map<String, Object> detail = new LinkedHashMap<>();
+					detail.put("rowNo", rowNo);
+					detail.put("coilNumber", row.getCoilNumber());
+					detail.put("packetId", row.getPacketId());
+					detail.put("mmId", mmId);
+					coilDetails.add(detail);
+				}
+				log.info("FG File Uploaded. Rows == " + totalRecordCount + ", unique MM_IDs == " + specToMmId.size());
+			}
+
+			List<Map<String, String>> mmIdList = new ArrayList<>();
+			specToMmId.forEach((desc, id) -> {
+				Map<String, String> m = new LinkedHashMap<>();
+				m.put("mmId", id);
+				m.put("mmDescription", desc);
+				mmIdList.add(m);
+			});
+
+			Map<String, Object> resp = new HashMap<>();
+			resp.put("totalRecordCount", totalRecordCount);
+			resp.put("rawInsertedCount", rawInsertedCount);
+			resp.put("rawUpdatedCount", rawUpdatedCount);
+			resp.put("skippedCount", skippedCount);
+			resp.put("skippedCoils", skippedCoils);
+			resp.put("uniqueMMIDsCount", specToMmId.size());
+			resp.put("newMMIDsCount", newMmIdCount);
+			resp.put("existingMMIDsCount", existingMmIdCount);
+			resp.put("errorCount", errorCount);
+			resp.put("errors", errors);
+			resp.put("mmIds", mmIdList);
+			resp.put("coilDetails", coilDetails);
+			resp.put("status", "SUCCESS");
+			resp.put("message", "File Uploaded Successfully.");
+			return new ResponseEntity<Object>(resp, new HttpHeaders(), HttpStatus.OK);
+		} catch (Exception e) {
+			log.error("importFGddata failed", e);
+			return new ResponseEntity<Object>("{\"status\": \"failed\", \"message\": \"Failed to Uploaded a file.\"}",
+					new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	/**
+	 * Saves the file row as it is into jsw_fg_file_data. A row with the same CoilNumber + Packet Id from an
+	 * earlier upload is overwritten (the returned entity then already has its fgId set). Not saved here.
+	 */
+	private FgFileDataEntity buildFgRawRow(FGFileDataDTO row, int rowNo, String mmId, String specDesc, String error,
+			String fileName, Integer userId) {
+		FgFileDataEntity raw = new FgFileDataEntity();
+		BeanUtils.copyProperties(row, raw); // same field names as FGFileDataDTO
+		boolean updated = false;
+		if (!isBlank(row.getCoilNumber()) && !isBlank(row.getPacketId())) {
+			FgFileDataEntity old = fgFileDataRepository.findFirstByCoilNumberAndPacketId(row.getCoilNumber(),
+					row.getPacketId());
+			if (old != null) {
+				raw.setFgId(old.getFgId());
+				raw.setCreatedOn(old.getCreatedOn());
+				raw.setCreatedBy(old.getCreatedBy());
+				updated = true;
+			}
+		}
+		if (!updated) {
+			raw.setCreatedBy(userId);
+		}
+		raw.setForm(isBlank(row.getMaterialDesc()) ? null : fgForm(row));
+		raw.setMmId(mmId);
+		raw.setMmDescription(specDesc);
+		raw.setRowNo(rowNo);
+		raw.setUploadStatus(error == null ? "SUCCESS" : "ERROR");
+		raw.setErrorMessage(error == null ? null : (error.length() > 500 ? error.substring(0, 500) : error));
+		raw.setFilename(fileName);
+		return raw;
+	}
+
+	/** Saves / updates the MM_ID in jsw_material_master. */
+	private void saveFgMaterialMaster(FGFileDataDTO row, String mmId, String specDesc, String fileName) {
+		String form = fgForm(row);
+		String category = isBlank(row.getClassificationTag()) ? "FG" : row.getClassificationTag().trim();
+		String producttype = row.getMaterialDesc().trim();
+		String grade = trimOrNull(row.getMaterialGrade());
+		String subgrade = trimOrNull(row.getTdcNo());
+
+		MaterialMasterJswEntity destEntity = new MaterialMasterJswEntity();
+		destEntity.setMmId(mmId);
+		destEntity.setMmDescription(specDesc);
+		destEntity.setVariantKey(mmId.substring(mmId.lastIndexOf('-') + 1));
+		destEntity.setFilename(fileName);
+		destEntity.setCoilNumber(trimOrNull(row.getCoilNumber()));
+		MaterialMasterJswEntity oldEntity = materialMasterJswRepository.findFirstByMmId(mmId);
+		if (oldEntity != null && oldEntity.getMaterialId() != null && oldEntity.getMaterialId() > 0) {
+			destEntity.setMaterialId(oldEntity.getMaterialId());
+			destEntity.setCreatedOn(oldEntity.getCreatedOn());
+			destEntity.setUpdatedOn(new Date());
+		} else {
+			destEntity.setCreatedOn(new Date());
+		}
+		destEntity.setThickness(toBigDecimal(fgNumber(row.getThickness())));
+		destEntity.setWidth(toBigDecimal(fgNumber(row.getActualWidth())));
+		destEntity.setLength(toBigDecimal(fgNumber(row.getActualLength())));
+		destEntity.setODiameter(BigDecimal.ZERO);
+		destEntity.setIDiameter(BigDecimal.ZERO);
+		destEntity.setNb(BigDecimal.ZERO);
+
+		destEntity.setCategoryId(setCategoryMaster(category));
+		destEntity.setBrandId(setBrandNameMaster("UnBrand", destEntity.getLeafcategoryId()));
+		destEntity.setProducttypeId(setProductMaster(producttype, destEntity));
+		destEntity.setGradeId(setGradeMaster(grade, destEntity.getProducttypeId()));
+		destEntity.setSubgradeId(setSubGradeMaster(subgrade, destEntity.getGradeId()));
+		destEntity.setUomId(setUomMaster("MT", destEntity.getProducttypeId()));
+		destEntity.setFormId(setFormMaster(form, destEntity.getProducttypeId()));
+		materialMasterJswRepository.save(destEntity);
+	}
+
+	/** Human readable spec key; rows with the same key get the same MM_ID. Also stored as mm_description. */
+	private String buildFgSpecDescription(FGFileDataDTO row) {
+		String form = fgForm(row);
+		StringBuilder sb = new StringBuilder();
+		sb.append(row.getMaterialDesc().trim().toUpperCase(Locale.ROOT));
+		if (!isBlank(row.getMaterialGrade())) {
+			sb.append(" ").append(row.getMaterialGrade().trim().toUpperCase(Locale.ROOT));
+		}
+		if (!isBlank(row.getTdcNo())) {
+			sb.append(" ").append(row.getTdcNo().trim().toUpperCase(Locale.ROOT));
+		}
+		sb.append(" ").append("SHEET".equals(form) ? "Sheet" : "Coil");
+		sb.append(" ").append(fgNumber(row.getThickness())).append("x").append(fgNumber(row.getActualWidth()));
+		if ("SHEET".equals(form)) {
+			sb.append("x").append(fgNumber(row.getActualLength()));
+		}
+		return sb.toString().replaceAll("\\s+", " ");
+	}
+
+	/** First part of every FG MM_ID. */
+	private static final String FG_MMID_PREFIX = "9999";
+	private static final String FG_MMID_PATTERN = "^" + FG_MMID_PREFIX + "-[0-9]+-[0-9]+$";
+
+	/** MM_ID of a spec already in DB (same mm_description, 9999-NNNNN-NNNNNNNN shape), or null. */
+	private String findExistingFgMmId(String specDesc) {
+		MaterialMasterJswEntity master = materialMasterJswRepository.findFirstByMmDescription(specDesc);
+		if (master != null && master.getMmId() != null && master.getMmId().matches(FG_MMID_PATTERN)) {
+			return master.getMmId();
+		}
+		return fgFileDataRepository.findMmIdByDescription(specDesc);
+	}
+
+	/** true if the MM_ID is already used in any of the MM_ID tables. */
+	private boolean mmIdExists(String mmId) {
+		return materialMasterJswRepository.findFirstByMmId(mmId) != null
+				|| repository.findFirstByMmId(mmId) != null
+				|| fgFileDataRepository.findFirstByMmId(mmId) != null;
+	}
+
+	/**
+	 * New MM_ID 9999-<grade code>-<running number> for a spec not yet in DB.
+	 * The running number is globally unique, so the MM_ID is unique; it is still checked against all tables.
+	 */
+	private String nextFgMmId(FGFileDataDTO row, FgMmIdSeq seq) {
+		if (!seq.loaded) {
+			long[] max = { 999, 9999, 10000000 }; // start values when the DB has no MM_IDs: 9999-10000-10000001
+			List<Object[]> rows = new ArrayList<>();
+			rows.addAll(materialMasterJswRepository.findMaxMmIdParts());
+			rows.addAll(repository.findMaxMmIdParts());
+			rows.addAll(fgFileDataRepository.findMaxMmIdParts());
+			for (Object[] r : rows) {
+				for (int i = 0; r != null && i < 3 && i < r.length; i++) {
+					if (r[i] instanceof Number) {
+						max[i] = Math.max(max[i], ((Number) r[i]).longValue());
+					}
+				}
+			}
+			seq.grade = max[1] + 1;
+			seq.variant = max[2] + 1;
+			seq.loaded = true;
+		}
+
+		String materialDesc = row.getMaterialDesc().trim();
+		String form = fgForm(row);
+		String grade = trimOrNull(row.getMaterialGrade());
+		String gradeKey = materialDesc.toUpperCase(Locale.ROOT) + "|" + form + "|" + nvl(grade).toUpperCase(Locale.ROOT);
+
+		// 9999 + grade code: this upload, else an earlier FG upload of the same product & grade
+		String productGrade = seq.gradeCodes.get(gradeKey);
+		if (productGrade == null) {
+			String existing = fgFileDataRepository.findMmIdByProductAndGrade(materialDesc, form, grade);
+			if (existing != null) {
+				productGrade = existing.substring(0, existing.lastIndexOf('-'));
+			} else {
+				productGrade = FG_MMID_PREFIX + "-" + seq.grade++;
+			}
+			seq.gradeCodes.put(gradeKey, productGrade);
+		}
+
+		while (true) {
+			String candidate = productGrade + "-" + seq.variant++;
+			if (!mmIdExists(candidate)) {
+				return candidate;
+			}
+		}
+	}
+
+	/** Rows with pieces are cut sheets, rows without pieces are coils. */
+	private String fgForm(FGFileDataDTO row) {
+		return toBigDecimal(row.getNoOfPieces()).compareTo(BigDecimal.ZERO) > 0 ? "SHEET" : "COIL";
+	}
+
+	/** Reads the FG file (.xlsx/.xls via POI, otherwise CSV). Columns are matched by header name. */
+	private List<FGFileDataDTO> fgFileDetails(String fullPath) throws Exception {
+		List<List<String>> lines = new ArrayList<>();
+		String lower = fullPath.toLowerCase(Locale.ROOT);
+		if (lower.endsWith(".xlsx") || lower.endsWith(".xls")) {
+			DataFormatter formatter = new DataFormatter();
+			try (Workbook wb = WorkbookFactory.create(new File(fullPath))) {
+				Sheet sheet = wb.getSheetAt(0);
+				for (Row r : sheet) {
+					List<String> cells = new ArrayList<>();
+					for (int c = 0; c < Math.max(r.getLastCellNum(), 0); c++) {
+						Cell cell = r.getCell(c);
+						cells.add(cell == null ? "" : formatter.formatCellValue(cell).trim());
+					}
+					lines.add(cells);
+				}
+			}
+		} else {
+			try (CSVReader reader = new CSVReaderBuilder(new FileReader(fullPath)).build()) {
+				for (String[] line : reader) {
+					lines.add(Arrays.asList(line));
+				}
+			}
+		}
+
+		// locate the header row and column indexes (fallback: fixed positions, first line = header)
+		String[] headerKeys = { "coilnumber", "customerbatchid", "finishingdate", "currentdate", "coilagenoofdays",
+				"noofpieces", "materialdesc", "materialgrade", "mothercoilno", "tdcno", "packetid", "thickness",
+				"actualwidth", "actuallength", "actualweight", "classificationtag", "endusertag" };
+		int[] idx = new int[headerKeys.length];
+		for (int i = 0; i < idx.length; i++) {
+			idx[i] = i;
+		}
+		int headerRow = 0;
+		for (int r = 0; r < lines.size(); r++) {
+			List<String> normalized = new ArrayList<>();
+			for (String s : lines.get(r)) {
+				normalized.add(s == null ? "" : s.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]", ""));
+			}
+			if (normalized.contains("coilnumber")) {
+				headerRow = r;
+				for (int i = 0; i < headerKeys.length; i++) {
+					int pos = normalized.indexOf(headerKeys[i]);
+					// tolerate units / suffixes, e.g. "Actual Length (mm)" -> "actuallengthmm"
+					for (int c = 0; pos < 0 && c < normalized.size(); c++) {
+						if (normalized.get(c).startsWith(headerKeys[i])) {
+							pos = c;
+						}
+					}
+					if (pos >= 0) {
+						idx[i] = pos;
+					}
+				}
+				break;
+			}
+		}
+
+		List<FGFileDataDTO> result = new ArrayList<>();
+		for (int r = headerRow + 1; r < lines.size(); r++) {
+			List<String> l = lines.get(r);
+			if (l.stream().allMatch(this::isBlank)) {
+				continue;
+			}
+			FGFileDataDTO dto = new FGFileDataDTO();
+			dto.setCoilNumber(cell(l, idx[0]));
+			dto.setCustomerBatchId(cell(l, idx[1]));
+			dto.setFinishingDate(cell(l, idx[2]));
+			dto.setCurrentDate(cell(l, idx[3]));
+			dto.setCoilAge(cell(l, idx[4]));
+			dto.setNoOfPieces(cell(l, idx[5]));
+			dto.setMaterialDesc(cell(l, idx[6]));
+			dto.setMaterialGrade(cell(l, idx[7]));
+			dto.setMotherCoilNo(cell(l, idx[8]));
+			dto.setTdcNo(cell(l, idx[9]));
+			dto.setPacketId(cell(l, idx[10]));
+			dto.setThickness(cell(l, idx[11]));
+			dto.setActualWidth(cell(l, idx[12]));
+			dto.setActualLength(cell(l, idx[13]));
+			dto.setActualWeight(cell(l, idx[14]));
+			dto.setClassificationTag(cell(l, idx[15]));
+			dto.setEndUserTag(cell(l, idx[16]));
+			result.add(dto);
+		}
+		return result;
+	}
+
+	private String cell(List<String> line, int i) {
+		return i < line.size() && line.get(i) != null ? line.get(i).trim() : "";
+	}
+
+	private boolean isBlank(String s) {
+		return s == null || s.trim().isEmpty();
+	}
+
+	private String nvl(String s) {
+		return s == null ? "" : s;
+	}
+
+	private String trimOrNull(String s) {
+		return isBlank(s) ? null : s.trim();
+	}
+
+	private BigDecimal toBigDecimal(String s) {
+		try {
+			return isBlank(s) ? BigDecimal.ZERO : new BigDecimal(s.trim().replace(",", ""));
+		} catch (NumberFormatException e) {
+			return BigDecimal.ZERO;
+		}
+	}
+
+	/** 0.50 -> 0.5, 1250.00 -> 1250, blank -> 0 */
+	private String fgNumber(String s) {
+		BigDecimal v = toBigDecimal(s);
+		return v.signum() == 0 ? "0" : v.stripTrailingZeros().toPlainString();
 	}
 
 }
