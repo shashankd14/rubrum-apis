@@ -171,13 +171,11 @@ public class InwardEntryController {
 			inwardEntry.setAvailableLength(inwarddto.getLength());
 			inwardEntry.setfQuantity(inwarddto.getPresentWeight());
 			inwardEntry.setGrossWeight(inwarddto.getGrossWeight());
-
 			if("Coil".equals(inwarddto.getInwardType())) {
 				inwardEntry.setStatus(this.statusService.getStatusById(1));
 			} else {
-				inwardEntry.setStatus(this.statusService.getStatusById(1));
+				inwardEntry.setStatus(this.statusService.getStatusById(inwarddto.getStatusId()));
 			}
-
 			inwardEntry.setvProcess(inwarddto.getProcess());
 			inwardEntry.setTdcNo(inwarddto.getTdcNo());
 			inwardEntry.setFpresent(inwarddto.getPresentWeight());
@@ -186,9 +184,7 @@ public class InwardEntryController {
 			inwardEntry.setBilledweight(0);
 			inwardEntry.setParentCoilNumber(null);
 			inwardEntry.setvParentBundleNumber(0);
-
 			inwardEntry.setRemarks(inwarddto.getRemarks());
-
 			inwardEntry.setIsDeleted(Boolean.valueOf(false));
 			inwardEntry.setCreatedOn(this.timestamp);
 			inwardEntry.setUpdatedOn(this.timestamp);
@@ -196,7 +192,6 @@ public class InwardEntryController {
 			inwardEntry.setUpdatedBy(userId);
 
 			if (inwarddto.getTestCertificateFile() != null) {
-
 				String fileUrl = awsS3Service.uploadFile(inwarddto.getTestCertificateFile());
 				inwardEntry.setTestCertificateFileUrl(fileUrl);
 			}
