@@ -3,6 +3,8 @@ package com.steel.product.application.service;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -40,6 +42,23 @@ import net.minidev.json.JSONObject;
 @Service
 @Log4j2
 public class InwardEntryServiceImpl implements InwardEntryService {
+
+	// UI sortColumn -> InwardEntry entity property path (only these are allowed for partywiselist)
+	private static final Map<String, String> PARTYWISE_SORT_COLUMNS = new HashMap<>();
+	static {
+		PARTYWISE_SORT_COLUMNS.put("inwardEntryId", "inwardEntryId");
+		PARTYWISE_SORT_COLUMNS.put("coilNumber", "coilNumber");
+		PARTYWISE_SORT_COLUMNS.put("customerBatchId", "customerBatchId");
+		PARTYWISE_SORT_COLUMNS.put("material.description", "material.description");
+		PARTYWISE_SORT_COLUMNS.put("fThickness", "fThickness");
+		PARTYWISE_SORT_COLUMNS.put("fWidth", "fWidth");
+		PARTYWISE_SORT_COLUMNS.put("fLength", "fLength");
+		// actualNoOfPieces exists only on Instruction; InwardEntry stores it as noofpieces
+		PARTYWISE_SORT_COLUMNS.put("actualNoOfPieces", "noofpieces");
+		PARTYWISE_SORT_COLUMNS.put("noofpieces", "noofpieces");
+		PARTYWISE_SORT_COLUMNS.put("inStockWeight", "inStockWeight");
+		PARTYWISE_SORT_COLUMNS.put("status.statusName", "status.statusName");
+	}
 
 	private final UserRepository userRepository;
 	private final InwardEntryRepository inwdEntryRepo;
@@ -181,24 +200,26 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 	@Override
 	public Page<InwardEntry> partywiselist(SearchListPageRequest searchListPageRequest) {
 		log.info("In findAllPartyWiseWithPagination page ");
-		Pageable pageable = null;
-		if (searchListPageRequest.getSortColumn() != null && searchListPageRequest.getSortColumn().length() > 0
-				&& searchListPageRequest.getSortOrder() != null && searchListPageRequest.getSortOrder().length() > 0
-				&& "ASC".equalsIgnoreCase(searchListPageRequest.getSortOrder())) {
-			pageable = PageRequest.of((searchListPageRequest.getPageNo() - 1), searchListPageRequest.getPageSize(),
-					Sort.by(searchListPageRequest.getSortColumn()).ascending());
-		} else if (searchListPageRequest.getSortColumn() != null && searchListPageRequest.getSortColumn().length() > 0
-				&& searchListPageRequest.getSortOrder() != null && searchListPageRequest.getSortOrder().length() > 0
-				&& "DESC".equalsIgnoreCase(searchListPageRequest.getSortOrder())) {
-			pageable = PageRequest.of((searchListPageRequest.getPageNo() - 1), searchListPageRequest.getPageSize(),
-					Sort.by(searchListPageRequest.getSortColumn()).descending());
-		} else {
-			if (searchListPageRequest.getPageNo() == null) {
-				searchListPageRequest.setPageNo(1);
-			}
-			pageable = PageRequest.of((searchListPageRequest.getPageNo() - 1), searchListPageRequest.getPageSize(),
-					Sort.by("inwardEntryId").descending());
+		if (searchListPageRequest.getPageNo() == null || searchListPageRequest.getPageNo() < 1) {
+			searchListPageRequest.setPageNo(1);
 		}
+		String sortProperty = PARTYWISE_SORT_COLUMNS.get(
+				searchListPageRequest.getSortColumn() != null ? searchListPageRequest.getSortColumn().trim() : "");
+		Sort sort;
+		if (sortProperty != null && "ASC".equalsIgnoreCase(searchListPageRequest.getSortOrder())) {
+			sort = Sort.by(sortProperty).ascending();
+		} else if (sortProperty != null && "DESC".equalsIgnoreCase(searchListPageRequest.getSortOrder())) {
+			sort = Sort.by(sortProperty).descending();
+		} else {
+			if (searchListPageRequest.getSortColumn() != null && !searchListPageRequest.getSortColumn().isEmpty()
+					&& sortProperty == null) {
+				log.warn("Unsupported sortColumn '{}' for partywiselist, using default sort",
+						searchListPageRequest.getSortColumn());
+			}
+			sort = Sort.by("inwardEntryId").descending();
+		}
+		Pageable pageable = PageRequest.of((searchListPageRequest.getPageNo() - 1),
+				searchListPageRequest.getPageSize(), sort);
 		AdminUserEntity adminUserEntity = commonUtil.getUserDetails();
 		
 		List<Integer> partyIds = null;
@@ -224,6 +245,15 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 		return pageResult;
 	}
 	
+	@Override
+	public Object[] getPartyWeightTotals(Integer partyId) {
+		List<Object[]> result = inwdEntryRepo.getPartyWeightTotals(partyId);
+		if (result == null || result.isEmpty()) {
+			return new Object[] { 0, 0 };
+		}
+		return result.get(0);
+	}
+
 	@Override
 	public Page<Object[]> partywiselistEndUserTagWise(SearchListPageRequest searchListPageRequest) {
 		log.info("In partywiselistEndUserTagWise page ");

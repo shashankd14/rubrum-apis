@@ -44,6 +44,10 @@ public interface InwardEntryRepository extends JpaRepository<InwardEntry, Intege
 			@Param("locationIds") List<Integer> locationIds, 
 			Pageable pageable);
 
+    @Query(nativeQuery = true, value = "select coalesce(sum(in_stock_weight), 0), coalesce(sum(fpresent), 0) "
+            + "from product_tblinwardentry where npartyid = :partyId")
+    List<Object[]> getPartyWeightTotals(@Param("partyId") Integer partyId);
+
     @Query("select inw from InwardEntry inw order by inwardEntryId desc")
     List<InwardEntry> findAll();
 

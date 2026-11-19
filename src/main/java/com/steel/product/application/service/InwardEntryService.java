@@ -70,6 +70,8 @@ public interface InwardEntryService {
 
 	public Page<Object[]> partywiselistEndUserTagWise(SearchListPageRequest searchListPageRequest);
 
+	public Object[] getPartyWeightTotals(Integer partyId);
+
 	void updateStockTrasferSeq(Integer inwardId, Integer coilseq);
 
 	public List<InwardEntry> findInwardByDeliveryId(Integer id);

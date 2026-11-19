@@ -337,8 +337,24 @@ public class InwardEntryController {
 			response.put("currentPage", pageResult.getNumber());
 			response.put("totalItems", pageResult.getTotalElements());
 			response.put("totalPages", pageResult.getTotalPages());
+
+			String partyIdStr = searchListPageRequest.getPartyId();
+			if (partyIdStr != null && !partyIdStr.trim().isEmpty() && Integer.parseInt(partyIdStr.trim()) > 0) {
+				Object[] totals = inwdEntrySvc.getPartyWeightTotals(Integer.parseInt(partyIdStr.trim()));
+				response.put("totalInStockWeight", toThreeDecimals(totals[0]));
+				response.put("totalPresentWeight", toThreeDecimals(totals[1]));
+			}
 			return new ResponseEntity<Object>(response, HttpStatus.OK);
 		}
+	}
+
+	private static java.math.BigDecimal toThreeDecimals(Object value) {
+		if (value == null) {
+			return java.math.BigDecimal.ZERO.setScale(3);
+		}
+		return new java.math.BigDecimal(value.toString())
+				.divide(java.math.BigDecimal.valueOf(1000))
+				.setScale(3, java.math.RoundingMode.HALF_UP);
 	}
 
 	//  This is for Inward List
