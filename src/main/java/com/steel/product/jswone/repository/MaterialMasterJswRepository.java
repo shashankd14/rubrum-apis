@@ -92,5 +92,24 @@ public interface MaterialMasterJswRepository
 		nativeQuery = true)
 	List<Object[]> listAllLocationWiseInwards(@Param("status") int status);
 
+	/**
+	 * MMIDs a coil can serve, mirroring findCoilInventory: given brand, plus same subgrade, grade,
+	 * thickness and width as the coil's material master, non-sheet form.
+	 */
+	@Query(value = "select mat.mm_id, mat.length "
+			+ " from jsw_material_master mat "
+			+ " where mat.brand_id = :brandId "
+			+ " and mat.subgrade_id = :subGradeId "
+			+ " and mat.grade_id = :gradeId "
+			+ " and mat.form_id not in (21) "
+			+ " and mat.thickness = :thickness "
+			+ " and mat.width = :width "
+			+ " order by mat.mm_id", nativeQuery = true)
+	List<Object[]> findMatchingMmidsForCoil(@Param("brandId") Integer brandId,
+			@Param("subGradeId") Integer subGradeId,
+			@Param("gradeId") Integer gradeId,
+			@Param("thickness") java.math.BigDecimal thickness,
+			@Param("width") java.math.BigDecimal width);
+
 	void deleteByMaterialId(Integer materaiId);
 }

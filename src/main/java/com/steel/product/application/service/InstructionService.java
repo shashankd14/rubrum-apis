@@ -1,6 +1,7 @@
 package com.steel.product.application.service;
 
 import com.steel.product.application.dto.instruction.*;
+import com.steel.product.application.dto.pdf.FetchMmidsByCoilRequest;
 import com.steel.product.application.dto.pdf.InwardEntryPdfDto;
 import com.steel.product.application.dto.pdf.PartDto;
 import com.steel.product.application.dto.qrcode.QRCodeResponse;
@@ -105,4 +106,6 @@ public interface InstructionService {
 	public void updateSonoMmid(String sono, String mmid, int instructionId);
 
 	public ResponseEntity<Object> planDocEmail(PartDto partDto);
+
+	public ResponseEntity<Object> fetchMMIDsByCoil(FetchMmidsByCoilRequest request);
 }

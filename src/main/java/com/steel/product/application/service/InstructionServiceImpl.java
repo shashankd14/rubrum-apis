@@ -21,6 +21,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.steel.product.application.dao.DeliveryDetailsRepository;
 import com.steel.product.application.dao.InstructionRepository;
@@ -37,6 +38,7 @@ import com.steel.product.application.dto.material.MaterialResponseDto;
 import com.steel.product.application.dto.materialGradeDto.MaterialGradeDto;
 import com.steel.product.application.dto.partDetails.PartDetailsRequest;
 import com.steel.product.application.dto.partDetails.PartDetailsResponse;
+import com.steel.product.application.dto.pdf.FetchMmidsByCoilRequest;
 import com.steel.product.application.dto.pdf.InstructionResponsePdfDto;
 import com.steel.product.application.dto.pdf.InwardEntryPdfDto;
 import com.steel.product.application.dto.pdf.PartDetailsPdfResponse;
@@ -55,7 +57,9 @@ import com.steel.product.application.mapper.InstructionMapper;
 import com.steel.product.application.mapper.PartDetailsMapper;
 import com.steel.product.application.mapper.TotalLengthAndWeight;
 import com.steel.product.application.util.CommonUtil;
+import com.steel.product.jswone.entity.MaterialMasterJswEntity;
 import com.steel.product.jswone.entity.SalesOrderAllocationEntity;
+import com.steel.product.jswone.repository.MaterialMasterJswRepository;
 import com.steel.product.jswone.repository.SalesOrderAllocationJswRepository;
 import com.steel.product.jswone.service.JSWIntegrationService;
 import com.steel.product.jswone.service.MaterialMasterJswService;
@@ -112,6 +116,9 @@ public class InstructionServiceImpl implements InstructionService {
 	
 	@Autowired
 	CommonUtil commonUtil;
+
+	@Autowired
+	private MaterialMasterJswRepository materialMasterJswRepository;
 
 	// @Lazy avoids a circular dependency (MailSender -> ReportsService -> ... -> InstructionService)
 	@Lazy
@@ -1682,6 +1689,40 @@ public class InstructionServiceImpl implements InstructionService {
 			log.error("planDocEmail failed for partDetailsId {}", partDetailsId, e);
 			return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"" + e.getMessage() + "\"}", headers, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+	}
+
+	@Override
+	public ResponseEntity<Object> fetchMMIDsByCoil(FetchMmidsByCoilRequest request) {
+		if (request == null || request.getInwardId() == null || request.getInwardId() <= 0) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "inwardId is required");
+		}		InwardEntry inward = inwardEntryRepository.findById(request.getInwardId())
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+						"Coil not found for inwardId: " + request.getInwardId()));
+		if (inward.getMmId() == null || inward.getMmId().trim().isEmpty()) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+					"MMID not mapped for inwardId: " + request.getInwardId());
+		}
+
+		MaterialMasterJswEntity entity = materialMasterJswRepository.findFirstByMmId(inward.getMmId());
+		if (entity == null) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+					"Material Master not found for MMID: " + inward.getMmId());
+		}
+
+		// Same filters as findCoilInventory, using the coil's material master brand, thickness and width.
+		List<Object[]> rows = materialMasterJswRepository.findMatchingMmidsForCoil(
+				(request.getBrandId() != null && request.getBrandId() > 0) ? request.getBrandId() : entity.getBrandId(),
+				entity.getSubgradeId(),
+				entity.getGradeId(), entity.getThickness(), entity.getWidth());
+
+		// MMID -> length
+		Map<String, Object> response = new LinkedHashMap<>();
+		for (Object[] row : rows) {
+			if (row[0] != null) {
+				response.put(row[0].toString(), row[1]);
+			}
+		}
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 }

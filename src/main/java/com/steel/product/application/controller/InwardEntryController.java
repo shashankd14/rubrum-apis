@@ -156,9 +156,12 @@ public class InwardEntryController {
 			inwardEntry.setfLength(inward.getLength());
 			inwardEntry.setAvailableLength(inward.getLength());
 			inwardEntry.setfQuantity(inward.getPresentWeight());
-			inwardEntry.setGrossWeight(inward.getGrossWeight());
-			inwardEntry.setStatus(this.statusService.getStatusById(1));
-
+			inwardEntry.setGrossWeight(inward.getGrossWeight());			
+			if("Sheet".equals(inward.getInwardType())) {
+				inwardEntry.setStatus(this.statusService.getStatusById(inward.getStatusId()));
+			} else {
+				inwardEntry.setStatus(this.statusService.getStatusById(1));
+			}
 			inwardEntry.setvProcess(inward.getProcess());
 			inwardEntry.setTdcNo(inward.getTdcNo());
 			inwardEntry.setFpresent(inward.getPresentWeight());

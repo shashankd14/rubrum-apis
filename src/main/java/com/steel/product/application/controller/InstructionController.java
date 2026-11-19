@@ -1,6 +1,7 @@
 package com.steel.product.application.controller;
 
 import com.steel.product.application.dto.instruction.*;
+import com.steel.product.application.dto.pdf.FetchMmidsByCoilRequest;
 import com.steel.product.application.dto.pdf.PartDto;
 import com.steel.product.application.entity.Instruction;
 import com.steel.product.application.exception.MockException;
@@ -132,6 +133,11 @@ public class InstructionController {
 	@PostMapping(value ="/plandoc/email", produces = "application/json" )
 	public ResponseEntity<Object> planDocEmail(@RequestBody PartDto partDto) {
 		return instructionService.planDocEmail(partDto);
+	}
+	
+	@PostMapping(value ="/fetchmmidsbycoil", produces = "application/json" )
+	public ResponseEntity<Object> fetchMMIDsByCoil(@RequestBody FetchMmidsByCoilRequest request) {
+		return instructionService.fetchMMIDsByCoil(request);
 	}
 	 
 }
