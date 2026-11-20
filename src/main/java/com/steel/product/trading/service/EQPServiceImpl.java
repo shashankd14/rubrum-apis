@@ -9,6 +9,7 @@ import com.steel.product.trading.entity.EQPTermsEntity;
 import com.steel.product.trading.repository.EQPChildRepository;
 import com.steel.product.trading.repository.EQPRepository;
 import com.steel.product.trading.repository.EQPTermsRepository;
+import com.steel.product.trading.repository.QuoteRevisionRepository;
 import com.steel.product.trading.request.DeleteRequest;
 import com.steel.product.trading.request.EQPChildRequest;
 import com.steel.product.trading.request.EQPRequest;
@@ -58,6 +59,9 @@ public class EQPServiceImpl implements EQPService {
 
 	@Autowired
 	EQPTermsRepository termsRepository;
+
+	@Autowired
+	QuoteRevisionRepository quoteRevisionRepository;
 
 	/** Adds inward-costing average cost per KG and master KG_PER_PC weight to every enquiry item. */
 	private void enrichItemCosting(Collection<List<EQPChildResponse>> itemLists) {
@@ -125,11 +129,16 @@ public class EQPServiceImpl implements EQPService {
 					oldEntity = kk.get();
 				}
 				if (oldEntity != null && oldEntity.getEnquiryId() > 0) {
+					// The request only carries enquiry fields; saving it over a quote or later stage would wipe that stage's data.
+					if (Boolean.TRUE.equals(oldEntity.getIsDeleted()) || !"ENQUIRY".equals(oldEntity.getCurrentStatus())) {
+						return TradingErrors.body(HttpStatus.BAD_REQUEST, "Only an open enquiry can be edited. This order has already moved to " + oldEntity.getCurrentStatus() + ".", null);
+					}
 
 					for (EQPChildEntity childEntity : oldEntity.getItemsList()) {
 						oldChildIdsMap.put(childEntity.getEnquiryChildId(), childEntity.getEnquiryChildId());
 					}
 					eqpEntity.setItemsList(oldEntity.getItemsList());
+					eqpEntity.setTerms(oldEntity.getTerms());
 					eqpEntity.setUpdatedBy(request.getUserId());
 					eqpEntity.setUpdatedOn(new Date());
 					eqpEntity.setCreatedBy(oldEntity.getCreatedBy());
@@ -417,7 +426,14 @@ public class EQPServiceImpl implements EQPService {
 					omittedChild.setUpdatedBy(request.getUserId());
 					omittedChild.setUpdatedOn(new Date());
 				}
-				EQPTermsEntity termsEntity = request.getTerms();
+				// Reuse the terms row left by a deleted quotation so an order never has two.
+				EQPTermsEntity termsEntity = eqpEntity.getTerms();
+				if (termsEntity == null) {
+					termsEntity = new EQPTermsEntity();
+				}
+				if (request.getTerms() != null) {
+					BeanUtils.copyProperties(request.getTerms(), termsEntity, "termsId", "enquiryId");
+				}
 				termsEntity.setIsDeleted(false);
 				termsEntity.setEnquiryId(eqpEntity);
 				termsEntity.setQuoteCreatedBy(request.getUserId());
@@ -453,17 +469,31 @@ public class EQPServiceImpl implements EQPService {
 	}
 	
 	@Override
+	@Transactional
 	public ResponseEntity<Object> quoteDelete(DeleteRequest deleteRequest) {
 		log.debug("In quoteDelete page ");
 		ResponseEntity<Object> response = null;
-		HttpHeaders header = new HttpHeaders();
-		header.set("Content-Type", "application/json");
-		
+
 		try {
+			if (deleteRequest.getIds() == null || deleteRequest.getIds().isEmpty()) {
+				return TradingErrors.body(HttpStatus.BAD_REQUEST, "Select a quotation to delete.", null);
+			}
+			List<EQPEntity> quotes = eqpRepository.findAllById(deleteRequest.getIds());
+			if (quotes.size() != new HashSet<>(deleteRequest.getIds()).size()
+					|| quotes.stream().anyMatch(q -> Boolean.TRUE.equals(q.getIsDeleted()) || !"QUOTE".equals(q.getCurrentStatus()))) {
+				return TradingErrors.body(HttpStatus.BAD_REQUEST, "Only existing quotations can be deleted. Refresh the list and try again.", null);
+			}
+			for (Integer id : deleteRequest.getIds()) {
+				if (quoteRevisionRepository.findTopByEnquiryIdOrderByVersionNoDesc(id)
+						.filter(r -> "APPROVED".equals(r.getRevisionStatus())).isPresent()) {
+					return TradingErrors.body(HttpStatus.BAD_REQUEST, "A finalised quotation cannot be deleted.", null);
+				}
+			}
 			eqpRepository.deleteQuoteMainData(deleteRequest.getIds(), deleteRequest.getUserId());
 			childRepository.deleteQuoteChildData(deleteRequest.getIds(), deleteRequest.getUserId());
-			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Selected Quote details has been deleted successfully..! \"}", new HttpHeaders(), HttpStatus.OK);
+			response = new ResponseEntity<>("{\"status\": \"success\", \"message\": \"Quotation deleted. The order is back in Enquiries.\"}", new HttpHeaders(), HttpStatus.OK);
 		} catch (Exception e) {
+			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
 			response = TradingErrors.failure("delete the quotation", e);
 		}
 		return response;
@@ -479,8 +509,6 @@ public class EQPServiceImpl implements EQPService {
 		String message = "Proforma Details saved successfully..! ";
 		try {
 			EQPEntity eqpEntity = new EQPEntity();
-			Map<Integer, Integer> oldChildIdsMap = new HashMap<>();
-			List<Integer> missedChildIds = new ArrayList<>();
 			Optional<EQPEntity> kk = eqpRepository.findById(request.getEnquiryId());
 			EQPEntity oldEntity = null;
 			if (kk.isPresent()) {
@@ -503,54 +531,61 @@ public class EQPServiceImpl implements EQPService {
 			eqpEntity.setProformaStatus(pendingDispatch ? "PENDING_DO" : request.getStatus());
 
 			if (oldEntity.getEnquiryId() != null && oldEntity.getEnquiryId() > 0 && "PROFORMA".equals(oldEntity.getCurrentStatus())) {
+				// Edit the saved lines in place so their quote/proforma created-by and created-on survive the edit.
+				Map<Integer, EQPChildEntity> existingChildren = new HashMap<>();
 				for (EQPChildEntity childEntity : oldEntity.getItemsList()) {
-					if("PROFORMA".equals(childEntity.getStatus())) {
-						oldChildIdsMap.put(childEntity.getEnquiryChildId(), childEntity.getEnquiryChildId());
+					if ("PROFORMA".equals(childEntity.getStatus()) && !Boolean.TRUE.equals(childEntity.getIsDeleted())) {
+						existingChildren.put(childEntity.getEnquiryChildId(), childEntity);
 					}
 				}
-				eqpEntity.setItemsList(oldEntity.getItemsList());
 				eqpEntity.setProformaUpdatedBy(request.getUserId());
 				eqpEntity.setProformaUpdatedOn(new Date());
-				//eqpEntity.setQuoteCreatedBy(oldEntity.getCreatedBy());
-				//eqpEntity.setQuoteCreatedOn(oldEntity.getCreatedOn());
 				eqpEntity.setCurrentStatus(request.getStatus());
 				message = "Proforma Details updated successfully..! ";
 
-				EQPTermsEntity termsEntity = request.getTerms();
-				termsEntity.setTermsId(eqpEntity.getTerms().getTermsId() );
+				EQPTermsEntity termsEntity = eqpEntity.getTerms();
+				if (termsEntity == null) {
+					termsEntity = new EQPTermsEntity();
+				}
+				if (request.getTerms() != null) {
+					BeanUtils.copyProperties(request.getTerms(), termsEntity, "termsId", "enquiryId",
+							"quoteCreatedBy", "quoteCreatedOn", "proformaCreatedBy", "proformaCreatedOn");
+				}
 				termsEntity.setIsDeleted(false);
 				termsEntity.setEnquiryId(eqpEntity);
-				//termsEntity.setQuoteCreatedBy(request.getUserId());
 				termsEntity.setProformaUpdatedBy(request.getUserId());
 				termsEntity.setProformaUpdatedOn(new Date());
-				//termsEntity.setQuoteCreatedOn(new Date());
 				termsEntity.setStatus(request.getStatus());
 				eqpEntity.setTerms(termsEntity);
 
-				// QUOTE UPDATE LOGIC
-				eqpRepository.save(eqpEntity);
-				List<EQPChildEntity> itemsList = new ArrayList<>();
 				for (EQPChildRequest childReq : request.getItemsList()) {
-					EQPChildEntity childEntity = new EQPChildEntity();
-					BeanUtils.copyProperties(childReq, childEntity);
+					EQPChildEntity childEntity = childReq.getEnquiryChildId() == null
+							? null
+							: existingChildren.remove(childReq.getEnquiryChildId());
+					boolean isNewChild = childEntity == null;
+					if (isNewChild) {
+						childEntity = new EQPChildEntity();
+					}
+					BeanUtils.copyProperties(childReq, childEntity, "createdBy", "createdOn",
+							"quoteCreatedBy", "quoteCreatedOn", "proformaCreatedBy", "proformaCreatedOn");
 					childEntity.setIsDeleted(false);
 					childEntity.setEnquiryId(eqpEntity);
 					childEntity.setProformaUpdatedBy(request.getUserId());
 					childEntity.setProformaUpdatedOn(new Date());
-					childEntity.setProformaCreatedBy(request.getUserId());
-					childEntity.setProformaCreatedOn(new Date());
 					childEntity.setStatus(request.getStatus());
-					itemsList.add(childEntity);
-					if (childReq.getEnquiryChildId() != null && childReq.getEnquiryChildId() > 0) {
-						oldChildIdsMap.remove(childReq.getEnquiryChildId());
+					if (isNewChild) {
+						childEntity.setProformaCreatedBy(request.getUserId());
+						childEntity.setProformaCreatedOn(new Date());
+						eqpEntity.addItem(childEntity);
 					}
 				}
 
-				if (oldChildIdsMap != null && oldChildIdsMap.size() > 0) {
-					missedChildIds = new ArrayList<Integer>(oldChildIdsMap.values());
+				for (EQPChildEntity omittedChild : existingChildren.values()) {
+					omittedChild.setIsDeleted(true);
+					omittedChild.setUpdatedBy(request.getUserId());
+					omittedChild.setUpdatedOn(new Date());
 				}
-				childRepository.saveAll(itemsList);
-				if (!missedChildIds.isEmpty()) childRepository.deleteData(missedChildIds, request.getUserId());
+				eqpRepository.save(eqpEntity);
 			} else {
 				eqpEntity.setProformaCreatedBy(request.getUserId());
 				eqpEntity.setProformaCreatedOn(new Date());

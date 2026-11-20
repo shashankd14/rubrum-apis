@@ -71,7 +71,8 @@ public class EQPEntity {
 	private Set<EQPChildEntity> itemsList;
 	
 	@OneToOne(mappedBy = "enquiryId", cascade = { CascadeType.PERSIST, CascadeType.MERGE }, orphanRemoval = true)
-	private EQPTermsEntity terms = new EQPTermsEntity();
+	// No default: a new enquiry has no terms yet, and a default object was saved as an empty row with no enquiry.
+	private EQPTermsEntity terms;
 
 	@Column(name = "is_deleted", columnDefinition = "BIT")
 	private Boolean isDeleted;

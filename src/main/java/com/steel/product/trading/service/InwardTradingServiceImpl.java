@@ -25,6 +25,7 @@ import java.math.BigDecimal;
 import com.steel.product.trading.repository.MaterialDetailRepository;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -161,6 +162,7 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 				//System.out.println("hi getItemsList().size - "+itemsList.size());
 				//System.out.println("hi missedChildIds size - "+missedChildIds.size());
 				childRepository.saveAll(itemsList);
+				numberNewLines(inwardTradingEntity.getInwardNo(), inwardTradingEntity.getItemsList(), itemsList);
 				if (!missedChildIds.isEmpty()) {
 					childRepository.deleteData(missedChildIds, request.getUserId());
 				}
@@ -375,6 +377,28 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 		return response;
 	}
 
+
+	/** Gives lines added while editing an inward the next free "<inwardNo>-<n>" id; existing and deleted lines keep theirs. */
+	private static void numberNewLines(String inwardNo, Collection<InwardTradingChildEntity> existing, List<InwardTradingChildEntity> saved) {
+		int last = 0;
+		List<InwardTradingChildEntity> all = new ArrayList<>(saved);
+		if (existing != null) all.addAll(existing);
+		for (InwardTradingChildEntity item : all) {
+			String id = item.getInwardItemId();
+			if (id != null && id.startsWith(inwardNo + "-")) {
+				try {
+					last = Math.max(last, Integer.parseInt(id.substring(inwardNo.length() + 1)));
+				} catch (NumberFormatException ignored) {
+					// A hand-typed id; leave it alone.
+				}
+			}
+		}
+		for (InwardTradingChildEntity item : saved) {
+			if (item.getInwardItemId() == null || item.getInwardItemId().trim().isEmpty()) {
+				item.setInwardItemId(inwardNo + "-" + (++last));
+			}
+		}
+	}
 
 	private void validateQualityCheck(InwardTradingRequest request) {
 		if (request.getQcStatus() != null && !java.util.Arrays.asList("Pass", "Conditional", "Hold").contains(request.getQcStatus())) {

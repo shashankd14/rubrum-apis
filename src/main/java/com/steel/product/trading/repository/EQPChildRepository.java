@@ -25,7 +25,7 @@ public interface EQPChildRepository extends JpaRepository<EQPChildEntity, Intege
 
 	@Modifying
 	@Transactional
-	@Query("update EQPChildEntity inward set inward.quoteCreatedBy=null, inward.quoteUpdatedBy=null, inward.quoteCreatedOn=null, inward.quoteUpdatedOn=null, inward.updatedBy=:userId, inward.updatedOn=CURRENT_TIMESTAMP where inward.enquiryId.enquiryId in :enquiryIds and inward.status='QUOTE'")
+	@Query("update EQPChildEntity inward set inward.quoteCreatedBy=null, inward.quoteUpdatedBy=null, inward.quoteCreatedOn=null, inward.quoteUpdatedOn=null, inward.status='ENQUIRY', inward.updatedBy=:userId, inward.updatedOn=CURRENT_TIMESTAMP where inward.enquiryId.enquiryId in :enquiryIds and inward.status='QUOTE'")
 	void deleteQuoteChildData(@Param("enquiryIds") List<Integer> enquiryIds, @Param("userId") Integer userId);
 
 	@Modifying

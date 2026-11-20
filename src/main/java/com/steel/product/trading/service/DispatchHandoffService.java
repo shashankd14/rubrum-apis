@@ -90,8 +90,9 @@ public class DispatchHandoffService {
         com.steel.product.trading.entity.DOEntity order = orders.findAllEnqIds(request.getEnquiryId()).stream()
             .filter(d -> !Boolean.TRUE.equals(d.getIsDeleted())).findFirst()
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.CONFLICT, "Save the delivery order first."));
-        if (order.getVehicleNo() == null || order.getVehicleNo().trim().isEmpty() || order.getDeliveryDate() == null)
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Save vehicle and delivery date before approving loading.");
+        // Vehicle is optional on a DO (it is captured on the challan), so only the delivery date is needed here.
+        if (order.getDeliveryDate() == null)
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Save the delivery date before approving loading.");
         if (!"APPROVED".equals(enquiry.getdOStatus())) {
             enquiry.setdOStatus("APPROVED");
             enquiry.setUpdatedBy(request.getUserId());

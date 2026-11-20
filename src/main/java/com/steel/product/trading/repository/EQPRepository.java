@@ -97,7 +97,7 @@ public interface EQPRepository extends JpaRepository<EQPEntity, Integer> {
 
 	@Modifying
 	@Transactional
-	@Query("update EQPEntity inward set inward.quoteCustomerId=null, inward.quoteEnquiryFrom=null, inward.quoteEnquiryDate=null, inward.quoteQty=null, inward.quoteValue=null, inward.quoteCreatedBy=null, inward.quoteUpdatedBy=null, inward.quoteCreatedOn=null, inward.quoteUpdatedOn=null, inward.updatedBy=:userId, inward.updatedOn=CURRENT_TIMESTAMP, status='ENQUIRY' where inward.enquiryId in :enquiryIds and inward.currentStatus='QUOTE'")
+	@Query("update EQPEntity inward set inward.quoteCustomerId=null, inward.quoteEnquiryFrom=null, inward.quoteEnquiryDate=null, inward.quoteQty=null, inward.quoteValue=null, inward.quoteCreatedBy=null, inward.quoteUpdatedBy=null, inward.quoteCreatedOn=null, inward.quoteUpdatedOn=null, inward.quoteStatus=null, inward.currentStatus='ENQUIRY', inward.updatedBy=:userId, inward.updatedOn=CURRENT_TIMESTAMP where inward.enquiryId in :enquiryIds and inward.currentStatus='QUOTE'")
 	void deleteQuoteMainData(@Param("enquiryIds") List<Integer> enquiryIds, @Param("userId") Integer userId);
 
 	@Modifying

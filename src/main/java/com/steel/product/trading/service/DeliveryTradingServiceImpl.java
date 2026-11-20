@@ -62,6 +62,15 @@ public class DeliveryTradingServiceImpl implements DeliveryTradingService {
 				return new ResponseEntity<>("{\"status\": \"fail\", \"message\": \"Please enter valid enquiry data\"}", header, HttpStatus.BAD_REQUEST);
 			}
 			
+			// A DO is created from a pushed proforma and edited only while it is still a DO (not after its challan).
+			boolean pushedProforma = "PROFORMA".equals(eqpEntity.getCurrentStatus()) && "PENDING_DO".equals(eqpEntity.getProformaStatus());
+			if (Boolean.TRUE.equals(eqpEntity.getIsDeleted()) || !(pushedProforma || "DO".equals(eqpEntity.getCurrentStatus()))) {
+				String reason = "DC".equals(eqpEntity.getCurrentStatus())
+						? "A delivery challan exists for this order. Delete the challan before editing the delivery order."
+						: "Push the proforma to dispatch before creating a delivery order.";
+				return TradingErrors.body(HttpStatus.CONFLICT, reason, null);
+			}
+
 			DOEntity dummydoEntity = new DOEntity();
 			List<DOEntity> oldDOEntity = doRepository.findAllEnqIds(request.getEnquiryId());
 			if (oldDOEntity!= null && oldDOEntity.size()> 0 ) {
