@@ -456,21 +456,18 @@ public class InstructionServiceImpl implements InstructionService {
 		} 
         updateCoilStatus(savedInstruction.getInwardId().getInwardEntryId(), instructionFinishDto.getTaskType());
          
-
-		if ("WIPtoFG".equalsIgnoreCase(instructionFinishDto.getTaskType())) { // WIPtoFG
-			// Only packets that actually became FG (ready to deliver) in this finish = one cut.
-			// No DC exists yet at finish time - the FG call needs only the coil and the packet ids.
-			List<Integer> fgInstructionIds = updatedInstructionList.stream()
-					.filter(i -> i.getStatus() != null && i.getStatus().getStatusId() == readyToDeliverStatusId)
-					.map(Instruction::getInstructionId).collect(Collectors.toList());
-			Integer fgInwardId = inwardEntry != null ? inwardEntry.getInwardEntryId() : null;
-			if (!fgInstructionIds.isEmpty()) {
-				try {
-					service.inventoryAdjustmentFG(fgInwardId, fgInstructionIds, instructionFinishDto.getTaskType());
-				} catch (Exception e) {
-					// Never fail the finish; the failure is recorded and retried before the DC is sent.
-					log.error("FG inventory adjustment failed for inwardId " + fgInwardId + ", instructions ", fgInstructionIds, e);
-				}
+		// Only packets that actually became FG (ready to deliver) in this finish = on cut.
+		// No DC exists yet at finish time - the FG call needs only the coil and the packet ids.
+		List<Integer> fgInstructionIds = updatedInstructionList.stream()
+				.filter(i -> i.getStatus() != null && i.getStatus().getStatusId() == readyToDeliverStatusId)
+				.map(Instruction::getInstructionId).collect(Collectors.toList());
+		Integer fgInwardId = inwardEntry != null ? inwardEntry.getInwardEntryId() : null;
+		if (!fgInstructionIds.isEmpty()) {
+			try {
+				service.inventoryAdjustmentFG(fgInwardId, fgInstructionIds, instructionFinishDto.getTaskType());
+			} catch (Exception e) {
+				// Never fail the finish; the failure is recorded and retried before the DC is sent.
+				log.error("FG inventory adjustment failed for inwardId " + fgInwardId + ", instructions ", fgInstructionIds, e);
 			}
 		}
 		
