@@ -9,5 +9,7 @@ public class InventoryAdjustmentFGRequest {
 
 	private Integer inwardId;
 
+	private String taskType;
+
 	private List<Integer> instructionIds;
 }

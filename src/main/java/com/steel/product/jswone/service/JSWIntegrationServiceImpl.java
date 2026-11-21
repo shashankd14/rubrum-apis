@@ -74,6 +74,7 @@ import com.steel.product.jswone.request.MaterialMasterFileDataDTO;
 import com.steel.product.jswone.request.POSOIntegrationRequest;
 import com.steel.product.jswone.response.DC_InventoryAdjustmentLineItem;
 import com.steel.product.jswone.response.DC_InventoryAdjustmentMainRequest;
+import com.steel.product.jswone.response.DC_InventoryLineItem;
 import com.steel.product.jswone.response.FG_InventoryAdjustmentMainRequest;
 import com.steel.product.jswone.response.FromSku;
 import com.steel.product.jswone.response.InventoryAdjustmentBatch;
@@ -1219,6 +1220,16 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			lineItems.add(lineitem);
 		}
 		req.setLine_items(lineItems);
+
+		// FG references (and their status) of the packets mapped to this DC
+		List<DC_InventoryLineItem> fgLineItems = new ArrayList<>();
+		for (Object[] fg : instructionRepository.prepareDcFgLineItems(dcId)) {
+			DC_InventoryLineItem fgLineItem = new DC_InventoryLineItem();
+			fgLineItem.setFgReferenceId(str(fg[0]));
+			fgLineItem.setStatus(str(fg[1]));
+			fgLineItems.add(fgLineItem);
+		}
+		req.setFg_line_items(fgLineItems);
 		return req;
 	}
 
@@ -1230,7 +1241,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 	private static final String FG_AUDIT_PROCESS = "INVENTORY_ADJUSTMENT_FG";
 
 	@Override
-	public InventoryAdjustmentResponse inventoryAdjustmentFG(Integer inwardId, List<Integer> instructionIds) {
+	public InventoryAdjustmentResponse inventoryAdjustmentFG(Integer inwardId, List<Integer> instructionIds, String taskType) {
 		InventoryAdjustmentResponse response = new InventoryAdjustmentResponse();
 		ResponseEntity<String> res = null;
 		JswoneAuditTrailEntity audit = new JswoneAuditTrailEntity();
@@ -1240,8 +1251,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 		log.info("FG inventory adjustment for inwardId " + inwardId + ", instructionIds " + ids);
 
 		// Header rows (one per toSku) - like prepareInvAdjustmentRequest for a DC
-		List<Object[]> fgDetails = (inwardId == null || ids.isEmpty()) ? new ArrayList<>()
-				: instructionRepository.prepareFgInvAdjustmentRequest(inwardId, ids);
+		List<Object[]> fgDetails = (inwardId == null || ids.isEmpty()) ? new ArrayList<>(): instructionRepository.prepareFgInvAdjustmentRequest(inwardId, ids);
 		if (fgDetails.isEmpty()) {
 			response.setCode("NO_PACKETS");
 			response.setMessage("No finished packets for FG inventory adjustment (inwardId " + inwardId + ")");
@@ -1257,7 +1267,7 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			HttpHeaders headers = new HttpHeaders();
 			headers.set("Content-Type", "application/json");
 			headers.set(propertyMap.get("inventoryAdjustment_headerkey"), propertyMap.get("inventoryAdjustment_headervalue"));
-			FG_InventoryAdjustmentMainRequest fgRequest = prepareFgInvAdjustmentRequest(inwardId, ids, fgDetails, fgReferenceId);
+			FG_InventoryAdjustmentMainRequest fgRequest = prepareFgInvAdjustmentRequest(inwardId, ids, fgDetails, fgReferenceId, taskType);
 			String inventoryAdjustmentReq = objectMapper.writeValueAsString(fgRequest);
 			audit.setRequestObj(inventoryAdjustmentReq);
 			if (fgRequest.getLine_items().isEmpty() || fgRequest.getWarehouseId() == null || fgRequest.getBranchID() == null) {
@@ -1328,7 +1338,9 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 		try {
 			// Store the reference on every packet of the cut so the WMS callback (invadj-status) can update
 			// them by fgReferenceId; fg_inv_stts is SENT/FAILED here and overwritten by the callback status.
-			instructionRepository.updateFgReferenceAndStatus(ids, fgReferenceId, fgInvStts);
+			// fg_inv_response keeps the full WMS response body (or the error body/message when the call failed).
+			instructionRepository.updateFgReferenceAndStatus(ids, fgReferenceId, fgInvStts,
+					audit.getDestinationResponse());
 		} catch (Exception ex) {
 			log.error("Could not update FG reference/status for instructions " + ids, ex);
 		}
@@ -1363,12 +1375,17 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 
 	/**
 	 * Same shape as {@link #prepareInvAdjustmentRequest}: one line item per toSku from the header query,
-	 * fromSkus (coil SKU/batch consumed, negative quantity) from a second query per toSku. Weights in MT.
+	 * fromSkus (negative quantity) from a second query per toSku. Weights in MT.
+	 * <ul>
+	 * <li>WIPtoFG (default, also when taskType is null): fromSku = coil SKU (product_tblinwardentry.mm_id)</li>
+	 * <li>FGtoWIP / FGtoFG: fromSku = packet SKU (product_instruction.mmid), like toSku</li>
+	 * </ul>
 	 */
 	private FG_InventoryAdjustmentMainRequest prepareFgInvAdjustmentRequest(Integer inwardId, List<Integer> ids,
-			List<Object[]> fgDetails, String fgReferenceId) {
+			List<Object[]> fgDetails, String fgReferenceId, String taskType) {
 
 		FG_InventoryAdjustmentMainRequest req = new FG_InventoryAdjustmentMainRequest();
+		boolean fromSkuFromInstruction = "FGtoWIP".equalsIgnoreCase(taskType) || "FGtoFG".equalsIgnoreCase(taskType);
 
 		for (Object[] result : fgDetails) {
 			FG_InventoryAdjustmentMainRequest.LineItem lineitem = new FG_InventoryAdjustmentMainRequest.LineItem();
@@ -1394,7 +1411,9 @@ public class JSWIntegrationServiceImpl implements JSWIntegrationService {
 			toSku.setUom("MT");
 			lineitem.setToSku(toSku);
 
-			List<Object[]> fromSkuDetails = instructionRepository.prepareFgInvAdjustmentFrom(inwardId, ids, mmid);
+			List<Object[]> fromSkuDetails = fromSkuFromInstruction
+					? instructionRepository.prepareFgInvAdjustmentFromInstruction(inwardId, ids, mmid)
+					: instructionRepository.prepareFgInvAdjustmentFrom(inwardId, ids, mmid);
 			for (Object[] resultfrom : fromSkuDetails) {
 				BigDecimal totalWeight1 = (resultfrom[0] == null ? BigDecimal.ZERO : new BigDecimal(String.valueOf(resultfrom[0])));
 				String mmid1 = str(resultfrom[1]);

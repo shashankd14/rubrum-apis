@@ -140,7 +140,7 @@ public class InwardEntry {
 	private BigDecimal valueOfGoods;
 
 	@Column(name = "billedweight")
-	private float billedweight;
+	private Float billedweight;
 
 	@Column(name = "scrapWeight")
 	private Float scrapWeight;

@@ -466,7 +466,7 @@ public class InstructionServiceImpl implements InstructionService {
 			Integer fgInwardId = inwardEntry != null ? inwardEntry.getInwardEntryId() : null;
 			if (!fgInstructionIds.isEmpty()) {
 				try {
-					service.inventoryAdjustmentFG(fgInwardId, fgInstructionIds);
+					service.inventoryAdjustmentFG(fgInwardId, fgInstructionIds, instructionFinishDto.getTaskType());
 				} catch (Exception e) {
 					// Never fail the finish; the failure is recorded and retried before the DC is sent.
 					log.error("FG inventory adjustment failed for inwardId " + fgInwardId + ", instructions ", fgInstructionIds, e);

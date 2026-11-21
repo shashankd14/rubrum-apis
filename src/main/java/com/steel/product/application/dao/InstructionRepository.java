@@ -56,13 +56,28 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
     List<Object[]> prepareFgInvAdjustmentFrom(@Param("inwardId") Integer inwardId,
             @Param("instructionIds") List<Integer> instructionIds, @Param("mmid") String mmid);
 
+    /**
+     * FGtoWIP / FGtoFG fromSku rows for one toSku: the SKU comes from the packet (product_instruction.mmid,
+     * falling back to the coil mm_id) instead of the coil. Same columns as {@link #prepareFgInvAdjustmentFrom}:
+     * 0 weight (MT), 1 packet mmid, 2 coilnumber, 3 batch_id
+     */
+    @Query(value = "SELECT ROUND(SUM(ins.actualweight) / 1000, 3) weight_mt, "
+            + " COALESCE(NULLIF(TRIM(ins.mmid), ''), inw.mm_id) from_sku, inw.coilnumber, inw.batch_id "
+            + " FROM product_instruction ins "
+            + " JOIN product_tblinwardentry inw ON inw.inwardentryid = :inwardId "
+            + " WHERE ins.instructionid IN (:instructionIds) AND ins.actualweight IS NOT NULL "
+            + " AND COALESCE(NULLIF(TRIM(ins.mmid), ''), inw.mm_id) = :mmid "
+            + " GROUP BY COALESCE(NULLIF(TRIM(ins.mmid), ''), inw.mm_id), inw.coilnumber, inw.batch_id", nativeQuery = true)
+    List<Object[]> prepareFgInvAdjustmentFromInstruction(@Param("inwardId") Integer inwardId,
+            @Param("instructionIds") List<Integer> instructionIds, @Param("mmid") String mmid);
+
     /** Stores the FG reference + send status on the packets of a cut (like updateZohoSyncRemarks for a DC). */
     @Modifying
     @Transactional
-    @Query(value = "UPDATE product_instruction SET fg_reference_id = :fgReferenceId, fg_inv_stts = :fgInvStts "
-            + " WHERE instructionid IN (:instructionIds)", nativeQuery = true)
+    @Query(value = "UPDATE product_instruction SET fg_reference_id = :fgReferenceId, fg_inv_stts = :fgInvStts, fg_inv_response = :fgInvResponse WHERE instructionid IN (:instructionIds)", nativeQuery = true)
     int updateFgReferenceAndStatus(@Param("instructionIds") List<Integer> instructionIds,
-            @Param("fgReferenceId") String fgReferenceId, @Param("fgInvStts") String fgInvStts);
+            @Param("fgReferenceId") String fgReferenceId, @Param("fgInvStts") String fgInvStts,
+            @Param("fgInvResponse") String fgInvResponse);
 
     @Query(" from Instruction order by instructionId desc")
     public List<Instruction> getAll();
@@ -243,6 +258,15 @@ public interface InstructionRepository extends JpaRepository<Instruction, Intege
 			+ " WHERE ins.deliveryid=dc.deliveryid and dc.deliveryid = :dcId group by mmid  ) a "
 			+ " where 1=1 group by sono, dt, vehicleno, mmid, wearhouse_id, branch_id, zbooks_so ", nativeQuery = true)
 	public List<Object[]> prepareInvAdjustmentRequest(Integer dcId);
+
+	/**
+	 * FG references of the packets mapped to a DC (product_instruction.deliveryid = dcId).
+	 * Columns: 0 fg_reference_id, 1 fg_inv_stts
+	 */
+	@Query(value = "SELECT ins.fg_reference_id, MAX(ins.fg_inv_stts) fg_inv_stts FROM product_instruction ins "
+			+ " WHERE ins.deliveryid = :dcId AND ins.fg_reference_id IS NOT NULL AND TRIM(ins.fg_reference_id) <> '' "
+			+ " GROUP BY ins.fg_reference_id ORDER BY MIN(ins.instructionid)", nativeQuery = true)
+	public List<Object[]> prepareDcFgLineItems(@Param("dcId") Integer dcId);
 
 	@Query(value = "SELECT count(*) FROM product_instruction WHERE fg_reference_id = :fgReferenceId", nativeQuery = true)
 	public long countByFgReferenceId(@Param("fgReferenceId") String fgReferenceId);

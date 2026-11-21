@@ -50,5 +50,5 @@ public interface JSWIntegrationService {
 	 * One call = one cut = one fgReferenceId. Needs no delivery/DC id - only the coil (inwardId)
 	 * and the packets (instructionIds) that were just finished.
 	 */
-	InventoryAdjustmentResponse inventoryAdjustmentFG(Integer string, List<Integer> list);
+	InventoryAdjustmentResponse inventoryAdjustmentFG(Integer string, List<Integer> list, String taskType);
 }

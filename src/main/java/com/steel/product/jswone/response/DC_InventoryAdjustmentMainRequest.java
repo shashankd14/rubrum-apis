@@ -26,4 +26,7 @@ public class DC_InventoryAdjustmentMainRequest {
 	private String dcNumber;
 
 	private List<DC_InventoryAdjustmentLineItem> line_items = new ArrayList<>();
+
+	private List<DC_InventoryLineItem> fg_line_items = new ArrayList<>();
+	
 }

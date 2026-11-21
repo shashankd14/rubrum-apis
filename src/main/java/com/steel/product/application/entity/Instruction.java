@@ -13,6 +13,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
@@ -172,6 +173,11 @@ public class Instruction {
     /** FG inventory-adjustment status: SENT / FAILED on send, then whatever WMS reports via the callback. */
     @Column(name = "fg_inv_stts")
     private String fgInvStts;
+
+    /** Full raw response (or error body) returned by WMS for the FG inventory adjustment. */
+    @Lob
+    @Column(name = "fg_inv_response", columnDefinition = "LONGTEXT")
+    private String fgInvResponse;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "part_Details_id")

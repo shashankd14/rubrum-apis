@@ -122,7 +122,6 @@ public class JSWIntegrationController {
 			response.put("data", "");
 			return new ResponseEntity<Object>(response, HttpStatus.BAD_REQUEST);
 		}
-		
 	}
 
 	@PostMapping(value = "/xternal/postgrn", produces = "application/json")
@@ -219,9 +218,8 @@ public class JSWIntegrationController {
 	@PostMapping(value = "/xternal/invadjustmentFG", consumes = "application/json", produces = "application/json")
 	public ResponseEntity<Object> inventoryAdjustmentFG(@RequestBody InventoryAdjustmentFGRequest request) {
 		InventoryAdjustmentResponse response = service.inventoryAdjustmentFG(request.getInwardId(),
-				request.getInstructionIds());
+				request.getInstructionIds(), request.getTaskType());
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
-	
 
 }
