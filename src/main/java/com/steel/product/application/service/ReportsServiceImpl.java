@@ -620,6 +620,69 @@ public class ReportsServiceImpl implements ReportsService {
         return true;
     }
 
+    // ── Inward Daily Report ───────────────────────────────────────────────────
+
+    private static final java.time.format.DateTimeFormatter[] RECEIVED_DATE_FORMATS = {
+        java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd"),
+        java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy"),
+        java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"),
+        new java.time.format.DateTimeFormatterBuilder().parseCaseInsensitive()
+            .appendPattern("dd-MMM-yyyy").toFormatter(java.util.Locale.ENGLISH)
+    };
+
+    /** Parses the view's String received_date (time part, if any, is ignored). */
+    private static LocalDate parseReceivedDate(String value) {
+        if (value == null || value.trim().isEmpty()) return null;
+        String v = value.trim();
+        int sep = v.indexOf(' ');
+        if (sep < 0) sep = v.indexOf('T');
+        if (sep > 0) v = v.substring(0, sep);
+        for (java.time.format.DateTimeFormatter f : RECEIVED_DATE_FORMATS) {
+            try {
+                return LocalDate.parse(v, f);
+            } catch (java.time.format.DateTimeParseException ignored) {
+                // try next format
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public boolean createInwardDailyReport(int partyId, String strDate, MimeMessageHelper helper) {
+        try (XSSFWorkbook wb = new XSSFWorkbook()) {
+            WorkbookStyles styles = new WorkbookStyles(wb);
+            LocalDate reportDate = LocalDate.parse(strDate,
+                new java.time.format.DateTimeFormatterBuilder().parseCaseInsensitive()
+                    .appendPattern("dd-MMM-yyyy").toFormatter(java.util.Locale.ENGLISH));
+
+            // Fetch the month, then keep only coils received on the report date
+            List<InwardReportViewEntity> list = new ArrayList<>();
+            for (InwardReportViewEntity kk : inwardReportViewRepository.findByPartyIdAndMnthAndYer(
+                    partyId, reportDate.getMonthValue(), reportDate.getYear())) {
+              //  if (reportDate.equals(parseReceivedDate(kk.getReceivedDate()))) {
+                    list.add(kk);
+               // }
+            }
+
+            addSheet(wb, "Inward_Report",
+                new Object[]{"CustomerName","CoilNumber","CustomerBatchId","ReceivedDate","MaterialDesc",
+                    "MaterialGrade","TDC No","Thickness","Width","Length","NetWeight",
+                    "customerinvoiceno","customerinvoicedate","InwardStatus"},
+                list,
+                kk -> new Object[]{
+                    kk.getCustomerName(), kk.getCoilnumber(), kk.getCustomerbatchid(),
+                    kk.getReceivedDate(), kk.getMaterialdesc(), kk.getMaterialGrade(), kk.getTdcNo(),
+                    kk.getFthickness(), kk.getFwidth(), kk.getFlength(), kk.getNetWeight(),
+                    kk.getCustomerinvoiceno(), kk.getCustomerinvoicedate(), kk.getInwardStatus()},
+                styles);
+            return writeAndAttach(wb, "InwardReport_" + strDate + ".xlsx", !list.isEmpty(), helper);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("createInwardDailyReport failed partyId={}", partyId, e);
+        }
+        return true;
+    }
+
     // ── Outward Monthly Report ────────────────────────────────────────────────
 
     @Override
@@ -629,7 +692,43 @@ public class ReportsServiceImpl implements ReportsService {
             WorkbookStyles                styles = new WorkbookStyles(wb);
             List<OutwardReportViewEntity> list   =
                 outwardReportViewRepository.findByPartyIdAndMnthAndYer(partyId, month, year);
+            addOutwardSheet(wb, list, styles);
+            return writeAndAttach(wb, "OutwardReport_" + months.get(month) + ".xlsx", !list.isEmpty(), helper);
+        } catch (Exception e) {
+        	e.printStackTrace();
+            log.error("createOutwardMonthlyReport failed partyId={}", partyId, e);
+        }
+        return true;
+    }
 
+    // ── Outward Daily Report ──────────────────────────────────────────────────
+
+    @Override
+    public boolean createOutwardDailyReport(int partyId, String strDate, MimeMessageHelper helper) {
+        try (XSSFWorkbook wb = new XSSFWorkbook()) {
+            WorkbookStyles styles = new WorkbookStyles(wb);
+            LocalDate reportDate = LocalDate.parse(strDate,
+                new java.time.format.DateTimeFormatterBuilder().parseCaseInsensitive()
+                    .appendPattern("dd-MMM-yyyy").toFormatter(java.util.Locale.ENGLISH));
+
+            // Fetch the month, then keep only rows invoiced on the report date
+            List<OutwardReportViewEntity> list = new ArrayList<>();
+            for (OutwardReportViewEntity kk : outwardReportViewRepository.findByPartyIdAndMnthAndYer(
+                    partyId, reportDate.getMonthValue(), reportDate.getYear())) {
+                //if (reportDate.equals(parseReceivedDate(kk.getSapinvoicedate()))) {
+                    list.add(kk);
+               // }
+            }
+            addOutwardSheet(wb, list, styles);
+            return writeAndAttach(wb, "OutwardReport_" + strDate + ".xlsx", !list.isEmpty(), helper);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("createOutwardDailyReport failed partyId={}", partyId, e);
+        }
+        return true;
+    }
+
+    private void addOutwardSheet(XSSFWorkbook wb, List<OutwardReportViewEntity> list, WorkbookStyles styles) {
 			Object[] hdrs = { "S.No", "Aspen DC No", "customer name", "sap invoice No",
 					"sap invoice date", "material description", "vehicleno", "tdc no", "process type",
 					"Qty", "Rate", "Sub Total", "Total Amount", "CGST 9%", "SGST 9%", "Gross Amount" };
@@ -677,13 +776,6 @@ public class ReportsServiceImpl implements ReportsService {
 			}
             for (int i = 0; i < hdrs.length; i++) sheet.setColumnWidth(i, Math.max(maxLen[i], 12) * 310);
             sheet.createFreezePane(0, 1);
-
-            return writeAndAttach(wb, "OutwardReport_" + months.get(month) + ".xlsx", !list.isEmpty(), helper);
-        } catch (Exception e) {
-        	e.printStackTrace();
-            log.error("createOutwardMonthlyReport failed partyId={}", partyId, e);
-        }
-        return true;
     }
 
     // ── Stock Monthly Report ──────────────────────────────────────────────────
@@ -861,19 +953,21 @@ public class ReportsServiceImpl implements ReportsService {
 
     // ── Stock Details Report ──────────────────────────────────────────────────
 
-    @Override
+	@Override
 	public boolean createStockDetailsReport(int partyId, String strDate, MimeMessageHelper helper) {
 		try (XSSFWorkbook wb = new XSSFWorkbook()) {
 			WorkbookStyles styles = new WorkbookStyles(wb);
 			List<StockDetailsReportViewEntity> list = stockDetailsReportViewRepository.findByPartyId(partyId);
 			addSheet(wb, "StockDetails_Report",
-					new Object[] { "Current Date", "Finishing Date", "EPA Name", "EPA location", "Mtrl. Age(Days)",
-							"No'of Pieces", "Classification Tag", "Customer Name", "Material Desc", "Mother Coil No",
-							"EPA Input Batch", "Child Packet Id", "MaterialGrade", "TDC No", "Thickness",
-							"Actual Width", "Actual Length", "Quality Remarks (For Deviation)", "Net Wt (Mt)" },
+					new Object[] { "Current Date", "Inward Date", "Coil Age (Days)", "Finishing Date", "FG Age (Days)",
+							"EPA Name", "EPA location", "No'of Pieces", "Classification Tag", "Customer Name",
+							"Material Desc", "Mother Coil No", "EPA Input Batch", "Child Packet Id", "MaterialGrade",
+							"TDC No", "Thickness", "Actual Width", "Actual Length", "Quality Remarks (For Deviation)",
+							"Net Wt (Mt)" },
 					list, kk -> {
-						return new Object[] { kk.getCurrentdate(), kk.getFinishingdate(), kk.getEpaname(),
-								kk.getEpalocation(), kk.getCoilage(), kk.getNoofpieces(), kk.getClassificationTag(), kk.getEndusertagname(),
+						return new Object[] { kk.getCurrentdate(), kk.getCoilinwarddate(), kk.getCoilage(),
+								kk.getFinishingdate(), kk.getFgage(), kk.getEpaname(), kk.getEpalocation(),
+								kk.getNoofpieces(), kk.getClassificationTag(), kk.getEndusertagname(),
 								kk.getMaterialdesc(), kk.getParentbatch(), kk.getEpainputbatch(), kk.getPacketId(),
 								kk.getMaterialgrade(), kk.getTdcNo(), kk.getFthickness(), kk.getActualwidth(),
 								kk.getActuallength(), kk.getQuality(), kk.getNetweight() };

@@ -31,6 +31,9 @@ public class StockDetailsReportViewEntity {
 	@Column(name = "finishingdate")
 	private String finishingdate;
 
+	@Column(name = "coilinwarddate")
+	private String coilinwarddate;
+
 	@Column(name = "epaname")
 	private String epaname;
 
@@ -39,6 +42,9 @@ public class StockDetailsReportViewEntity {
 
 	@Column(name = "coilage")
 	private String coilage;
+
+	@Column(name = "fgage")
+	private String fgage;
 
 	@Column(name = "classification_tag")
 	private String classificationTag;

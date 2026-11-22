@@ -70,27 +70,34 @@ public class MailSender {
 				reportsService.createStockReport(party.getnPartyId(), strDate, helper);
 				reportsService.createStockDetailsReport(party.getnPartyId(), strDate, helper);
 			}
-			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0
-					&& party.getDailyReportsList().contains("FGREPORT")) {
+			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0 && party.getDailyReportsList().contains("FGREPORT")) {
 				mailStts = true;
 				reportsService.createFGReport(party.getnPartyId(), strDate, helper);
-				reportsService.createEndUserTagWiseFGReport(party.getnPartyId(), strDate, helper);
+				//reportsService.createEndUserTagWiseFGReport(party.getnPartyId(), strDate, helper);
 			}
-			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0
-					&& party.getDailyReportsList().contains("WIPREPORT")) {
+			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0 && party.getDailyReportsList().contains("WIPREPORT")) {
 				mailStts = true;
 				reportsService.createWIPReport(party.getnPartyId(), strDate, helper);
-				reportsService.createWIPReportEndusertagwise(party.getnPartyId(), strDate, helper);
+				//reportsService.createWIPReportEndusertagwise(party.getnPartyId(), strDate, helper);
 			}
-			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0
-					&& party.getDailyReportsList().contains("STOCKSUMMARYREPORT")) {
-				mailStts = true;
-				reportsService.createStockSummaryReport(party.getnPartyId(), strDate, helper);
-			}
+			//if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0 && party.getDailyReportsList().contains("STOCKSUMMARYREPORT")) {
+				//mailStts = true;
+				//reportsService.createStockSummaryReport(party.getnPartyId(), strDate, helper);
+			//}
 			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0
 					&& party.getDailyReportsList().contains("RMREPORT")) {
 				mailStts = true;
 				reportsService.createRMReport(party.getnPartyId(), strDate, helper);
+			}
+			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0
+					&& party.getDailyReportsList().contains("INWARDREPORT")) {
+				mailStts = true;
+				reportsService.createInwardDailyReport(party.getnPartyId(), strDate, helper);
+			}
+			if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0
+					&& party.getDailyReportsList().contains("OUTWARDREPORT")) {
+				mailStts = true;
+				reportsService.createOutwardDailyReport(party.getnPartyId(), strDate, helper);
 			}
 			//if (party.getDailyReportsList() != null && party.getDailyReportsList().length() > 0 
 			//      && party.getDailyReportsList().contains("MONTHWISE_PLAN_TRACKER")) {
@@ -152,17 +159,17 @@ public class MailSender {
 
 			if (party.getMonthlyReportsList() != null && party.getMonthlyReportsList().length() > 0) {
 
-				if (party.getMonthlyReportsList().contains("INWARDREPORT")) {
+				/*if (party.getMonthlyReportsList().contains("INWARDREPORT")) {
 					mailStts = true;
 					reportsService.createInwardMonthlyReport(party.getnPartyId(), helper, month, months, year);
-				}
-				if (party.getMonthlyReportsList().contains("STOCKREPORT")) {
-					mailStts = true;
-					reportsService.createStockMonthlyReport(party.getnPartyId(), helper, month, months);
 				}
 				if (party.getMonthlyReportsList().contains("OUTWARDREPORT")) {
 					mailStts = true;
 					reportsService.createOutwardMonthlyReport(party.getnPartyId(), helper, month, months, year);
+				}*/
+				if (party.getMonthlyReportsList().contains("STOCKREPORT")) {
+					mailStts = true;
+					reportsService.createStockMonthlyReport(party.getnPartyId(), helper, month, months);
 				}
 				if (party.getMonthlyReportsList().contains("PROCESSINGREPORT")) {
 					mailStts = true;

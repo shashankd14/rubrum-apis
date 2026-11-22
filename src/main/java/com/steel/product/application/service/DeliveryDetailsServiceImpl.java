@@ -295,9 +295,10 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 			}
 			ins.setStatus(readyToDeliverStatus);
 			Float inStockWeight = inwardEntry.getInStockWeight();
-			inwardEntry.setInStockWeight(inStockWeight + ins.getActualWeight());
-			Float fPresent = inwardEntry.getFpresent();
-			inwardEntry.setFpresent(fPresent + ins.getActualWeight());
+			Float actualWeight = (ins.getActualWeight() == null ? 0.0f : ins.getActualWeight());
+			inwardEntry.setInStockWeight(inStockWeight + actualWeight);
+			//Float fPresent = inwardEntry.getFpresent();
+			//inwardEntry.setFpresent(fPresent + ins.getActualWeight());
             log.info("adding instruction actual weight "+ins.getActualWeight()+" and setting inward inStock weight from "+inStockWeight+" to "+(inStockWeight + ins.getActualWeight()));
             if(inwardEntry.getStatus().equals(deliveredStatus)){
                 log.info("setting inward " + inwardEntry.getInwardEntryId() + " status to ready to deliver");
