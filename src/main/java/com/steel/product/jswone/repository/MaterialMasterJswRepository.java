@@ -101,7 +101,7 @@ public interface MaterialMasterJswRepository
 			+ " where mat.brand_id = :brandId "
 			+ " and mat.subgrade_id = :subGradeId "
 			+ " and mat.grade_id = :gradeId "
-			+ " and mat.form_id not in (21) "
+			+ " and mat.form_id =21 "
 			+ " and mat.thickness = :thickness "
 			+ " and mat.width = :width "
 			+ " order by mat.mm_id", nativeQuery = true)

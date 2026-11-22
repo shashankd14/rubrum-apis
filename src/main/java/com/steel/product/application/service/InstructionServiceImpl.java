@@ -1712,11 +1712,14 @@ public class InstructionServiceImpl implements InstructionService {
 				entity.getSubgradeId(),
 				entity.getGradeId(), entity.getThickness(), entity.getWidth());
 
-		// MMID -> length
-		Map<String, Object> response = new LinkedHashMap<>();
+		// [{ "mmId": ..., "length": ... }]
+		List<Map<String, Object>> response = new ArrayList<>();
 		for (Object[] row : rows) {
 			if (row[0] != null) {
-				response.put(row[0].toString(), row[1]);
+				Map<String, Object> item = new LinkedHashMap<>();
+				item.put("mmId", row[0].toString());
+				item.put("length", row[1]);
+				response.add(item);
 			}
 		}
 		return new ResponseEntity<>(response, HttpStatus.OK);
