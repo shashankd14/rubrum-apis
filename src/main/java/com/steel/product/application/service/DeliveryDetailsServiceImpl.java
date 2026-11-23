@@ -28,6 +28,7 @@ import com.steel.product.application.dto.delivery.DeliveryPacketsDto;
 import com.steel.product.application.dto.delivery.TallyUpdateStatusDTO;
 import com.steel.product.application.dto.delivery.TallyUpdateSttsRequestDTO;
 import com.steel.product.application.dto.delivery.ValidatePriceMappingDTO;
+import com.steel.product.application.dto.pricemaster.CoilWisePacketSummaryDTO;
 import com.steel.product.application.dto.pricemaster.PriceCalculateDTO;
 import com.steel.product.application.dto.pricemaster.PriceCalculateResponseDTO;
 import com.steel.product.application.entity.AdminUserEntity;
@@ -557,11 +558,48 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 			    priceCalculateResponseDTO.setRemarks("This thickness range already has a value (rate) defined. Please recheck.");
 			}
 			priceCalculateResponseDTO.setPriceDetailsList(priceDetailsList);
-      
+			setCoilWisePacketSummary(priceCalculateResponseDTO, deliveryDto);
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return priceCalculateResponseDTO;
+	}
+
+	/**
+	 * Coil wise and overall total no of packets / total weight.
+	 * Fetched by deliveryId when the DC exists, otherwise by the selected packets.
+	 */
+	private void setCoilWisePacketSummary(PriceCalculateResponseDTO response, DeliveryDto deliveryDto) {
+		List<Object[]> rows;
+		if (deliveryDto.getDeliveryId() != null && deliveryDto.getDeliveryId() > 0) {
+			rows = deliveryDetailsRepo.getCoilWisePacketSummaryByDeliveryId(deliveryDto.getDeliveryId());
+		} else if (deliveryDto.getDeliveryItemDetails() != null && !deliveryDto.getDeliveryItemDetails().isEmpty()) {
+			rows = deliveryDetailsRepo.getCoilWisePacketSummaryByInstructionIds(deliveryDto.getDeliveryItemDetails()
+					.stream().map(DeliveryItemDetails::getInstructionId).collect(Collectors.toList()));
+		} else {
+			return;
+		}
+		List<CoilWisePacketSummaryDTO> coilWiseList = new ArrayList<>();
+		int totalPackets = 0;
+		BigDecimal totalWeight = BigDecimal.ZERO;
+		for (Object[] row : rows) {
+			CoilWisePacketSummaryDTO dto = new CoilWisePacketSummaryDTO();
+			dto.setInwardId(row[0] != null ? ((Number) row[0]).intValue() : null);
+			dto.setCoilNo(row[1] != null ? row[1].toString() : "");
+			dto.setCustomerBatchNo(row[2] != null ? row[2].toString() : "");
+			int packets = row[3] != null ? ((Number) row[3]).intValue() : 0;
+			BigDecimal weight = row[4] != null ? new BigDecimal(row[4].toString()).setScale(3, RoundingMode.HALF_EVEN)
+					: BigDecimal.ZERO;
+			dto.setTotalNoOfPackets(packets);
+			dto.setTotalWeight(weight);
+			coilWiseList.add(dto);
+			totalPackets += packets;
+			totalWeight = totalWeight.add(weight);
+		}
+		response.setCoilWiseSummaryList(coilWiseList);
+		response.setTotalNoOfPackets(totalPackets);
+		response.setTotalWeight(totalWeight.setScale(3, RoundingMode.HALF_EVEN));
 	}
 
 	@Override

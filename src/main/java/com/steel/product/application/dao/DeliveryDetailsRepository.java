@@ -112,5 +112,31 @@ public interface DeliveryDetailsRepository extends JpaRepository<DeliveryDetails
    	@Transactional
    	@Query("update DeliveryDetails dc set dc.tallyStatus = 'COMPLETED', dc.tallyDate = CURRENT_TIMESTAMP where dc.deliveryId in (:dcList) ")
    	public void updateTallyStatus(@Param("dcList") List<Integer> dcList);
-    
+
+	/**
+	 * Coil wise packet count and weight of the packets mapped to a delivery (product_instruction.deliveryid).
+	 * Weight = actual weight (planned weight when actual is null).
+	 * Columns: 0 inwardentryid, 1 coilnumber, 2 customerbatchid, 3 no of packets, 4 total weight
+	 */
+	@Query(value = "SELECT inw.inwardentryid, inw.coilnumber, inw.customerbatchid, COUNT(ins.instructionid) no_of_packets, "
+			+ " ROUND(SUM(IFNULL(ins.actualweight, ins.plannedweight)), 3) total_weight "
+			+ " FROM product_instruction ins "
+			+ " JOIN product_tblinwardentry inw ON inw.inwardentryid = ins.inwardid "
+			+ " WHERE ins.deliveryid = :deliveryId AND IFNULL(ins.isdeleted, 0) = 0 "
+			+ " GROUP BY inw.inwardentryid, inw.coilnumber, inw.customerbatchid "
+			+ " ORDER BY inw.inwardentryid", nativeQuery = true)
+	List<Object[]> getCoilWisePacketSummaryByDeliveryId(@Param("deliveryId") Integer deliveryId);
+
+	/**
+	 * Same as {@link #getCoilWisePacketSummaryByDeliveryId} but for the selected packets (before the DC is created).
+	 */
+	@Query(value = "SELECT inw.inwardentryid, inw.coilnumber, inw.customerbatchid, COUNT(ins.instructionid) no_of_packets, "
+			+ " ROUND(SUM(IFNULL(ins.actualweight, ins.plannedweight)), 3) total_weight "
+			+ " FROM product_instruction ins "
+			+ " JOIN product_tblinwardentry inw ON inw.inwardentryid = ins.inwardid "
+			+ " WHERE ins.instructionid IN (:instructionIds) AND IFNULL(ins.isdeleted, 0) = 0 "
+			+ " GROUP BY inw.inwardentryid, inw.coilnumber, inw.customerbatchid "
+			+ " ORDER BY inw.inwardentryid", nativeQuery = true)
+	List<Object[]> getCoilWisePacketSummaryByInstructionIds(@Param("instructionIds") List<Integer> instructionIds);
+
 }

@@ -960,7 +960,7 @@ public class ReportsServiceImpl implements ReportsService {
 			List<StockDetailsReportViewEntity> list = stockDetailsReportViewRepository.findByPartyId(partyId);
 			addSheet(wb, "StockDetails_Report",
 					new Object[] { "Current Date", "Inward Date", "Coil Age (Days)", "Finishing Date", "FG Age (Days)",
-							"EPA Name", "EPA location", "No'of Pieces", "Classification Tag", "Customer Name",
+							"EPA Name", "EPA location", "No'of Pieces", "Status", "Customer Name",
 							"Material Desc", "Mother Coil No", "EPA Input Batch", "Child Packet Id", "MaterialGrade",
 							"TDC No", "Thickness", "Actual Width", "Actual Length", "Quality Remarks (For Deviation)",
 							"Net Wt (Mt)" },
