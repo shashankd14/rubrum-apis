@@ -579,6 +579,7 @@ public class DeliveryDetailsServiceImpl implements DeliveryDetailsService{
 					.stream().map(DeliveryItemDetails::getInstructionId).collect(Collectors.toList()));
 		} else {
 			return;
+			
 		}
 		List<CoilWisePacketSummaryDTO> coilWiseList = new ArrayList<>();
 		int totalPackets = 0;
