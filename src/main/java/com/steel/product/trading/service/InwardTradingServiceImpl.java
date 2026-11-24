@@ -11,6 +11,8 @@ import com.steel.product.trading.repository.DocumentTypeStaticRepository;
 import com.steel.product.trading.repository.InwardTradingChildRepository;
 import com.steel.product.trading.repository.InwardTradingRepository;
 import com.steel.product.trading.repository.InwardPurposeRepository;
+import com.steel.product.trading.repository.InwardOtherChargeRepository;
+import com.steel.product.trading.request.OtherChargeLine;
 import com.steel.product.trading.repository.SeqGeneratorRepository;
 import com.steel.product.trading.request.BaseRequest;
 import com.steel.product.trading.request.DeleteRequest;
@@ -69,6 +71,9 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 
 	@Autowired
 	InwardPurposeRepository inwardPurposeRepository;
+
+	@Autowired
+	InwardOtherChargeRepository otherChargeRepository;
 	
 	@Override
 	@Transactional
@@ -83,6 +88,13 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 			BeanUtils.copyProperties(request, inwardTradingEntity);
 			applyPurpose(request, inwardTradingEntity);
 			validateQualityCheck(request);
+			// Named other charges (when the client sends them) decide the total; older clients send only the total.
+			List<OtherChargeLine> otherChargeLines = request.getOtherChargeLines() == null
+					? null
+					: InwardOtherChargeRepository.normalize(request.getOtherChargeLines());
+			if (otherChargeLines != null) {
+				inwardTradingEntity.setOtherCharges(InwardOtherChargeRepository.total(otherChargeLines));
+			}
 			List<Map<String, Object>> qcCertificates = attachmentService.normalize(request.getQcCertificatesJson());
 			List<Map<String, Object>> documents = attachmentService.normalize(request.getDocumentsJson());
 			List<Map.Entry<InwardTradingChildEntity, List<Map<String, Object>>>> itemImages = new ArrayList<>();
@@ -200,6 +212,9 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 				}
 				inwardTradingRepository.save(inwardTradingEntity);
 			}
+			if (otherChargeLines != null) {
+				otherChargeRepository.replace(inwardTradingEntity.getInwardId(), otherChargeLines);
+			}
 			attachmentService.replace(inwardTradingEntity.getInwardId(), null, InwardAttachmentService.DOCUMENT, documents);
 			attachmentService.replace(inwardTradingEntity.getInwardId(), null, InwardAttachmentService.QC_CERTIFICATE, qcCertificates);
 			for (Map.Entry<InwardTradingChildEntity, List<Map<String, Object>>> images : itemImages) {
@@ -240,6 +255,7 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 		}
 
 		Map<String, String> attachments = attachmentService.loadWithUrls(inwardIdsList);
+		Map<Integer, List<OtherChargeLine>> otherCharges = otherChargeRepository.load(inwardIdsList);
 		Map<Integer, List<InwardTradingChildResponse>> map = new LinkedHashMap<>();
 		Map<Integer, InwardTradingResponse> inwardMap = new LinkedHashMap<>();
 		List<InwardTradingResponse> responseList = new ArrayList<>();
@@ -319,8 +335,7 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 			dto.setQcElongation(result[71] != null ? (BigDecimal) result[71] : null);
 			dto.setQcRemark(result[72] != null ? (String) result[72] : null);
 			dto.setQcCertificatesJson(attachments.getOrDefault(InwardAttachmentService.lookupKey(dto.getInwardId(), null, InwardAttachmentService.QC_CERTIFICATE), "[]"));
-			dto.setOtherCharges(result[74] != null ? (BigDecimal) result[74] : null);
-			childDTO.setImagesJson(attachments.getOrDefault(InwardAttachmentService.lookupKey(dto.getInwardId(), childDTO.getItemchildId(), InwardAttachmentService.ITEM_IMAGE), "[]"));
+			dto.setOtherCharges(result[74] != null ? (BigDecimal) result[74] : null);			childDTO.setImagesJson(attachments.getOrDefault(InwardAttachmentService.lookupKey(dto.getInwardId(), childDTO.getItemchildId(), InwardAttachmentService.ITEM_IMAGE), "[]"));
 
 			if (map.get(dto.getInwardId()) != null) {
 				List<InwardTradingChildResponse> dummyList = map.get(dto.getInwardId());
@@ -346,6 +361,7 @@ public class InwardTradingServiceImpl implements InwardTradingService {
 			InwardTradingResponse inward = inwardMap.get(inwardId);
 			if (inward != null) {
 				inward.setItemsList(map.get(inwardId));
+				inward.setOtherChargeLines(otherCharges.getOrDefault(inwardId, new ArrayList<>()));
 				responseList.add(inward);
 			}
 		}

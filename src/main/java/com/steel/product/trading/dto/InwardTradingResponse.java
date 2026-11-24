@@ -79,6 +79,7 @@ public class InwardTradingResponse {
 
 	private BigDecimal weightmenCharges;
 	private BigDecimal otherCharges;
+	private List<com.steel.product.trading.request.OtherChargeLine> otherChargeLines;
 
 	private BigDecimal cgst;
 

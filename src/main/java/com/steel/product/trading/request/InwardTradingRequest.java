@@ -77,6 +77,8 @@ public class InwardTradingRequest extends BaseRequest {
 
 	private BigDecimal weightmenCharges;
 	private BigDecimal otherCharges;
+	/** Named other charges. When sent, they replace the saved rows and otherCharges is set to their total. */
+	private List<OtherChargeLine> otherChargeLines;
 
 	private BigDecimal cgst;
 

@@ -37,7 +37,8 @@ public class StockRegisterRepository {
         "o.weight, o.pieces, o.rate FROM trading_opening_stock o " +
         "LEFT JOIN trading_location_master l ON l.location_id = o.location_id";
 
-    // Dispatch has no receipt/heat foreign key. Do not invent a lot deduction or a zero outflow.
+    // Out = stock corrections on this lot; balance = In − Out. Dispatch has no receipt/heat link, so
+    // allocation_pending only marks lots whose material was dispatched (adjustment stays blocked for them).
     private static final String REGISTER = "SELECT r.*, " +
         "r.incoming + COALESCE(a.added, 0) total_incoming, COALESCE(a.deducted, 0) outgoing, " +
         "r.incoming + COALESCE(a.added, 0) - COALESCE(a.deducted, 0) balance, CASE WHEN EXISTS (" +
@@ -71,10 +72,9 @@ public class StockRegisterRepository {
         row.setPieces(rs.getInt("pieces"));
         row.setRate(rs.getBigDecimal("rate"));
         row.setAllocationPending(rs.getBoolean("allocation_pending"));
-        if (!row.isAllocationPending()) {
-            row.setOutgoing(rs.getBigDecimal("outgoing"));
-            row.setWeight(rs.getBigDecimal("balance"));
-        }
+        // Out is what has been taken from this lot (stock corrections); Balance is always In − Out.
+        row.setOutgoing(rs.getBigDecimal("outgoing"));
+        row.setWeight(rs.getBigDecimal("balance"));
         return row;
     };
 
@@ -102,13 +102,13 @@ public class StockRegisterRepository {
         int currentPage = Math.min(page, Math.max(1, response.getTotalPages()));
         response.setCurrentPage(currentPage);
         String order = sort.isEmpty() ? "entry_date DESC, id DESC" :
-            "allocation_pending ASC, balance " + (sort.equals("asc") ? "ASC" : "DESC") + ", id DESC";
+            "balance " + (sort.equals("asc") ? "ASC" : "DESC") + ", id DESC";
         params.addValue("limit", size).addValue("offset", (currentPage - 1) * size);
         response.setContent(jdbc.query("SELECT *" + from + where + " ORDER BY " + order +
             " LIMIT :limit OFFSET :offset", params, MAPPER));
         response.setSummary(jdbc.queryForObject("SELECT COUNT(*) total_items, " +
-            "COALESCE(SUM(CASE WHEN allocation_pending = 0 AND balance > 0 AND balance < 5 THEN 1 ELSE 0 END), 0) low_stock, " +
-            "COALESCE(SUM(CASE WHEN allocation_pending = 0 AND balance = 0 THEN 1 ELSE 0 END), 0) out_of_stock, " +
+            "COALESCE(SUM(CASE WHEN balance > 0 AND balance < 5 THEN 1 ELSE 0 END), 0) low_stock, " +
+            "COALESCE(SUM(CASE WHEN balance = 0 THEN 1 ELSE 0 END), 0) out_of_stock, " +
             "COALESCE(SUM(allocation_pending), 0) pending, COALESCE(SUM(balance * rate), 0) valuation" + from,
             new MapSqlParameterSource(), (rs, index) -> {
                 StockRegisterResponse.Summary summary = new StockRegisterResponse.Summary();
@@ -116,7 +116,7 @@ public class StockRegisterRepository {
                 summary.setLowStock(rs.getLong("low_stock"));
                 summary.setOutOfStock(rs.getLong("out_of_stock"));
                 summary.setAllocationPending(rs.getLong("pending"));
-                summary.setValuation(summary.getAllocationPending() > 0 ? null : rs.getBigDecimal("valuation"));
+                summary.setValuation(rs.getBigDecimal("valuation"));
                 return summary;
             }));
         return response;

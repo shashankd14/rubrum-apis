@@ -60,6 +60,9 @@ public final class InwardMrnPdf {
         detail(totals, "Invoice value (INR)", number(sum(receipt.getTotalVolume(), receipt.getFreightCharges(), receipt.getLoadingCharges(),
                 receipt.getInsuranceAmount(), receipt.getWeightmenCharges(), receipt.getCgst(), receipt.getSgst(), receipt.getIgst())));
         detail(totals, "Other charges (INR)", number(receipt.getOtherCharges()));
+        if (receipt.getOtherChargeLines() != null) for (com.steel.product.trading.request.OtherChargeLine line : receipt.getOtherChargeLines()) {
+            detail(totals, "  - " + text(line.getLabel()) + " (INR)", number(line.getAmount()));
+        }
         detail(totals, "Actual cost (INR)", number(receipt.getTotalInwardVolume()));
         totals.setSpacingAfter(16); document.add(totals);
         section(document, "QUALITY CHECK");
