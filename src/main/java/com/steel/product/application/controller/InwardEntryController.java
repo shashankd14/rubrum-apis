@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
@@ -35,6 +36,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.steel.product.application.dto.delivery.DeliveryPDFRequestDTO;
 import com.steel.product.application.dto.inward.EndUserTagWisePacketsDTO;
 import com.steel.product.application.dto.inward.InwardDto;
+import com.steel.product.application.dto.inward.InwardEntryResponseDto;
 import com.steel.product.application.dto.inward.SearchListPageRequest;
 import com.steel.product.application.entity.InwardDoc;
 import com.steel.product.application.entity.InwardEntry;
@@ -387,8 +389,24 @@ public class InwardEntryController {
 
 		Map<String, Object> response = new HashMap<>();
 		Page<InwardEntry> pageResult = inwdEntrySvc.findAllWIPlistWithPagination(pageNo, pageSize, searchText, partyId);
-		List<Object> inwardList = pageResult.stream().map(inw -> InwardEntry.valueOfResponse(inw))
-				.collect(Collectors.toList());
+
+		// fetch wipQty for all coils on this page in a single query
+		List<String> coilNumbers = pageResult.stream().map(InwardEntry::getCoilNumber)
+				.filter(Objects::nonNull).distinct().collect(Collectors.toList());
+		Map<String, String> wipQtyMap = inwdEntrySvc.getWipQtyByCoilNumbers(coilNumbers);
+
+		List<Object> inwardList = pageResult.stream().map(inw -> {
+			InwardEntryResponseDto dto = InwardEntry.valueOfResponse(inw);
+			String wipQty = wipQtyMap.get(inw.getCoilNumber());
+			if (wipQty != null && !wipQty.trim().isEmpty()) {
+				try {
+					dto.setfQuantity(Float.parseFloat(wipQty.trim()));
+				} catch (NumberFormatException e) {
+					log.warn("Invalid wipQty '{}' for coil {}", wipQty, inw.getCoilNumber());
+				}
+			}
+			return dto;
+		}).collect(Collectors.toList());
 		response.put("content", inwardList);
 		response.put("currentPage", pageResult.getNumber());
 		response.put("totalItems", pageResult.getTotalElements());

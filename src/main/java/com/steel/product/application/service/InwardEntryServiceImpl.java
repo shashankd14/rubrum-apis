@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import com.steel.product.application.dao.InwardEntryRepository;
+import com.steel.product.application.dao.StockSummaryReportViewRepository;
 import com.steel.product.application.dao.UserRepository;
 import com.steel.product.application.dto.delivery.DeliveryPDFRequestDTO;
 import com.steel.product.application.dto.inward.InwardEntryResponseDto;
@@ -62,17 +63,20 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 
 	private final UserRepository userRepository;
 	private final InwardEntryRepository inwdEntryRepo;
+	private final StockSummaryReportViewRepository stockSummaryReportViewRepository;
 	private AWSS3Service awsS3Service;
 	private CommonUtil commonUtil;
-    private static final DecimalFormat decfor = new DecimalFormat("0.00");  
-    
+    private static final DecimalFormat decfor = new DecimalFormat("0.00");
+
 	@Autowired
 	public InwardEntryServiceImpl(InwardEntryRepository theInwdEntryRepo, AWSS3Service awsS3Service,
-			CommonUtil commonUtil,	UserRepository userRepository) {
+			CommonUtil commonUtil,	UserRepository userRepository,
+			StockSummaryReportViewRepository stockSummaryReportViewRepository) {
 		this.inwdEntryRepo = theInwdEntryRepo;
 		this.awsS3Service = awsS3Service;
 		this.commonUtil = commonUtil;
 		this.userRepository = userRepository;
+		this.stockSummaryReportViewRepository = stockSummaryReportViewRepository;
 	}
 
 	public InwardEntry saveEntry(InwardEntry entry) {
@@ -293,6 +297,22 @@ public class InwardEntryServiceImpl implements InwardEntryService {
 
 		Page<InwardEntry> pageResult = inwdEntryRepo.findAllWIP(searchText, partyIds, locationIds, pageable);
 		return pageResult;
+	}
+
+	@Override
+	public Map<String, String> getWipQtyByCoilNumbers(List<String> coilNumbers) {
+		Map<String, String> wipQtyMap = new HashMap<>();
+		if (CollectionUtils.isEmpty(coilNumbers)) {
+			return wipQtyMap;
+		}
+		List<Object[]> rows = stockSummaryReportViewRepository.findWipQtyByCoilNumbers(coilNumbers);
+		for (Object[] row : rows) {
+			if (row[0] != null) {
+				// putIfAbsent: keep the first value if the view returns duplicate coil rows
+				wipQtyMap.putIfAbsent((String) row[0], row[1] != null ? row[1].toString() : null);
+			}
+		}
+		return wipQtyMap;
 	}
 	
 	@Override

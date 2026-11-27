@@ -14,7 +14,6 @@ public interface StockSummaryReportViewRepository extends JpaRepository<StockSum
 
 	List<StockSummaryReportViewEntity> findByCoilNumber (String coilNumber);
 
-	// select coilnumber, wipqty from stock_summary_report_vw where coilnumber in (...)
 	@Query("select s.coilNumber, s.wipqty from StockSummaryReportViewEntity s where s.coilNumber in :coilNumbers")
 	List<Object[]> findWipQtyByCoilNumbers(@Param("coilNumbers") List<String> coilNumbers);
 

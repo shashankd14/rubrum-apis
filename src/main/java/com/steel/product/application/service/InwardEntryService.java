@@ -1,6 +1,7 @@
 package com.steel.product.application.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
@@ -53,6 +54,8 @@ public interface InwardEntryService {
 	JSONObject getPlanPDFs(int inwardEntryId);
 
 	Page<InwardEntry> findAllWIPlistWithPagination(int pageNo, int pageSize, String searchText, String partyId);
+
+	Map<String, String> getWipQtyByCoilNumbers(List<String> coilNumbers);
 
 	QRCodeResponse getInwardQRCodeDetails(int inwardEntryId);
 

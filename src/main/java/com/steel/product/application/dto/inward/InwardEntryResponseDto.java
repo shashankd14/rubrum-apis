@@ -38,16 +38,6 @@ public class InwardEntryResponseDto {
 
     private String customerCoilId;
 
-    private String wipQty;
-
-    public String getWipQty() {
-        return wipQty;
-    }
-
-    public void setWipQty(String wipQty) {
-        this.wipQty = wipQty;
-    }
-
     private String customerInvoiceNo;
 
     private String customerBatchId;
