@@ -675,7 +675,7 @@ public class PriceMasterServiceImpl implements PriceMasterService {
 			for (PriceMasterResponse priceMasterResponse : basePriceList) {
 				if(processId==8 || processId==7) {
 					if (inwardEntity.getMaterialGrade().getGradeId() == priceMasterResponse.getMatGradeId()
-							&& inwardEntity.getParty().getnPartyId() == priceMasterResponse.getPartyId()
+							&& priceMasterResponse.getPartyId().equals(inwardEntity.getParty().getnPartyId())
 							&& processId == priceMasterResponse.getProcessId()) {
 
 						priceCalculateDTO.setBasePrice(priceMasterResponse.getPrice());
